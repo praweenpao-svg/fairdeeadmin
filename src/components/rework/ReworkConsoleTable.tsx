@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
-import { ReworkConfig } from '@/types/pipeline';
+import { ReworkConfig, AssignmentType } from '@/types/pipeline';
 import { useTeamsStore } from '@/stores/teamsStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,6 +25,10 @@ interface ReworkConsoleTableProps {
   onUpdate: (configs: ReworkConfig[]) => void;
 }
 
+const assignmentOptions: { value: AssignmentType; label: string }[] = [
+  { value: 'round_robin', label: 'Round Robin' },
+];
+
 export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTableProps) {
   const { teams } = useTeamsStore();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -34,6 +38,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
     descriptionTh: '',
     descriptionEn: '',
     team: '',
+    assignment: 'round_robin',
   });
 
   const openDialog = (config?: ReworkConfig) => {
@@ -46,6 +51,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
         descriptionTh: '',
         descriptionEn: '',
         team: '',
+        assignment: 'round_robin',
       });
     }
     setIsDialogOpen(true);
@@ -72,6 +78,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
         team: formData.team || '',
         teamMembers: [],
         automationEnabled: false,
+        assignment: formData.assignment || 'round_robin',
       };
       onUpdate([...reworkConfigs, newConfig]);
     }
@@ -83,6 +90,16 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
       reworkConfigs.map((config) =>
         config.id === configId
           ? { ...config, team: team || '' }
+          : config
+      )
+    );
+  };
+
+  const handleAssignmentChange = (configId: string, assignment: AssignmentType) => {
+    onUpdate(
+      reworkConfigs.map((config) =>
+        config.id === configId
+          ? { ...config, assignment }
           : config
       )
     );
@@ -171,6 +188,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
               <th className="data-table-header px-4 py-3 text-left">Description (TH)</th>
               <th className="data-table-header px-4 py-3 text-left">Description (EN)</th>
               <th className="data-table-header px-4 py-3 text-left">Team</th>
+              <th className="data-table-header px-4 py-3 text-left">Assignment</th>
               <th className="data-table-header px-4 py-3 text-right">Actions</th>
             </tr>
           </thead>
@@ -194,6 +212,25 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                       {teams.map((team) => (
                         <SelectItem key={team} value={team}>
                           Team {team}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </td>
+                <td className="px-4 py-3">
+                  <Select
+                    value={config.assignment || 'round_robin'}
+                    onValueChange={(value) =>
+                      handleAssignmentChange(config.id, value as AssignmentType)
+                    }
+                  >
+                    <SelectTrigger className="w-[140px] h-8 text-xs">
+                      <SelectValue placeholder="Select assignment" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {assignmentOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
                         </SelectItem>
                       ))}
                     </SelectContent>
