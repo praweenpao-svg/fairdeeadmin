@@ -417,7 +417,7 @@ export const mockReworkConfigs: ReworkConfig[] = [
     team: 'AST',
     teamMembers: [],
     automationEnabled: false,
-    assignment: 'round_robin',
+    assignment: 'rf_sc',
     stages: ['to_pay', 'to_report'],
   },
   {
@@ -427,7 +427,7 @@ export const mockReworkConfigs: ReworkConfig[] = [
     team: 'AST',
     teamMembers: [],
     automationEnabled: false,
-    assignment: 'round_robin',
+    assignment: 'rf_sc',
     stages: ['to_pay', 'to_report'],
   },
   {
@@ -437,7 +437,7 @@ export const mockReworkConfigs: ReworkConfig[] = [
     team: 'AST',
     teamMembers: [],
     automationEnabled: false,
-    assignment: 'round_robin',
+    assignment: 'rf_sc',
     stages: ['to_pay', 'to_report'],
   },
   {
@@ -447,7 +447,7 @@ export const mockReworkConfigs: ReworkConfig[] = [
     team: 'AST',
     teamMembers: [],
     automationEnabled: false,
-    assignment: 'round_robin',
+    assignment: 'rf_sc',
     stages: ['to_pay', 'to_report'],
   },
   {
@@ -457,7 +457,7 @@ export const mockReworkConfigs: ReworkConfig[] = [
     team: 'AST',
     teamMembers: [],
     automationEnabled: false,
-    assignment: 'round_robin',
+    assignment: 'rf_sc',
     stages: ['to_issue', 'to_deliver', 'completed'],
   },
   {
@@ -467,7 +467,7 @@ export const mockReworkConfigs: ReworkConfig[] = [
     team: 'AST',
     teamMembers: [],
     automationEnabled: false,
-    assignment: 'round_robin',
+    assignment: 'rf_sc',
     stages: ['to_issue', 'to_deliver', 'completed'],
   },
   {
@@ -477,7 +477,7 @@ export const mockReworkConfigs: ReworkConfig[] = [
     team: 'AST',
     teamMembers: [],
     automationEnabled: false,
-    assignment: 'round_robin',
+    assignment: 'rf_sc',
     stages: ['to_issue', 'to_deliver', 'completed'],
   },
   {
@@ -487,21 +487,11 @@ export const mockReworkConfigs: ReworkConfig[] = [
     team: 'AST',
     teamMembers: [],
     automationEnabled: false,
-    assignment: 'round_robin',
+    assignment: 'rf_sc',
     stages: ['to_issue', 'to_deliver', 'completed'],
   },
   {
     id: '9',
-    descriptionTh: 'รอคีย์ต่อ',
-    descriptionEn: 'Pending Re-entry',
-    team: 'DE',
-    teamMembers: [],
-    automationEnabled: false,
-    assignment: 'round_robin',
-    stages: ['to_issue', 'to_deliver', 'completed'],
-  },
-  {
-    id: '10',
     descriptionTh: 'ตีกลับให้ OPS',
     descriptionEn: 'Return to OPS',
     team: 'Admin',
@@ -511,7 +501,7 @@ export const mockReworkConfigs: ReworkConfig[] = [
     stages: ['to_issue', 'to_deliver', 'completed'],
   },
   {
-    id: '11',
+    id: '10',
     descriptionTh: 'แจ้งประกันแล้ว รอพิจารณา',
     descriptionEn: 'Submitted to Insurer: Under Review',
     team: 'Admin',
@@ -521,7 +511,7 @@ export const mockReworkConfigs: ReworkConfig[] = [
     stages: ['to_issue', 'to_deliver', 'completed'],
   },
   {
-    id: '12',
+    id: '11',
     descriptionTh: 'รอแจ้งประกันยกเลิก รอเอกสาร',
     descriptionEn: 'Pending Cancellation: Awaiting Documents',
     team: 'Admin',
@@ -531,7 +521,7 @@ export const mockReworkConfigs: ReworkConfig[] = [
     stages: ['to_issue', 'to_deliver', 'completed'],
   },
   {
-    id: '13',
+    id: '12',
     descriptionTh: 'รอแจ้งประกันยกเลิก เอกสารครบ',
     descriptionEn: 'Pending Cancellation: Documents Complete',
     team: 'Admin',
@@ -541,17 +531,17 @@ export const mockReworkConfigs: ReworkConfig[] = [
     stages: ['to_issue', 'to_deliver', 'completed'],
   },
   {
-    id: '14',
+    id: '13',
     descriptionTh: 'แจ้งประกันยกเลิกแล้ว รอเอกสาร',
     descriptionEn: 'Cancellation Submitted: Awaiting Documents',
     team: 'AST',
     teamMembers: [],
     automationEnabled: false,
-    assignment: 'round_robin',
+    assignment: 'rf_sc',
     stages: ['to_issue', 'to_deliver', 'completed'],
   },
   {
-    id: '15',
+    id: '14',
     descriptionTh: 'แจ้งประกันยกเลิกแล้ว เอกสารครบ',
     descriptionEn: 'Cancellation Submitted: Documents Complete',
     team: 'Admin',
