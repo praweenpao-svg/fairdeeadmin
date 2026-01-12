@@ -64,6 +64,8 @@ export interface Lead {
   assignedTo?: string;
   createdBy: CreatedByType;
   reworkHistory: ReworkHistoryEntry[];
+  rfAssignee?: string;
+  scAssignee?: string;
 }
 
 export type AssignmentType = 'round_robin';

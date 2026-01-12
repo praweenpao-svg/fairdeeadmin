@@ -267,6 +267,8 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
                 <SortableHeader column="agent">Agent</SortableHeader>
                 <SortableHeader column="createdOn">Created on</SortableHeader>
                 <th className="data-table-header px-4 py-3 text-left">Vehicle details</th>
+                <th className="data-table-header px-4 py-3 text-left">RF</th>
+                <th className="data-table-header px-4 py-3 text-left">SC</th>
                 <SortableHeader column="status">Status</SortableHeader>
                 <th className="data-table-header px-4 py-3 text-left">Owner</th>
                 <th className="data-table-header w-10 px-4 py-3"></th>
@@ -275,7 +277,7 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
             <tbody>
               {sortedLeads.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-12 text-center text-muted-foreground">
+                  <td colSpan={10} className="px-4 py-12 text-center text-muted-foreground">
                     No leads found for this stage
                   </td>
                 </tr>
@@ -325,6 +327,40 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
                         <span className="text-sm font-medium">{lead.vehicleDetails || '-'}</span>
                         <span className="text-xs text-muted-foreground">N/A</span>
                       </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <Select 
+                        value={lead.rfAssignee || ''}
+                        onValueChange={(value) => onLeadUpdate?.(lead.id, { rfAssignee: value || undefined })}
+                      >
+                        <SelectTrigger className="w-[140px] h-8 text-xs">
+                          <SelectValue placeholder="Select RF" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {mockStaffMembers.map((staff) => (
+                            <SelectItem key={staff.id} value={staff.name}>
+                              {staff.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </td>
+                    <td className="px-4 py-3">
+                      <Select 
+                        value={lead.scAssignee || ''}
+                        onValueChange={(value) => onLeadUpdate?.(lead.id, { scAssignee: value || undefined })}
+                      >
+                        <SelectTrigger className="w-[140px] h-8 text-xs">
+                          <SelectValue placeholder="Select SC" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {mockStaffMembers.map((staff) => (
+                            <SelectItem key={staff.id} value={staff.name}>
+                              {staff.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </td>
                     <td className="px-4 py-3">
                       <Select 
