@@ -211,6 +211,12 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
       updates.saleStatus = entry.previousStatus || defaultStatusByStage[stage] as Lead['saleStatus'];
     }
 
+    // Update selectedLead state immediately so the dialog reflects the change
+    setSelectedLead({
+      ...selectedLead,
+      ...updates,
+    });
+
     onLeadUpdate?.(selectedLead.id, updates);
   };
 
