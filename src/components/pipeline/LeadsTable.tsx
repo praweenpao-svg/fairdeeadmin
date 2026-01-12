@@ -180,10 +180,10 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
               <th className="data-table-header w-10 px-4 py-3"></th>
               <SortableHeader column="leads">Leads</SortableHeader>
               <SortableHeader column="agent">Agent</SortableHeader>
-              <SortableHeader column="createdOn">Created On</SortableHeader>
-              <th className="data-table-header px-4 py-3 text-left">Vehicle Details</th>
+              <SortableHeader column="createdOn">Created on</SortableHeader>
+              <th className="data-table-header px-4 py-3 text-left">Vehicle details</th>
               <SortableHeader column="status">Status</SortableHeader>
-              <th className="data-table-header px-4 py-3 text-left">Rework Status</th>
+              <th className="data-table-header px-4 py-3 text-left">Rework status</th>
               <th className="data-table-header px-4 py-3 text-left">Owner</th>
               <th className="data-table-header w-10 px-4 py-3"></th>
             </tr>
