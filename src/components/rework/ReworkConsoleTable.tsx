@@ -1,10 +1,9 @@
-import { useState, useEffect } from 'react';
-import { Plus, Pencil, Trash2, Users, X } from 'lucide-react';
+import { useState } from 'react';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { ReworkConfig } from '@/types/pipeline';
 import { useTeamsStore } from '@/stores/teamsStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -27,12 +26,9 @@ interface ReworkConsoleTableProps {
 }
 
 export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTableProps) {
-  const { teams, addTeam, updateTeam, deleteTeam } = useTeamsStore();
+  const { teams } = useTeamsStore();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isTeamDialogOpen, setIsTeamDialogOpen] = useState(false);
   const [editingConfig, setEditingConfig] = useState<ReworkConfig | null>(null);
-  const [newTeamName, setNewTeamName] = useState('');
-  const [editingTeam, setEditingTeam] = useState<{ index: number; name: string } | null>(null);
 
   const [formData, setFormData] = useState<Partial<ReworkConfig>>({
     descriptionTh: '',
@@ -82,38 +78,6 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
     setIsDialogOpen(false);
   };
 
-  const handleAddTeam = () => {
-    if (newTeamName.trim()) {
-      addTeam(newTeamName.trim());
-      setNewTeamName('');
-    }
-  };
-
-  const handleEditTeam = (index: number, newName: string) => {
-    const oldName = teams[index];
-    updateTeam(oldName, newName);
-    
-    // Update rework configs with the new team name
-    onUpdate(
-      reworkConfigs.map((config) =>
-        config.team === oldName ? { ...config, team: newName } : config
-      )
-    );
-    setEditingTeam(null);
-  };
-
-  const handleDeleteTeam = (index: number) => {
-    const teamToDelete = teams[index];
-    deleteTeam(teamToDelete);
-    
-    // Clear team from rework configs
-    onUpdate(
-      reworkConfigs.map((config) =>
-        config.team === teamToDelete ? { ...config, team: '' } : config
-      )
-    );
-  };
-
   const handleTeamChange = (configId: string, team: string | null) => {
     onUpdate(
       reworkConfigs.map((config) =>
@@ -134,94 +98,6 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
           </p>
         </div>
         <div className="flex items-center gap-2">
-          {/* Team Management Button */}
-          <Dialog open={isTeamDialogOpen} onOpenChange={setIsTeamDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" className="gap-2">
-                <Users className="w-4 h-4" />
-                Team
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[400px]">
-              <DialogHeader>
-                <DialogTitle>Manage Teams</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                {/* Add new team */}
-                <div className="flex gap-2">
-                  <Input
-                    value={newTeamName}
-                    onChange={(e) => setNewTeamName(e.target.value)}
-                    placeholder="New team name"
-                    onKeyDown={(e) => e.key === 'Enter' && handleAddTeam()}
-                  />
-                  <Button onClick={handleAddTeam} size="sm">
-                    <Plus className="w-4 h-4" />
-                  </Button>
-                </div>
-
-                {/* Team list */}
-                <div className="space-y-2">
-                  {teams.map((team, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between p-2 rounded-md border bg-muted/30"
-                    >
-                      {editingTeam?.index === index ? (
-                        <div className="flex items-center gap-2 flex-1">
-                          <Input
-                            value={editingTeam.name}
-                            onChange={(e) =>
-                              setEditingTeam({ ...editingTeam, name: e.target.value })
-                            }
-                            className="h-8"
-                            autoFocus
-                          />
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleEditTeam(index, editingTeam.name)}
-                          >
-                            Save
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => setEditingTeam(null)}
-                          >
-                            <X className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      ) : (
-                        <>
-                          <span className="text-sm font-medium">{team}</span>
-                          <div className="flex items-center gap-1">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setEditingTeam({ index, name: team })}
-                              className="h-7 w-7 p-0"
-                            >
-                              <Pencil className="w-3.5 h-3.5" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDeleteTeam(index)}
-                              className="h-7 w-7 p-0 text-destructive hover:text-destructive"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </Button>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-
           {/* Add Rework Reason Button */}
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
