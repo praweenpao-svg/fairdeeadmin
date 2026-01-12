@@ -94,14 +94,14 @@ function ReworkStatusBadge({
 
       {/* Rework Reason Dropdown */}
       <Select 
-        value={lead.reworkReasonId || ''} 
-        onValueChange={(value) => onReworkChange(value || null)}
+        value={lead.reworkReasonId || '__none__'} 
+        onValueChange={(value) => onReworkChange(value === '__none__' ? null : value)}
       >
         <SelectTrigger className="h-8 text-xs bg-warning/5 border-warning/30 hover:bg-warning/10">
           <SelectValue placeholder="Select reason" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">Clear Rework</SelectItem>
+          <SelectItem value="__none__">Clear Rework</SelectItem>
           {reworkConfigs.map((config) => (
             <SelectItem key={config.id} value={config.id}>
               <div className="flex flex-col">
