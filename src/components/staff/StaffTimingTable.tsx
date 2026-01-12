@@ -317,10 +317,10 @@ export function StaffTimingTable() {
                 <th className="data-table-header px-4 py-3 text-left">Staff</th>
                 <th className="data-table-header px-4 py-3 text-left">Email</th>
                 <th className="data-table-header px-4 py-3 text-left">Team</th>
-                <th className="data-table-header px-4 py-3 text-left">Start Time</th>
-                <th className="data-table-header px-4 py-3 text-left">End Time</th>
-                <th className="data-table-header px-4 py-3 text-left">Shift 2 Start Time</th>
-                <th className="data-table-header px-4 py-3 text-left">Shift 2 End Time</th>
+                <th className="data-table-header px-4 py-3 text-left">Start time</th>
+                <th className="data-table-header px-4 py-3 text-left">End time</th>
+                <th className="data-table-header px-4 py-3 text-left">Shift 2 start time</th>
+                <th className="data-table-header px-4 py-3 text-left">Shift 2 end time</th>
                 <th className="data-table-header px-4 py-3 text-center">Edit</th>
                 <th className="data-table-header px-4 py-3 text-center">Delete</th>
               </tr>
