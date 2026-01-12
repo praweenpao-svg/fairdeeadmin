@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { 
   ExternalLink, 
   MoreVertical,
-  ArrowUpDown,
   AlertTriangle,
 } from 'lucide-react';
 import { Lead, PipelineStage, LeadType, ReworkConfig, CreatedByType, ReworkAttachment, ReworkHistoryEntry } from '@/types/pipeline';
@@ -225,6 +224,70 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
     onLeadUpdate?.(selectedLead.id, updates);
   };
 
+  const handleReassignRework = (entryId: string, newReasonId: string) => {
+    if (!selectedLead) return;
+
+    const entryIndex = selectedLead.reworkHistory.findIndex(e => e.id === entryId);
+    if (entryIndex === -1) return;
+
+    const entry = selectedLead.reworkHistory[entryIndex];
+    const newReworkConfig = reworkConfigs.find(r => r.id === newReasonId);
+    const newReasonLabel = newReworkConfig?.descriptionEn || 'Unknown';
+
+    const resolvedAt = new Date().toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+    // Mark original entry as resolved (reassigned)
+    const updatedHistory = [...selectedLead.reworkHistory];
+    updatedHistory[entryIndex] = {
+      ...entry,
+      resolved: true,
+      resolvedAt,
+      resolvedBy: 'Akshay Bazad (Reassigned)',
+    };
+
+    // Create new rework entry with the new reason
+    const newHistoryEntry: ReworkHistoryEntry = {
+      id: crypto.randomUUID(),
+      reasonId: newReasonId,
+      reasonLabel: newReasonLabel,
+      details: `Reassigned from: ${entry.reasonLabel}`,
+      attachments: [],
+      savedBy: 'Akshay Bazad',
+      savedAt: resolvedAt,
+      previousStatus: entry.previousStatus, // Keep the original previous status
+    };
+
+    // Determine new assigned owner based on assignment type
+    let assignedOwner: string | undefined;
+    if (newReworkConfig) {
+      if (newReworkConfig.assignment === 'round_robin') {
+        assignedOwner = getNextRoundRobinStaff(newReworkConfig.team);
+      } else if (newReworkConfig.assignment === 'rf_sc') {
+        assignedOwner = selectedLead.scAssignee || selectedLead.rfAssignee;
+      }
+    }
+
+    const updates: Partial<Lead> = {
+      reworkHistory: [...updatedHistory, newHistoryEntry],
+      reworkReasonId: newReasonId,
+      assignedTo: assignedOwner,
+    };
+
+    // Update selectedLead state immediately so the dialog reflects the change
+    setSelectedLead({
+      ...selectedLead,
+      ...updates,
+    });
+
+    onLeadUpdate?.(selectedLead.id, updates);
+  };
+
   const handleOpenReworkHistory = (lead: Lead) => {
     setSelectedLead(lead);
     setReworkHistoryDialogOpen(true);
@@ -249,17 +312,6 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
     return 0;
   });
 
-  const SortableHeader = ({ column, children }: { column: string; children: React.ReactNode }) => (
-    <th className="data-table-header px-4 py-3 text-left">
-      <button
-        className="flex items-center gap-1 hover:text-foreground transition-colors"
-      >
-        {children}
-        <ArrowUpDown className="w-3.5 h-3.5" />
-      </button>
-    </th>
-  );
-
   return (
     <>
       <div className="bg-card rounded-lg border border-border overflow-hidden">
@@ -268,13 +320,13 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
             <thead>
               <tr className="border-b border-border">
                 <th className="data-table-header w-10 px-4 py-3"></th>
-                <SortableHeader column="leads">Leads</SortableHeader>
-                <SortableHeader column="agent">Agent</SortableHeader>
-                <SortableHeader column="createdOn">Created on</SortableHeader>
+                <th className="data-table-header px-4 py-3 text-left">Leads</th>
+                <th className="data-table-header px-4 py-3 text-left">Agent</th>
+                <th className="data-table-header px-4 py-3 text-left">Created on</th>
                 <th className="data-table-header px-4 py-3 text-left">Vehicle details</th>
                 <th className="data-table-header px-4 py-3 text-left">RF</th>
                 <th className="data-table-header px-4 py-3 text-left">SC</th>
-                <SortableHeader column="status">Status</SortableHeader>
+                <th className="data-table-header px-4 py-3 text-left">Status</th>
                 <th className="data-table-header px-4 py-3 text-left">Owner</th>
                 <th className="data-table-header w-10 px-4 py-3"></th>
               </tr>
@@ -456,7 +508,9 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
         }}
         leadNumber={selectedLead?.leadNumber || ''}
         history={selectedLead?.reworkHistory || []}
+        reworkConfigs={stageReworkConfigs}
         onResolve={handleResolveRework}
+        onReassign={handleReassignRework}
       />
     </>
   );
