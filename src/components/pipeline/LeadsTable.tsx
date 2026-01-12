@@ -127,47 +127,48 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
     }
   };
 
-  const handleReworkConfirm = (reasonIds: string[], details: string, attachments: ReworkAttachment[]) => {
-    if (!selectedLead || reasonIds.length === 0) return;
+  const handleReworkConfirm = (reasonId: string, details: string, attachments: ReworkAttachment[]) => {
+    if (!selectedLead || !reasonId) return;
 
     // Store current status before marking as rework required
     const previousStatus = selectedLead.saleStatus;
     
-    // Create history entries for each selected reason
-    const newHistoryEntries: ReworkHistoryEntry[] = reasonIds.map((reasonId) => {
-      const reworkConfig = reworkConfigs.find(r => r.id === reasonId);
-      const reasonLabel = reworkConfig?.descriptionEn || 'Unknown';
-      
-      return {
-        id: crypto.randomUUID(),
-        reasonId,
-        reasonLabel,
-        details,
-        attachments,
-        savedBy: 'Akshay Bazad',
-        savedAt: new Date().toLocaleString('en-US', {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-        }),
-        previousStatus,
-      };
-    });
+    const reworkConfig = reworkConfigs.find(r => r.id === reasonId);
+    const reasonLabel = reworkConfig?.descriptionEn || 'Unknown';
+    
+    const newHistoryEntry: ReworkHistoryEntry = {
+      id: crypto.randomUUID(),
+      reasonId,
+      reasonLabel,
+      details,
+      attachments,
+      savedBy: 'Akshay Bazad',
+      savedAt: new Date().toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
+      previousStatus,
+    };
 
-    // Use the first reason's config for assignment (or could be enhanced to handle multiple)
-    const firstReasonConfig = reworkConfigs.find(r => r.id === reasonIds[0]);
+    // Determine assigned owner based on assignment type
     let assignedOwner: string | undefined;
-    if (firstReasonConfig && firstReasonConfig.assignment === 'round_robin') {
-      assignedOwner = getNextRoundRobinStaff(firstReasonConfig.team);
+    if (reworkConfig) {
+      if (reworkConfig.assignment === 'round_robin') {
+        assignedOwner = getNextRoundRobinStaff(reworkConfig.team);
+      } else if (reworkConfig.assignment === 'rf_sc') {
+        // RF/SC assignment: prefer SC, fallback to RF
+        assignedOwner = selectedLead.scAssignee || selectedLead.rfAssignee;
+      }
     }
 
     onLeadUpdate?.(selectedLead.id, {
       reworkRequired: true,
-      reworkReasonId: reasonIds[0], // Store the first reason as the primary
+      reworkReasonId: reasonId,
       assignedTo: assignedOwner,
-      reworkHistory: [...selectedLead.reworkHistory, ...newHistoryEntries],
+      reworkHistory: [...selectedLead.reworkHistory, newHistoryEntry],
     });
 
     setSelectedLead(null);
