@@ -133,6 +133,9 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
     const reworkConfig = reworkConfigs.find(r => r.id === reasonId);
     const reasonLabel = reworkConfig?.descriptionEn || 'Unknown';
     
+    // Store current status before marking as rework required
+    const previousStatus = selectedLead.saleStatus;
+    
     // Create new history entry
     const historyEntry: ReworkHistoryEntry = {
       id: crypto.randomUUID(),
@@ -148,6 +151,7 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
         hour: '2-digit',
         minute: '2-digit',
       }),
+      previousStatus,
     };
 
     let assignedOwner: string | undefined;
@@ -163,6 +167,51 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
     });
 
     setSelectedLead(null);
+  };
+
+  const handleResolveRework = (entryId: string) => {
+    if (!selectedLead) return;
+
+    const entryIndex = selectedLead.reworkHistory.findIndex(e => e.id === entryId);
+    if (entryIndex === -1) return;
+
+    const entry = selectedLead.reworkHistory[entryIndex];
+    const resolvedAt = new Date().toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+    // Update the history entry with resolved status
+    const updatedHistory = [...selectedLead.reworkHistory];
+    updatedHistory[entryIndex] = {
+      ...entry,
+      resolved: true,
+      resolvedAt,
+      resolvedBy: 'Akshay Bazad',
+    };
+
+    // Check if this is the latest unresolved rework entry
+    const hasOtherUnresolvedRework = updatedHistory.some(
+      (e, idx) => idx !== entryIndex && !e.resolved
+    );
+
+    // Restore previous status if no other unresolved rework exists
+    const updates: Partial<Lead> = {
+      reworkHistory: updatedHistory,
+    };
+
+    if (!hasOtherUnresolvedRework) {
+      updates.reworkRequired = false;
+      updates.reworkReasonId = undefined;
+      updates.assignedTo = undefined;
+      // Restore to previous status or default for this stage
+      updates.saleStatus = entry.previousStatus || defaultStatusByStage[stage] as Lead['saleStatus'];
+    }
+
+    onLeadUpdate?.(selectedLead.id, updates);
   };
 
   const handleOpenReworkHistory = (lead: Lead) => {
@@ -357,6 +406,7 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
         }}
         leadNumber={selectedLead?.leadNumber || ''}
         history={selectedLead?.reworkHistory || []}
+        onResolve={handleResolveRework}
       />
     </>
   );

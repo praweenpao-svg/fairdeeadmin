@@ -30,6 +30,10 @@ export interface ReworkHistoryEntry {
   attachments: ReworkAttachment[];
   savedBy: string;
   savedAt: string;
+  resolved?: boolean;
+  resolvedAt?: string;
+  resolvedBy?: string;
+  previousStatus?: SaleStatus;
 }
 
 export interface ReworkAttachment {
