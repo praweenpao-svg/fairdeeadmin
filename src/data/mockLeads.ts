@@ -20,6 +20,7 @@ export const mockLeads: Lead[] = [
     createdBy: 'agent',
     reworkHistory: [],
     rfAssignee: 'Ricky',
+    scAssignee: 'Jenny',
   },
   {
     id: '2',
@@ -39,6 +40,7 @@ export const mockLeads: Lead[] = [
     createdBy: 'agent',
     reworkHistory: [],
     rfAssignee: 'Jenny',
+    scAssignee: 'Nina',
   },
   {
     id: '3',
@@ -57,7 +59,7 @@ export const mockLeads: Lead[] = [
     reworkRequired: false,
     createdBy: 'admin',
     reworkHistory: [],
-    rfAssignee: 'Tommy',
+    rfAssignee: 'Nina',
   },
   {
     id: '4',
@@ -76,6 +78,8 @@ export const mockLeads: Lead[] = [
     reworkRequired: false,
     createdBy: 'agent',
     reworkHistory: [],
+    rfAssignee: 'Paula',
+    scAssignee: 'Tina',
   },
   // TO REPORT stage leads
   {
@@ -95,6 +99,8 @@ export const mockLeads: Lead[] = [
     reworkRequired: false,
     createdBy: 'admin',
     reworkHistory: [],
+    rfAssignee: 'Tina',
+    scAssignee: 'Paula',
   },
   {
     id: '12',
@@ -113,6 +119,7 @@ export const mockLeads: Lead[] = [
     reworkRequired: false,
     createdBy: 'agent',
     reworkHistory: [],
+    rfAssignee: 'Ricky',
   },
   {
     id: '13',
@@ -131,6 +138,8 @@ export const mockLeads: Lead[] = [
     reworkRequired: false,
     createdBy: 'agent',
     reworkHistory: [],
+    rfAssignee: 'Jenny',
+    scAssignee: 'Ricky',
   },
   {
     id: '14',
@@ -149,6 +158,7 @@ export const mockLeads: Lead[] = [
     reworkRequired: false,
     createdBy: 'admin',
     reworkHistory: [],
+    rfAssignee: 'Nina',
   },
   // TO ISSUE stage leads
   {
@@ -168,6 +178,7 @@ export const mockLeads: Lead[] = [
     reworkRequired: false,
     createdBy: 'agent',
     reworkHistory: [],
+    rfAssignee: 'Paula',
   },
   {
     id: '22',
@@ -186,6 +197,8 @@ export const mockLeads: Lead[] = [
     reworkRequired: false,
     createdBy: 'admin',
     reworkHistory: [],
+    rfAssignee: 'Tina',
+    scAssignee: 'Jenny',
   },
   {
     id: '23',
@@ -204,6 +217,8 @@ export const mockLeads: Lead[] = [
     reworkRequired: false,
     createdBy: 'agent',
     reworkHistory: [],
+    rfAssignee: 'Ricky',
+    scAssignee: 'Nina',
   },
   {
     id: '24',
@@ -222,6 +237,7 @@ export const mockLeads: Lead[] = [
     reworkRequired: false,
     createdBy: 'agent',
     reworkHistory: [],
+    rfAssignee: 'Jenny',
   },
   // TO DELIVER stage leads
   {
@@ -242,6 +258,8 @@ export const mockLeads: Lead[] = [
     reworkRequired: false,
     createdBy: 'admin',
     reworkHistory: [],
+    rfAssignee: 'Nina',
+    scAssignee: 'Paula',
   },
   {
     id: '32',
@@ -261,6 +279,7 @@ export const mockLeads: Lead[] = [
     reworkRequired: false,
     createdBy: 'agent',
     reworkHistory: [],
+    rfAssignee: 'Paula',
   },
   {
     id: '33',
@@ -280,6 +299,8 @@ export const mockLeads: Lead[] = [
     reworkRequired: false,
     createdBy: 'agent',
     reworkHistory: [],
+    rfAssignee: 'Tina',
+    scAssignee: 'Ricky',
   },
   {
     id: '34',
@@ -299,6 +320,7 @@ export const mockLeads: Lead[] = [
     reworkRequired: false,
     createdBy: 'admin',
     reworkHistory: [],
+    rfAssignee: 'Ricky',
   },
   // COMPLETED stage leads
   {
@@ -320,6 +342,8 @@ export const mockLeads: Lead[] = [
     reworkRequired: false,
     createdBy: 'agent',
     reworkHistory: [],
+    rfAssignee: 'Jenny',
+    scAssignee: 'Tina',
   },
   {
     id: '42',
@@ -340,6 +364,7 @@ export const mockLeads: Lead[] = [
     reworkRequired: false,
     createdBy: 'admin',
     reworkHistory: [],
+    rfAssignee: 'Nina',
   },
   {
     id: '43',
@@ -359,6 +384,8 @@ export const mockLeads: Lead[] = [
     reworkRequired: false,
     createdBy: 'agent',
     reworkHistory: [],
+    rfAssignee: 'Paula',
+    scAssignee: 'Jenny',
   },
   {
     id: '44',
@@ -378,6 +405,7 @@ export const mockLeads: Lead[] = [
     reworkRequired: false,
     createdBy: 'agent',
     reworkHistory: [],
+    rfAssignee: 'Tina',
   },
 ];
 

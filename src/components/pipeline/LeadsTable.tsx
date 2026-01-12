@@ -384,22 +384,25 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
                     </td>
                     <td className="px-4 py-3">
                       {(() => {
-                        const currentRework = lead.reworkReasonId 
-                          ? reworkConfigs.find(r => r.id === lead.reworkReasonId)
-                          : null;
-                        
-                        if (!currentRework) {
-                          return <span className="text-xs text-muted-foreground">-</span>;
-                        }
-                        
-                        // For round robin assignment, show the assigned owner as read-only
-                        return (
-                          <div className="flex items-center gap-2">
+                        // Owner logic: SC > RF > "-"
+                        // If both RF and SC exist, show SC
+                        // If only RF exists, show RF
+                        // If neither, show "-"
+                        if (lead.scAssignee) {
+                          return (
                             <span className="text-sm px-2 py-1 bg-muted rounded">
-                              {lead.assignedTo || 'Unassigned'}
+                              {lead.scAssignee}
                             </span>
-                          </div>
-                        );
+                          );
+                        }
+                        if (lead.rfAssignee) {
+                          return (
+                            <span className="text-sm px-2 py-1 bg-muted rounded">
+                              {lead.rfAssignee}
+                            </span>
+                          );
+                        }
+                        return <span className="text-xs text-muted-foreground">-</span>;
                       })()}
                     </td>
                     <td className="px-4 py-3">
