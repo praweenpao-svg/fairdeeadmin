@@ -139,7 +139,7 @@ export function ReworkHistoryDialog({
                   <>
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium bg-orange-500 text-white px-2 py-1 rounded">
-                        #{history.length - index}: {entry.reasonLabel}
+                        #{index + 1}: {entry.reasonLabel}
                       </span>
                       {entry.resolved ? (
                         <div className="flex items-center gap-1.5 text-green-600">
