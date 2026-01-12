@@ -22,6 +22,23 @@ export type ShippingMethod = 'e_policy' | 'print_by_myself' | 'print_by_fairdee'
 
 export type CreatedByType = 'agent' | 'admin';
 
+export interface ReworkHistoryEntry {
+  id: string;
+  reasonId: string;
+  reasonLabel: string;
+  details: string;
+  attachments: ReworkAttachment[];
+  savedBy: string;
+  savedAt: string;
+}
+
+export interface ReworkAttachment {
+  id: string;
+  name: string;
+  type: 'png' | 'jpg' | 'pdf';
+  url: string;
+}
+
 export interface Lead {
   id: string;
   leadNumber: string;
@@ -42,6 +59,7 @@ export interface Lead {
   reworkReasonId?: string;
   assignedTo?: string;
   createdBy: CreatedByType;
+  reworkHistory: ReworkHistoryEntry[];
 }
 
 export type AssignmentType = 'round_robin';
