@@ -49,7 +49,7 @@ export function ReworkHistoryDialog({ open, onOpenChange, leadNumber, history }:
                 className="border border-border rounded-lg p-4 space-y-3"
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium bg-warning/10 text-warning-foreground px-2 py-1 rounded">
+                  <span className="text-sm font-medium bg-orange-500 text-white px-2 py-1 rounded">
                     #{history.length - index}: {entry.reasonLabel}
                   </span>
                 </div>
