@@ -344,7 +344,7 @@ export function StaffTimingTable() {
                         <SelectItem value="__none__">Select team</SelectItem>
                         {teams.map((team) => (
                           <SelectItem key={team} value={team}>
-                            Team {team}
+                            {team}
                           </SelectItem>
                         ))}
                       </SelectContent>
