@@ -275,13 +275,22 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
 
     // Determine new assigned owner based on assignment type
     let assignedOwner: string | undefined;
+    console.log('Reassign Debug:', {
+      newReasonId,
+      newReworkConfig,
+      assignment: newReworkConfig?.assignment,
+      team: newReworkConfig?.team,
+    });
     if (newReworkConfig) {
       if (newReworkConfig.assignment === 'round_robin') {
         assignedOwner = getNextRoundRobinStaff(newReworkConfig.team);
+        console.log('Round robin assigned:', assignedOwner);
       } else if (newReworkConfig.assignment === 'rf_sc') {
         assignedOwner = selectedLead.scAssignee || selectedLead.rfAssignee;
+        console.log('RF/SC assigned:', assignedOwner);
       }
     }
+    console.log('Final assignedOwner:', assignedOwner);
 
     const updates: Partial<Lead> = {
       reworkHistory: [...updatedHistory, newHistoryEntry],
@@ -518,7 +527,7 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
         }}
         leadNumber={selectedLead?.leadNumber || ''}
         history={selectedLead?.reworkHistory || []}
-        reworkConfigs={reworkConfigs}
+        reworkConfigs={stageReworkConfigs}
         onResolve={handleResolveRework}
         onReassign={handleReassignRework}
       />
