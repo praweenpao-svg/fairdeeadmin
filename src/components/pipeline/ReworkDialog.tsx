@@ -11,16 +11,24 @@ import {
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { ReworkAttachment } from '@/types/pipeline';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { ReworkAttachment, ReworkConfig } from '@/types/pipeline';
 
 interface ReworkDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  reasonLabel: string;
-  onConfirm: (details: string, attachments: ReworkAttachment[]) => void;
+  reworkConfigs: ReworkConfig[];
+  onConfirm: (reasonId: string, details: string, attachments: ReworkAttachment[]) => void;
 }
 
-export function ReworkDialog({ open, onOpenChange, reasonLabel, onConfirm }: ReworkDialogProps) {
+export function ReworkDialog({ open, onOpenChange, reworkConfigs, onConfirm }: ReworkDialogProps) {
+  const [selectedReasonId, setSelectedReasonId] = useState<string>('');
   const [details, setDetails] = useState('');
   const [attachments, setAttachments] = useState<ReworkAttachment[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -53,13 +61,16 @@ export function ReworkDialog({ open, onOpenChange, reasonLabel, onConfirm }: Rew
   };
 
   const handleConfirm = () => {
-    onConfirm(details, attachments);
+    if (!selectedReasonId) return;
+    onConfirm(selectedReasonId, details, attachments);
+    setSelectedReasonId('');
     setDetails('');
     setAttachments([]);
     onOpenChange(false);
   };
 
   const handleCancel = () => {
+    setSelectedReasonId('');
     setDetails('');
     setAttachments([]);
     onOpenChange(false);
@@ -69,13 +80,29 @@ export function ReworkDialog({ open, onOpenChange, reasonLabel, onConfirm }: Rew
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Rework details</DialogTitle>
+          <DialogTitle>Rework Details</DialogTitle>
           <DialogDescription>
-            Provide details for: <span className="font-medium text-foreground">{reasonLabel}</span>
+            Select the rework reason and provide additional details.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <Label>Rework Reason</Label>
+            <Select value={selectedReasonId} onValueChange={setSelectedReasonId}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select rework reason..." />
+              </SelectTrigger>
+              <SelectContent>
+                {reworkConfigs.map((config) => (
+                  <SelectItem key={config.id} value={config.id}>
+                    {config.descriptionEn}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="details">Rework reason details</Label>
             <Textarea
@@ -136,7 +163,7 @@ export function ReworkDialog({ open, onOpenChange, reasonLabel, onConfirm }: Rew
           <Button variant="outline" onClick={handleCancel}>
             Cancel
           </Button>
-          <Button onClick={handleConfirm}>
+          <Button onClick={handleConfirm} disabled={!selectedReasonId}>
             Confirm
           </Button>
         </DialogFooter>
