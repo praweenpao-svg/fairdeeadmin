@@ -1,4 +1,5 @@
-import { FileText, Image, Clock, User, CheckCircle } from 'lucide-react';
+import { useState } from 'react';
+import { FileText, Image, Clock, User, CheckCircle, ArrowRight, ChevronLeft } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -8,14 +9,23 @@ import {
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { ReworkHistoryEntry } from '@/types/pipeline';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { ReworkHistoryEntry, ReworkConfig } from '@/types/pipeline';
 
 interface ReworkHistoryDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   leadNumber: string;
   history: ReworkHistoryEntry[];
+  reworkConfigs: ReworkConfig[];
   onResolve?: (entryId: string) => void;
+  onReassign?: (entryId: string, newReasonId: string) => void;
 }
 
 export function ReworkHistoryDialog({ 
@@ -23,8 +33,26 @@ export function ReworkHistoryDialog({
   onOpenChange, 
   leadNumber, 
   history,
-  onResolve 
+  reworkConfigs,
+  onResolve,
+  onReassign,
 }: ReworkHistoryDialogProps) {
+  const [reassigningEntryId, setReassigningEntryId] = useState<string | null>(null);
+  const [selectedNewReasonId, setSelectedNewReasonId] = useState<string>('');
+
+  const handleReassignConfirm = () => {
+    if (reassigningEntryId && selectedNewReasonId && onReassign) {
+      onReassign(reassigningEntryId, selectedNewReasonId);
+      setReassigningEntryId(null);
+      setSelectedNewReasonId('');
+    }
+  };
+
+  const handleCancelReassign = () => {
+    setReassigningEntryId(null);
+    setSelectedNewReasonId('');
+  };
+
   if (history.length === 0) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -56,75 +84,142 @@ export function ReworkHistoryDialog({
                 key={entry.id}
                 className="border border-border rounded-lg p-4 space-y-3"
               >
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium bg-orange-500 text-white px-2 py-1 rounded">
-                    #{history.length - index}: {entry.reasonLabel}
-                  </span>
-                  {entry.resolved ? (
-                    <div className="flex items-center gap-1.5 text-green-600">
-                      <CheckCircle className="w-4 h-4" />
-                      <span className="text-xs font-medium">Resolved</span>
+                {reassigningEntryId === entry.id ? (
+                  // Reassign panel
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0"
+                        onClick={handleCancelReassign}
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                      </Button>
+                      <span className="text-sm font-medium">Reassign rework</span>
                     </div>
-                  ) : (
-                    onResolve && (
+                    <div className="bg-muted/50 rounded-md p-3 text-sm">
+                      <span className="text-muted-foreground">Current reason: </span>
+                      <span className="font-medium">{entry.reasonLabel}</span>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Select new reason</label>
+                      <Select value={selectedNewReasonId} onValueChange={setSelectedNewReasonId}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select reason" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {reworkConfigs
+                            .filter((config) => config.id !== entry.reasonId)
+                            .map((config) => (
+                              <SelectItem key={config.id} value={config.id}>
+                                {config.descriptionEn}
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex justify-end gap-2">
+                      <Button variant="outline" size="sm" onClick={handleCancelReassign}>
+                        Cancel
+                      </Button>
                       <Button
                         size="sm"
-                        variant="outline"
-                        className="h-7 text-xs border-green-600 text-green-600 hover:bg-green-600 hover:text-white"
-                        onClick={() => onResolve(entry.id)}
+                        onClick={handleReassignConfirm}
+                        disabled={!selectedNewReasonId}
+                        className="gap-1"
                       >
-                        Resolve
+                        Reassign
+                        <ArrowRight className="w-3.5 h-3.5" />
                       </Button>
-                    )
-                  )}
-                </div>
-
-                <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                  <div className="flex items-center gap-1">
-                    <User className="w-3.5 h-3.5" />
-                    <span>{entry.savedBy}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Clock className="w-3.5 h-3.5" />
-                    <span>{entry.savedAt}</span>
-                  </div>
-                </div>
-
-                {entry.resolved && entry.resolvedAt && (
-                  <div className="flex items-center gap-2 text-xs text-green-600 bg-green-50 dark:bg-green-900/20 px-2 py-1.5 rounded">
-                    <CheckCircle className="w-3.5 h-3.5" />
-                    <span>Resolved by {entry.resolvedBy} on {entry.resolvedAt}</span>
-                  </div>
-                )}
-
-                {entry.details && (
-                  <div className="bg-muted/50 rounded-md p-3 text-sm">
-                    {entry.details}
-                  </div>
-                )}
-
-                {entry.attachments.length > 0 && (
-                  <div className="space-y-2">
-                    <span className="text-xs font-medium text-muted-foreground">Attachments:</span>
-                    <div className="flex flex-wrap gap-2">
-                      {entry.attachments.map((attachment) => (
-                        <a
-                          key={attachment.id}
-                          href={attachment.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 bg-muted px-3 py-2 rounded-md text-xs hover:bg-muted/80 transition-colors"
-                        >
-                          {attachment.type === 'pdf' ? (
-                            <FileText className="w-4 h-4 text-destructive" />
-                          ) : (
-                            <Image className="w-4 h-4 text-primary" />
-                          )}
-                          <span className="max-w-[120px] truncate">{attachment.name}</span>
-                        </a>
-                      ))}
                     </div>
                   </div>
+                ) : (
+                  // Normal entry view
+                  <>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium bg-orange-500 text-white px-2 py-1 rounded">
+                        #{history.length - index}: {entry.reasonLabel}
+                      </span>
+                      {entry.resolved ? (
+                        <div className="flex items-center gap-1.5 text-green-600">
+                          <CheckCircle className="w-4 h-4" />
+                          <span className="text-xs font-medium">Resolved</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          {onReassign && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 text-xs"
+                              onClick={() => setReassigningEntryId(entry.id)}
+                            >
+                              Reassign
+                            </Button>
+                          )}
+                          {onResolve && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-7 text-xs border-green-600 text-green-600 hover:bg-green-600 hover:text-white"
+                              onClick={() => onResolve(entry.id)}
+                            >
+                              Resolve
+                            </Button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <User className="w-3.5 h-3.5" />
+                        <span>{entry.savedBy}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Clock className="w-3.5 h-3.5" />
+                        <span>{entry.savedAt}</span>
+                      </div>
+                    </div>
+
+                    {entry.resolved && entry.resolvedAt && (
+                      <div className="flex items-center gap-2 text-xs text-green-600 bg-green-50 dark:bg-green-900/20 px-2 py-1.5 rounded">
+                        <CheckCircle className="w-3.5 h-3.5" />
+                        <span>Resolved by {entry.resolvedBy} on {entry.resolvedAt}</span>
+                      </div>
+                    )}
+
+                    {entry.details && (
+                      <div className="bg-muted/50 rounded-md p-3 text-sm">
+                        {entry.details}
+                      </div>
+                    )}
+
+                    {entry.attachments.length > 0 && (
+                      <div className="space-y-2">
+                        <span className="text-xs font-medium text-muted-foreground">Attachments:</span>
+                        <div className="flex flex-wrap gap-2">
+                          {entry.attachments.map((attachment) => (
+                            <a
+                              key={attachment.id}
+                              href={attachment.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2 bg-muted px-3 py-2 rounded-md text-xs hover:bg-muted/80 transition-colors"
+                            >
+                              {attachment.type === 'pdf' ? (
+                                <FileText className="w-4 h-4 text-destructive" />
+                              ) : (
+                                <Image className="w-4 h-4 text-primary" />
+                              )}
+                              <span className="max-w-[120px] truncate">{attachment.name}</span>
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             ))}
