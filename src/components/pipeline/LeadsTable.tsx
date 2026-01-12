@@ -34,14 +34,32 @@ interface LeadsTableProps {
   onLeadUpdate?: (leadId: string, updates: Partial<Lead>) => void;
 }
 
-const statusOptions = [
-  { value: 'pending_review', label: 'Pending Review' },
-  { value: 'under_review', label: 'Under Review' },
-  { value: 'de_in_progress', label: 'DE in Progress' },
-  { value: 'ready_for_de', label: 'Ready For DE' },
-  { value: 'pending_issuance', label: 'Pending Issuance' },
-  { value: 'policy_issued', label: 'Policy Issued' },
-];
+const statusOptionsByStage: Record<PipelineStage, { value: string; label: string }[]> = {
+  to_pay: [
+    { value: 'pending', label: 'Pending' },
+    { value: 'waiting_for_insurer', label: 'Waiting for Insurer' },
+    { value: 'partially_added', label: 'Partially Added' },
+    { value: 'completed', label: 'Completed' },
+    { value: 'quotation_shared', label: 'Quotation Shared...' },
+    { value: 'invalid', label: 'Invalid' },
+  ],
+  to_report: [
+    { value: 'pending_review', label: 'Pending Review' },
+    { value: 'under_review', label: 'Under Review' },
+    { value: 'de_in_progress', label: 'DE in Progress' },
+  ],
+  to_issue: [
+    { value: 'pending_issuance', label: 'Pending Issuance' },
+  ],
+  to_deliver: [
+    { value: 'policy_issued', label: 'Policy Issued' },
+  ],
+  completed: [
+    { value: 'policy_issued', label: 'Policy Issued' },
+    { value: 'policy_shipped', label: 'Policy Shipped' },
+    { value: 'policy_delivered', label: 'Policy Delivered' },
+  ],
+};
 
 function LeadTypeBadge({ type }: { type: LeadType }) {
   const config = {
@@ -244,87 +262,192 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
               </tr>
             ) : (
               sortedLeads.map((lead) => (
-                <tr 
-                  key={lead.id} 
-                  className={cn(
-                    'data-table-row',
-                    lead.reworkRequired && 'bg-warning/5'
-                  )}
-                >
-                  <td className="px-4 py-3">
-                    <button
-                      onClick={() => toggleRow(lead.id)}
-                      className="p-1 hover:bg-muted rounded transition-colors"
-                    >
-                      {expandedRows.has(lead.id) ? (
-                        <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                      ) : (
-                        <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                      )}
-                    </button>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex flex-col gap-1">
-                      <span className="font-medium text-sm">{lead.leadNumber}</span>
-                      <LeadTypeBadge type={lead.leadType} />
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex flex-col">
-                      <a
-                        href="#"
-                        className="text-primary hover:underline flex items-center gap-1 text-sm font-medium"
+                <>
+                  <tr 
+                    key={lead.id} 
+                    className={cn(
+                      'data-table-row',
+                      lead.reworkRequired && 'bg-warning/5'
+                    )}
+                  >
+                    <td className="px-4 py-3">
+                      <button
+                        onClick={() => toggleRow(lead.id)}
+                        className="p-1 hover:bg-muted rounded transition-colors"
                       >
-                        {lead.agentId}
-                        <ExternalLink className="w-3 h-3" />
-                      </a>
-                      <span className="text-xs text-muted-foreground">{lead.agentName}</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-sm">{lead.createdOn}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex flex-col">
-                      <span className="text-sm font-medium">{lead.vehicleDetails || '-'}</span>
-                      <span className="text-xs text-muted-foreground">N/A</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <Select defaultValue={lead.saleStatus}>
-                      <SelectTrigger className="w-[140px] h-8 text-xs">
-                        <SelectValue placeholder="Select status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {statusOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </td>
-                  <td className="px-4 py-3">
-                    <ReworkStatusCell 
-                      lead={lead} 
-                      reworkConfigs={reworkConfigs}
-                      onReworkChange={(reasonId) => handleReworkChange(lead.id, reasonId)}
-                      onAssigneeChange={(assignee) => handleAssigneeChange(lead.id, assignee)}
-                    />
-                  </td>
-                  <td className="px-4 py-3">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                          <MoreVertical className="w-4 h-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem>View Details</DropdownMenuItem>
-                        <DropdownMenuItem>Edit Lead</DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </td>
-                </tr>
+                        {expandedRows.has(lead.id) ? (
+                          <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                        ) : (
+                          <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                        )}
+                      </button>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-col gap-1">
+                        <span className="font-medium text-sm">{lead.leadNumber}</span>
+                        <LeadTypeBadge type={lead.leadType} />
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-col">
+                        <a
+                          href="#"
+                          className="text-primary hover:underline flex items-center gap-1 text-sm font-medium"
+                        >
+                          {lead.agentId}
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                        <span className="text-xs text-muted-foreground">{lead.agentName}</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-sm">{lead.createdOn}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium">{lead.vehicleDetails || '-'}</span>
+                        <span className="text-xs text-muted-foreground">N/A</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <Select defaultValue={lead.saleStatus}>
+                        <SelectTrigger className="w-[140px] h-8 text-xs">
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {statusOptionsByStage[stage].map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </td>
+                    <td className="px-4 py-3">
+                      <ReworkStatusCell 
+                        lead={lead} 
+                        reworkConfigs={reworkConfigs}
+                        onReworkChange={(reasonId) => handleReworkChange(lead.id, reasonId)}
+                        onAssigneeChange={(assignee) => handleAssigneeChange(lead.id, assignee)}
+                      />
+                    </td>
+                    <td className="px-4 py-3">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                            <MoreVertical className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem>View Details</DropdownMenuItem>
+                          <DropdownMenuItem>Edit Lead</DropdownMenuItem>
+                          <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </td>
+                  </tr>
+                  {/* Expanded Row */}
+                  {expandedRows.has(lead.id) && (
+                    <tr className="bg-muted/30">
+                      <td colSpan={8} className="px-4 py-4">
+                        <div className="grid grid-cols-2 gap-6">
+                          {/* Left Column - Lead Details */}
+                          <div className="space-y-3">
+                            <div className="flex gap-8">
+                              <div>
+                                <span className="text-xs text-muted-foreground block">Last Status Update</span>
+                                <span className="text-sm">2026-01-12T05:16:29.430Z</span>
+                              </div>
+                              <div>
+                                <span className="text-xs text-muted-foreground block">Created by</span>
+                                <span className="text-sm">{lead.agentName}</span>
+                              </div>
+                            </div>
+                            {lead.leadType === 'coa' && (
+                              <>
+                                <div className="flex gap-8">
+                                  <div>
+                                    <span className="text-xs text-muted-foreground block">Type of Insured</span>
+                                    <span className="text-sm">-</span>
+                                  </div>
+                                </div>
+                                <div>
+                                  <span className="text-xs text-muted-foreground block">Previous Insurer</span>
+                                  <span className="text-sm">Bangkok Insurance</span>
+                                </div>
+                                <div>
+                                  <span className="text-xs text-muted-foreground block">Created by</span>
+                                  <span className="text-sm">{lead.agentName}</span>
+                                </div>
+                              </>
+                            )}
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <span className="cursor-pointer hover:text-foreground">📝 {lead.leadType === 'coa' ? 'Additional Notes' : 'Remarks'}</span>
+                            </div>
+                          </div>
+
+                          {/* Right Column - Insurer Details */}
+                          <div className="border-l border-border pl-6">
+                            <div className="grid grid-cols-5 gap-4 text-xs">
+                              <div className="font-medium text-muted-foreground">Insurer</div>
+                              <div className="font-medium text-muted-foreground">1st Email Sent</div>
+                              <div className="font-medium text-muted-foreground">Follow Up</div>
+                              {lead.leadType === 'coa' ? (
+                                <div className="font-medium text-muted-foreground">Insurer Status</div>
+                              ) : (
+                                <>
+                                  <div className="font-medium text-muted-foreground">Insurance Class</div>
+                                  <div className="font-medium text-muted-foreground">Garage Type</div>
+                                </>
+                              )}
+                            </div>
+                            <div className="grid grid-cols-5 gap-4 text-sm mt-2">
+                              <div>
+                                <span className="block">Bangkok Insurance</span>
+                                <span className="text-xs text-muted-foreground">3 Days</span>
+                              </div>
+                              <div>
+                                <span className="block text-xs">2026-01-09T13:50:37.049Z</span>
+                                <span className="text-xs text-muted-foreground">2026-01-09T13:50:37.049Z</span>
+                              </div>
+                              <div>-</div>
+                              {lead.leadType === 'coa' ? (
+                                <div>
+                                  <Select defaultValue="pending">
+                                    <SelectTrigger className="w-[120px] h-7 text-xs">
+                                      <SelectValue placeholder="Status" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="pending">Pending</SelectItem>
+                                      <SelectItem value="approved">Approved</SelectItem>
+                                      <SelectItem value="rejected">Rejected</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              ) : (
+                                <>
+                                  <div>type_1_insurance</div>
+                                  <div>0</div>
+                                </>
+                              )}
+                            </div>
+                            {lead.leadType === 'coa' && (
+                              <div className="mt-4">
+                                <span className="text-xs font-medium text-muted-foreground block mb-2">COA Documents</span>
+                                <div className="flex gap-2">
+                                  <div className="flex items-center gap-1 px-2 py-1 bg-background border rounded text-xs">
+                                    📄 Screenshot 2568-07-07 at 09.16.55.png
+                                  </div>
+                                  <div className="flex items-center gap-1 px-2 py-1 bg-background border rounded text-xs">
+                                    📄 Screenshot 2568-07-14 at 14.11.47.png
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </>
               ))
             )}
           </tbody>
