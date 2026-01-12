@@ -64,19 +64,17 @@ const Index = () => {
             </Button>
           </div>
 
-          {activeStage === 'to_pay' && (
-            <LeadTypeFilter
-              activeType={leadTypeFilter}
-              onTypeChange={setLeadTypeFilter}
-            />
-          )}
+          <LeadTypeFilter
+            activeType={leadTypeFilter}
+            onTypeChange={setLeadTypeFilter}
+          />
         </div>
 
         {/* Table */}
         <LeadsTable
           leads={filteredLeads}
           stage={activeStage}
-          leadTypeFilter={activeStage === 'to_pay' ? leadTypeFilter : undefined}
+          leadTypeFilter={leadTypeFilter}
           reworkConfigs={reworkConfigs}
           onLeadUpdate={handleLeadUpdate}
         />
