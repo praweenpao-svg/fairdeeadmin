@@ -16,7 +16,7 @@ const ReworkConsole = () => {
             <Home className="w-4 h-4" />
             <span className="text-sm">Home</span>
             <span className="text-sm">/</span>
-            <span className="text-sm">Rework Console</span>
+            <span className="text-sm text-foreground">Rework Console</span>
           </div>
         </div>
       </header>
