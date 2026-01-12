@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Upload, X, FileText, Image } from 'lucide-react';
+import { Upload, X, FileText, Image, Check } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -11,27 +11,29 @@ import {
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { ReworkAttachment, ReworkConfig } from '@/types/pipeline';
 
 interface ReworkDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   reworkConfigs: ReworkConfig[];
-  onConfirm: (reasonId: string, details: string, attachments: ReworkAttachment[]) => void;
+  onConfirm: (reasonIds: string[], details: string, attachments: ReworkAttachment[]) => void;
 }
 
 export function ReworkDialog({ open, onOpenChange, reworkConfigs, onConfirm }: ReworkDialogProps) {
-  const [selectedReasonId, setSelectedReasonId] = useState<string>('');
+  const [selectedReasonIds, setSelectedReasonIds] = useState<string[]>([]);
   const [details, setDetails] = useState('');
   const [attachments, setAttachments] = useState<ReworkAttachment[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleReasonToggle = (reasonId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedReasonIds((prev) => [...prev, reasonId]);
+    } else {
+      setSelectedReasonIds((prev) => prev.filter((id) => id !== reasonId));
+    }
+  };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -61,16 +63,16 @@ export function ReworkDialog({ open, onOpenChange, reworkConfigs, onConfirm }: R
   };
 
   const handleConfirm = () => {
-    if (!selectedReasonId) return;
-    onConfirm(selectedReasonId, details, attachments);
-    setSelectedReasonId('');
+    if (selectedReasonIds.length === 0) return;
+    onConfirm(selectedReasonIds, details, attachments);
+    setSelectedReasonIds([]);
     setDetails('');
     setAttachments([]);
     onOpenChange(false);
   };
 
   const handleCancel = () => {
-    setSelectedReasonId('');
+    setSelectedReasonIds([]);
     setDetails('');
     setAttachments([]);
     onOpenChange(false);
@@ -82,25 +84,35 @@ export function ReworkDialog({ open, onOpenChange, reworkConfigs, onConfirm }: R
         <DialogHeader>
           <DialogTitle>Rework Details</DialogTitle>
           <DialogDescription>
-            Select the rework reason and provide additional details.
+            Select one or more rework reasons and provide additional details.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label>Rework Reason</Label>
-            <Select value={selectedReasonId} onValueChange={setSelectedReasonId}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select rework reason..." />
-              </SelectTrigger>
-              <SelectContent>
-                {reworkConfigs.map((config) => (
-                  <SelectItem key={config.id} value={config.id}>
+            <Label>Rework Reasons (select all that apply)</Label>
+            <div className="space-y-2 max-h-[200px] overflow-y-auto border rounded-md p-3 bg-background">
+              {reworkConfigs.map((config) => (
+                <div key={config.id} className="flex items-center space-x-3">
+                  <Checkbox
+                    id={`reason-${config.id}`}
+                    checked={selectedReasonIds.includes(config.id)}
+                    onCheckedChange={(checked) => handleReasonToggle(config.id, checked === true)}
+                  />
+                  <label
+                    htmlFor={`reason-${config.id}`}
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                  >
                     {config.descriptionEn}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                  </label>
+                </div>
+              ))}
+            </div>
+            {selectedReasonIds.length > 0 && (
+              <p className="text-xs text-muted-foreground">
+                {selectedReasonIds.length} reason{selectedReasonIds.length > 1 ? 's' : ''} selected
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -163,7 +175,7 @@ export function ReworkDialog({ open, onOpenChange, reworkConfigs, onConfirm }: R
           <Button variant="outline" onClick={handleCancel}>
             Cancel
           </Button>
-          <Button onClick={handleConfirm} disabled={!selectedReasonId}>
+          <Button onClick={handleConfirm} disabled={selectedReasonIds.length === 0}>
             Confirm
           </Button>
         </DialogFooter>
