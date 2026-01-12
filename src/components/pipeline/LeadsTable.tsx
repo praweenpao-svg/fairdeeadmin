@@ -86,6 +86,16 @@ function getStaffByTeam(team: string) {
   return mockStaffMembers.filter(staff => staff.team === team);
 }
 
+// Get RF staff (AST RF team)
+function getRFStaff() {
+  return mockStaffMembers.filter(staff => staff.team === 'AST RF');
+}
+
+// Get SC staff (AST SC team)
+function getSCStaff() {
+  return mockStaffMembers.filter(staff => staff.team === 'AST SC');
+}
+
 // Round robin state per team
 const roundRobinIndexes: Record<string, number> = {};
 
@@ -394,7 +404,7 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
                           <SelectValue placeholder="Select RF" />
                         </SelectTrigger>
                         <SelectContent>
-                          {mockStaffMembers.map((staff) => (
+                          {getRFStaff().map((staff) => (
                             <SelectItem key={staff.id} value={staff.name}>
                               {staff.name}
                             </SelectItem>
@@ -411,7 +421,7 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
                           <SelectValue placeholder="Select SC" />
                         </SelectTrigger>
                         <SelectContent>
-                          {mockStaffMembers.map((staff) => (
+                          {getSCStaff().map((staff) => (
                             <SelectItem key={staff.id} value={staff.name}>
                               {staff.name}
                             </SelectItem>
