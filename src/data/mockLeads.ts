@@ -15,7 +15,9 @@ export const mockLeads: Lead[] = [
     saleStatus: 'pending_review',
     paymentStatus: 'unpaid',
     policyAttached: false,
-    reworkRequired: false,
+    reworkRequired: true,
+    reworkReasonId: '1',
+    assignedTo: 'Somchai P.',
   },
   {
     id: '2',
@@ -48,7 +50,8 @@ export const mockLeads: Lead[] = [
     paymentStatus: 'paid',
     policyAttached: false,
     reworkRequired: true,
-    reworkReason: 'Document verification pending',
+    reworkReasonId: '2',
+    assignedTo: 'Napat K.',
   },
   {
     id: '4',
@@ -80,7 +83,9 @@ export const mockLeads: Lead[] = [
     saleStatus: 'pending_issuance',
     paymentStatus: 'paid',
     policyAttached: false,
-    reworkRequired: false,
+    reworkRequired: true,
+    reworkReasonId: '3',
+    assignedTo: 'Prasit W.',
   },
   {
     id: '6',
@@ -165,7 +170,7 @@ export const mockLeads: Lead[] = [
     paymentStatus: 'unpaid',
     policyAttached: false,
     reworkRequired: true,
-    reworkReason: 'Missing vehicle registration',
+    reworkReasonId: '1',
   },
 ];
 
@@ -175,6 +180,7 @@ export const mockReworkConfigs: ReworkConfig[] = [
     descriptionTh: 'เอกสารไม่ครบถ้วน',
     descriptionEn: 'Incomplete Documents',
     team: 'Operations',
+    teamMembers: ['Somchai P.', 'Wanida S.', 'Thana M.'],
     automationEnabled: true,
     automationDays: 3,
     targetReason: 'document_incomplete',
@@ -184,6 +190,7 @@ export const mockReworkConfigs: ReworkConfig[] = [
     descriptionTh: 'ข้อมูลยานพาหนะไม่ถูกต้อง',
     descriptionEn: 'Incorrect Vehicle Information',
     team: 'Underwriting',
+    teamMembers: ['Napat K.', 'Siriporn L.', 'Kittisak R.'],
     automationEnabled: false,
   },
   {
@@ -191,9 +198,18 @@ export const mockReworkConfigs: ReworkConfig[] = [
     descriptionTh: 'การชำระเงินล้มเหลว',
     descriptionEn: 'Payment Failed',
     team: 'Finance',
+    teamMembers: ['Prasit W.', 'Aranya C.', 'Boonchai D.'],
     automationEnabled: true,
     automationDays: 7,
     targetReason: 'payment_issue',
+  },
+  {
+    id: '4',
+    descriptionTh: 'ต้องการเอกสารเพิ่มเติม',
+    descriptionEn: 'Additional Documents Required',
+    team: 'Customer Service',
+    teamMembers: ['Malai T.', 'Anucha B.', 'Pimchanok S.'],
+    automationEnabled: false,
   },
 ];
 

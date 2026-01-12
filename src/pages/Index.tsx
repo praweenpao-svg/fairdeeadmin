@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Search, Filter, Home } from 'lucide-react';
-import { PipelineStage, LeadType, PaymentType } from '@/types/pipeline';
-import { mockLeads } from '@/data/mockLeads';
+import { PipelineStage, LeadType, PaymentType, Lead, ReworkConfig } from '@/types/pipeline';
+import { mockLeads, mockReworkConfigs } from '@/data/mockLeads';
 import { AppSidebar } from '@/components/layout/AppSidebar';
 import { PipelineTabs, getLeadsForStage } from '@/components/pipeline/PipelineTabs';
 import { LeadTypeFilter } from '@/components/pipeline/LeadTypeFilter';
@@ -18,11 +18,21 @@ const Index = () => {
   const [leadTypeFilter, setLeadTypeFilter] = useState<LeadType>('new_leads');
   const [paymentType, setPaymentType] = useState<PaymentType>('full');
   const [searchQuery, setSearchQuery] = useState('');
+  const [leads, setLeads] = useState<Lead[]>(mockLeads);
+  const [reworkConfigs, setReworkConfigs] = useState<ReworkConfig[]>(mockReworkConfigs);
+
+  const handleLeadUpdate = (leadId: string, updates: Partial<Lead>) => {
+    setLeads((prev) =>
+      prev.map((lead) =>
+        lead.id === leadId ? { ...lead, ...updates } : lead
+      )
+    );
+  };
 
   const filteredLeads =
     activeStage === 'admin_rework'
       ? []
-      : getLeadsForStage(mockLeads, activeStage).filter((lead) =>
+      : getLeadsForStage(leads, activeStage).filter((lead) =>
           paymentType === 'full'
             ? lead.paymentType === 'full'
             : lead.paymentType === 'installment'
@@ -56,7 +66,7 @@ const Index = () => {
           <PipelineTabs
             activeStage={activeStage}
             onStageChange={setActiveStage}
-            leads={mockLeads.filter((lead) =>
+            leads={leads.filter((lead) =>
               paymentType === 'full'
                 ? lead.paymentType === 'full'
                 : lead.paymentType === 'installment'
@@ -68,7 +78,10 @@ const Index = () => {
         {/* Content */}
         <div className="p-6">
           {activeStage === 'admin_rework' ? (
-            <AdminReworkLog />
+            <AdminReworkLog 
+              reworkConfigs={reworkConfigs} 
+              onUpdate={setReworkConfigs} 
+            />
           ) : (
             <>
               {/* Filters */}
@@ -102,6 +115,8 @@ const Index = () => {
                 leads={filteredLeads}
                 stage={activeStage}
                 leadTypeFilter={activeStage === 'to_pay' ? leadTypeFilter : undefined}
+                reworkConfigs={reworkConfigs}
+                onLeadUpdate={handleLeadUpdate}
               />
             </>
           )}
