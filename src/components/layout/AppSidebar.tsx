@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
-  ChevronDown,
-  ChevronRight,
   Car,
+  Clock,
   PanelLeftClose,
   PanelLeft,
   Globe,
@@ -17,8 +16,6 @@ interface AppSidebarProps {
 
 export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
   const location = useLocation();
-
-  const isActive = (path: string) => path === location.pathname;
 
   return (
     <aside
@@ -77,6 +74,21 @@ export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
         >
           <Car className="w-5 h-5 flex-shrink-0" />
           {!collapsed && <span>Motor Policy</span>}
+        </NavLink>
+
+        <NavLink
+          to="/staff-timing"
+          className={({ isActive }) =>
+            cn(
+              'flex items-center gap-3 px-4 py-2.5 text-sm transition-colors',
+              isActive
+                ? 'text-sidebar-foreground bg-sidebar-accent'
+                : 'text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-accent/50'
+            )
+          }
+        >
+          <Clock className="w-5 h-5 flex-shrink-0" />
+          {!collapsed && <span>Staff Timing</span>}
         </NavLink>
       </nav>
 
