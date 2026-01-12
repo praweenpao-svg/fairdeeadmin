@@ -135,7 +135,7 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
       reasonLabel,
       details,
       attachments,
-      savedBy: 'Current User', // In production, get from auth context
+      savedBy: 'Akshay Bazad',
       savedAt: new Date().toLocaleString('en-US', {
         year: 'numeric',
         month: 'short',
