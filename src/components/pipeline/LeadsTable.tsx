@@ -6,7 +6,8 @@ import {
   MoreVertical,
   ArrowUpDown,
   AlertTriangle,
-  CheckCircle
+  CheckCircle,
+  X
 } from 'lucide-react';
 import { Lead, PipelineStage, LeadType, ReworkConfig } from '@/types/pipeline';
 import { cn } from '@/lib/utils';
@@ -42,12 +43,6 @@ const statusOptions = [
   { value: 'policy_issued', label: 'Policy Issued' },
 ];
 
-const paymentStatusOptions = [
-  { value: 'unpaid', label: 'Unpaid' },
-  { value: 'partial', label: 'Partial' },
-  { value: 'paid', label: 'Paid' },
-];
-
 function LeadTypeBadge({ type }: { type: LeadType }) {
   const config = {
     new_leads: { label: 'Agent', className: 'lead-badge-agent' },
@@ -58,7 +53,7 @@ function LeadTypeBadge({ type }: { type: LeadType }) {
   return <span className={cn('lead-badge', className)}>{label}</span>;
 }
 
-function ReworkStatusBadge({ 
+function ReworkStatusCell({ 
   lead, 
   reworkConfigs,
   onReworkChange,
@@ -75,69 +70,86 @@ function ReworkStatusBadge({
 
   const teamMembers = currentRework?.teamMembers || [];
 
+  // No rework - show clean status
   if (!lead.reworkRequired && !lead.reworkReasonId) {
     return (
-      <div className="flex items-center gap-1.5 text-success">
-        <CheckCircle className="w-4 h-4" />
-        <span className="text-xs font-medium">Clear</span>
+      <div className="flex items-center gap-1.5 text-muted-foreground">
+        <CheckCircle className="w-4 h-4 text-success" />
+        <span className="text-xs">No rework</span>
       </div>
     );
   }
 
   return (
-    <div className="space-y-2">
-      {/* Rework Status Indicator */}
-      <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-warning/15 text-warning border border-warning/30">
-        <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-        <span className="text-xs font-semibold">Rework Required</span>
+    <div className="flex items-center gap-2">
+      {/* Rework indicator with reason */}
+      <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-warning/10 border border-warning/20">
+        <AlertTriangle className="w-3.5 h-3.5 text-warning flex-shrink-0" />
+        <div className="flex flex-col min-w-0">
+          <span className="text-xs font-medium text-warning truncate">
+            {currentRework?.descriptionEn || 'Pending'}
+          </span>
+          {lead.assignedTo && (
+            <span className="text-[10px] text-muted-foreground truncate">
+              → {lead.assignedTo}
+            </span>
+          )}
+        </div>
       </div>
 
-      {/* Rework Reason Dropdown */}
-      <Select 
-        value={lead.reworkReasonId || '__none__'} 
-        onValueChange={(value) => onReworkChange(value === '__none__' ? null : value)}
-      >
-        <SelectTrigger className="h-8 text-xs bg-warning/5 border-warning/30 hover:bg-warning/10">
-          <SelectValue placeholder="Select reason" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="__none__">Clear Rework</SelectItem>
+      {/* Quick actions dropdown */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+            <MoreVertical className="w-3.5 h-3.5" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-48">
+          <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
+            Change Reason
+          </div>
           {reworkConfigs.map((config) => (
-            <SelectItem key={config.id} value={config.id}>
-              <div className="flex flex-col">
-                <span>{config.descriptionEn}</span>
-                <span className="text-xs text-muted-foreground">{config.team}</span>
-              </div>
-            </SelectItem>
+            <DropdownMenuItem 
+              key={config.id}
+              onClick={() => onReworkChange(config.id)}
+              className={cn(
+                "text-xs",
+                lead.reworkReasonId === config.id && "bg-accent"
+              )}
+            >
+              {config.descriptionEn}
+            </DropdownMenuItem>
           ))}
-        </SelectContent>
-      </Select>
-
-      {/* Assignee Dropdown - only show when rework reason is selected */}
-      {currentRework && teamMembers.length > 0 && (
-        <Select 
-          value={lead.assignedTo || ''} 
-          onValueChange={(value) => onAssigneeChange(value || null)}
-        >
-          <SelectTrigger className="h-8 text-xs">
-            <SelectValue placeholder={`Assign from ${currentRework.team}`} />
-          </SelectTrigger>
-          <SelectContent>
-            {teamMembers.map((member) => (
-              <SelectItem key={member} value={member}>
-                {member}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      )}
-
-      {/* Show assigned person */}
-      {lead.assignedTo && (
-        <div className="text-xs text-muted-foreground">
-          Assigned: <span className="font-medium text-foreground">{lead.assignedTo}</span>
-        </div>
-      )}
+          <div className="my-1 border-t" />
+          {currentRework && teamMembers.length > 0 && (
+            <>
+              <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
+                Assign to ({currentRework.team})
+              </div>
+              {teamMembers.map((member) => (
+                <DropdownMenuItem 
+                  key={member}
+                  onClick={() => onAssigneeChange(member)}
+                  className={cn(
+                    "text-xs",
+                    lead.assignedTo === member && "bg-accent"
+                  )}
+                >
+                  {member}
+                </DropdownMenuItem>
+              ))}
+              <div className="my-1 border-t" />
+            </>
+          )}
+          <DropdownMenuItem 
+            onClick={() => onReworkChange(null)}
+            className="text-xs text-success"
+          >
+            <CheckCircle className="w-3.5 h-3.5 mr-2" />
+            Clear Rework
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 }
@@ -169,11 +181,10 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
   };
 
   const handleReworkChange = (leadId: string, reasonId: string | null) => {
-    const reworkConfig = reasonId ? reworkConfigs.find(r => r.id === reasonId) : null;
     onLeadUpdate?.(leadId, {
       reworkRequired: !!reasonId,
       reworkReasonId: reasonId || undefined,
-      assignedTo: undefined, // Reset assignee when reason changes
+      assignedTo: undefined,
     });
   };
 
@@ -219,23 +230,15 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
               <SortableHeader column="agent">Agent</SortableHeader>
               <SortableHeader column="createdOn">Created On</SortableHeader>
               <th className="data-table-header px-4 py-3 text-left">Vehicle Details</th>
-              <th className="data-table-header px-4 py-3 text-left min-w-[200px]">
-                <div className="flex items-center gap-1">
-                  <AlertTriangle className="w-3.5 h-3.5 text-warning" />
-                  Rework Status
-                </div>
-              </th>
-              <SortableHeader column="rf">RF</SortableHeader>
-              <SortableHeader column="sc">SC</SortableHeader>
               <SortableHeader column="status">Status</SortableHeader>
-              <SortableHeader column="paymentStatus">Payment Status</SortableHeader>
+              <th className="data-table-header px-4 py-3 text-left">Rework Status</th>
               <th className="data-table-header w-10 px-4 py-3"></th>
             </tr>
           </thead>
           <tbody>
             {sortedLeads.length === 0 ? (
               <tr>
-                <td colSpan={11} className="px-4 py-12 text-center text-muted-foreground">
+                <td colSpan={8} className="px-4 py-12 text-center text-muted-foreground">
                   No leads found for this stage
                 </td>
               </tr>
@@ -286,24 +289,6 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    <ReworkStatusBadge 
-                      lead={lead} 
-                      reworkConfigs={reworkConfigs}
-                      onReworkChange={(reasonId) => handleReworkChange(lead.id, reasonId)}
-                      onAssigneeChange={(assignee) => handleAssigneeChange(lead.id, assignee)}
-                    />
-                  </td>
-                  <td className="px-4 py-3">
-                    <Button variant="outline" size="sm" className="text-xs">
-                      Transfer RF
-                    </Button>
-                  </td>
-                  <td className="px-4 py-3">
-                    <Button variant="outline" size="sm" className="text-xs">
-                      Claim SC
-                    </Button>
-                  </td>
-                  <td className="px-4 py-3">
                     <Select defaultValue={lead.saleStatus}>
                       <SelectTrigger className="w-[140px] h-8 text-xs">
                         <SelectValue placeholder="Select status" />
@@ -318,18 +303,12 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
                     </Select>
                   </td>
                   <td className="px-4 py-3">
-                    <Select defaultValue={lead.paymentStatus}>
-                      <SelectTrigger className="w-[160px] h-8 text-xs">
-                        <SelectValue placeholder="Select payment status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {paymentStatusOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <ReworkStatusCell 
+                      lead={lead} 
+                      reworkConfigs={reworkConfigs}
+                      onReworkChange={(reasonId) => handleReworkChange(lead.id, reasonId)}
+                      onAssigneeChange={(assignee) => handleAssigneeChange(lead.id, assignee)}
+                    />
                   </td>
                   <td className="px-4 py-3">
                     <DropdownMenu>
@@ -341,7 +320,6 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem>View Details</DropdownMenuItem>
                         <DropdownMenuItem>Edit Lead</DropdownMenuItem>
-                        <DropdownMenuItem>Mark as Rework</DropdownMenuItem>
                         <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
