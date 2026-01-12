@@ -4,10 +4,7 @@ import {
   ChevronRight, 
   ExternalLink, 
   MoreVertical,
-  ArrowUpDown,
-  AlertTriangle,
-  CheckCircle,
-  X
+  ArrowUpDown
 } from 'lucide-react';
 import { Lead, PipelineStage, LeadType, ReworkConfig } from '@/types/pipeline';
 import { cn } from '@/lib/utils';
@@ -25,6 +22,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
+import { mockStaffMembers } from '@/data/mockStaff';
 
 interface LeadsTableProps {
   leads: Lead[];
@@ -40,7 +38,7 @@ const statusOptionsByStage: Record<PipelineStage, { value: string; label: string
     { value: 'waiting_for_insurer', label: 'Waiting for Insurer' },
     { value: 'partially_added', label: 'Partially Added' },
     { value: 'completed', label: 'Completed' },
-    { value: 'quotation_shared', label: 'Quotation Shared...' },
+    { value: 'quotation_shared', label: 'Quotation Shared With Agent' },
     { value: 'invalid', label: 'Invalid' },
   ],
   to_report: [
@@ -61,6 +59,14 @@ const statusOptionsByStage: Record<PipelineStage, { value: string; label: string
   ],
 };
 
+const defaultStatusByStage: Record<PipelineStage, string> = {
+  to_pay: 'pending',
+  to_report: 'pending_review',
+  to_issue: 'pending_issuance',
+  to_deliver: 'policy_issued',
+  completed: 'policy_delivered',
+};
+
 function LeadTypeBadge({ type }: { type: LeadType }) {
   const config = {
     new_leads: { label: 'Agent', className: 'lead-badge-agent' },
@@ -71,105 +77,9 @@ function LeadTypeBadge({ type }: { type: LeadType }) {
   return <span className={cn('lead-badge', className)}>{label}</span>;
 }
 
-function ReworkStatusCell({ 
-  lead, 
-  reworkConfigs,
-  onReworkChange,
-  onAssigneeChange
-}: { 
-  lead: Lead; 
-  reworkConfigs: ReworkConfig[];
-  onReworkChange: (reasonId: string | null) => void;
-  onAssigneeChange: (assignee: string | null) => void;
-}) {
-  const currentRework = lead.reworkReasonId 
-    ? reworkConfigs.find(r => r.id === lead.reworkReasonId) 
-    : null;
-
-  const teamMembers = currentRework?.teamMembers || [];
-
-  // No rework - show clean status
-  if (!lead.reworkRequired && !lead.reworkReasonId) {
-    return (
-      <div className="flex items-center gap-1.5 text-muted-foreground">
-        <CheckCircle className="w-4 h-4 text-success" />
-        <span className="text-xs">No rework</span>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex items-center gap-2">
-      {/* Rework indicator with reason */}
-      <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-warning/10 border border-warning/20">
-        <AlertTriangle className="w-3.5 h-3.5 text-warning flex-shrink-0" />
-        <div className="flex flex-col min-w-0">
-          <span className="text-xs font-medium text-warning truncate">
-            {currentRework?.descriptionEn || 'Pending'}
-          </span>
-          {lead.assignedTo && (
-            <span className="text-[10px] text-muted-foreground truncate">
-              → {lead.assignedTo}
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* Quick actions dropdown */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
-            <MoreVertical className="w-3.5 h-3.5" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-48">
-          <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
-            Change Reason
-          </div>
-          {reworkConfigs.map((config) => (
-            <DropdownMenuItem 
-              key={config.id}
-              onClick={() => onReworkChange(config.id)}
-              className={cn(
-                "text-xs",
-                lead.reworkReasonId === config.id && "bg-accent"
-              )}
-            >
-              {config.descriptionEn}
-            </DropdownMenuItem>
-          ))}
-          <div className="my-1 border-t" />
-          {currentRework && teamMembers.length > 0 && (
-            <>
-              <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
-                Assign to ({currentRework.team})
-              </div>
-              {teamMembers.map((member) => (
-                <DropdownMenuItem 
-                  key={member}
-                  onClick={() => onAssigneeChange(member)}
-                  className={cn(
-                    "text-xs",
-                    lead.assignedTo === member && "bg-accent"
-                  )}
-                >
-                  {member}
-                </DropdownMenuItem>
-              ))}
-              <div className="my-1 border-t" />
-            </>
-          )}
-          <DropdownMenuItem 
-            onClick={() => onReworkChange(null)}
-            className="text-xs text-success"
-          >
-            <CheckCircle className="w-3.5 h-3.5 mr-2" />
-            Clear Rework
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
-  );
+// Helper to get staff members by team
+function getStaffByTeam(team: string) {
+  return mockStaffMembers.filter(staff => staff.team === team);
 }
 
 export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLeadUpdate }: LeadsTableProps) {
@@ -250,13 +160,14 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
               <th className="data-table-header px-4 py-3 text-left">Vehicle Details</th>
               <SortableHeader column="status">Status</SortableHeader>
               <th className="data-table-header px-4 py-3 text-left">Rework Status</th>
+              <th className="data-table-header px-4 py-3 text-left">Owner</th>
               <th className="data-table-header w-10 px-4 py-3"></th>
             </tr>
           </thead>
           <tbody>
             {sortedLeads.length === 0 ? (
               <tr>
-                <td colSpan={8} className="px-4 py-12 text-center text-muted-foreground">
+                <td colSpan={9} className="px-4 py-12 text-center text-muted-foreground">
                   No leads found for this stage
                 </td>
               </tr>
@@ -308,8 +219,8 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <Select defaultValue={lead.saleStatus}>
-                        <SelectTrigger className="w-[140px] h-8 text-xs">
+                      <Select defaultValue={lead.saleStatus || defaultStatusByStage[stage]}>
+                        <SelectTrigger className="w-[200px] h-8 text-xs">
                           <SelectValue placeholder="Select status" />
                         </SelectTrigger>
                         <SelectContent>
@@ -322,12 +233,52 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
                       </Select>
                     </td>
                     <td className="px-4 py-3">
-                      <ReworkStatusCell 
-                        lead={lead} 
-                        reworkConfigs={reworkConfigs}
-                        onReworkChange={(reasonId) => handleReworkChange(lead.id, reasonId)}
-                        onAssigneeChange={(assignee) => handleAssigneeChange(lead.id, assignee)}
-                      />
+                      <Select 
+                        value={lead.reworkReasonId || 'none'}
+                        onValueChange={(value) => handleReworkChange(lead.id, value === 'none' ? null : value)}
+                      >
+                        <SelectTrigger className="w-[220px] h-8 text-xs">
+                          <SelectValue placeholder="No rework" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">No rework</SelectItem>
+                          {reworkConfigs.map((config) => (
+                            <SelectItem key={config.id} value={config.id}>
+                              {config.descriptionEn}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </td>
+                    <td className="px-4 py-3">
+                      {(() => {
+                        const currentRework = lead.reworkReasonId 
+                          ? reworkConfigs.find(r => r.id === lead.reworkReasonId)
+                          : null;
+                        const teamStaff = currentRework ? getStaffByTeam(currentRework.team) : [];
+                        
+                        if (!currentRework || teamStaff.length === 0) {
+                          return <span className="text-xs text-muted-foreground">-</span>;
+                        }
+                        
+                        return (
+                          <Select 
+                            value={lead.assignedTo || ''}
+                            onValueChange={(value) => handleAssigneeChange(lead.id, value || null)}
+                          >
+                            <SelectTrigger className="w-[140px] h-8 text-xs">
+                              <SelectValue placeholder="Select owner" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {teamStaff.map((staff) => (
+                                <SelectItem key={staff.id} value={staff.name}>
+                                  {staff.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        );
+                      })()}
                     </td>
                     <td className="px-4 py-3">
                       <DropdownMenu>
@@ -346,8 +297,8 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
                   </tr>
                   {/* Expanded Row */}
                   {expandedRows.has(lead.id) && (
-                    <tr className="bg-muted/30">
-                      <td colSpan={8} className="px-4 py-4">
+                    <tr key={`${lead.id}-expanded`} className="bg-muted/30">
+                      <td colSpan={9} className="px-4 py-4">
                         <div className="grid grid-cols-2 gap-6">
                           {/* Left Column - Lead Details */}
                           <div className="space-y-3">
