@@ -34,6 +34,7 @@ interface ReworkConsoleTableProps {
 
 const assignmentOptions: { value: AssignmentType; label: string }[] = [
   { value: 'round_robin', label: 'Round Robin' },
+  { value: 'rf_sc', label: 'RF/SC' },
 ];
 
 const stageOptions: { value: PipelineStage; label: string }[] = [
