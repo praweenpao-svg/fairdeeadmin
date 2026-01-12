@@ -518,7 +518,7 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
         }}
         leadNumber={selectedLead?.leadNumber || ''}
         history={selectedLead?.reworkHistory || []}
-        reworkConfigs={stageReworkConfigs}
+        reworkConfigs={reworkConfigs}
         onResolve={handleResolveRework}
         onReassign={handleReassignRework}
       />
