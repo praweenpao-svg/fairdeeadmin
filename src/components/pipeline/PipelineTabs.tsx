@@ -6,14 +6,12 @@ import {
   FileCheck, 
   Truck, 
   CheckCircle2,
-  Settings2 
 } from 'lucide-react';
 
 interface PipelineTabsProps {
-  activeStage: PipelineStage | 'admin_rework';
-  onStageChange: (stage: PipelineStage | 'admin_rework') => void;
+  activeStage: PipelineStage;
+  onStageChange: (stage: PipelineStage) => void;
   leads: Lead[];
-  isSuperAdmin?: boolean;
 }
 
 const stageConfig = [
@@ -92,7 +90,6 @@ export function PipelineTabs({
   activeStage,
   onStageChange,
   leads,
-  isSuperAdmin = true,
 }: PipelineTabsProps) {
   return (
     <div className="flex items-center gap-1 border-b border-border bg-card px-4">
@@ -125,24 +122,6 @@ export function PipelineTabs({
           </button>
         );
       })}
-
-      {isSuperAdmin && (
-        <>
-          <div className="flex-1" />
-          <button
-            onClick={() => onStageChange('admin_rework')}
-            className={cn(
-              'pipeline-tab flex items-center gap-2',
-              activeStage === 'admin_rework'
-                ? 'pipeline-tab-active'
-                : 'pipeline-tab-inactive'
-            )}
-          >
-            <Settings2 className="w-4 h-4" />
-            <span>Admin Rework Log</span>
-          </button>
-        </>
-      )}
     </div>
   );
 }

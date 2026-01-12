@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   Car,
@@ -6,6 +5,7 @@ import {
   PanelLeftClose,
   PanelLeft,
   Globe,
+  Settings2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -89,6 +89,21 @@ export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
         >
           <Clock className="w-5 h-5 flex-shrink-0" />
           {!collapsed && <span>Staff Timing</span>}
+        </NavLink>
+
+        <NavLink
+          to="/rework-console"
+          className={({ isActive }) =>
+            cn(
+              'flex items-center gap-3 px-4 py-2.5 text-sm transition-colors',
+              isActive
+                ? 'text-sidebar-foreground bg-sidebar-accent'
+                : 'text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-accent/50'
+            )
+          }
+        >
+          <Settings2 className="w-5 h-5 flex-shrink-0" />
+          {!collapsed && <span>Rework Console</span>}
         </NavLink>
       </nav>
 

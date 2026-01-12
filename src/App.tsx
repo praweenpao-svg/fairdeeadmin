@@ -8,6 +8,7 @@ import { AppSidebar } from '@/components/layout/AppSidebar';
 import { cn } from '@/lib/utils';
 import Index from "./pages/Index";
 import StaffTiming from "./pages/StaffTiming";
+import ReworkConsole from "./pages/ReworkConsole";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ function AppLayout() {
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/staff-timing" element={<StaffTiming />} />
+          <Route path="/rework-console" element={<ReworkConsole />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

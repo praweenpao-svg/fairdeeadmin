@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Pencil, Trash2, Plus, X, Users } from 'lucide-react';
-import { StaffMember, mockStaffMembers, defaultTeams } from '@/data/mockStaff';
+import { StaffMember, mockStaffMembers } from '@/data/mockStaff';
+import { useTeamsStore } from '@/stores/teamsStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,7 +22,7 @@ import {
 
 export function StaffTimingTable() {
   const [staff, setStaff] = useState<StaffMember[]>(mockStaffMembers);
-  const [teams, setTeams] = useState<string[]>(defaultTeams);
+  const { teams, addTeam, updateTeam, deleteTeam } = useTeamsStore();
   const [isTeamDialogOpen, setIsTeamDialogOpen] = useState(false);
   const [isAddTimingsOpen, setIsAddTimingsOpen] = useState(false);
   const [editingStaff, setEditingStaff] = useState<StaffMember | null>(null);
@@ -39,17 +40,15 @@ export function StaffTimingTable() {
   };
 
   const handleAddTeam = () => {
-    if (newTeamName.trim() && !teams.includes(newTeamName.trim())) {
-      setTeams([...teams, newTeamName.trim()]);
+    if (newTeamName.trim()) {
+      addTeam(newTeamName.trim());
       setNewTeamName('');
     }
   };
 
   const handleEditTeam = (index: number, newName: string) => {
     const oldName = teams[index];
-    const updatedTeams = [...teams];
-    updatedTeams[index] = newName;
-    setTeams(updatedTeams);
+    updateTeam(oldName, newName);
     
     // Update staff members with the old team name
     setStaff((prev) =>
@@ -60,7 +59,7 @@ export function StaffTimingTable() {
 
   const handleDeleteTeam = (index: number) => {
     const teamToDelete = teams[index];
-    setTeams(teams.filter((_, i) => i !== index));
+    deleteTeam(teamToDelete);
     
     // Clear team from staff members
     setStaff((prev) =>
@@ -185,7 +184,7 @@ export function StaffTimingTable() {
           {/* Add Timings Button */}
           <Dialog open={isAddTimingsOpen} onOpenChange={setIsAddTimingsOpen}>
             <DialogTrigger asChild>
-              <Button onClick={() => setEditingStaff(null)}>Add Timings</Button>
+              <Button variant="outline" onClick={() => setEditingStaff(null)}>Add Timings</Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[500px]">
               <DialogHeader>
