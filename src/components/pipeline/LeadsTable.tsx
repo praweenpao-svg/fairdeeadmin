@@ -81,9 +81,19 @@ function CreatedByBadge({ createdBy }: { createdBy: CreatedByType }) {
   return <span className={cn('lead-badge', className)}>{label}</span>;
 }
 
-// Helper to get staff members by team
+// Helper to get staff members by team (based on fixed rosters)
+const teamRosters: Record<string, string[]> = {
+  'AST RF': ['Ricky', 'Jenny', 'Tommy'],
+  'AST SC': ['Lisa', 'Mike', 'Nina'],
+  'DE': ['Oscar', 'Paula', 'Quinn'],
+  'Admin': ['Rachel', 'Sam', 'Tina'],
+};
+
 function getStaffByTeam(team: string) {
-  return mockStaffMembers.filter(staff => staff.team === team);
+  const roster = teamRosters[team];
+  if (!roster) return mockStaffMembers.filter((staff) => staff.team === team);
+
+  return mockStaffMembers.filter((staff) => roster.includes(staff.name));
 }
 
 // Get RF staff (AST RF team)
@@ -275,22 +285,13 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
 
     // Determine new assigned owner based on assignment type
     let assignedOwner: string | undefined;
-    console.log('Reassign Debug:', {
-      newReasonId,
-      newReworkConfig,
-      assignment: newReworkConfig?.assignment,
-      team: newReworkConfig?.team,
-    });
     if (newReworkConfig) {
       if (newReworkConfig.assignment === 'round_robin') {
         assignedOwner = getNextRoundRobinStaff(newReworkConfig.team);
-        console.log('Round robin assigned:', assignedOwner);
       } else if (newReworkConfig.assignment === 'rf_sc') {
         assignedOwner = selectedLead.scAssignee || selectedLead.rfAssignee;
-        console.log('RF/SC assigned:', assignedOwner);
       }
     }
-    console.log('Final assignedOwner:', assignedOwner);
 
     const updates: Partial<Lead> = {
       reworkHistory: [...updatedHistory, newHistoryEntry],
