@@ -74,6 +74,7 @@ export interface ReworkConfig {
   automationDays?: number;
   targetReason?: string;
   assignment: AssignmentType;
+  stages: PipelineStage[];
 }
 
 export interface PipelineTab {

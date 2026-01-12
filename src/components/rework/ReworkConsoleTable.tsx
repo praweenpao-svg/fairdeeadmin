@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
-import { ReworkConfig, AssignmentType } from '@/types/pipeline';
+import { Plus, Pencil, Trash2, Check } from 'lucide-react';
+import { ReworkConfig, AssignmentType, PipelineStage } from '@/types/pipeline';
 import { useTeamsStore } from '@/stores/teamsStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +19,13 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Checkbox } from '@/components/ui/checkbox';
+import { cn } from '@/lib/utils';
 
 interface ReworkConsoleTableProps {
   reworkConfigs: ReworkConfig[];
@@ -27,6 +34,14 @@ interface ReworkConsoleTableProps {
 
 const assignmentOptions: { value: AssignmentType; label: string }[] = [
   { value: 'round_robin', label: 'Round Robin' },
+];
+
+const stageOptions: { value: PipelineStage; label: string }[] = [
+  { value: 'to_pay', label: 'To Pay' },
+  { value: 'to_report', label: 'To Report' },
+  { value: 'to_issue', label: 'To Issue' },
+  { value: 'to_deliver', label: 'To Deliver' },
+  { value: 'completed', label: 'Completed' },
 ];
 
 export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTableProps) {
@@ -39,6 +54,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
     descriptionEn: '',
     team: '',
     assignment: 'round_robin',
+    stages: [],
   });
 
   const openDialog = (config?: ReworkConfig) => {
@@ -52,6 +68,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
         descriptionEn: '',
         team: '',
         assignment: 'round_robin',
+        stages: [],
       });
     }
     setIsDialogOpen(true);
@@ -79,6 +96,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
         teamMembers: [],
         automationEnabled: false,
         assignment: formData.assignment || 'round_robin',
+        stages: formData.stages || [],
       };
       onUpdate([...reworkConfigs, newConfig]);
     }
@@ -103,6 +121,29 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
           : config
       )
     );
+  };
+
+  const handleStageToggle = (configId: string, stage: PipelineStage) => {
+    onUpdate(
+      reworkConfigs.map((config) => {
+        if (config.id === configId) {
+          const currentStages = config.stages || [];
+          const newStages = currentStages.includes(stage)
+            ? currentStages.filter((s) => s !== stage)
+            : [...currentStages, stage];
+          return { ...config, stages: newStages };
+        }
+        return config;
+      })
+    );
+  };
+
+  const getStageLabels = (stages: PipelineStage[]) => {
+    if (!stages || stages.length === 0) return 'Select stages';
+    if (stages.length === 1) {
+      return stageOptions.find((s) => s.value === stages[0])?.label || stages[0];
+    }
+    return `${stages.length} stages selected`;
   };
 
   return (
@@ -187,6 +228,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
             <tr className="border-b border-border">
               <th className="data-table-header px-4 py-3 text-left">Description (TH)</th>
               <th className="data-table-header px-4 py-3 text-left">Description (EN)</th>
+              <th className="data-table-header px-4 py-3 text-left">Stage</th>
               <th className="data-table-header px-4 py-3 text-left">Team</th>
               <th className="data-table-header px-4 py-3 text-left">Assignment</th>
               <th className="data-table-header px-4 py-3 text-right">Actions</th>
@@ -197,6 +239,36 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
               <tr key={config.id} className="data-table-row">
                 <td className="px-4 py-3 text-sm">{config.descriptionTh}</td>
                 <td className="px-4 py-3 text-sm">{config.descriptionEn}</td>
+                <td className="px-4 py-3">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-[160px] h-8 text-xs justify-between"
+                      >
+                        <span className="truncate">{getStageLabels(config.stages || [])}</span>
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[200px] p-2 bg-popover" align="start">
+                      <div className="space-y-2">
+                        {stageOptions.map((stage) => (
+                          <div
+                            key={stage.value}
+                            className="flex items-center space-x-2 cursor-pointer hover:bg-muted p-2 rounded"
+                            onClick={() => handleStageToggle(config.id, stage.value)}
+                          >
+                            <Checkbox
+                              checked={(config.stages || []).includes(stage.value)}
+                              onCheckedChange={() => handleStageToggle(config.id, stage.value)}
+                            />
+                            <span className="text-sm">{stage.label}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                </td>
                 <td className="px-4 py-3">
                   <Select
                     value={config.team || '__none__'}

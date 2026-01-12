@@ -387,6 +387,7 @@ export const mockReworkConfigs: ReworkConfig[] = [
     teamMembers: [],
     automationEnabled: false,
     assignment: 'round_robin',
+    stages: ['to_pay', 'to_report'],
   },
   {
     id: '2',
@@ -396,6 +397,7 @@ export const mockReworkConfigs: ReworkConfig[] = [
     teamMembers: [],
     automationEnabled: false,
     assignment: 'round_robin',
+    stages: ['to_pay', 'to_report'],
   },
   {
     id: '3',
@@ -405,6 +407,7 @@ export const mockReworkConfigs: ReworkConfig[] = [
     teamMembers: [],
     automationEnabled: false,
     assignment: 'round_robin',
+    stages: ['to_pay', 'to_report'],
   },
   {
     id: '4',
@@ -414,6 +417,7 @@ export const mockReworkConfigs: ReworkConfig[] = [
     teamMembers: [],
     automationEnabled: false,
     assignment: 'round_robin',
+    stages: ['to_pay', 'to_report'],
   },
   {
     id: '5',
@@ -423,6 +427,7 @@ export const mockReworkConfigs: ReworkConfig[] = [
     teamMembers: [],
     automationEnabled: false,
     assignment: 'round_robin',
+    stages: ['to_issue', 'to_deliver', 'completed'],
   },
   {
     id: '6',
@@ -432,6 +437,7 @@ export const mockReworkConfigs: ReworkConfig[] = [
     teamMembers: [],
     automationEnabled: false,
     assignment: 'round_robin',
+    stages: ['to_issue', 'to_deliver', 'completed'],
   },
   {
     id: '7',
@@ -441,6 +447,7 @@ export const mockReworkConfigs: ReworkConfig[] = [
     teamMembers: [],
     automationEnabled: false,
     assignment: 'round_robin',
+    stages: ['to_issue', 'to_deliver', 'completed'],
   },
   {
     id: '8',
@@ -450,6 +457,7 @@ export const mockReworkConfigs: ReworkConfig[] = [
     teamMembers: [],
     automationEnabled: false,
     assignment: 'round_robin',
+    stages: ['to_issue', 'to_deliver', 'completed'],
   },
   {
     id: '9',
@@ -459,6 +467,7 @@ export const mockReworkConfigs: ReworkConfig[] = [
     teamMembers: [],
     automationEnabled: false,
     assignment: 'round_robin',
+    stages: ['to_issue', 'to_deliver', 'completed'],
   },
   {
     id: '10',
@@ -468,6 +477,7 @@ export const mockReworkConfigs: ReworkConfig[] = [
     teamMembers: [],
     automationEnabled: false,
     assignment: 'round_robin',
+    stages: ['to_issue', 'to_deliver', 'completed'],
   },
   {
     id: '11',
@@ -477,6 +487,7 @@ export const mockReworkConfigs: ReworkConfig[] = [
     teamMembers: [],
     automationEnabled: false,
     assignment: 'round_robin',
+    stages: ['to_issue', 'to_deliver', 'completed'],
   },
   {
     id: '12',
@@ -486,6 +497,7 @@ export const mockReworkConfigs: ReworkConfig[] = [
     teamMembers: [],
     automationEnabled: false,
     assignment: 'round_robin',
+    stages: ['to_issue', 'to_deliver', 'completed'],
   },
   {
     id: '13',
@@ -495,6 +507,7 @@ export const mockReworkConfigs: ReworkConfig[] = [
     teamMembers: [],
     automationEnabled: false,
     assignment: 'round_robin',
+    stages: ['to_issue', 'to_deliver', 'completed'],
   },
   {
     id: '14',
@@ -504,6 +517,7 @@ export const mockReworkConfigs: ReworkConfig[] = [
     teamMembers: [],
     automationEnabled: false,
     assignment: 'round_robin',
+    stages: ['to_issue', 'to_deliver', 'completed'],
   },
   {
     id: '15',
@@ -513,6 +527,7 @@ export const mockReworkConfigs: ReworkConfig[] = [
     teamMembers: [],
     automationEnabled: false,
     assignment: 'round_robin',
+    stages: ['to_issue', 'to_deliver', 'completed'],
   },
 ];
 
