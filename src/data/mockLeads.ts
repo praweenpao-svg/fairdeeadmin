@@ -16,6 +16,7 @@ export const mockLeads: Lead[] = [
     paymentStatus: 'unpaid',
     policyAttached: false,
     reworkRequired: false,
+    createdBy: 'agent',
   },
   {
     id: '2',
@@ -32,11 +33,12 @@ export const mockLeads: Lead[] = [
     paymentStatus: 'unpaid',
     policyAttached: false,
     reworkRequired: false,
+    createdBy: 'agent',
   },
   {
     id: '3',
     leadNumber: '#10151',
-    leadType: 'coa',
+    leadType: 'new_leads',
     paymentType: 'full',
     agentId: 'FM-5370',
     agentName: 'Jennifer Haines',
@@ -48,6 +50,7 @@ export const mockLeads: Lead[] = [
     paymentStatus: 'paid',
     policyAttached: false,
     reworkRequired: false,
+    createdBy: 'admin',
   },
   {
     id: '4',
@@ -64,11 +67,12 @@ export const mockLeads: Lead[] = [
     paymentStatus: 'partial',
     policyAttached: false,
     reworkRequired: false,
+    createdBy: 'agent',
   },
   {
     id: '5',
     leadNumber: '#10149',
-    leadType: 'renewals',
+    leadType: 'new_leads',
     paymentType: 'full',
     agentId: 'FM-5367',
     agentName: 'Jane Marsh',
@@ -80,6 +84,7 @@ export const mockLeads: Lead[] = [
     paymentStatus: 'paid',
     policyAttached: false,
     reworkRequired: false,
+    createdBy: 'agent',
   },
   {
     id: '6',
@@ -97,11 +102,12 @@ export const mockLeads: Lead[] = [
     policyAttached: true,
     shippingMethod: 'print_by_fairdee',
     reworkRequired: false,
+    createdBy: 'admin',
   },
   {
     id: '7',
     leadNumber: '#10146',
-    leadType: 'coa',
+    leadType: 'new_leads',
     paymentType: 'installment',
     agentId: 'FM-5369',
     agentName: 'Harriett Joyce',
@@ -115,11 +121,12 @@ export const mockLeads: Lead[] = [
     shippingMethod: 'print_by_fairdee',
     trackingNumber: 'TH123456789',
     reworkRequired: false,
+    createdBy: 'agent',
   },
   {
     id: '8',
     leadNumber: '#10145',
-    leadType: 'renewals',
+    leadType: 'new_leads',
     paymentType: 'full',
     agentId: 'FM-5369',
     agentName: 'Harriett Joyce',
@@ -132,6 +139,7 @@ export const mockLeads: Lead[] = [
     policyAttached: true,
     shippingMethod: 'e_policy',
     reworkRequired: false,
+    createdBy: 'agent',
   },
   {
     id: '9',
@@ -148,6 +156,7 @@ export const mockLeads: Lead[] = [
     paymentStatus: 'unpaid',
     policyAttached: false,
     reworkRequired: false,
+    createdBy: 'admin',
   },
   {
     id: '10',
@@ -164,6 +173,7 @@ export const mockLeads: Lead[] = [
     paymentStatus: 'unpaid',
     policyAttached: false,
     reworkRequired: false,
+    createdBy: 'agent',
   },
 ];
 

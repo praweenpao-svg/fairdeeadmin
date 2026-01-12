@@ -151,6 +151,10 @@
     @apply bg-primary/15 text-primary;
   }
 
+  .lead-badge-admin {
+    @apply bg-purple-100 text-purple-700;
+  }
+
   .lead-badge-new {
     @apply bg-green-100 text-green-700;
   }

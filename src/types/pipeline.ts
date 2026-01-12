@@ -20,6 +20,8 @@ export type SaleStatus =
 
 export type ShippingMethod = 'e_policy' | 'print_by_myself' | 'print_by_fairdee';
 
+export type CreatedByType = 'agent' | 'admin';
+
 export interface Lead {
   id: string;
   leadNumber: string;
@@ -39,6 +41,7 @@ export interface Lead {
   reworkRequired: boolean;
   reworkReasonId?: string;
   assignedTo?: string;
+  createdBy: CreatedByType;
 }
 
 export type AssignmentType = 'round_robin';
