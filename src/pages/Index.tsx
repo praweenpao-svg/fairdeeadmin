@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import { Search, Filter, Home } from 'lucide-react';
-import { PipelineStage, LeadType, PaymentType, Lead, ReworkConfig } from '@/types/pipeline';
+import { PipelineStage, LeadType, Lead, ReworkConfig } from '@/types/pipeline';
 import { mockLeads, mockReworkConfigs } from '@/data/mockLeads';
 import { AppSidebar } from '@/components/layout/AppSidebar';
 import { PipelineTabs, getLeadsForStage } from '@/components/pipeline/PipelineTabs';
 import { LeadTypeFilter } from '@/components/pipeline/LeadTypeFilter';
-import { PaymentTypeToggle } from '@/components/pipeline/PaymentTypeToggle';
 import { LeadsTable } from '@/components/pipeline/LeadsTable';
 import { AdminReworkLog } from '@/components/pipeline/AdminReworkLog';
 import { Input } from '@/components/ui/input';
@@ -16,7 +15,6 @@ const Index = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeStage, setActiveStage] = useState<PipelineStage | 'admin_rework'>('to_pay');
   const [leadTypeFilter, setLeadTypeFilter] = useState<LeadType>('new_leads');
-  const [paymentType, setPaymentType] = useState<PaymentType>('full');
   const [searchQuery, setSearchQuery] = useState('');
   const [leads, setLeads] = useState<Lead[]>(mockLeads);
   const [reworkConfigs, setReworkConfigs] = useState<ReworkConfig[]>(mockReworkConfigs);
@@ -32,11 +30,7 @@ const Index = () => {
   const filteredLeads =
     activeStage === 'admin_rework'
       ? []
-      : getLeadsForStage(leads, activeStage).filter((lead) =>
-          paymentType === 'full'
-            ? lead.paymentType === 'full'
-            : lead.paymentType === 'installment'
-        );
+      : getLeadsForStage(leads, activeStage);
 
   return (
     <div className="min-h-screen bg-background">
@@ -57,20 +51,11 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Payment Type Toggle */}
-          <div className="px-6 py-3 border-b border-border">
-            <PaymentTypeToggle activeType={paymentType} onTypeChange={setPaymentType} />
-          </div>
-
           {/* Pipeline Tabs */}
           <PipelineTabs
             activeStage={activeStage}
             onStageChange={setActiveStage}
-            leads={leads.filter((lead) =>
-              paymentType === 'full'
-                ? lead.paymentType === 'full'
-                : lead.paymentType === 'installment'
-            )}
+            leads={leads}
             isSuperAdmin={true}
           />
         </header>
