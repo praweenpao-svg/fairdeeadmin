@@ -19,6 +19,7 @@ export const mockLeads: Lead[] = [
     reworkRequired: false,
     createdBy: 'agent',
     reworkHistory: [],
+    rfAssignee: 'Ricky',
   },
   {
     id: '2',
@@ -37,6 +38,7 @@ export const mockLeads: Lead[] = [
     reworkRequired: false,
     createdBy: 'agent',
     reworkHistory: [],
+    rfAssignee: 'Jenny',
   },
   {
     id: '3',
@@ -55,6 +57,7 @@ export const mockLeads: Lead[] = [
     reworkRequired: false,
     createdBy: 'admin',
     reworkHistory: [],
+    rfAssignee: 'Tommy',
   },
   {
     id: '4',
