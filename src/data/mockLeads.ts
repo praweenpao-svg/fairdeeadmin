@@ -12,12 +12,12 @@ export const mockLeads: Lead[] = [
     vehicleDetails: '-',
     rfStatus: 'pending',
     scStatus: 'pending',
-    saleStatus: 'pending_review',
+    saleStatus: 'pending',
     paymentStatus: 'unpaid',
     policyAttached: false,
     reworkRequired: true,
     reworkReasonId: '1',
-    assignedTo: 'Somchai P.',
+    assignedTo: 'Ricky T.',
   },
   {
     id: '2',
@@ -30,7 +30,7 @@ export const mockLeads: Lead[] = [
     vehicleDetails: 'RS4890',
     rfStatus: 'transferred',
     scStatus: 'claimed',
-    saleStatus: 'under_review',
+    saleStatus: 'waiting_for_insurer',
     paymentStatus: 'unpaid',
     policyAttached: false,
     reworkRequired: false,
@@ -46,12 +46,12 @@ export const mockLeads: Lead[] = [
     vehicleDetails: 'MX2206',
     rfStatus: 'transferred',
     scStatus: 'claimed',
-    saleStatus: 'de_in_progress',
+    saleStatus: 'pending_review',
     paymentStatus: 'paid',
     policyAttached: false,
     reworkRequired: true,
     reworkReasonId: '2',
-    assignedTo: 'Napat K.',
+    assignedTo: 'Somchai P.',
   },
   {
     id: '4',
@@ -64,7 +64,7 @@ export const mockLeads: Lead[] = [
     vehicleDetails: 'YE7703',
     rfStatus: 'transferred',
     scStatus: 'claimed',
-    saleStatus: 'ready_for_de',
+    saleStatus: 'pending',
     paymentStatus: 'partial',
     policyAttached: false,
     reworkRequired: false,
@@ -85,7 +85,7 @@ export const mockLeads: Lead[] = [
     policyAttached: false,
     reworkRequired: true,
     reworkReasonId: '3',
-    assignedTo: 'Prasit W.',
+    assignedTo: 'Napat K.',
   },
   {
     id: '6',
@@ -133,7 +133,7 @@ export const mockLeads: Lead[] = [
     vehicleDetails: '2สย8514',
     rfStatus: 'completed',
     scStatus: 'completed',
-    saleStatus: 'completed',
+    saleStatus: 'policy_delivered',
     paymentStatus: 'paid',
     policyAttached: true,
     shippingMethod: 'e_policy',
@@ -150,7 +150,7 @@ export const mockLeads: Lead[] = [
     vehicleDetails: '2มว7814',
     rfStatus: 'transferred',
     scStatus: 'claimed',
-    saleStatus: 'pending_review',
+    saleStatus: 'pending',
     paymentStatus: 'unpaid',
     policyAttached: false,
     reworkRequired: false,
@@ -171,6 +171,7 @@ export const mockLeads: Lead[] = [
     policyAttached: false,
     reworkRequired: true,
     reworkReasonId: '1',
+    assignedTo: 'Prasit W.',
   },
 ];
 
@@ -182,6 +183,7 @@ export const mockReworkConfigs: ReworkConfig[] = [
     team: 'AST',
     teamMembers: [],
     automationEnabled: false,
+    assignment: 'round_robin',
   },
   {
     id: '2',
@@ -190,6 +192,7 @@ export const mockReworkConfigs: ReworkConfig[] = [
     team: 'AST',
     teamMembers: [],
     automationEnabled: false,
+    assignment: 'round_robin',
   },
   {
     id: '3',
@@ -198,6 +201,7 @@ export const mockReworkConfigs: ReworkConfig[] = [
     team: 'AST',
     teamMembers: [],
     automationEnabled: false,
+    assignment: 'round_robin',
   },
   {
     id: '4',
@@ -206,6 +210,7 @@ export const mockReworkConfigs: ReworkConfig[] = [
     team: 'AST',
     teamMembers: [],
     automationEnabled: false,
+    assignment: 'round_robin',
   },
   {
     id: '5',
@@ -214,6 +219,7 @@ export const mockReworkConfigs: ReworkConfig[] = [
     team: 'AST',
     teamMembers: [],
     automationEnabled: false,
+    assignment: 'round_robin',
   },
   {
     id: '6',
@@ -222,6 +228,7 @@ export const mockReworkConfigs: ReworkConfig[] = [
     team: 'AST',
     teamMembers: [],
     automationEnabled: false,
+    assignment: 'round_robin',
   },
   {
     id: '7',
@@ -230,6 +237,7 @@ export const mockReworkConfigs: ReworkConfig[] = [
     team: 'AST',
     teamMembers: [],
     automationEnabled: false,
+    assignment: 'round_robin',
   },
   {
     id: '8',
@@ -238,6 +246,7 @@ export const mockReworkConfigs: ReworkConfig[] = [
     team: 'AST',
     teamMembers: [],
     automationEnabled: false,
+    assignment: 'round_robin',
   },
   {
     id: '9',
@@ -246,6 +255,7 @@ export const mockReworkConfigs: ReworkConfig[] = [
     team: 'DE',
     teamMembers: [],
     automationEnabled: false,
+    assignment: 'round_robin',
   },
   {
     id: '10',
@@ -254,6 +264,7 @@ export const mockReworkConfigs: ReworkConfig[] = [
     team: 'Admin',
     teamMembers: [],
     automationEnabled: false,
+    assignment: 'round_robin',
   },
   {
     id: '11',
@@ -262,6 +273,7 @@ export const mockReworkConfigs: ReworkConfig[] = [
     team: 'Admin',
     teamMembers: [],
     automationEnabled: false,
+    assignment: 'round_robin',
   },
   {
     id: '12',
@@ -270,6 +282,7 @@ export const mockReworkConfigs: ReworkConfig[] = [
     team: 'Admin',
     teamMembers: [],
     automationEnabled: false,
+    assignment: 'round_robin',
   },
   {
     id: '13',
@@ -278,6 +291,7 @@ export const mockReworkConfigs: ReworkConfig[] = [
     team: 'Admin',
     teamMembers: [],
     automationEnabled: false,
+    assignment: 'round_robin',
   },
   {
     id: '14',
@@ -286,6 +300,7 @@ export const mockReworkConfigs: ReworkConfig[] = [
     team: 'AST',
     teamMembers: [],
     automationEnabled: false,
+    assignment: 'round_robin',
   },
   {
     id: '15',
@@ -294,6 +309,7 @@ export const mockReworkConfigs: ReworkConfig[] = [
     team: 'Admin',
     teamMembers: [],
     automationEnabled: false,
+    assignment: 'round_robin',
   },
 ];
 

@@ -3,13 +3,20 @@ export type PaymentType = 'full' | 'installment';
 export type PipelineStage = 'to_pay' | 'to_report' | 'to_issue' | 'to_deliver' | 'completed';
 
 export type SaleStatus = 
+  | 'pending'
+  | 'waiting_for_insurer'
+  | 'partially_added'
+  | 'completed'
+  | 'quotation_shared'
+  | 'invalid'
   | 'pending_review'
   | 'under_review'
   | 'de_in_progress'
   | 'ready_for_de'
   | 'pending_issuance'
   | 'policy_issued'
-  | 'completed';
+  | 'policy_shipped'
+  | 'policy_delivered';
 
 export type ShippingMethod = 'e_policy' | 'print_by_myself' | 'print_by_fairdee';
 
@@ -34,6 +41,8 @@ export interface Lead {
   assignedTo?: string;
 }
 
+export type AssignmentType = 'round_robin';
+
 export interface ReworkConfig {
   id: string;
   descriptionTh: string;
@@ -43,6 +52,7 @@ export interface ReworkConfig {
   automationEnabled: boolean;
   automationDays?: number;
   targetReason?: string;
+  assignment: AssignmentType;
 }
 
 export interface PipelineTab {

@@ -82,6 +82,24 @@ function getStaffByTeam(team: string) {
   return mockStaffMembers.filter(staff => staff.team === team);
 }
 
+// Round robin state per team
+const roundRobinIndexes: Record<string, number> = {};
+
+// Get next staff member via round robin for a team
+function getNextRoundRobinStaff(team: string): string | undefined {
+  const teamStaff = getStaffByTeam(team);
+  if (teamStaff.length === 0) return undefined;
+  
+  if (!(team in roundRobinIndexes)) {
+    roundRobinIndexes[team] = 0;
+  }
+  
+  const staff = teamStaff[roundRobinIndexes[team] % teamStaff.length];
+  roundRobinIndexes[team] = (roundRobinIndexes[team] + 1) % teamStaff.length;
+  
+  return staff.name;
+}
+
 export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLeadUpdate }: LeadsTableProps) {
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [sortColumn, setSortColumn] = useState<string | null>(null);
@@ -109,16 +127,22 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
   };
 
   const handleReworkChange = (leadId: string, reasonId: string | null) => {
+    if (reasonId) {
+      const reworkConfig = reworkConfigs.find(r => r.id === reasonId);
+      if (reworkConfig && reworkConfig.assignment === 'round_robin') {
+        const assignedOwner = getNextRoundRobinStaff(reworkConfig.team);
+        onLeadUpdate?.(leadId, {
+          reworkRequired: true,
+          reworkReasonId: reasonId,
+          assignedTo: assignedOwner,
+        });
+        return;
+      }
+    }
     onLeadUpdate?.(leadId, {
       reworkRequired: !!reasonId,
       reworkReasonId: reasonId || undefined,
       assignedTo: undefined,
-    });
-  };
-
-  const handleAssigneeChange = (leadId: string, assignee: string | null) => {
-    onLeadUpdate?.(leadId, {
-      assignedTo: assignee || undefined,
     });
   };
 
@@ -255,28 +279,18 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
                         const currentRework = lead.reworkReasonId 
                           ? reworkConfigs.find(r => r.id === lead.reworkReasonId)
                           : null;
-                        const teamStaff = currentRework ? getStaffByTeam(currentRework.team) : [];
                         
-                        if (!currentRework || teamStaff.length === 0) {
+                        if (!currentRework) {
                           return <span className="text-xs text-muted-foreground">-</span>;
                         }
                         
+                        // For round robin assignment, show the assigned owner as read-only
                         return (
-                          <Select 
-                            value={lead.assignedTo || ''}
-                            onValueChange={(value) => handleAssigneeChange(lead.id, value || null)}
-                          >
-                            <SelectTrigger className="w-[140px] h-8 text-xs">
-                              <SelectValue placeholder="Select owner" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {teamStaff.map((staff) => (
-                                <SelectItem key={staff.id} value={staff.name}>
-                                  {staff.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm px-2 py-1 bg-muted rounded">
+                              {lead.assignedTo || 'Unassigned'}
+                            </span>
+                          </div>
                         );
                       })()}
                     </td>
