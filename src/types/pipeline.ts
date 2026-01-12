@@ -30,7 +30,8 @@ export interface Lead {
   shippingMethod?: ShippingMethod;
   trackingNumber?: string;
   reworkRequired: boolean;
-  reworkReason?: string;
+  reworkReasonId?: string;
+  assignedTo?: string;
 }
 
 export interface ReworkConfig {
@@ -38,6 +39,7 @@ export interface ReworkConfig {
   descriptionTh: string;
   descriptionEn: string;
   team: string;
+  teamMembers: string[];
   automationEnabled: boolean;
   automationDays?: number;
   targetReason?: string;

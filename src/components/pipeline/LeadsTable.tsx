@@ -4,9 +4,11 @@ import {
   ChevronRight, 
   ExternalLink, 
   MoreVertical,
-  ArrowUpDown 
+  ArrowUpDown,
+  AlertTriangle,
+  CheckCircle
 } from 'lucide-react';
-import { Lead, PipelineStage, LeadType } from '@/types/pipeline';
+import { Lead, PipelineStage, LeadType, ReworkConfig } from '@/types/pipeline';
 import { cn } from '@/lib/utils';
 import {
   Select,
@@ -27,6 +29,8 @@ interface LeadsTableProps {
   leads: Lead[];
   stage: PipelineStage;
   leadTypeFilter?: LeadType;
+  reworkConfigs: ReworkConfig[];
+  onLeadUpdate?: (leadId: string, updates: Partial<Lead>) => void;
 }
 
 const statusOptions = [
@@ -44,21 +48,6 @@ const paymentStatusOptions = [
   { value: 'paid', label: 'Paid' },
 ];
 
-function getDisplayStatus(status: string): string {
-  const mapping: Record<string, string> = {
-    docs_collected: 'Pending Review',
-    docs_pending: 'Pending Review',
-    docs_approved: 'Pending Issuance',
-    pending_review: 'Pending Review',
-    under_review: 'Under Review',
-    de_in_progress: 'DE in Progress',
-    ready_for_de: 'Ready For DE',
-    pending_issuance: 'Pending Issuance',
-    policy_issued: 'Policy Issued',
-  };
-  return mapping[status] || status;
-}
-
 function LeadTypeBadge({ type }: { type: LeadType }) {
   const config = {
     new_leads: { label: 'Agent', className: 'lead-badge-agent' },
@@ -69,7 +58,91 @@ function LeadTypeBadge({ type }: { type: LeadType }) {
   return <span className={cn('lead-badge', className)}>{label}</span>;
 }
 
-export function LeadsTable({ leads, stage, leadTypeFilter }: LeadsTableProps) {
+function ReworkStatusBadge({ 
+  lead, 
+  reworkConfigs,
+  onReworkChange,
+  onAssigneeChange
+}: { 
+  lead: Lead; 
+  reworkConfigs: ReworkConfig[];
+  onReworkChange: (reasonId: string | null) => void;
+  onAssigneeChange: (assignee: string | null) => void;
+}) {
+  const currentRework = lead.reworkReasonId 
+    ? reworkConfigs.find(r => r.id === lead.reworkReasonId) 
+    : null;
+
+  const teamMembers = currentRework?.teamMembers || [];
+
+  if (!lead.reworkRequired && !lead.reworkReasonId) {
+    return (
+      <div className="flex items-center gap-1.5 text-success">
+        <CheckCircle className="w-4 h-4" />
+        <span className="text-xs font-medium">Clear</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      {/* Rework Status Indicator */}
+      <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-warning/15 text-warning border border-warning/30">
+        <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+        <span className="text-xs font-semibold">Rework Required</span>
+      </div>
+
+      {/* Rework Reason Dropdown */}
+      <Select 
+        value={lead.reworkReasonId || ''} 
+        onValueChange={(value) => onReworkChange(value || null)}
+      >
+        <SelectTrigger className="h-8 text-xs bg-warning/5 border-warning/30 hover:bg-warning/10">
+          <SelectValue placeholder="Select reason" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="">Clear Rework</SelectItem>
+          {reworkConfigs.map((config) => (
+            <SelectItem key={config.id} value={config.id}>
+              <div className="flex flex-col">
+                <span>{config.descriptionEn}</span>
+                <span className="text-xs text-muted-foreground">{config.team}</span>
+              </div>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      {/* Assignee Dropdown - only show when rework reason is selected */}
+      {currentRework && teamMembers.length > 0 && (
+        <Select 
+          value={lead.assignedTo || ''} 
+          onValueChange={(value) => onAssigneeChange(value || null)}
+        >
+          <SelectTrigger className="h-8 text-xs">
+            <SelectValue placeholder={`Assign from ${currentRework.team}`} />
+          </SelectTrigger>
+          <SelectContent>
+            {teamMembers.map((member) => (
+              <SelectItem key={member} value={member}>
+                {member}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
+
+      {/* Show assigned person */}
+      {lead.assignedTo && (
+        <div className="text-xs text-muted-foreground">
+          Assigned: <span className="font-medium text-foreground">{lead.assignedTo}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLeadUpdate }: LeadsTableProps) {
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [sortColumn, setSortColumn] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
@@ -95,11 +168,33 @@ export function LeadsTable({ leads, stage, leadTypeFilter }: LeadsTableProps) {
     }
   };
 
+  const handleReworkChange = (leadId: string, reasonId: string | null) => {
+    const reworkConfig = reasonId ? reworkConfigs.find(r => r.id === reasonId) : null;
+    onLeadUpdate?.(leadId, {
+      reworkRequired: !!reasonId,
+      reworkReasonId: reasonId || undefined,
+      assignedTo: undefined, // Reset assignee when reason changes
+    });
+  };
+
+  const handleAssigneeChange = (leadId: string, assignee: string | null) => {
+    onLeadUpdate?.(leadId, {
+      assignedTo: assignee || undefined,
+    });
+  };
+
   // Filter leads based on stage and lead type
   let filteredLeads = leads;
   if (stage === 'to_pay' && leadTypeFilter) {
     filteredLeads = leads.filter((lead) => lead.leadType === leadTypeFilter);
   }
+
+  // Sort leads to show rework required first
+  const sortedLeads = [...filteredLeads].sort((a, b) => {
+    if (a.reworkRequired && !b.reworkRequired) return -1;
+    if (!a.reworkRequired && b.reworkRequired) return 1;
+    return 0;
+  });
 
   const SortableHeader = ({ column, children }: { column: string; children: React.ReactNode }) => (
     <th className="data-table-header px-4 py-3 text-left">
@@ -124,6 +219,12 @@ export function LeadsTable({ leads, stage, leadTypeFilter }: LeadsTableProps) {
               <SortableHeader column="agent">Agent</SortableHeader>
               <SortableHeader column="createdOn">Created On</SortableHeader>
               <th className="data-table-header px-4 py-3 text-left">Vehicle Details</th>
+              <th className="data-table-header px-4 py-3 text-left min-w-[200px]">
+                <div className="flex items-center gap-1">
+                  <AlertTriangle className="w-3.5 h-3.5 text-warning" />
+                  Rework Status
+                </div>
+              </th>
               <SortableHeader column="rf">RF</SortableHeader>
               <SortableHeader column="sc">SC</SortableHeader>
               <SortableHeader column="status">Status</SortableHeader>
@@ -132,15 +233,21 @@ export function LeadsTable({ leads, stage, leadTypeFilter }: LeadsTableProps) {
             </tr>
           </thead>
           <tbody>
-            {filteredLeads.length === 0 ? (
+            {sortedLeads.length === 0 ? (
               <tr>
-                <td colSpan={10} className="px-4 py-12 text-center text-muted-foreground">
+                <td colSpan={11} className="px-4 py-12 text-center text-muted-foreground">
                   No leads found for this stage
                 </td>
               </tr>
             ) : (
-              filteredLeads.map((lead) => (
-                <tr key={lead.id} className="data-table-row">
+              sortedLeads.map((lead) => (
+                <tr 
+                  key={lead.id} 
+                  className={cn(
+                    'data-table-row',
+                    lead.reworkRequired && 'bg-warning/5'
+                  )}
+                >
                   <td className="px-4 py-3">
                     <button
                       onClick={() => toggleRow(lead.id)}
@@ -177,6 +284,14 @@ export function LeadsTable({ leads, stage, leadTypeFilter }: LeadsTableProps) {
                       <span className="text-sm font-medium">{lead.vehicleDetails || '-'}</span>
                       <span className="text-xs text-muted-foreground">N/A</span>
                     </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <ReworkStatusBadge 
+                      lead={lead} 
+                      reworkConfigs={reworkConfigs}
+                      onReworkChange={(reasonId) => handleReworkChange(lead.id, reasonId)}
+                      onAssigneeChange={(assignee) => handleAssigneeChange(lead.id, assignee)}
+                    />
                   </td>
                   <td className="px-4 py-3">
                     <Button variant="outline" size="sm" className="text-xs">
@@ -241,7 +356,7 @@ export function LeadsTable({ leads, stage, leadTypeFilter }: LeadsTableProps) {
       {/* Pagination */}
       <div className="flex items-center justify-between px-4 py-3 border-t border-border bg-muted/30">
         <span className="text-sm text-muted-foreground">
-          Showing 1 to {filteredLeads.length} of {filteredLeads.length} results
+          Showing 1 to {sortedLeads.length} of {sortedLeads.length} results
         </span>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">

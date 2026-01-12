@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Users } from 'lucide-react';
 import { ReworkConfig } from '@/types/pipeline';
-import { mockReworkConfigs, teams } from '@/data/mockLeads';
+import { teams } from '@/data/mockLeads';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -21,14 +22,48 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 
-export function AdminReworkLog() {
-  const [reworkConfigs, setReworkConfigs] = useState<ReworkConfig[]>(mockReworkConfigs);
+interface AdminReworkLogProps {
+  reworkConfigs: ReworkConfig[];
+  onUpdate: (configs: ReworkConfig[]) => void;
+}
+
+export function AdminReworkLog({ reworkConfigs, onUpdate }: AdminReworkLogProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingConfig, setEditingConfig] = useState<ReworkConfig | null>(null);
+  const [newMember, setNewMember] = useState('');
+
+  const [formData, setFormData] = useState<Partial<ReworkConfig>>({
+    descriptionTh: '',
+    descriptionEn: '',
+    team: '',
+    teamMembers: [],
+    automationEnabled: false,
+    automationDays: undefined,
+    targetReason: '',
+  });
+
+  const openDialog = (config?: ReworkConfig) => {
+    if (config) {
+      setEditingConfig(config);
+      setFormData({ ...config });
+    } else {
+      setEditingConfig(null);
+      setFormData({
+        descriptionTh: '',
+        descriptionEn: '',
+        team: '',
+        teamMembers: [],
+        automationEnabled: false,
+        automationDays: undefined,
+        targetReason: '',
+      });
+    }
+    setIsDialogOpen(true);
+  };
 
   const toggleAutomation = (id: string) => {
-    setReworkConfigs((prev) =>
-      prev.map((config) =>
+    onUpdate(
+      reworkConfigs.map((config) =>
         config.id === id
           ? { ...config, automationEnabled: !config.automationEnabled }
           : config
@@ -36,13 +71,50 @@ export function AdminReworkLog() {
     );
   };
 
-  const handleEdit = (config: ReworkConfig) => {
-    setEditingConfig(config);
-    setIsDialogOpen(true);
+  const handleDelete = (id: string) => {
+    onUpdate(reworkConfigs.filter((config) => config.id !== id));
   };
 
-  const handleDelete = (id: string) => {
-    setReworkConfigs((prev) => prev.filter((config) => config.id !== id));
+  const handleSave = () => {
+    if (editingConfig) {
+      onUpdate(
+        reworkConfigs.map((config) =>
+          config.id === editingConfig.id
+            ? { ...config, ...formData }
+            : config
+        )
+      );
+    } else {
+      const newConfig: ReworkConfig = {
+        id: String(Date.now()),
+        descriptionTh: formData.descriptionTh || '',
+        descriptionEn: formData.descriptionEn || '',
+        team: formData.team || '',
+        teamMembers: formData.teamMembers || [],
+        automationEnabled: formData.automationEnabled || false,
+        automationDays: formData.automationDays,
+        targetReason: formData.targetReason,
+      };
+      onUpdate([...reworkConfigs, newConfig]);
+    }
+    setIsDialogOpen(false);
+  };
+
+  const addTeamMember = () => {
+    if (newMember.trim() && !formData.teamMembers?.includes(newMember.trim())) {
+      setFormData({
+        ...formData,
+        teamMembers: [...(formData.teamMembers || []), newMember.trim()],
+      });
+      setNewMember('');
+    }
+  };
+
+  const removeTeamMember = (member: string) => {
+    setFormData({
+      ...formData,
+      teamMembers: formData.teamMembers?.filter((m) => m !== member) || [],
+    });
   };
 
   return (
@@ -51,17 +123,17 @@ export function AdminReworkLog() {
         <div>
           <h2 className="text-lg font-semibold">Admin Rework Log</h2>
           <p className="text-sm text-muted-foreground">
-            Manage rework reasons and automation settings
+            Manage rework reasons, team assignments, and automation settings
           </p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => setEditingConfig(null)}>
+            <Button onClick={() => openDialog()}>
               <Plus className="w-4 h-4 mr-2" />
               Add Rework Reason
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px]">
+          <DialogContent className="sm:max-w-[550px]">
             <DialogHeader>
               <DialogTitle>
                 {editingConfig ? 'Edit Rework Reason' : 'Add New Rework Reason'}
@@ -72,7 +144,8 @@ export function AdminReworkLog() {
                 <Label htmlFor="descriptionTh">Description (Thai)</Label>
                 <Input
                   id="descriptionTh"
-                  defaultValue={editingConfig?.descriptionTh}
+                  value={formData.descriptionTh}
+                  onChange={(e) => setFormData({ ...formData, descriptionTh: e.target.value })}
                   placeholder="Enter Thai description"
                 />
               </div>
@@ -80,13 +153,17 @@ export function AdminReworkLog() {
                 <Label htmlFor="descriptionEn">Description (English)</Label>
                 <Input
                   id="descriptionEn"
-                  defaultValue={editingConfig?.descriptionEn}
+                  value={formData.descriptionEn}
+                  onChange={(e) => setFormData({ ...formData, descriptionEn: e.target.value })}
                   placeholder="Enter English description"
                 />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="team">Team</Label>
-                <Select defaultValue={editingConfig?.team}>
+                <Select 
+                  value={formData.team} 
+                  onValueChange={(value) => setFormData({ ...formData, team: value })}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select team" />
                   </SelectTrigger>
@@ -99,40 +176,84 @@ export function AdminReworkLog() {
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* Team Members Management */}
+              <div className="grid gap-2">
+                <Label>Team Members (Assignees)</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={newMember}
+                    onChange={(e) => setNewMember(e.target.value)}
+                    placeholder="Add team member name"
+                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTeamMember())}
+                  />
+                  <Button type="button" variant="outline" onClick={addTeamMember}>
+                    Add
+                  </Button>
+                </div>
+                {formData.teamMembers && formData.teamMembers.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {formData.teamMembers.map((member) => (
+                      <Badge key={member} variant="secondary" className="gap-1">
+                        {member}
+                        <button
+                          type="button"
+                          onClick={() => removeTeamMember(member)}
+                          className="ml-1 hover:text-destructive"
+                        >
+                          ×
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <div className="flex items-center justify-between">
                 <Label htmlFor="automation">Enable Automation</Label>
-                <Switch id="automation" defaultChecked={editingConfig?.automationEnabled} />
+                <Switch 
+                  id="automation" 
+                  checked={formData.automationEnabled}
+                  onCheckedChange={(checked) => setFormData({ ...formData, automationEnabled: checked })}
+                />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="days">Days</Label>
-                  <Input
-                    id="days"
-                    type="number"
-                    defaultValue={editingConfig?.automationDays}
-                    placeholder="Number of days"
-                  />
+              
+              {formData.automationEnabled && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="days">Days</Label>
+                    <Input
+                      id="days"
+                      type="number"
+                      value={formData.automationDays || ''}
+                      onChange={(e) => setFormData({ ...formData, automationDays: parseInt(e.target.value) || undefined })}
+                      placeholder="Number of days"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="targetReason">Target Reason</Label>
+                    <Select 
+                      value={formData.targetReason || ''}
+                      onValueChange={(value) => setFormData({ ...formData, targetReason: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select reason" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="document_incomplete">Document Incomplete</SelectItem>
+                        <SelectItem value="payment_issue">Payment Issue</SelectItem>
+                        <SelectItem value="verification_failed">Verification Failed</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="targetReason">Target Reason</Label>
-                  <Select defaultValue={editingConfig?.targetReason}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select reason" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="document_incomplete">Document Incomplete</SelectItem>
-                      <SelectItem value="payment_issue">Payment Issue</SelectItem>
-                      <SelectItem value="verification_failed">Verification Failed</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+              )}
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={() => setIsDialogOpen(false)}>
+              <Button onClick={handleSave}>
                 {editingConfig ? 'Update' : 'Create'}
               </Button>
             </div>
@@ -147,6 +268,12 @@ export function AdminReworkLog() {
               <th className="data-table-header px-4 py-3 text-left">Description (TH)</th>
               <th className="data-table-header px-4 py-3 text-left">Description (EN)</th>
               <th className="data-table-header px-4 py-3 text-left">Team</th>
+              <th className="data-table-header px-4 py-3 text-left">
+                <div className="flex items-center gap-1">
+                  <Users className="w-3.5 h-3.5" />
+                  Team Members
+                </div>
+              </th>
               <th className="data-table-header px-4 py-3 text-center">Automation</th>
               <th className="data-table-header px-4 py-3 text-center">Days</th>
               <th className="data-table-header px-4 py-3 text-left">Target Reason</th>
@@ -158,7 +285,23 @@ export function AdminReworkLog() {
               <tr key={config.id} className="data-table-row">
                 <td className="px-4 py-3 text-sm">{config.descriptionTh}</td>
                 <td className="px-4 py-3 text-sm">{config.descriptionEn}</td>
-                <td className="px-4 py-3 text-sm">{config.team}</td>
+                <td className="px-4 py-3 text-sm">
+                  <Badge variant="outline">{config.team}</Badge>
+                </td>
+                <td className="px-4 py-3">
+                  <div className="flex flex-wrap gap-1">
+                    {config.teamMembers.slice(0, 2).map((member) => (
+                      <Badge key={member} variant="secondary" className="text-xs">
+                        {member}
+                      </Badge>
+                    ))}
+                    {config.teamMembers.length > 2 && (
+                      <Badge variant="secondary" className="text-xs">
+                        +{config.teamMembers.length - 2}
+                      </Badge>
+                    )}
+                  </div>
+                </td>
                 <td className="px-4 py-3 text-center">
                   <Switch
                     checked={config.automationEnabled}
@@ -176,7 +319,7 @@ export function AdminReworkLog() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleEdit(config)}
+                      onClick={() => openDialog(config)}
                       className="h-8 w-8 p-0"
                     >
                       <Pencil className="w-4 h-4" />
