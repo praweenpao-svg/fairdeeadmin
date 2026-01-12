@@ -41,22 +41,27 @@ const statusOptionsByStage: Record<PipelineStage, { value: string; label: string
     { value: 'completed', label: 'Completed' },
     { value: 'quotation_shared', label: 'Quotation Shared With Agent' },
     { value: 'invalid', label: 'Invalid' },
+    { value: 'rework_required', label: 'Rework Required' },
   ],
   to_report: [
     { value: 'pending_review', label: 'Pending Review' },
     { value: 'under_review', label: 'Under Review' },
     { value: 'de_in_progress', label: 'DE in Progress' },
+    { value: 'rework_required', label: 'Rework Required' },
   ],
   to_issue: [
     { value: 'pending_issuance', label: 'Pending Issuance' },
+    { value: 'rework_required', label: 'Rework Required' },
   ],
   to_deliver: [
     { value: 'policy_issued', label: 'Policy Issued' },
+    { value: 'rework_required', label: 'Rework Required' },
   ],
   completed: [
     { value: 'policy_issued', label: 'Policy Issued' },
     { value: 'policy_shipped', label: 'Policy Shipped' },
     { value: 'policy_delivered', label: 'Policy Delivered' },
+    { value: 'rework_required', label: 'Rework Required' },
   ],
 };
 
@@ -104,17 +109,17 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
   const [reworkDialogOpen, setReworkDialogOpen] = useState(false);
   const [reworkHistoryDialogOpen, setReworkHistoryDialogOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
-  const [pendingReworkReasonId, setPendingReworkReasonId] = useState<string | null>(null);
 
-  const handleReworkSelectChange = (leadId: string, reasonId: string | null) => {
-    if (reasonId && reasonId !== 'none') {
-      const lead = leads.find(l => l.id === leadId);
-      setSelectedLead(lead || null);
-      setPendingReworkReasonId(reasonId);
+  // Filter rework configs by current stage
+  const stageReworkConfigs = reworkConfigs.filter(config => config.stages.includes(stage));
+
+  const handleStatusChange = (lead: Lead, newStatus: string) => {
+    if (newStatus === 'rework_required') {
+      setSelectedLead(lead);
       setReworkDialogOpen(true);
     } else {
-      // Clear rework
-      onLeadUpdate?.(leadId, {
+      onLeadUpdate?.(lead.id, {
+        saleStatus: newStatus as Lead['saleStatus'],
         reworkRequired: false,
         reworkReasonId: undefined,
         assignedTo: undefined,
@@ -122,16 +127,16 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
     }
   };
 
-  const handleReworkConfirm = (details: string, attachments: ReworkAttachment[]) => {
-    if (!selectedLead || !pendingReworkReasonId) return;
+  const handleReworkConfirm = (reasonId: string, details: string, attachments: ReworkAttachment[]) => {
+    if (!selectedLead) return;
 
-    const reworkConfig = reworkConfigs.find(r => r.id === pendingReworkReasonId);
+    const reworkConfig = reworkConfigs.find(r => r.id === reasonId);
     const reasonLabel = reworkConfig?.descriptionEn || 'Unknown';
     
     // Create new history entry
     const historyEntry: ReworkHistoryEntry = {
       id: crypto.randomUUID(),
-      reasonId: pendingReworkReasonId,
+      reasonId,
       reasonLabel,
       details,
       attachments,
@@ -152,13 +157,12 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
 
     onLeadUpdate?.(selectedLead.id, {
       reworkRequired: true,
-      reworkReasonId: pendingReworkReasonId,
+      reworkReasonId: reasonId,
       assignedTo: assignedOwner,
       reworkHistory: [...selectedLead.reworkHistory, historyEntry],
     });
 
     setSelectedLead(null);
-    setPendingReworkReasonId(null);
   };
 
   const handleOpenReworkHistory = (lead: Lead) => {
@@ -172,8 +176,14 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
     filteredLeads = leads.filter((lead) => lead.leadType === leadTypeFilter);
   }
 
-  // Sort leads to show rework required first
+  // Sort leads by timestamp (most recent first), then rework required
   const sortedLeads = [...filteredLeads].sort((a, b) => {
+    // First, sort by createdOn date (most recent first)
+    const dateA = new Date(a.createdOn).getTime();
+    const dateB = new Date(b.createdOn).getTime();
+    if (dateB !== dateA) return dateB - dateA;
+    
+    // Then prioritize rework required
     if (a.reworkRequired && !b.reworkRequired) return -1;
     if (!a.reworkRequired && b.reworkRequired) return 1;
     return 0;
@@ -203,7 +213,6 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
                 <SortableHeader column="createdOn">Created on</SortableHeader>
                 <th className="data-table-header px-4 py-3 text-left">Vehicle details</th>
                 <SortableHeader column="status">Status</SortableHeader>
-                <th className="data-table-header px-4 py-3 text-left">Rework status</th>
                 <th className="data-table-header px-4 py-3 text-left">Owner</th>
                 <th className="data-table-header w-10 px-4 py-3"></th>
               </tr>
@@ -211,7 +220,7 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
             <tbody>
               {sortedLeads.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="px-4 py-12 text-center text-muted-foreground">
+                  <td colSpan={8} className="px-4 py-12 text-center text-muted-foreground">
                     No leads found for this stage
                   </td>
                 </tr>
@@ -263,32 +272,20 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <Select defaultValue={lead.saleStatus || defaultStatusByStage[stage]}>
-                        <SelectTrigger className="w-[200px] h-8 text-xs">
+                      <Select 
+                        value={lead.reworkRequired ? 'rework_required' : (lead.saleStatus || defaultStatusByStage[stage])}
+                        onValueChange={(value) => handleStatusChange(lead, value)}
+                      >
+                        <SelectTrigger className={cn(
+                          "w-[200px] h-8 text-xs",
+                          lead.reworkRequired && "border-warning text-warning"
+                        )}>
                           <SelectValue placeholder="Select status" />
                         </SelectTrigger>
                         <SelectContent>
                           {statusOptionsByStage[stage].map((option) => (
                             <SelectItem key={option.value} value={option.value}>
                               {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </td>
-                    <td className="px-4 py-3">
-                      <Select 
-                        value={lead.reworkReasonId || 'none'}
-                        onValueChange={(value) => handleReworkSelectChange(lead.id, value === 'none' ? null : value)}
-                      >
-                        <SelectTrigger className="w-[220px] h-8 text-xs">
-                          <SelectValue placeholder="No rework" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">No rework</SelectItem>
-                          {reworkConfigs.map((config) => (
-                            <SelectItem key={config.id} value={config.id}>
-                              {config.descriptionEn}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -343,10 +340,9 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
           setReworkDialogOpen(open);
           if (!open) {
             setSelectedLead(null);
-            setPendingReworkReasonId(null);
           }
         }}
-        reasonLabel={reworkConfigs.find(r => r.id === pendingReworkReasonId)?.descriptionEn || ''}
+        reworkConfigs={stageReworkConfigs}
         onConfirm={handleReworkConfirm}
       />
 
