@@ -16,6 +16,8 @@ interface PipelineTabsProps {
   leads: Lead[];
   myCasesOnly: boolean;
   onMyCasesChange: (checked: boolean) => void;
+  reworkOnly: boolean;
+  onReworkOnlyChange: (checked: boolean) => void;
 }
 
 const stageConfig = [
@@ -123,6 +125,8 @@ export function PipelineTabs({
   leads,
   myCasesOnly,
   onMyCasesChange,
+  reworkOnly,
+  onReworkOnlyChange,
 }: PipelineTabsProps) {
   return (
     <div className="flex items-center justify-between border-b border-border bg-card px-4">
@@ -160,18 +164,31 @@ export function PipelineTabs({
         })}
       </div>
       
-      {/* My Cases Toggle */}
-      <button
-        onClick={() => onMyCasesChange(!myCasesOnly)}
-        className={cn(
-          'px-3 py-1.5 text-sm font-medium rounded-md transition-colors',
-          myCasesOnly
-            ? 'bg-primary text-primary-foreground'
-            : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-        )}
-      >
-        My Cases
-      </button>
+      {/* Toggle Filters */}
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => onReworkOnlyChange(!reworkOnly)}
+          className={cn(
+            'px-3 py-1.5 text-sm font-medium rounded-md transition-colors',
+            reworkOnly
+              ? 'bg-destructive text-destructive-foreground'
+              : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+          )}
+        >
+          Rework Required
+        </button>
+        <button
+          onClick={() => onMyCasesChange(!myCasesOnly)}
+          className={cn(
+            'px-3 py-1.5 text-sm font-medium rounded-md transition-colors',
+            myCasesOnly
+              ? 'bg-primary text-primary-foreground'
+              : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+          )}
+        >
+          My Cases
+        </button>
+      </div>
     </div>
   );
 }
