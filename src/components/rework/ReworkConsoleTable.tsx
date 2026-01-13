@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
 
 interface ReworkConsoleTableProps {
   reworkConfigs: ReworkConfig[];
@@ -50,6 +51,9 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
     team: '',
     assignment: 'rf_sc',
     stages: [],
+    automationEnabled: false,
+    automationDays: undefined,
+    targetReason: undefined,
   });
 
   const openDialog = (config?: ReworkConfig) => {
@@ -64,6 +68,9 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
         team: '',
         assignment: 'rf_sc',
         stages: [],
+        automationEnabled: false,
+        automationDays: undefined,
+        targetReason: undefined,
       });
     }
     setIsDialogOpen(true);
@@ -92,7 +99,9 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
         descriptionEn: formData.descriptionEn || '',
         team: teamValue,
         teamMembers: [],
-        automationEnabled: false,
+        automationEnabled: formData.automationEnabled || false,
+        automationDays: formData.automationDays,
+        targetReason: formData.targetReason,
         assignment: formData.assignment || 'rf_sc',
         stages: formData.stages || [],
       };
@@ -119,6 +128,12 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
       return '-';
     }
     return config.team || '-';
+  };
+
+  const getTargetReasonLabel = (targetReasonId?: string) => {
+    if (!targetReasonId) return '-';
+    const targetConfig = reworkConfigs.find(c => c.id === targetReasonId);
+    return targetConfig?.descriptionEn || '-';
   };
 
   return (
@@ -230,6 +245,71 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                     ))}
                   </div>
                 </div>
+
+                {/* Date Automation Section */}
+                <div className="border-t pt-4 mt-2">
+                  <h4 className="text-sm font-medium mb-3">Date Automation (Self-Healing)</h4>
+                  
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="automationEnabled">Enable Auto-Move</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Automatically escalate after threshold days
+                      </p>
+                    </div>
+                    <Switch
+                      id="automationEnabled"
+                      checked={formData.automationEnabled || false}
+                      onCheckedChange={(checked) => setFormData({ ...formData, automationEnabled: checked })}
+                    />
+                  </div>
+
+                  {formData.automationEnabled && (
+                    <div className="grid gap-4">
+                      <div className="grid gap-2">
+                        <Label htmlFor="automationDays">Threshold (Days)</Label>
+                        <Input
+                          id="automationDays"
+                          type="number"
+                          min={1}
+                          value={formData.automationDays || ''}
+                          onChange={(e) => setFormData({ 
+                            ...formData, 
+                            automationDays: e.target.value ? parseInt(e.target.value) : undefined 
+                          })}
+                          placeholder="Enter number of days"
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="targetReason">Target Status</Label>
+                        <Select 
+                          value={formData.targetReason || '__none__'} 
+                          onValueChange={(value) => setFormData({ 
+                            ...formData, 
+                            targetReason: value === '__none__' ? undefined : value 
+                          })}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select target rework reason" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="__none__">Select target reason</SelectItem>
+                            {reworkConfigs
+                              .filter(c => c.id !== editingConfig?.id)
+                              .map((config) => (
+                                <SelectItem key={config.id} value={config.id}>
+                                  {config.descriptionEn}
+                                </SelectItem>
+                              ))}
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-muted-foreground">
+                          Where the record moves after threshold is reached
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
@@ -253,6 +333,9 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
               <th className="data-table-header px-4 py-3 text-left">Assignment Logic</th>
               <th className="data-table-header px-4 py-3 text-left">Teams</th>
               <th className="data-table-header px-4 py-3 text-left">Stages</th>
+              <th className="data-table-header px-4 py-3 text-center">Auto-Move</th>
+              <th className="data-table-header px-4 py-3 text-center">Threshold</th>
+              <th className="data-table-header px-4 py-3 text-left">Target Status</th>
               <th className="data-table-header px-4 py-3 text-right">Actions</th>
             </tr>
           </thead>
@@ -266,6 +349,17 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                 </td>
                 <td className="px-4 py-3 text-sm">{getTeamDisplay(config)}</td>
                 <td className="px-4 py-3 text-sm">{getStageLabels(config.stages || [])}</td>
+                <td className="px-4 py-3 text-sm text-center">
+                  <span className={config.automationEnabled ? 'text-green-500' : 'text-muted-foreground'}>
+                    {config.automationEnabled ? 'ON' : 'OFF'}
+                  </span>
+                </td>
+                <td className="px-4 py-3 text-sm text-center">
+                  {config.automationEnabled && config.automationDays ? `${config.automationDays} days` : '-'}
+                </td>
+                <td className="px-4 py-3 text-sm">
+                  {config.automationEnabled ? getTargetReasonLabel(config.targetReason) : '-'}
+                </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center justify-end gap-1">
                     <Button
