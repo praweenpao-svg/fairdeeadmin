@@ -418,6 +418,8 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConf
 
   const SortableHeader = ({ field, label }: { field: SortField; label: string }) => {
     const isActive = sortConfig.field === field;
+    const ArrowIcon = sortConfig.direction === 'asc' ? ArrowUp : ArrowDown;
+    
     return (
       <th
         className="data-table-header px-4 py-3 text-left cursor-pointer hover:bg-muted/50 transition-colors select-none"
@@ -425,24 +427,9 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConf
       >
         <div className="flex items-center gap-1">
           <span>{label}</span>
-          <div className="flex flex-col">
-            <ArrowUp
-              className={cn(
-                'h-3 w-3 -mb-1',
-                isActive && sortConfig.direction === 'asc'
-                  ? 'text-primary'
-                  : 'text-muted-foreground/40'
-              )}
-            />
-            <ArrowDown
-              className={cn(
-                'h-3 w-3',
-                isActive && sortConfig.direction === 'desc'
-                  ? 'text-primary'
-                  : 'text-muted-foreground/40'
-              )}
-            />
-          </div>
+          {isActive && (
+            <ArrowIcon className="h-4 w-4 text-primary" />
+          )}
         </div>
       </th>
     );
@@ -459,7 +446,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConf
                 <th className="data-table-header px-4 py-3 text-left">Leads</th>
                 <th className="data-table-header px-4 py-3 text-left">Agent</th>
                 <SortableHeader field="createdOn" label="Created On" />
-                <SortableHeader field="updatedOn" label="Latest Updated On" />
+                <SortableHeader field="updatedOn" label="Updated On" />
                 <th className="data-table-header px-4 py-3 text-left">Vehicle details</th>
                 <th className="data-table-header px-4 py-3 text-left">RF</th>
                 <th className="data-table-header px-4 py-3 text-left">SC</th>
