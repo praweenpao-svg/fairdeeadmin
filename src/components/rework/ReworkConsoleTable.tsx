@@ -30,6 +30,7 @@ interface ReworkConsoleTableProps {
 const assignmentOptions: { value: AssignmentType; label: string }[] = [
   { value: 'rf_sc', label: 'RF/SC' },
   { value: 'round_robin', label: 'Round-Robin' },
+  { value: 'none', label: '-' },
 ];
 
 const stageOptions: { value: PipelineStage; label: string }[] = [
@@ -81,8 +82,8 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
   };
 
   const handleSave = () => {
-    // If RF/SC, clear team since it's not used
-    const teamValue = formData.assignment === 'rf_sc' ? '' : (formData.team || '');
+    // If RF/SC or none, clear team since it's not used
+    const teamValue = formData.assignment === 'rf_sc' || formData.assignment === 'none' ? '' : (formData.team || '');
     
     if (editingConfig) {
       onUpdate(
@@ -124,7 +125,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
   };
 
   const getTeamDisplay = (config: ReworkConfig) => {
-    if (config.assignment === 'rf_sc') {
+    if (config.assignment === 'rf_sc' || config.assignment === 'none') {
       return '-';
     }
     return config.team || '-';
@@ -186,7 +187,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                     onValueChange={(value) => setFormData({ 
                       ...formData, 
                       assignment: value as AssignmentType,
-                      team: value === 'rf_sc' ? '' : formData.team 
+                      team: value === 'rf_sc' || value === 'none' ? '' : formData.team 
                     })}
                   >
                     <SelectTrigger>
@@ -203,6 +204,8 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                   <p className="text-xs text-muted-foreground">
                     {formData.assignment === 'rf_sc' 
                       ? 'Assigns to SC person if claimed, otherwise RF person'
+                      : formData.assignment === 'none'
+                      ? 'No owner assignment for this rework reason'
                       : 'Distributes tasks fairly among selected team members'}
                   </p>
                 </div>
