@@ -25,11 +25,14 @@ import { mockStaffMembers } from '@/data/mockStaff';
 import { ReworkDialog } from './ReworkDialog';
 import { ReworkHistoryDialog } from './ReworkHistoryDialog';
 
+import { SortConfig } from './SortControl';
+
 interface LeadsTableProps {
   leads: Lead[];
   stage: PipelineStage;
   reworkConfigs: ReworkConfig[];
   onLeadUpdate?: (leadId: string, updates: Partial<Lead>) => void;
+  sortConfig: SortConfig;
 }
 
 const statusOptionsByStage: Record<PipelineStage, { value: string; label: string }[]> = {
@@ -138,7 +141,15 @@ function getNextDERoundRobin(): string | undefined {
   return getNextRoundRobinStaff('DE');
 }
 
-export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsTableProps) {
+// Parse DD-MM-YYYY HH:MM format to Date
+function parseDateTime(dateStr: string): Date {
+  const [datePart, timePart] = dateStr.split(' ');
+  const [day, month, year] = datePart.split('-').map(Number);
+  const [hours, minutes] = (timePart || '00:00').split(':').map(Number);
+  return new Date(year, month - 1, day, hours, minutes);
+}
+
+export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConfig }: LeadsTableProps) {
   const [reworkDialogOpen, setReworkDialogOpen] = useState(false);
   const [reworkHistoryDialogOpen, setReworkHistoryDialogOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
@@ -340,12 +351,14 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
     setReworkHistoryDialogOpen(true);
   };
 
-  // Sort leads by timestamp (most recent first), then rework required
+  // Sort leads based on sortConfig
   const sortedLeads = [...leads].sort((a, b) => {
-    // First, sort by createdOn date (most recent first)
-    const dateA = new Date(a.createdOn).getTime();
-    const dateB = new Date(b.createdOn).getTime();
-    if (dateB !== dateA) return dateB - dateA;
+    const dateField = sortConfig.field;
+    const dateA = parseDateTime(a[dateField]).getTime();
+    const dateB = parseDateTime(b[dateField]).getTime();
+    
+    const comparison = sortConfig.direction === 'asc' ? dateA - dateB : dateB - dateA;
+    if (comparison !== 0) return comparison;
     
     // Then prioritize rework required
     if (a.reworkRequired && !b.reworkRequired) return -1;
@@ -397,7 +410,8 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                 <th className="data-table-header w-10 px-4 py-3"></th>
                 <th className="data-table-header px-4 py-3 text-left">Leads</th>
                 <th className="data-table-header px-4 py-3 text-left">Agent</th>
-                <th className="data-table-header px-4 py-3 text-left">Created on</th>
+                <th className="data-table-header px-4 py-3 text-left">Created On</th>
+                <th className="data-table-header px-4 py-3 text-left">Latest Updated On</th>
                 <th className="data-table-header px-4 py-3 text-left">Vehicle details</th>
                 <th className="data-table-header px-4 py-3 text-left">RF</th>
                 <th className="data-table-header px-4 py-3 text-left">SC</th>
@@ -412,7 +426,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
             <tbody>
               {sortedLeads.length === 0 ? (
                 <tr>
-                  <td colSpan={showDEColumn ? 11 : 10} className="px-4 py-12 text-center text-muted-foreground">
+                  <td colSpan={showDEColumn ? 12 : 11} className="px-4 py-12 text-center text-muted-foreground">
                     No leads found for this stage
                   </td>
                 </tr>
@@ -457,6 +471,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                       </div>
                     </td>
                     <td className="px-4 py-3 text-sm">{lead.createdOn}</td>
+                    <td className="px-4 py-3 text-sm">{lead.updatedOn}</td>
                     <td className="px-4 py-3">
                       <div className="flex flex-col">
                         <span className="text-sm font-medium">{lead.vehicleDetails || '-'}</span>

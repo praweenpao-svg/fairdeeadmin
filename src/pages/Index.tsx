@@ -9,6 +9,8 @@ import { DateRangeFilter } from '@/components/pipeline/DateRangeFilter';
 import { AllFiltersPanel, FilterState, defaultFilterState } from '@/components/pipeline/AllFiltersPanel';
 import { OtherStagesFilterPanel, OtherStagesFilterState, defaultOtherStagesFilterState } from '@/components/pipeline/OtherStagesFilterPanel';
 import { FilterChips } from '@/components/pipeline/FilterChips';
+import { SortControl, SortConfig } from '@/components/pipeline/SortControl';
+import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { Input } from '@/components/ui/input';
 import { applyAllFilters } from '@/utils/leadFilters';
 
@@ -19,6 +21,7 @@ const Index = () => {
   const [reworkConfigs, setReworkConfigs] = useState<ReworkConfig[]>(mockReworkConfigs);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [myCasesOnly, setMyCasesOnly] = useState(true);
+  const [sortConfig, setSortConfig] = useState<SortConfig>({ field: 'createdOn', direction: 'desc' });
   
   // Filters for To Pay stage
   const [toPayFilters, setToPayFilters] = useState<FilterState>(defaultFilterState);
@@ -29,9 +32,13 @@ const Index = () => {
   const isToPayStage = activeStage === 'to_pay';
 
   const handleLeadUpdate = (leadId: string, updates: Partial<Lead>) => {
+    // Generate current timestamp in DD-MM-YYYY HH:MM format
+    const now = new Date();
+    const updatedOn = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    
     setLeads((prev) =>
       prev.map((lead) =>
-        lead.id === leadId ? { ...lead, ...updates } : lead
+        lead.id === leadId ? { ...lead, ...updates, updatedOn } : lead
       )
     );
   };
@@ -94,11 +101,12 @@ const Index = () => {
     <>
       {/* Header */}
       <header className="sticky top-0 z-30 bg-card border-b border-border">
-        <div className="flex items-center gap-4 px-6 py-3">
+        <div className="flex items-center justify-between px-6 py-3">
           <div className="flex items-center gap-2 text-muted-foreground">
             <Home className="w-4 h-4" />
             <span className="text-sm">Home</span>
           </div>
+          <NotificationBell leads={leads} currentUser={CURRENT_USER} />
         </div>
 
         {/* Pipeline Tabs */}
@@ -113,6 +121,11 @@ const Index = () => {
 
       {/* Content */}
       <div className="p-6">
+        {/* Sort Control */}
+        <div className="flex items-center justify-between mb-4">
+          <SortControl sortConfig={sortConfig} onSortChange={setSortConfig} />
+        </div>
+
         {/* Filters Row */}
         <div className="flex flex-wrap items-center gap-3 mb-6">
           <div className="relative">
@@ -161,6 +174,7 @@ const Index = () => {
           stage={activeStage}
           reworkConfigs={reworkConfigs}
           onLeadUpdate={handleLeadUpdate}
+          sortConfig={sortConfig}
         />
       </div>
     </>
