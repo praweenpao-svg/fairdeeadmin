@@ -511,12 +511,10 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
                     <td className="px-4 py-3">
                       {lead.reworkRequired ? (
                         <div 
-                          className="w-[200px] h-8 text-xs border border-warning text-warning rounded-md px-3 flex items-center justify-between cursor-pointer hover:bg-warning/10"
+                          className="w-[200px] h-8 text-xs border border-warning text-warning rounded-md px-3 flex items-center cursor-pointer hover:bg-warning/10"
                           onClick={() => handleOpenReworkHistory(lead)}
-                          title="Click to resolve rework"
                         >
-                          <span>Rework Required</span>
-                          <span className="text-[10px] opacity-70">Click to resolve</span>
+                          Rework Required
                         </div>
                       ) : (
                         <Select 
