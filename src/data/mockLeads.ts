@@ -172,6 +172,32 @@ const generateLeads = (): Lead[] => {
     });
   }
 
+  // CANCELLED (8 leads)
+  for (let i = 0; i < 8; i++) {
+    const agent = agents[i % agents.length];
+    leads.push({
+      id: String(id++),
+      leadNumber: `#${10108 - i}`,
+      leadType: i % 3 === 0 ? 'coa' : i % 5 === 0 ? 'renewals' : 'new_leads',
+      paymentType: i % 2 === 0 ? 'full' : 'installment',
+      agentId: agent.id,
+      agentName: agent.name,
+      createdOn: `${String(10 - i).padStart(2, '0')}-01-2026`,
+      vehicleDetails: vehiclePlates[(i + 4) % vehiclePlates.length],
+      rfStatus: 'completed',
+      scStatus: 'completed',
+      saleStatus: 'policy_cancelled',
+      paymentStatus: 'paid',
+      policyAttached: false,
+      reworkRequired: false,
+      createdBy: i % 2 === 0 ? 'agent' : 'admin',
+      reworkHistory: [],
+      rfAssignee: rfStaff[i % rfStaff.length],
+      scAssignee: scStaff[i % scStaff.length],
+      deAssignee: deStaff[i % deStaff.length],
+    });
+  }
+
   return leads;
 };
 
