@@ -36,10 +36,13 @@ function generateNotifications(leads: Lead[], currentUser: string): Notification
       lead.deAssignee === currentUser;
     
     if (isOwner && lead.updatedOn) {
+      // Rework is assigned to user only if they are the rework assignee (assignedTo field)
+      const reworkAssignedToMe = lead.reworkRequired && lead.assignedTo === currentUser;
+      
       notifications.push({
         id: lead.id,
         leadNumber: lead.leadNumber,
-        message: lead.reworkRequired 
+        message: reworkAssignedToMe 
           ? `Rework assigned to you` 
           : `Lead updated`,
         timestamp: lead.updatedOn,
