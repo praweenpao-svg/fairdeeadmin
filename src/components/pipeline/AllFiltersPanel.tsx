@@ -31,9 +31,9 @@ export interface FilterState {
 
 export const defaultFilterState: FilterState = {
   status: 'all',
-  rfAssignee: '',
-  scAssignee: '',
-  agent: '',
+  rfAssignee: 'all',
+  scAssignee: 'all',
+  agent: 'all',
   agentTypes: [],
   leadsType: 'all',
   createdBy: 'all',
@@ -125,9 +125,9 @@ export function AllFiltersPanel({ filters, onFiltersChange, onClear }: AllFilter
 
   const hasActiveFilters = 
     filters.status !== 'all' ||
-    filters.rfAssignee !== '' ||
-    filters.scAssignee !== '' ||
-    filters.agent !== '' ||
+    filters.rfAssignee !== 'all' ||
+    filters.scAssignee !== 'all' ||
+    filters.agent !== 'all' ||
     filters.agentTypes.length > 0 ||
     filters.leadsType !== 'all' ||
     filters.createdBy !== 'all';
@@ -180,7 +180,7 @@ export function AllFiltersPanel({ filters, onFiltersChange, onClear }: AllFilter
                   <SelectValue placeholder="Search RF" />
                 </SelectTrigger>
                 <SelectContent className="bg-card z-50">
-                  <SelectItem value="">All RF</SelectItem>
+                  <SelectItem value="all">All RF</SelectItem>
                   {rfStaff.map((staff) => (
                     <SelectItem key={staff.id} value={staff.id}>
                       {staff.name}
@@ -201,7 +201,7 @@ export function AllFiltersPanel({ filters, onFiltersChange, onClear }: AllFilter
                   <SelectValue placeholder="Search SC" />
                 </SelectTrigger>
                 <SelectContent className="bg-card z-50">
-                  <SelectItem value="">All SC</SelectItem>
+                  <SelectItem value="all">All SC</SelectItem>
                   {scStaff.map((staff) => (
                     <SelectItem key={staff.id} value={staff.id}>
                       {staff.name}
@@ -225,7 +225,7 @@ export function AllFiltersPanel({ filters, onFiltersChange, onClear }: AllFilter
                   <SelectValue placeholder="Select Agent" />
                 </SelectTrigger>
                 <SelectContent className="bg-card z-50">
-                  <SelectItem value="">All Agents</SelectItem>
+                  <SelectItem value="all">All Agents</SelectItem>
                   {mockAgents.map((agent) => (
                     <SelectItem key={agent.id} value={agent.id}>
                       {agent.id} - {agent.name}

@@ -56,7 +56,7 @@ export function FilterChips({
   }
 
   // RF Assignee chip
-  if (filters.rfAssignee) {
+  if (filters.rfAssignee && filters.rfAssignee !== 'all') {
     const staff = mockStaffMembers.find(s => s.id === filters.rfAssignee);
     chips.push(
       <Badge
@@ -74,7 +74,7 @@ export function FilterChips({
   }
 
   // SC Assignee chip
-  if (filters.scAssignee) {
+  if (filters.scAssignee && filters.scAssignee !== 'all') {
     const staff = mockStaffMembers.find(s => s.id === filters.scAssignee);
     chips.push(
       <Badge
@@ -92,7 +92,7 @@ export function FilterChips({
   }
 
   // Agent chips
-  if (filters.agent) {
+  if (filters.agent && filters.agent !== 'all') {
     const agent = mockAgents.find(a => a.id === filters.agent);
     chips.push(
       <Badge
