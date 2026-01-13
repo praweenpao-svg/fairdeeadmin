@@ -21,11 +21,19 @@ const generateLeads = (): Lead[] => {
   const leads: Lead[] = [];
   let id = 1;
 
+  // Helper to generate updatedOn (slightly after createdOn)
+  const generateUpdatedOn = (createdOn: string, hoursOffset: number = 2): string => {
+    const [day, month, year] = createdOn.split('-').map(Number);
+    const date = new Date(year, month - 1, day, 9 + hoursOffset, Math.floor(Math.random() * 60));
+    return `${String(date.getDate()).padStart(2, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}-${date.getFullYear()} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+  };
+
   // TO PAY (15 leads)
   for (let i = 0; i < 15; i++) {
     const agent = agents[i % agents.length];
     const hasRework = i >= 13;
     const hasSC = i % 3 !== 0;
+    const createdOn = `${String(7 - Math.floor(i / 3)).padStart(2, '0')}-01-2026`;
     leads.push({
       id: String(id++),
       leadNumber: `#${10154 - i}`,
@@ -33,7 +41,8 @@ const generateLeads = (): Lead[] => {
       paymentType: i % 2 === 0 ? 'full' : 'installment',
       agentId: agent.id,
       agentName: agent.name,
-      createdOn: `${String(7 - Math.floor(i / 3)).padStart(2, '0')}-01-2026`,
+      createdOn: `${createdOn} 09:00`,
+      updatedOn: generateUpdatedOn(createdOn, i % 8),
       vehicleDetails: vehiclePlates[i % vehiclePlates.length],
       rfStatus: i < 2 ? 'pending' : 'transferred',
       scStatus: hasSC ? 'claimed' : 'pending',
@@ -55,6 +64,7 @@ const generateLeads = (): Lead[] => {
     const agent = agents[i % agents.length];
     const hasRework = i >= 13;
     const hasSC = i % 4 !== 0;
+    const createdOn = `${String(23 - i).padStart(2, '0')}-09-2025`;
     leads.push({
       id: String(id++),
       leadNumber: `#${10143 - i}`,
@@ -62,7 +72,8 @@ const generateLeads = (): Lead[] => {
       paymentType: i % 2 === 0 ? 'full' : 'installment',
       agentId: agent.id,
       agentName: agent.name,
-      createdOn: `${String(23 - i).padStart(2, '0')}-09-2025`,
+      createdOn: `${createdOn} 10:00`,
+      updatedOn: generateUpdatedOn(createdOn, i % 6 + 1),
       vehicleDetails: vehiclePlates[(i + 5) % vehiclePlates.length],
       rfStatus: 'transferred',
       scStatus: 'claimed',
@@ -84,6 +95,7 @@ const generateLeads = (): Lead[] => {
   for (let i = 0; i < 12; i++) {
     const agent = agents[i % agents.length];
     const hasRework = i >= 10;
+    const createdOn = `${String(18 - i).padStart(2, '0')}-09-2025`;
     leads.push({
       id: String(id++),
       leadNumber: `#${10135 - i}`,
@@ -91,7 +103,8 @@ const generateLeads = (): Lead[] => {
       paymentType: i % 2 === 0 ? 'full' : 'installment',
       agentId: agent.id,
       agentName: agent.name,
-      createdOn: `${String(18 - i).padStart(2, '0')}-09-2025`,
+      createdOn: `${createdOn} 11:00`,
+      updatedOn: generateUpdatedOn(createdOn, i % 5 + 2),
       vehicleDetails: vehiclePlates[(i + 3) % vehiclePlates.length],
       rfStatus: 'transferred',
       scStatus: 'claimed',
@@ -114,6 +127,7 @@ const generateLeads = (): Lead[] => {
     const agent = agents[i % agents.length];
     const hasRework = i >= 10;
     const shippingMethods: Array<'print_by_fairdee' | 'e_policy' | 'print_by_myself'> = ['print_by_fairdee', 'e_policy', 'print_by_myself'];
+    const createdOn = `${String(12 - Math.floor(i / 2)).padStart(2, '0')}-09-2025`;
     leads.push({
       id: String(id++),
       leadNumber: `#${10128 - i}`,
@@ -121,7 +135,8 @@ const generateLeads = (): Lead[] => {
       paymentType: i % 2 === 0 ? 'full' : 'installment',
       agentId: agent.id,
       agentName: agent.name,
-      createdOn: `${String(12 - Math.floor(i / 2)).padStart(2, '0')}-09-2025`,
+      createdOn: `${createdOn} 14:00`,
+      updatedOn: generateUpdatedOn(createdOn, i % 4 + 3),
       vehicleDetails: vehiclePlates[(i + 7) % vehiclePlates.length],
       rfStatus: 'transferred',
       scStatus: 'claimed',
@@ -145,6 +160,7 @@ const generateLeads = (): Lead[] => {
     const agent = agents[i % agents.length];
     const hasRework = i >= 10;
     const shippingMethods: Array<'print_by_fairdee' | 'e_policy' | 'print_by_myself'> = ['print_by_fairdee', 'e_policy', 'print_by_myself'];
+    const createdOn = `${String(5 - Math.floor(i / 3)).padStart(2, '0')}-09-2025`;
     leads.push({
       id: String(id++),
       leadNumber: `#${10120 - i}`,
@@ -152,7 +168,8 @@ const generateLeads = (): Lead[] => {
       paymentType: i % 2 === 0 ? 'full' : 'installment',
       agentId: agent.id,
       agentName: agent.name,
-      createdOn: `${String(5 - Math.floor(i / 3)).padStart(2, '0')}-09-2025`,
+      createdOn: `${createdOn} 08:00`,
+      updatedOn: generateUpdatedOn(createdOn, i % 7 + 1),
       vehicleDetails: vehiclePlates[(i + 2) % vehiclePlates.length],
       rfStatus: 'completed',
       scStatus: 'completed',
@@ -175,6 +192,7 @@ const generateLeads = (): Lead[] => {
   // CANCELLED (8 leads)
   for (let i = 0; i < 8; i++) {
     const agent = agents[i % agents.length];
+    const createdOn = `${String(10 - i).padStart(2, '0')}-01-2026`;
     leads.push({
       id: String(id++),
       leadNumber: `#${10108 - i}`,
@@ -182,7 +200,8 @@ const generateLeads = (): Lead[] => {
       paymentType: i % 2 === 0 ? 'full' : 'installment',
       agentId: agent.id,
       agentName: agent.name,
-      createdOn: `${String(10 - i).padStart(2, '0')}-01-2026`,
+      createdOn: `${createdOn} 12:00`,
+      updatedOn: generateUpdatedOn(createdOn, i % 3 + 4),
       vehicleDetails: vehiclePlates[(i + 4) % vehiclePlates.length],
       rfStatus: 'completed',
       scStatus: 'completed',

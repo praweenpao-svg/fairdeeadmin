@@ -52,6 +52,7 @@ export interface Lead {
   agentId: string;
   agentName: string;
   createdOn: string;
+  updatedOn: string;
   vehicleDetails: string;
   rfStatus: 'pending' | 'transferred' | 'completed';
   scStatus: 'pending' | 'claimed' | 'completed';
