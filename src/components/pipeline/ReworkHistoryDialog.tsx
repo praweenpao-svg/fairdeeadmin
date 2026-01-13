@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { FileText, Image, Clock, User, CheckCircle, ArrowRight, ChevronLeft } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { FileText, Image, Clock, User, CheckCircle, ArrowRight, ChevronLeft, Upload, X } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -9,6 +9,8 @@ import {
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -16,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ReworkHistoryEntry, ReworkConfig } from '@/types/pipeline';
+import { ReworkHistoryEntry, ReworkConfig, ReworkAttachment } from '@/types/pipeline';
 
 interface ReworkHistoryDialogProps {
   open: boolean;
@@ -25,7 +27,7 @@ interface ReworkHistoryDialogProps {
   history: ReworkHistoryEntry[];
   reworkConfigs: ReworkConfig[];
   onResolve?: (entryId: string) => void;
-  onReassign?: (entryId: string, newReasonId: string) => void;
+  onReassign?: (entryId: string, newReasonId: string, details: string, attachments: ReworkAttachment[]) => void;
 }
 
 export function ReworkHistoryDialog({ 
@@ -39,18 +41,51 @@ export function ReworkHistoryDialog({
 }: ReworkHistoryDialogProps) {
   const [reassigningEntryId, setReassigningEntryId] = useState<string | null>(null);
   const [selectedNewReasonId, setSelectedNewReasonId] = useState<string>('');
+  const [reassignDetails, setReassignDetails] = useState('');
+  const [reassignAttachments, setReassignAttachments] = useState<ReworkAttachment[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    Array.from(files).forEach((file) => {
+      const ext = file.name.split('.').pop()?.toLowerCase();
+      if (ext === 'png' || ext === 'jpg' || ext === 'jpeg' || ext === 'pdf') {
+        const attachment: ReworkAttachment = {
+          id: crypto.randomUUID(),
+          name: file.name,
+          type: ext === 'jpeg' ? 'jpg' : (ext as 'png' | 'jpg' | 'pdf'),
+          url: URL.createObjectURL(file),
+        };
+        setReassignAttachments((prev) => [...prev, attachment]);
+      }
+    });
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const removeAttachment = (id: string) => {
+    setReassignAttachments((prev) => prev.filter((a) => a.id !== id));
+  };
 
   const handleReassignConfirm = () => {
     if (reassigningEntryId && selectedNewReasonId && onReassign) {
-      onReassign(reassigningEntryId, selectedNewReasonId);
+      onReassign(reassigningEntryId, selectedNewReasonId, reassignDetails, reassignAttachments);
       setReassigningEntryId(null);
       setSelectedNewReasonId('');
+      setReassignDetails('');
+      setReassignAttachments([]);
     }
   };
 
   const handleCancelReassign = () => {
     setReassigningEntryId(null);
     setSelectedNewReasonId('');
+    setReassignDetails('');
+    setReassignAttachments([]);
   };
 
   if (history.length === 0) {
@@ -103,7 +138,7 @@ export function ReworkHistoryDialog({
                       <span className="font-medium">{entry.reasonLabel}</span>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">Select new reason</label>
+                      <Label className="text-sm font-medium">Select new reason</Label>
                       <Select value={selectedNewReasonId} onValueChange={setSelectedNewReasonId}>
                         <SelectTrigger className="w-full">
                           <SelectValue placeholder="Select reason" />
@@ -119,7 +154,60 @@ export function ReworkHistoryDialog({
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="flex justify-end gap-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="reassign-details">Rework reason details</Label>
+                      <Textarea
+                        id="reassign-details"
+                        placeholder="Enter detailed reason for rework..."
+                        value={reassignDetails}
+                        onChange={(e) => setReassignDetails(e.target.value)}
+                        className="min-h-[80px] resize-none"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Attachments</Label>
+                      <div className="flex flex-wrap gap-2">
+                        {reassignAttachments.map((attachment) => (
+                          <div
+                            key={attachment.id}
+                            className="flex items-center gap-2 bg-muted px-3 py-2 rounded-md text-sm"
+                          >
+                            {attachment.type === 'pdf' ? (
+                              <FileText className="w-4 h-4 text-destructive" />
+                            ) : (
+                              <Image className="w-4 h-4 text-primary" />
+                            )}
+                            <span className="max-w-[100px] truncate">{attachment.name}</span>
+                            <button
+                              type="button"
+                              onClick={() => removeAttachment(attachment.id)}
+                              className="text-muted-foreground hover:text-foreground"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".png,.jpg,.jpeg,.pdf"
+                        multiple
+                        className="hidden"
+                        onChange={handleFileSelect}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="mt-1"
+                      >
+                        <Upload className="w-4 h-4 mr-2" />
+                        Attach files
+                      </Button>
+                    </div>
+                    <div className="flex justify-end gap-2 pt-2">
                       <Button variant="outline" size="sm" onClick={handleCancelReassign}>
                         Cancel
                       </Button>

@@ -265,7 +265,7 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
     onLeadUpdate?.(selectedLead.id, updates);
   };
 
-  const handleReassignRework = (entryId: string, newReasonId: string) => {
+  const handleReassignRework = (entryId: string, newReasonId: string, details: string, attachments: ReworkAttachment[]) => {
     if (!selectedLead) return;
 
     const entryIndex = selectedLead.reworkHistory.findIndex(e => e.id === entryId);
@@ -297,8 +297,8 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
       id: crypto.randomUUID(),
       reasonId: newReasonId,
       reasonLabel: newReasonLabel,
-      details: `Reassigned from: ${entry.reasonLabel}`,
-      attachments: [],
+      details: details || `Reassigned from: ${entry.reasonLabel}`,
+      attachments,
       savedBy: 'Akshay Bazad',
       savedAt: resolvedAt,
       previousStatus: entry.previousStatus, // Keep the original previous status
