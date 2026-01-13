@@ -3,6 +3,8 @@ import {
   ExternalLink, 
   MoreVertical,
   AlertTriangle,
+  ArrowUp,
+  ArrowDown,
 } from 'lucide-react';
 import { Lead, PipelineStage, LeadType, ReworkConfig, CreatedByType, ReworkAttachment, ReworkHistoryEntry } from '@/types/pipeline';
 import { cn } from '@/lib/utils';
@@ -25,7 +27,7 @@ import { mockStaffMembers } from '@/data/mockStaff';
 import { ReworkDialog } from './ReworkDialog';
 import { ReworkHistoryDialog } from './ReworkHistoryDialog';
 
-import { SortConfig } from './AllFiltersPanel';
+import { SortConfig, SortField, SortDirection } from './AllFiltersPanel';
 
 interface LeadsTableProps {
   leads: Lead[];
@@ -33,6 +35,7 @@ interface LeadsTableProps {
   reworkConfigs: ReworkConfig[];
   onLeadUpdate?: (leadId: string, updates: Partial<Lead>) => void;
   sortConfig: SortConfig;
+  onSortChange: (config: SortConfig) => void;
 }
 
 const statusOptionsByStage: Record<PipelineStage, { value: string; label: string }[]> = {
@@ -149,7 +152,7 @@ function parseDateTime(dateStr: string): Date {
   return new Date(year, month - 1, day, hours, minutes);
 }
 
-export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConfig }: LeadsTableProps) {
+export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConfig, onSortChange }: LeadsTableProps) {
   const [reworkDialogOpen, setReworkDialogOpen] = useState(false);
   const [reworkHistoryDialogOpen, setReworkHistoryDialogOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
@@ -400,6 +403,51 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConf
     }
   };
 
+  const handleSortClick = (field: SortField) => {
+    if (sortConfig.field === field) {
+      // Toggle direction if same field
+      onSortChange({
+        field,
+        direction: sortConfig.direction === 'asc' ? 'desc' : 'asc',
+      });
+    } else {
+      // New field, default to desc (newest first)
+      onSortChange({ field, direction: 'desc' });
+    }
+  };
+
+  const SortableHeader = ({ field, label }: { field: SortField; label: string }) => {
+    const isActive = sortConfig.field === field;
+    return (
+      <th
+        className="data-table-header px-4 py-3 text-left cursor-pointer hover:bg-muted/50 transition-colors select-none"
+        onClick={() => handleSortClick(field)}
+      >
+        <div className="flex items-center gap-1">
+          <span>{label}</span>
+          <div className="flex flex-col">
+            <ArrowUp
+              className={cn(
+                'h-3 w-3 -mb-1',
+                isActive && sortConfig.direction === 'asc'
+                  ? 'text-primary'
+                  : 'text-muted-foreground/40'
+              )}
+            />
+            <ArrowDown
+              className={cn(
+                'h-3 w-3',
+                isActive && sortConfig.direction === 'desc'
+                  ? 'text-primary'
+                  : 'text-muted-foreground/40'
+              )}
+            />
+          </div>
+        </div>
+      </th>
+    );
+  };
+
   return (
     <>
       <div className="bg-card rounded-lg border border-border overflow-hidden">
@@ -410,8 +458,8 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConf
                 <th className="data-table-header w-10 px-4 py-3"></th>
                 <th className="data-table-header px-4 py-3 text-left">Leads</th>
                 <th className="data-table-header px-4 py-3 text-left">Agent</th>
-                <th className="data-table-header px-4 py-3 text-left">Created On</th>
-                <th className="data-table-header px-4 py-3 text-left">Latest Updated On</th>
+                <SortableHeader field="createdOn" label="Created On" />
+                <SortableHeader field="updatedOn" label="Latest Updated On" />
                 <th className="data-table-header px-4 py-3 text-left">Vehicle details</th>
                 <th className="data-table-header px-4 py-3 text-left">RF</th>
                 <th className="data-table-header px-4 py-3 text-left">SC</th>

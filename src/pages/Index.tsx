@@ -11,6 +11,7 @@ import { OtherStagesFilterPanel, OtherStagesFilterState, defaultOtherStagesFilte
 import { FilterChips } from '@/components/pipeline/FilterChips';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 import { applyAllFilters } from '@/utils/leadFilters';
 
 const Index = () => {
@@ -114,7 +115,6 @@ const Index = () => {
           onStageChange={setActiveStage}
           leads={leads}
           myCasesOnly={myCasesOnly}
-          onMyCasesChange={setMyCasesOnly}
         />
       </header>
 
@@ -132,6 +132,19 @@ const Index = () => {
             />
           </div>
           
+          {/* My Cases Toggle */}
+          <button
+            onClick={() => setMyCasesOnly(!myCasesOnly)}
+            className={cn(
+              'px-3 py-2 text-sm font-medium rounded-md transition-colors border',
+              myCasesOnly
+                ? 'bg-primary text-primary-foreground border-primary'
+                : 'bg-muted/50 text-foreground border-border hover:bg-muted hover:border-primary/50'
+            )}
+          >
+            My Cases
+          </button>
+          
           <DateRangeFilter
             dateRange={dateRange}
             onDateRangeChange={setDateRange}
@@ -142,8 +155,6 @@ const Index = () => {
               filters={toPayFilters}
               onFiltersChange={setToPayFilters}
               onClear={handleClearToPayFilters}
-              sortConfig={sortConfig}
-              onSortChange={setSortConfig}
             />
           ) : (
             <OtherStagesFilterPanel
@@ -171,6 +182,7 @@ const Index = () => {
           reworkConfigs={reworkConfigs}
           onLeadUpdate={handleLeadUpdate}
           sortConfig={sortConfig}
+          onSortChange={setSortConfig}
         />
       </div>
     </>
