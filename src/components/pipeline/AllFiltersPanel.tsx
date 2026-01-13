@@ -179,26 +179,6 @@ export function AllFiltersPanel({ filters, onFiltersChange, onClear }: AllFilter
         <div className="grid grid-cols-3 gap-6">
           {/* Column 1 */}
           <div className="space-y-4">
-            {/* Status */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Status</Label>
-              <Select
-                value={localFilters.status}
-                onValueChange={(value) => setLocalFilters({ ...localFilters, status: value as SaleStatus | 'all' })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Search status" />
-                </SelectTrigger>
-                <SelectContent className="bg-card z-50">
-                  {statusOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
             {/* RF */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">RF</Label>
@@ -286,6 +266,52 @@ export function AllFiltersPanel({ filters, onFiltersChange, onClear }: AllFilter
 
           {/* Column 2 */}
           <div className="space-y-4">
+            {/* Status */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Status</Label>
+              <Select
+                value={localFilters.status}
+                onValueChange={(value) => setLocalFilters({ ...localFilters, status: value as SaleStatus | 'all' })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Search status" />
+                </SelectTrigger>
+                <SelectContent className="bg-card z-50">
+                  {statusOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Installment Type */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Installment Type</Label>
+              <RadioGroup
+                value={localFilters.installmentType}
+                onValueChange={(value) => setLocalFilters({ ...localFilters, installmentType: value })}
+                className="flex flex-wrap gap-4"
+              >
+                {installmentOptions.map((option) => (
+                  <div key={option.value} className="flex items-center space-x-2">
+                    <RadioGroupItem 
+                      value={option.value} 
+                      id={`installment-${option.value}`}
+                      className="border-primary text-primary"
+                    />
+                    <Label
+                      htmlFor={`installment-${option.value}`}
+                      className="text-sm font-normal cursor-pointer"
+                    >
+                      {option.label}
+                    </Label>
+                  </div>
+                ))}
+              </RadioGroup>
+            </div>
+
             {/* Agent Type */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">Agent Type</Label>
@@ -326,32 +352,6 @@ export function AllFiltersPanel({ filters, onFiltersChange, onClear }: AllFilter
                     />
                     <Label
                       htmlFor={`lead-type-${option.value}`}
-                      className="text-sm font-normal cursor-pointer"
-                    >
-                      {option.label}
-                    </Label>
-                  </div>
-                ))}
-              </RadioGroup>
-            </div>
-
-            {/* Installment Type */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Installment Type</Label>
-              <RadioGroup
-                value={localFilters.installmentType}
-                onValueChange={(value) => setLocalFilters({ ...localFilters, installmentType: value })}
-                className="flex flex-wrap gap-4"
-              >
-                {installmentOptions.map((option) => (
-                  <div key={option.value} className="flex items-center space-x-2">
-                    <RadioGroupItem 
-                      value={option.value} 
-                      id={`installment-${option.value}`}
-                      className="border-primary text-primary"
-                    />
-                    <Label
-                      htmlFor={`installment-${option.value}`}
                       className="text-sm font-normal cursor-pointer"
                     >
                       {option.label}
