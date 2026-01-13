@@ -167,7 +167,7 @@ export function AllFiltersPanel({ filters, onFiltersChange, onClear }: AllFilter
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[700px] p-6 bg-card z-50" align="start">
+      <PopoverContent className="w-[700px] p-6 bg-card z-50 max-h-[80vh] overflow-y-auto" align="start">
         <div className="grid grid-cols-2 gap-8">
           {/* Left Column */}
           <div className="space-y-6">
