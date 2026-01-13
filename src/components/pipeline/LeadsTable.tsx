@@ -25,7 +25,7 @@ import { mockStaffMembers } from '@/data/mockStaff';
 import { ReworkDialog } from './ReworkDialog';
 import { ReworkHistoryDialog } from './ReworkHistoryDialog';
 
-import { SortConfig } from './SortControl';
+import { SortConfig } from './AllFiltersPanel';
 
 interface LeadsTableProps {
   leads: Lead[];
