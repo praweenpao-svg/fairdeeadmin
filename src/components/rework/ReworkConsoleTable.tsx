@@ -116,7 +116,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
 
   const getTeamDisplay = (config: ReworkConfig) => {
     if (config.assignment === 'rf_sc') {
-      return <span className="text-muted-foreground italic">N/A (RF/SC)</span>;
+      return '-';
     }
     return config.team || '-';
   };
