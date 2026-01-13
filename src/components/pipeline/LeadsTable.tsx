@@ -448,13 +448,16 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
                     </td>
                     <td className="px-4 py-3">
                       <Select 
-                        value={lead.rfAssignee || ''}
-                        onValueChange={(value) => onLeadUpdate?.(lead.id, { rfAssignee: value || undefined })}
+                        value={lead.rfAssignee || '__none__'}
+                        onValueChange={(value) => onLeadUpdate?.(lead.id, { rfAssignee: value === '__none__' ? undefined : value })}
                       >
                         <SelectTrigger className="w-[140px] h-8 text-xs">
                           <SelectValue placeholder="Select RF" />
                         </SelectTrigger>
                         <SelectContent>
+                          <SelectItem value="__none__" className="text-muted-foreground italic">
+                            — Unassigned —
+                          </SelectItem>
                           {getRFStaff().map((staff) => (
                             <SelectItem key={staff.id} value={staff.name}>
                               {staff.name}
@@ -465,13 +468,16 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
                     </td>
                     <td className="px-4 py-3">
                       <Select 
-                        value={lead.scAssignee || ''}
-                        onValueChange={(value) => onLeadUpdate?.(lead.id, { scAssignee: value || undefined })}
+                        value={lead.scAssignee || '__none__'}
+                        onValueChange={(value) => onLeadUpdate?.(lead.id, { scAssignee: value === '__none__' ? undefined : value })}
                       >
                         <SelectTrigger className="w-[140px] h-8 text-xs">
                           <SelectValue placeholder="Select SC" />
                         </SelectTrigger>
                         <SelectContent>
+                          <SelectItem value="__none__" className="text-muted-foreground italic">
+                            — Unassigned —
+                          </SelectItem>
                           {getSCStaff().map((staff) => (
                             <SelectItem key={staff.id} value={staff.name}>
                               {staff.name}
@@ -483,13 +489,16 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
                     {showDEColumn && (
                       <td className="px-4 py-3">
                         <Select 
-                          value={lead.deAssignee || ''}
-                          onValueChange={(value) => onLeadUpdate?.(lead.id, { deAssignee: value || undefined })}
+                          value={lead.deAssignee || '__none__'}
+                          onValueChange={(value) => onLeadUpdate?.(lead.id, { deAssignee: value === '__none__' ? undefined : value })}
                         >
                           <SelectTrigger className="w-[140px] h-8 text-xs">
                             <SelectValue placeholder="Select DE" />
                           </SelectTrigger>
                           <SelectContent>
+                            <SelectItem value="__none__" className="text-muted-foreground italic">
+                              — Unassigned —
+                            </SelectItem>
                             {getDEStaff().map((staff) => (
                               <SelectItem key={staff.id} value={staff.name}>
                                 {staff.name}
