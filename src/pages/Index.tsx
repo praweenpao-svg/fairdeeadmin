@@ -6,10 +6,9 @@ import { mockLeads, mockReworkConfigs, CURRENT_USER } from '@/data/mockLeads';
 import { PipelineTabs, getLeadsForStage, getLeadsOwnedByUser } from '@/components/pipeline/PipelineTabs';
 import { LeadsTable } from '@/components/pipeline/LeadsTable';
 import { DateRangeFilter } from '@/components/pipeline/DateRangeFilter';
-import { AllFiltersPanel, FilterState, defaultFilterState } from '@/components/pipeline/AllFiltersPanel';
+import { AllFiltersPanel, FilterState, defaultFilterState, SortConfig } from '@/components/pipeline/AllFiltersPanel';
 import { OtherStagesFilterPanel, OtherStagesFilterState, defaultOtherStagesFilterState } from '@/components/pipeline/OtherStagesFilterPanel';
 import { FilterChips } from '@/components/pipeline/FilterChips';
-import { SortControl, SortConfig } from '@/components/pipeline/SortControl';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { Input } from '@/components/ui/input';
 import { applyAllFilters } from '@/utils/leadFilters';
@@ -121,11 +120,6 @@ const Index = () => {
 
       {/* Content */}
       <div className="p-6">
-        {/* Sort Control */}
-        <div className="flex items-center justify-between mb-4">
-          <SortControl sortConfig={sortConfig} onSortChange={setSortConfig} />
-        </div>
-
         {/* Filters Row */}
         <div className="flex flex-wrap items-center gap-3 mb-6">
           <div className="relative">
@@ -148,6 +142,8 @@ const Index = () => {
               filters={toPayFilters}
               onFiltersChange={setToPayFilters}
               onClear={handleClearToPayFilters}
+              sortConfig={sortConfig}
+              onSortChange={setSortConfig}
             />
           ) : (
             <OtherStagesFilterPanel

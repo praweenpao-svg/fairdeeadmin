@@ -170,18 +170,20 @@ export function PipelineTabs({
         })}
       </div>
       
-      {/* My Cases Toggle */}
-      <button
-        onClick={() => onMyCasesChange(!myCasesOnly)}
-        className={cn(
-          'px-3 py-1.5 text-sm font-medium rounded-md transition-colors border',
-          myCasesOnly
-            ? 'bg-primary text-primary-foreground border-primary'
-            : 'bg-muted/50 text-foreground border-border hover:bg-muted hover:border-primary/50'
-        )}
-      >
-        My Cases
-      </button>
+      {/* My Cases Toggle - with proper spacing from tabs */}
+      <div className="pl-6">
+        <button
+          onClick={() => onMyCasesChange(!myCasesOnly)}
+          className={cn(
+            'px-3 py-1.5 text-sm font-medium rounded-md transition-colors border',
+            myCasesOnly
+              ? 'bg-primary text-primary-foreground border-primary'
+              : 'bg-muted/50 text-foreground border-border hover:bg-muted hover:border-primary/50'
+          )}
+        >
+          My Cases
+        </button>
+      </div>
     </div>
   );
 }
