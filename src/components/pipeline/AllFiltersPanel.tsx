@@ -167,10 +167,10 @@ export function AllFiltersPanel({ filters, onFiltersChange, onClear }: AllFilter
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[700px] p-6 bg-card z-50 max-h-[80vh] overflow-y-auto" align="start">
-        <div className="grid grid-cols-2 gap-8">
-          {/* Left Column */}
-          <div className="space-y-6">
+      <PopoverContent className="w-[900px] p-6 bg-card z-50" align="start">
+        <div className="grid grid-cols-3 gap-6">
+          {/* Column 1 */}
+          <div className="space-y-4">
             {/* Status */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">Status</Label>
@@ -253,10 +253,7 @@ export function AllFiltersPanel({ filters, onFiltersChange, onClear }: AllFilter
                 </SelectContent>
               </Select>
             </div>
-          </div>
 
-          {/* Right Column */}
-          <div className="space-y-6">
             {/* Agent */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">Agent</Label>
@@ -277,11 +274,14 @@ export function AllFiltersPanel({ filters, onFiltersChange, onClear }: AllFilter
                 </SelectContent>
               </Select>
             </div>
+          </div>
 
+          {/* Column 2 */}
+          <div className="space-y-4">
             {/* Agent Type */}
-            <div className="space-y-3">
+            <div className="space-y-2">
               <Label className="text-sm font-medium">Agent Type</Label>
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-2">
                 {agentTypeOptions.map((type) => (
                   <div key={type.id} className="flex items-center space-x-2">
                     <Checkbox
@@ -302,12 +302,12 @@ export function AllFiltersPanel({ filters, onFiltersChange, onClear }: AllFilter
             </div>
 
             {/* Lead Type (Single-select for To Pay) */}
-            <div className="space-y-3">
+            <div className="space-y-2">
               <Label className="text-sm font-medium">Lead Type</Label>
               <RadioGroup
                 value={localFilters.leadType}
                 onValueChange={(value) => setLocalFilters({ ...localFilters, leadType: value })}
-                className="space-y-2"
+                className="flex flex-wrap gap-4"
               >
                 {leadTypeOptions.map((option) => (
                   <div key={option.value} className="flex items-center space-x-2">
@@ -328,12 +328,12 @@ export function AllFiltersPanel({ filters, onFiltersChange, onClear }: AllFilter
             </div>
 
             {/* Installment Type */}
-            <div className="space-y-3">
+            <div className="space-y-2">
               <Label className="text-sm font-medium">Installment Type</Label>
               <RadioGroup
                 value={localFilters.installmentType}
                 onValueChange={(value) => setLocalFilters({ ...localFilters, installmentType: value })}
-                className="space-y-2"
+                className="flex flex-wrap gap-4"
               >
                 {installmentOptions.map((option) => (
                   <div key={option.value} className="flex items-center space-x-2">
@@ -352,9 +352,12 @@ export function AllFiltersPanel({ filters, onFiltersChange, onClear }: AllFilter
                 ))}
               </RadioGroup>
             </div>
+          </div>
 
+          {/* Column 3 */}
+          <div className="space-y-4">
             {/* Leads Type */}
-            <div className="space-y-3">
+            <div className="space-y-2">
               <Label className="text-sm font-medium">Leads Type</Label>
               <RadioGroup
                 value={localFilters.leadsType}
@@ -380,7 +383,7 @@ export function AllFiltersPanel({ filters, onFiltersChange, onClear }: AllFilter
             </div>
 
             {/* Created By */}
-            <div className="space-y-3">
+            <div className="space-y-2">
               <Label className="text-sm font-medium">Created By</Label>
               <RadioGroup
                 value={localFilters.createdBy}
@@ -408,16 +411,18 @@ export function AllFiltersPanel({ filters, onFiltersChange, onClear }: AllFilter
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end gap-3 mt-6 pt-4 border-t">
+        <div className="flex justify-between mt-6 pt-4 border-t">
           <Button variant="outline" onClick={handleCancel}>
             Cancel
           </Button>
-          <Button variant="outline" onClick={handleClear}>
-            Clear
-          </Button>
-          <Button onClick={handleApply} className="bg-primary text-primary-foreground hover:bg-primary/90">
-            Apply Filters
-          </Button>
+          <div className="flex gap-3">
+            <Button variant="outline" onClick={handleClear}>
+              Clear
+            </Button>
+            <Button onClick={handleApply} className="bg-primary text-primary-foreground hover:bg-primary/90">
+              Apply Filters
+            </Button>
+          </div>
         </div>
       </PopoverContent>
     </Popover>
