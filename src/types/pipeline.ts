@@ -69,7 +69,7 @@ export interface Lead {
   deAssignee?: string;
 }
 
-export type AssignmentType = 'round_robin' | 'rf_sc';
+export type AssignmentType = 'round_robin' | 'rf_sc' | 'none';
 
 export interface ReworkConfig {
   id: string;
