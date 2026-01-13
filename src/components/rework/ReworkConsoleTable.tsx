@@ -40,6 +40,7 @@ const stageOptions: { value: PipelineStage; label: string }[] = [
   { value: 'to_issue', label: 'To Issue' },
   { value: 'to_deliver', label: 'To Deliver' },
   { value: 'completed', label: 'Completed' },
+  { value: 'cancelled', label: 'Cancelled' },
 ];
 
 export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTableProps) {
