@@ -455,7 +455,7 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
                           <SelectValue placeholder="Select RF" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="__none__" className="text-muted-foreground italic">
+                          <SelectItem value="__none__" className="text-muted-foreground">
                             — Unassigned —
                           </SelectItem>
                           {getRFStaff().map((staff) => (
@@ -475,7 +475,7 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
                           <SelectValue placeholder="Select SC" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="__none__" className="text-muted-foreground italic">
+                          <SelectItem value="__none__" className="text-muted-foreground">
                             — Unassigned —
                           </SelectItem>
                           {getSCStaff().map((staff) => (
@@ -496,7 +496,7 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
                             <SelectValue placeholder="Select DE" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="__none__" className="text-muted-foreground italic">
+                            <SelectItem value="__none__" className="text-muted-foreground">
                               — Unassigned —
                             </SelectItem>
                             {getDEStaff().map((staff) => (
