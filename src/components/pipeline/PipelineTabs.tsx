@@ -90,27 +90,31 @@ export function getLeadsForStage(leads: Lead[], stage: PipelineStage): Lead[] {
   }
 }
 
-// Get owner field based on stage
-function getOwnerField(stage: PipelineStage): keyof Lead | null {
+// Get the actual owner of a lead based on rework status and stage
+function getLeadOwner(lead: Lead, stage: PipelineStage): string | undefined {
+  // If rework is required, the assignedTo field determines the owner
+  if (lead.reworkRequired && lead.assignedTo) {
+    return lead.assignedTo;
+  }
+  
+  // Otherwise, use the stage-based owner field
   switch (stage) {
     case 'to_pay':
-      return 'rfAssignee'; // RF handles To Pay
+      return lead.rfAssignee;
     case 'to_report':
     case 'to_issue':
     case 'to_deliver':
     case 'completed':
-      return 'deAssignee'; // DE handles these stages
+      return lead.deAssignee;
     default:
-      return null;
+      return undefined;
   }
 }
 
 // Get leads owned by current user for a stage
 export function getLeadsOwnedByUser(leads: Lead[], stage: PipelineStage, user: string): Lead[] {
   const stageLeads = getLeadsForStage(leads, stage);
-  const ownerField = getOwnerField(stage);
-  if (!ownerField) return stageLeads;
-  return stageLeads.filter(lead => lead[ownerField] === user);
+  return stageLeads.filter(lead => getLeadOwner(lead, stage) === user);
 }
 
 export function PipelineTabs({
