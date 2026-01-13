@@ -23,20 +23,26 @@ export interface FilterState {
   status: SaleStatus | 'all';
   rfAssignee: string;
   scAssignee: string;
+  deAssignee: string;
   agent: string;
   agentTypes: string[];
   leadsType: string;
   createdBy: string;
+  leadType: string; // Single-select for To Pay: 'new_leads', 'coa', 'renewals'
+  installmentType: string;
 }
 
 export const defaultFilterState: FilterState = {
   status: 'all',
   rfAssignee: 'all',
   scAssignee: 'all',
+  deAssignee: 'all',
   agent: 'all',
   agentTypes: [],
   leadsType: 'all',
   createdBy: 'all',
+  leadType: 'new_leads', // Default to new_leads for To Pay
+  installmentType: 'all',
 };
 
 const statusOptions: { value: SaleStatus | 'all'; label: string }[] = [
@@ -72,6 +78,18 @@ const createdByOptions = [
   { value: 'admin', label: 'Admin' },
 ];
 
+const leadTypeOptions = [
+  { value: 'new_leads', label: 'New Leads' },
+  { value: 'coa', label: 'COA' },
+  { value: 'renewals', label: 'Renewals' },
+];
+
+const installmentOptions = [
+  { value: 'all', label: 'All' },
+  { value: 'installment', label: 'Installment' },
+  { value: 'non_installment', label: 'Non-Installment' },
+];
+
 // Mock agents for demo
 const mockAgents = [
   { id: 'FD-5391', name: 'Sharon Duncan' },
@@ -93,6 +111,7 @@ export function AllFiltersPanel({ filters, onFiltersChange, onClear }: AllFilter
 
   const rfStaff = mockStaffMembers.filter(s => s.team === 'AST RF');
   const scStaff = mockStaffMembers.filter(s => s.team === 'AST SC');
+  const deStaff = mockStaffMembers.filter(s => s.team === 'DE');
 
   const handleAgentTypeChange = (typeId: string, checked: boolean) => {
     let newTypes: string[];
@@ -127,10 +146,13 @@ export function AllFiltersPanel({ filters, onFiltersChange, onClear }: AllFilter
     filters.status !== 'all' ||
     filters.rfAssignee !== 'all' ||
     filters.scAssignee !== 'all' ||
+    filters.deAssignee !== 'all' ||
     filters.agent !== 'all' ||
     filters.agentTypes.length > 0 ||
     filters.leadsType !== 'all' ||
-    filters.createdBy !== 'all';
+    filters.createdBy !== 'all' ||
+    filters.leadType !== 'new_leads' ||
+    filters.installmentType !== 'all';
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -210,6 +232,27 @@ export function AllFiltersPanel({ filters, onFiltersChange, onClear }: AllFilter
                 </SelectContent>
               </Select>
             </div>
+
+            {/* DE */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">DE</Label>
+              <Select
+                value={localFilters.deAssignee}
+                onValueChange={(value) => setLocalFilters({ ...localFilters, deAssignee: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Search DE" />
+                </SelectTrigger>
+                <SelectContent className="bg-card z-50">
+                  <SelectItem value="all">All DE</SelectItem>
+                  {deStaff.map((staff) => (
+                    <SelectItem key={staff.id} value={staff.id}>
+                      {staff.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           {/* Right Column */}
@@ -256,6 +299,58 @@ export function AllFiltersPanel({ filters, onFiltersChange, onClear }: AllFilter
                   </div>
                 ))}
               </div>
+            </div>
+
+            {/* Lead Type (Single-select for To Pay) */}
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">Lead Type</Label>
+              <RadioGroup
+                value={localFilters.leadType}
+                onValueChange={(value) => setLocalFilters({ ...localFilters, leadType: value })}
+                className="space-y-2"
+              >
+                {leadTypeOptions.map((option) => (
+                  <div key={option.value} className="flex items-center space-x-2">
+                    <RadioGroupItem 
+                      value={option.value} 
+                      id={`lead-type-${option.value}`}
+                      className="border-primary text-primary"
+                    />
+                    <Label
+                      htmlFor={`lead-type-${option.value}`}
+                      className="text-sm font-normal cursor-pointer"
+                    >
+                      {option.label}
+                    </Label>
+                  </div>
+                ))}
+              </RadioGroup>
+            </div>
+
+            {/* Installment Type */}
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">Installment Type</Label>
+              <RadioGroup
+                value={localFilters.installmentType}
+                onValueChange={(value) => setLocalFilters({ ...localFilters, installmentType: value })}
+                className="space-y-2"
+              >
+                {installmentOptions.map((option) => (
+                  <div key={option.value} className="flex items-center space-x-2">
+                    <RadioGroupItem 
+                      value={option.value} 
+                      id={`installment-${option.value}`}
+                      className="border-primary text-primary"
+                    />
+                    <Label
+                      htmlFor={`installment-${option.value}`}
+                      className="text-sm font-normal cursor-pointer"
+                    >
+                      {option.label}
+                    </Label>
+                  </div>
+                ))}
+              </RadioGroup>
             </div>
 
             {/* Leads Type */}
