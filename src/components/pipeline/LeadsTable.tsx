@@ -62,6 +62,9 @@ const statusOptionsByStage: Record<PipelineStage, { value: string; label: string
     { value: 'policy_delivered', label: 'Policy Delivered' },
     { value: 'rework_required', label: 'Rework Required' },
   ],
+  cancelled: [
+    { value: 'policy_cancelled', label: 'Policy Cancelled' },
+  ],
 };
 
 const defaultStatusByStage: Record<PipelineStage, string> = {
@@ -70,6 +73,7 @@ const defaultStatusByStage: Record<PipelineStage, string> = {
   to_issue: 'pending_issuance',
   to_deliver: 'policy_issued',
   completed: 'policy_delivered',
+  cancelled: 'policy_cancelled',
 };
 
 function CreatedByBadge({ createdBy }: { createdBy: CreatedByType }) {

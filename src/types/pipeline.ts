@@ -1,6 +1,6 @@
 export type LeadType = 'new_leads' | 'coa' | 'renewals';
 export type PaymentType = 'full' | 'installment';
-export type PipelineStage = 'to_pay' | 'to_report' | 'to_issue' | 'to_deliver' | 'completed';
+export type PipelineStage = 'to_pay' | 'to_report' | 'to_issue' | 'to_deliver' | 'completed' | 'cancelled';
 
 export type SaleStatus = 
   | 'pending'
@@ -16,7 +16,8 @@ export type SaleStatus =
   | 'pending_issuance'
   | 'policy_issued'
   | 'policy_shipped'
-  | 'policy_delivered';
+  | 'policy_delivered'
+  | 'policy_cancelled';
 
 export type ShippingMethod = 'e_policy' | 'print_by_myself' | 'print_by_fairdee';
 

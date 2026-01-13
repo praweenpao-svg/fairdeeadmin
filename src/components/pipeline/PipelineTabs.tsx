@@ -7,6 +7,7 @@ import {
   FileCheck, 
   Truck, 
   CheckCircle2,
+  XCircle,
 } from 'lucide-react';
 
 
@@ -49,6 +50,12 @@ const stageConfig = [
     icon: CheckCircle2,
     description: 'Successfully completed'
   },
+  { 
+    id: 'cancelled' as const, 
+    label: 'Cancelled', 
+    icon: XCircle,
+    description: 'Policy cancelled'
+  },
 ];
 
 export function getLeadsForStage(leads: Lead[], stage: PipelineStage): Lead[] {
@@ -85,6 +92,8 @@ export function getLeadsForStage(leads: Lead[], stage: PipelineStage): Lead[] {
             lead.shippingMethod === 'print_by_myself' ||
             (lead.shippingMethod === 'print_by_fairdee' && lead.trackingNumber))
       );
+    case 'cancelled':
+      return leads.filter((lead) => lead.saleStatus === 'policy_cancelled');
     default:
       return [];
   }
@@ -105,6 +114,7 @@ function getLeadOwner(lead: Lead, stage: PipelineStage): string | undefined {
     case 'to_issue':
     case 'to_deliver':
     case 'completed':
+    case 'cancelled':
       return lead.deAssignee;
     default:
       return undefined;
