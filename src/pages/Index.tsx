@@ -1,12 +1,15 @@
 import { useState } from 'react';
-import { Search, Filter, Home } from 'lucide-react';
+import { Search, Home } from 'lucide-react';
+import { DateRange } from 'react-day-picker';
 import { PipelineStage, LeadType, Lead, ReworkConfig } from '@/types/pipeline';
 import { mockLeads, mockReworkConfigs } from '@/data/mockLeads';
 import { PipelineTabs, getLeadsForStage } from '@/components/pipeline/PipelineTabs';
 import { LeadTypeFilter } from '@/components/pipeline/LeadTypeFilter';
 import { LeadsTable } from '@/components/pipeline/LeadsTable';
+import { DateRangeFilter } from '@/components/pipeline/DateRangeFilter';
+import { AllFiltersPanel, FilterState, defaultFilterState } from '@/components/pipeline/AllFiltersPanel';
+import { FilterChips } from '@/components/pipeline/FilterChips';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 
 const Index = () => {
   const [activeStage, setActiveStage] = useState<PipelineStage>('to_pay');
@@ -14,6 +17,8 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [leads, setLeads] = useState<Lead[]>(mockLeads);
   const [reworkConfigs, setReworkConfigs] = useState<ReworkConfig[]>(mockReworkConfigs);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [filters, setFilters] = useState<FilterState>(defaultFilterState);
 
   const handleLeadUpdate = (leadId: string, updates: Partial<Lead>) => {
     setLeads((prev) =>
@@ -21,6 +26,32 @@ const Index = () => {
         lead.id === leadId ? { ...lead, ...updates } : lead
       )
     );
+  };
+
+  const handleRemoveDateRange = () => {
+    setDateRange(undefined);
+  };
+
+  const handleRemoveFilter = (key: keyof FilterState, value?: string) => {
+    if (key === 'agentTypes' && value) {
+      setFilters({
+        ...filters,
+        agentTypes: filters.agentTypes.filter(t => t !== value),
+      });
+    } else if (key === 'leadsType') {
+      setFilters({ ...filters, leadsType: 'all' });
+    } else if (key === 'createdBy') {
+      setFilters({ ...filters, createdBy: 'all' });
+    } else if (key === 'status') {
+      setFilters({ ...filters, status: 'all' });
+    } else {
+      setFilters({ ...filters, [key]: '' });
+    }
+  };
+
+  const handleClearFilters = () => {
+    setFilters(defaultFilterState);
+    setDateRange(undefined);
   };
 
   const filteredLeads = getLeadsForStage(leads, activeStage);
@@ -46,24 +77,40 @@ const Index = () => {
 
       {/* Content */}
       <div className="p-6">
-        {/* Filters */}
-        <div className="flex items-center justify-between gap-4 mb-6">
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Search leads..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 w-[300px]"
-              />
-            </div>
-            <Button variant="outline" className="gap-2">
-              <Filter className="w-4 h-4" />
-              Filter By
-            </Button>
+        {/* Filters Row */}
+        <div className="flex flex-wrap items-center gap-3 mb-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Search leads..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 w-[200px]"
+            />
           </div>
+          
+          <DateRangeFilter
+            dateRange={dateRange}
+            onDateRangeChange={setDateRange}
+          />
+          
+          <AllFiltersPanel
+            filters={filters}
+            onFiltersChange={setFilters}
+            onClear={handleClearFilters}
+          />
 
+          {/* Filter Chips */}
+          <FilterChips
+            dateRange={dateRange}
+            filters={filters}
+            onRemoveDateRange={handleRemoveDateRange}
+            onRemoveFilter={handleRemoveFilter}
+          />
+        </div>
+
+        {/* Lead Type Filter Row */}
+        <div className="flex items-center justify-end mb-6">
           <LeadTypeFilter
             activeType={leadTypeFilter}
             onTypeChange={setLeadTypeFilter}
