@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { Search, Home } from 'lucide-react';
 import { DateRange } from 'react-day-picker';
 import { PipelineStage, LeadType, Lead, ReworkConfig } from '@/types/pipeline';
-import { mockLeads, mockReworkConfigs } from '@/data/mockLeads';
-import { PipelineTabs, getLeadsForStage } from '@/components/pipeline/PipelineTabs';
+import { mockLeads, mockReworkConfigs, CURRENT_USER } from '@/data/mockLeads';
+import { PipelineTabs, getLeadsForStage, getLeadsOwnedByUser, CasesView } from '@/components/pipeline/PipelineTabs';
 import { LeadsTable } from '@/components/pipeline/LeadsTable';
 import { DateRangeFilter } from '@/components/pipeline/DateRangeFilter';
 import { AllFiltersPanel, FilterState, defaultFilterState } from '@/components/pipeline/AllFiltersPanel';
@@ -17,6 +17,7 @@ const Index = () => {
   const [leads, setLeads] = useState<Lead[]>(mockLeads);
   const [reworkConfigs, setReworkConfigs] = useState<ReworkConfig[]>(mockReworkConfigs);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [casesView, setCasesView] = useState<CasesView>('my_cases');
   
   // Filters for To Pay stage
   const [toPayFilters, setToPayFilters] = useState<FilterState>(defaultFilterState);
@@ -83,7 +84,10 @@ const Index = () => {
     return undefined;
   };
 
-  const filteredLeads = getLeadsForStage(leads, activeStage);
+  const allStageLeads = getLeadsForStage(leads, activeStage);
+  const filteredLeads = casesView === 'my_cases'
+    ? getLeadsOwnedByUser(leads, activeStage, CURRENT_USER)
+    : allStageLeads;
   const leadTypeFilter = getLeadTypeFilter();
 
   const isToPayStage = activeStage === 'to_pay';
@@ -104,6 +108,8 @@ const Index = () => {
           activeStage={activeStage}
           onStageChange={setActiveStage}
           leads={leads}
+          casesView={casesView}
+          onCasesViewChange={setCasesView}
         />
       </header>
 

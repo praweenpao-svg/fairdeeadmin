@@ -9,10 +9,14 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 
+export type CasesView = 'my_cases' | 'all_cases';
+
 interface PipelineTabsProps {
   activeStage: PipelineStage;
   onStageChange: (stage: PipelineStage) => void;
   leads: Lead[];
+  casesView: CasesView;
+  onCasesViewChange: (view: CasesView) => void;
 }
 
 const stageConfig = [
@@ -114,13 +118,18 @@ export function PipelineTabs({
   activeStage,
   onStageChange,
   leads,
+  casesView,
+  onCasesViewChange,
 }: PipelineTabsProps) {
   return (
-    <div className="flex items-center gap-1 border-b border-border bg-card px-4">
-      {stageConfig.map((stage) => {
-        const userLeads = getLeadsOwnedByUser(leads, stage.id, CURRENT_USER);
-        const count = userLeads.length;
-        const isActive = activeStage === stage.id;
+    <div className="flex items-center justify-between border-b border-border bg-card px-4">
+      <div className="flex items-center gap-1">
+        {stageConfig.map((stage) => {
+          const stageLeads = getLeadsForStage(leads, stage.id);
+          const count = casesView === 'my_cases' 
+            ? getLeadsOwnedByUser(leads, stage.id, CURRENT_USER).length
+            : stageLeads.length;
+          const isActive = activeStage === stage.id;
         const Icon = stage.icon;
 
         return (
@@ -145,8 +154,35 @@ export function PipelineTabs({
               {count}
             </span>
           </button>
-        );
-      })}
+          );
+        })}
+      </div>
+      
+      {/* Cases View Toggle */}
+      <div className="flex items-center gap-1 py-2">
+        <button
+          onClick={() => onCasesViewChange('my_cases')}
+          className={cn(
+            'px-3 py-1.5 text-sm font-medium rounded-md transition-colors',
+            casesView === 'my_cases'
+              ? 'bg-primary text-primary-foreground'
+              : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+          )}
+        >
+          My Cases
+        </button>
+        <button
+          onClick={() => onCasesViewChange('all_cases')}
+          className={cn(
+            'px-3 py-1.5 text-sm font-medium rounded-md transition-colors',
+            casesView === 'all_cases'
+              ? 'bg-primary text-primary-foreground'
+              : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+          )}
+        >
+          All Cases
+        </button>
+      </div>
     </div>
   );
 }
