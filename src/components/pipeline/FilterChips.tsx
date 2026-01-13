@@ -91,6 +91,24 @@ export function FilterChips({
     );
   }
 
+  // DE Assignee chip
+  if (filters.deAssignee && filters.deAssignee !== 'all') {
+    const staff = mockStaffMembers.find(s => s.id === filters.deAssignee);
+    chips.push(
+      <Badge
+        key="de-assignee"
+        variant="secondary"
+        className="gap-1 px-3 py-1.5 text-sm font-normal"
+      >
+        DE: {staff?.name || filters.deAssignee}
+        <X
+          className="w-3 h-3 ml-1 cursor-pointer hover:text-destructive"
+          onClick={() => onRemoveFilter('deAssignee')}
+        />
+      </Badge>
+    );
+  }
+
   // Agent chips
   if (filters.agent && filters.agent !== 'all') {
     const agent = mockAgents.find(a => a.id === filters.agent);
@@ -138,6 +156,49 @@ export function FilterChips({
         <X
           className="w-3 h-3 ml-1 cursor-pointer hover:text-destructive"
           onClick={() => onRemoveFilter('leadsType')}
+        />
+      </Badge>
+    );
+  }
+
+  // Lead Type chip (for To Pay - single select)
+  if (filters.leadType && filters.leadType !== 'new_leads') {
+    const leadTypeLabels: Record<string, string> = {
+      new_leads: 'New Leads',
+      coa: 'COA',
+      renewals: 'Renewals',
+    };
+    chips.push(
+      <Badge
+        key="lead-type"
+        variant="secondary"
+        className="gap-1 px-3 py-1.5 text-sm font-normal"
+      >
+        {leadTypeLabels[filters.leadType] || filters.leadType}
+        <X
+          className="w-3 h-3 ml-1 cursor-pointer hover:text-destructive"
+          onClick={() => onRemoveFilter('leadType')}
+        />
+      </Badge>
+    );
+  }
+
+  // Installment type chip
+  if (filters.installmentType && filters.installmentType !== 'all') {
+    const installmentLabels: Record<string, string> = {
+      installment: 'Installment',
+      non_installment: 'Non-Installment',
+    };
+    chips.push(
+      <Badge
+        key="installment-type"
+        variant="secondary"
+        className="gap-1 px-3 py-1.5 text-sm font-normal"
+      >
+        {installmentLabels[filters.installmentType] || filters.installmentType}
+        <X
+          className="w-3 h-3 ml-1 cursor-pointer hover:text-destructive"
+          onClick={() => onRemoveFilter('installmentType')}
         />
       </Badge>
     );
