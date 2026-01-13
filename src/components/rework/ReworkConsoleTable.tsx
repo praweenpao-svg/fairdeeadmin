@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Pencil, Trash2, Check } from 'lucide-react';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { ReworkConfig, AssignmentType, PipelineStage } from '@/types/pipeline';
 import { useTeamsStore } from '@/stores/teamsStore';
 import { Button } from '@/components/ui/button';
@@ -19,13 +19,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
-import { cn } from '@/lib/utils';
 
 interface ReworkConsoleTableProps {
   reworkConfigs: ReworkConfig[];
@@ -33,8 +27,8 @@ interface ReworkConsoleTableProps {
 }
 
 const assignmentOptions: { value: AssignmentType; label: string }[] = [
-  { value: 'round_robin', label: 'Round Robin' },
   { value: 'rf_sc', label: 'RF/SC' },
+  { value: 'round_robin', label: 'Round-Robin' },
 ];
 
 const stageOptions: { value: PipelineStage; label: string }[] = [
@@ -54,7 +48,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
     descriptionTh: '',
     descriptionEn: '',
     team: '',
-    assignment: 'round_robin',
+    assignment: 'rf_sc',
     stages: [],
   });
 
@@ -68,7 +62,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
         descriptionTh: '',
         descriptionEn: '',
         team: '',
-        assignment: 'round_robin',
+        assignment: 'rf_sc',
         stages: [],
       });
     }
@@ -80,11 +74,14 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
   };
 
   const handleSave = () => {
+    // If RF/SC, clear team since it's not used
+    const teamValue = formData.assignment === 'rf_sc' ? '' : (formData.team || '');
+    
     if (editingConfig) {
       onUpdate(
         reworkConfigs.map((config) =>
           config.id === editingConfig.id
-            ? { ...config, ...formData }
+            ? { ...config, ...formData, team: teamValue }
             : config
         )
       );
@@ -93,10 +90,10 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
         id: String(Date.now()),
         descriptionTh: formData.descriptionTh || '',
         descriptionEn: formData.descriptionEn || '',
-        team: formData.team || '',
+        team: teamValue,
         teamMembers: [],
         automationEnabled: false,
-        assignment: formData.assignment || 'round_robin',
+        assignment: formData.assignment || 'rf_sc',
         stages: formData.stages || [],
       };
       onUpdate([...reworkConfigs, newConfig]);
@@ -104,47 +101,24 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
     setIsDialogOpen(false);
   };
 
-  const handleTeamChange = (configId: string, team: string | null) => {
-    onUpdate(
-      reworkConfigs.map((config) =>
-        config.id === configId
-          ? { ...config, team: team || '' }
-          : config
-      )
-    );
-  };
-
-  const handleAssignmentChange = (configId: string, assignment: AssignmentType) => {
-    onUpdate(
-      reworkConfigs.map((config) =>
-        config.id === configId
-          ? { ...config, assignment }
-          : config
-      )
-    );
-  };
-
-  const handleStageToggle = (configId: string, stage: PipelineStage) => {
-    onUpdate(
-      reworkConfigs.map((config) => {
-        if (config.id === configId) {
-          const currentStages = config.stages || [];
-          const newStages = currentStages.includes(stage)
-            ? currentStages.filter((s) => s !== stage)
-            : [...currentStages, stage];
-          return { ...config, stages: newStages };
-        }
-        return config;
-      })
-    );
+  const handleFormStageToggle = (stage: PipelineStage) => {
+    const currentStages = formData.stages || [];
+    const newStages = currentStages.includes(stage)
+      ? currentStages.filter((s) => s !== stage)
+      : [...currentStages, stage];
+    setFormData({ ...formData, stages: newStages });
   };
 
   const getStageLabels = (stages: PipelineStage[]) => {
-    if (!stages || stages.length === 0) return 'Select stages';
-    if (stages.length === 1) {
-      return stageOptions.find((s) => s.value === stages[0])?.label || stages[0];
+    if (!stages || stages.length === 0) return '-';
+    return stages.map(s => stageOptions.find(opt => opt.value === s)?.label || s).join(', ');
+  };
+
+  const getTeamDisplay = (config: ReworkConfig) => {
+    if (config.assignment === 'rf_sc') {
+      return <span className="text-muted-foreground italic">N/A (RF/SC)</span>;
     }
-    return `${stages.length} stages selected`;
+    return config.team || '-';
   };
 
   return (
@@ -173,7 +147,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="descriptionTh">Description (Thai)</Label>
+                  <Label htmlFor="descriptionTh">Description (TH)</Label>
                   <Input
                     id="descriptionTh"
                     value={formData.descriptionTh}
@@ -182,7 +156,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="descriptionEn">Description (English)</Label>
+                  <Label htmlFor="descriptionEn">Description (EN)</Label>
                   <Input
                     id="descriptionEn"
                     value={formData.descriptionEn}
@@ -191,23 +165,70 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="team">Team</Label>
+                  <Label htmlFor="assignment">Assignment Logic</Label>
                   <Select 
-                    value={formData.team || '__none__'} 
-                    onValueChange={(value) => setFormData({ ...formData, team: value === '__none__' ? '' : value })}
+                    value={formData.assignment || 'rf_sc'} 
+                    onValueChange={(value) => setFormData({ 
+                      ...formData, 
+                      assignment: value as AssignmentType,
+                      team: value === 'rf_sc' ? '' : formData.team 
+                    })}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select team" />
+                      <SelectValue placeholder="Select assignment logic" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="__none__">Select team</SelectItem>
-                      {teams.map((team) => (
-                        <SelectItem key={team} value={team}>
-                          {team}
+                      {assignmentOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
+                  <p className="text-xs text-muted-foreground">
+                    {formData.assignment === 'rf_sc' 
+                      ? 'Assigns to SC person if claimed, otherwise RF person'
+                      : 'Distributes tasks fairly among selected team members'}
+                  </p>
+                </div>
+                {formData.assignment === 'round_robin' && (
+                  <div className="grid gap-2">
+                    <Label htmlFor="team">Team</Label>
+                    <Select 
+                      value={formData.team || '__none__'} 
+                      onValueChange={(value) => setFormData({ ...formData, team: value === '__none__' ? '' : value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select team" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">Select team</SelectItem>
+                        {teams.map((team) => (
+                          <SelectItem key={team} value={team}>
+                            {team}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+                <div className="grid gap-2">
+                  <Label>Stages</Label>
+                  <div className="border rounded-md p-3 space-y-2">
+                    {stageOptions.map((stage) => (
+                      <div
+                        key={stage.value}
+                        className="flex items-center space-x-2 cursor-pointer hover:bg-muted p-2 rounded"
+                        onClick={() => handleFormStageToggle(stage.value)}
+                      >
+                        <Checkbox
+                          checked={(formData.stages || []).includes(stage.value)}
+                          onCheckedChange={() => handleFormStageToggle(stage.value)}
+                        />
+                        <span className="text-sm">{stage.label}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
               <div className="flex justify-end gap-2">
@@ -229,9 +250,9 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
             <tr className="border-b border-border">
               <th className="data-table-header px-4 py-3 text-left">Description (TH)</th>
               <th className="data-table-header px-4 py-3 text-left">Description (EN)</th>
-              <th className="data-table-header px-4 py-3 text-left">Stage</th>
-              <th className="data-table-header px-4 py-3 text-left">Team</th>
-              <th className="data-table-header px-4 py-3 text-left">Assignment</th>
+              <th className="data-table-header px-4 py-3 text-left">Assignment Logic</th>
+              <th className="data-table-header px-4 py-3 text-left">Teams</th>
+              <th className="data-table-header px-4 py-3 text-left">Stages</th>
               <th className="data-table-header px-4 py-3 text-right">Actions</th>
             </tr>
           </thead>
@@ -240,75 +261,11 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
               <tr key={config.id} className="data-table-row">
                 <td className="px-4 py-3 text-sm">{config.descriptionTh}</td>
                 <td className="px-4 py-3 text-sm">{config.descriptionEn}</td>
-                <td className="px-4 py-3">
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-[160px] h-8 text-xs justify-between"
-                      >
-                        <span className="truncate">{getStageLabels(config.stages || [])}</span>
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[200px] p-2 bg-popover" align="start">
-                      <div className="space-y-2">
-                        {stageOptions.map((stage) => (
-                          <div
-                            key={stage.value}
-                            className="flex items-center space-x-2 cursor-pointer hover:bg-muted p-2 rounded"
-                            onClick={() => handleStageToggle(config.id, stage.value)}
-                          >
-                            <Checkbox
-                              checked={(config.stages || []).includes(stage.value)}
-                              onCheckedChange={() => handleStageToggle(config.id, stage.value)}
-                            />
-                            <span className="text-sm">{stage.label}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </PopoverContent>
-                  </Popover>
+                <td className="px-4 py-3 text-sm">
+                  {assignmentOptions.find(o => o.value === config.assignment)?.label || config.assignment}
                 </td>
-                <td className="px-4 py-3">
-                  <Select
-                    value={config.team || '__none__'}
-                    onValueChange={(value) =>
-                      handleTeamChange(config.id, value === '__none__' ? null : value)
-                    }
-                  >
-                    <SelectTrigger className="w-[140px] h-8 text-xs">
-                      <SelectValue placeholder="Select team" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="__none__">Select team</SelectItem>
-                      {teams.map((team) => (
-                        <SelectItem key={team} value={team}>
-                          {team}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </td>
-                <td className="px-4 py-3">
-                  <Select
-                    value={config.assignment || 'round_robin'}
-                    onValueChange={(value) =>
-                      handleAssignmentChange(config.id, value as AssignmentType)
-                    }
-                  >
-                    <SelectTrigger className="w-[140px] h-8 text-xs">
-                      <SelectValue placeholder="Select assignment" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {assignmentOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </td>
+                <td className="px-4 py-3 text-sm">{getTeamDisplay(config)}</td>
+                <td className="px-4 py-3 text-sm">{getStageLabels(config.stages || [])}</td>
                 <td className="px-4 py-3">
                   <div className="flex items-center justify-end gap-1">
                     <Button
