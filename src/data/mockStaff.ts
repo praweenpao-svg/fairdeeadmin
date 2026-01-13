@@ -103,9 +103,19 @@ export const mockStaffMembers: StaffMember[] = [
     shift2StartTime: '13:00:00',
     shift2EndTime: '18:00:00',
   },
-  // Admin team
   {
     id: '10',
+    name: 'Pao',
+    email: 'pao@fairdee.co.th',
+    team: 'DE',
+    startTime: '09:00:00',
+    endTime: '12:00:00',
+    shift2StartTime: '13:00:00',
+    shift2EndTime: '18:00:00',
+  },
+  // Admin team
+  {
+    id: '11',
     name: 'Rachel',
     email: 'rachel@fairdee.co.th',
     team: 'Admin',
@@ -115,7 +125,7 @@ export const mockStaffMembers: StaffMember[] = [
     shift2EndTime: '18:00:00',
   },
   {
-    id: '11',
+    id: '12',
     name: 'Sam',
     email: 'sam@fairdee.co.th',
     team: 'Admin',
@@ -125,7 +135,7 @@ export const mockStaffMembers: StaffMember[] = [
     shift2EndTime: '18:00:00',
   },
   {
-    id: '12',
+    id: '13',
     name: 'Tina',
     email: 'tina@fairdee.co.th',
     team: 'Admin',

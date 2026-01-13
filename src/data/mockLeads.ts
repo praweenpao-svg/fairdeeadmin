@@ -11,7 +11,10 @@ const agents = [
 
 const rfStaff = ['Ricky', 'Jenny', 'Tommy'];
 const scStaff = ['Lisa', 'Mike', 'Nina'];
-const deStaff = ['Oscar', 'Paula', 'Quinn'];
+const deStaff = ['Oscar', 'Paula', 'Quinn', 'Pao'];
+
+// Current user constant
+export const CURRENT_USER = 'Pao';
 const vehiclePlates = ['2มว7814', '2ศย8965', 'KL4521', 'PQ8823', 'AB1234', 'CD5678', 'EF9012', 'GH3456', 'IJ7890', 'MN6789', 'OP1234', 'QR5678'];
 
 const generateLeads = (): Lead[] => {
