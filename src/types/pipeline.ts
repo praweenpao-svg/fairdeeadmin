@@ -66,6 +66,7 @@ export interface Lead {
   reworkHistory: ReworkHistoryEntry[];
   rfAssignee?: string;
   scAssignee?: string;
+  deAssignee?: string;
 }
 
 export type AssignmentType = 'round_robin' | 'rf_sc';

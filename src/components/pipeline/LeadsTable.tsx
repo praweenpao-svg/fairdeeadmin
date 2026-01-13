@@ -106,6 +106,11 @@ function getSCStaff() {
   return mockStaffMembers.filter(staff => staff.team === 'AST SC');
 }
 
+// Get DE staff (DE team)
+function getDEStaff() {
+  return mockStaffMembers.filter(staff => staff.team === 'DE');
+}
+
 // Round robin state per team
 const roundRobinIndexes: Record<string, number> = {};
 
@@ -124,10 +129,18 @@ function getNextRoundRobinStaff(team: string): string | undefined {
   return staff.name;
 }
 
+// Get next DE staff via round robin
+function getNextDERoundRobin(): string | undefined {
+  return getNextRoundRobinStaff('DE');
+}
+
 export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLeadUpdate }: LeadsTableProps) {
   const [reworkDialogOpen, setReworkDialogOpen] = useState(false);
   const [reworkHistoryDialogOpen, setReworkHistoryDialogOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+
+  // Check if we should show DE column (all stages except to_pay)
+  const showDEColumn = stage !== 'to_pay';
 
   // Filter rework configs by current stage
   const stageReworkConfigs = reworkConfigs.filter(config => config.stages.includes(stage));
@@ -137,12 +150,20 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
       setSelectedLead(lead);
       setReworkDialogOpen(true);
     } else {
-      onLeadUpdate?.(lead.id, {
+      // When status changes to pending_review at To Report, assign DE
+      const updates: Partial<Lead> = {
         saleStatus: newStatus as Lead['saleStatus'],
         reworkRequired: false,
         reworkReasonId: undefined,
         assignedTo: undefined,
-      });
+      };
+
+      // Auto-assign DE when entering pending_review at To Report stage
+      if (stage === 'to_report' && newStatus === 'pending_review' && !lead.deAssignee) {
+        updates.deAssignee = getNextDERoundRobin();
+      }
+
+      onLeadUpdate?.(lead.id, updates);
     }
   };
 
@@ -332,6 +353,23 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
     return 0;
   });
 
+  // Get owner based on stage and rework status
+  const getOwner = (lead: Lead): string | undefined => {
+    // If rework is required, assignedTo takes priority
+    if (lead.reworkRequired && lead.assignedTo) {
+      return lead.assignedTo;
+    }
+
+    // Stage-specific ownership logic
+    if (stage === 'to_pay') {
+      // To Pay: SC if available, else RF
+      return lead.scAssignee || lead.rfAssignee;
+    } else {
+      // All other stages: DE is the owner (unless rework)
+      return lead.deAssignee;
+    }
+  };
+
   return (
     <>
       <div className="bg-card rounded-lg border border-border overflow-hidden">
@@ -346,6 +384,9 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
                 <th className="data-table-header px-4 py-3 text-left">Vehicle details</th>
                 <th className="data-table-header px-4 py-3 text-left">RF</th>
                 <th className="data-table-header px-4 py-3 text-left">SC</th>
+                {showDEColumn && (
+                  <th className="data-table-header px-4 py-3 text-left">DE</th>
+                )}
                 <th className="data-table-header px-4 py-3 text-left">Status</th>
                 <th className="data-table-header px-4 py-3 text-left">Owner</th>
                 <th className="data-table-header w-10 px-4 py-3"></th>
@@ -354,7 +395,7 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
             <tbody>
               {sortedLeads.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="px-4 py-12 text-center text-muted-foreground">
+                  <td colSpan={showDEColumn ? 11 : 10} className="px-4 py-12 text-center text-muted-foreground">
                     No leads found for this stage
                   </td>
                 </tr>
@@ -439,6 +480,25 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
                         </SelectContent>
                       </Select>
                     </td>
+                    {showDEColumn && (
+                      <td className="px-4 py-3">
+                        <Select 
+                          value={lead.deAssignee || ''}
+                          onValueChange={(value) => onLeadUpdate?.(lead.id, { deAssignee: value || undefined })}
+                        >
+                          <SelectTrigger className="w-[140px] h-8 text-xs">
+                            <SelectValue placeholder="Select DE" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {getDEStaff().map((staff) => (
+                              <SelectItem key={staff.id} value={staff.name}>
+                                {staff.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </td>
+                    )}
                     <td className="px-4 py-3">
                       <Select 
                         value={lead.reworkRequired ? 'rework_required' : (lead.saleStatus || defaultStatusByStage[stage])}
@@ -461,21 +521,11 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
                     </td>
                     <td className="px-4 py-3">
                       {(() => {
-                        // Owner logic: SC > RF > "-"
-                        // If both RF and SC exist, show SC
-                        // If only RF exists, show RF
-                        // If neither, show "-"
-                        if (lead.scAssignee) {
+                        const owner = getOwner(lead);
+                        if (owner) {
                           return (
                             <span className="text-sm px-2 py-1 bg-muted rounded">
-                              {lead.scAssignee}
-                            </span>
-                          );
-                        }
-                        if (lead.rfAssignee) {
-                          return (
-                            <span className="text-sm px-2 py-1 bg-muted rounded">
-                              {lead.rfAssignee}
+                              {owner}
                             </span>
                           );
                         }
