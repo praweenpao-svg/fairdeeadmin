@@ -111,14 +111,11 @@ interface AllFiltersPanelProps {
   filters: FilterState;
   onFiltersChange: (filters: FilterState) => void;
   onClear: () => void;
-  sortConfig: SortConfig;
-  onSortChange: (config: SortConfig) => void;
 }
 
-export function AllFiltersPanel({ filters, onFiltersChange, onClear, sortConfig, onSortChange }: AllFiltersPanelProps) {
+export function AllFiltersPanel({ filters, onFiltersChange, onClear }: AllFiltersPanelProps) {
   const [open, setOpen] = React.useState(false);
   const [localFilters, setLocalFilters] = React.useState<FilterState>(filters);
-  const [localSort, setLocalSort] = React.useState<SortConfig>(sortConfig);
 
   const rfStaff = mockStaffMembers.filter(s => s.team === 'AST RF');
   const scStaff = mockStaffMembers.filter(s => s.team === 'AST SC');
@@ -141,18 +138,15 @@ export function AllFiltersPanel({ filters, onFiltersChange, onClear, sortConfig,
 
   const handleApply = () => {
     onFiltersChange(localFilters);
-    onSortChange(localSort);
     setOpen(false);
   };
 
   const handleClear = () => {
     setLocalFilters(defaultFilterState);
-    setLocalSort({ field: 'createdOn', direction: 'desc' });
   };
 
   const handleCancel = () => {
     setLocalFilters(filters);
-    setLocalSort(sortConfig);
     setOpen(false);
   };
 
@@ -182,41 +176,9 @@ export function AllFiltersPanel({ filters, onFiltersChange, onClear, sortConfig,
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[900px] p-6 bg-card z-50" align="start">
-        {/* Sort By Section */}
-        <div className="mb-6 pb-4 border-b border-border">
-          <Label className="text-sm font-medium mb-3 block">Sort By</Label>
-          <div className="flex items-center gap-4">
-            <Select
-              value={localSort.field}
-              onValueChange={(value) => setLocalSort({ ...localSort, field: value as SortField })}
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent className="bg-card z-50">
-                <SelectItem value="createdOn">Created On</SelectItem>
-                <SelectItem value="updatedOn">Latest Updated On</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select
-              value={localSort.direction}
-              onValueChange={(value) => setLocalSort({ ...localSort, direction: value as SortDirection })}
-            >
-              <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="Direction" />
-              </SelectTrigger>
-              <SelectContent className="bg-card z-50">
-                <SelectItem value="desc">Newest First</SelectItem>
-                <SelectItem value="asc">Oldest First</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
         <div className="grid grid-cols-3 gap-6">
           {/* Column 1 */}
           <div className="space-y-4">
-            {/* Status */}
             {/* Status */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">Status</Label>

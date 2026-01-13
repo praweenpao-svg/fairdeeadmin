@@ -16,7 +16,6 @@ interface PipelineTabsProps {
   onStageChange: (stage: PipelineStage) => void;
   leads: Lead[];
   myCasesOnly: boolean;
-  onMyCasesChange: (checked: boolean) => void;
 }
 
 const stageConfig = [
@@ -132,10 +131,9 @@ export function PipelineTabs({
   onStageChange,
   leads,
   myCasesOnly,
-  onMyCasesChange,
 }: PipelineTabsProps) {
   return (
-    <div className="flex items-center justify-between border-b border-border bg-card px-4">
+    <div className="border-b border-border bg-card px-4">
       <div className="flex items-center gap-1">
         {stageConfig.map((stage) => {
           const count = myCasesOnly 
@@ -168,21 +166,6 @@ export function PipelineTabs({
             </button>
           );
         })}
-      </div>
-      
-      {/* My Cases Toggle - with proper spacing from tabs */}
-      <div className="pl-6">
-        <button
-          onClick={() => onMyCasesChange(!myCasesOnly)}
-          className={cn(
-            'px-3 py-1.5 text-sm font-medium rounded-md transition-colors border',
-            myCasesOnly
-              ? 'bg-primary text-primary-foreground border-primary'
-              : 'bg-muted/50 text-foreground border-border hover:bg-muted hover:border-primary/50'
-          )}
-        >
-          My Cases
-        </button>
       </div>
     </div>
   );
