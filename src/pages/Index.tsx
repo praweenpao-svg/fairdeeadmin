@@ -10,6 +10,7 @@ import { AllFiltersPanel, FilterState, defaultFilterState } from '@/components/p
 import { OtherStagesFilterPanel, OtherStagesFilterState, defaultOtherStagesFilterState } from '@/components/pipeline/OtherStagesFilterPanel';
 import { FilterChips } from '@/components/pipeline/FilterChips';
 import { Input } from '@/components/ui/input';
+import { applyAllFilters } from '@/utils/leadFilters';
 
 const Index = () => {
   const [activeStage, setActiveStage] = useState<PipelineStage>('to_pay');
@@ -24,6 +25,8 @@ const Index = () => {
   
   // Filters for other stages (To Report, To Issue, To Deliver, Completed)
   const [otherStagesFilters, setOtherStagesFilters] = useState<OtherStagesFilterState>(defaultOtherStagesFilterState);
+
+  const isToPayStage = activeStage === 'to_pay';
 
   const handleLeadUpdate = (leadId: string, updates: Partial<Lead>) => {
     setLeads((prev) =>
@@ -68,29 +71,24 @@ const Index = () => {
     setDateRange(undefined);
   };
 
-  // Determine lead type filter based on stage
-  const getLeadTypeFilter = (): LeadType | undefined => {
-    if (activeStage === 'to_pay') {
-      return toPayFilters.leadType as LeadType;
-    }
-    // For other stages, if 'all' selected or multiple, return undefined (show all)
-    if (otherStagesFilters.leadTypes.includes('all') || otherStagesFilters.leadTypes.length === 0) {
-      return undefined;
-    }
-    // Return first selected if single selection
-    if (otherStagesFilters.leadTypes.length === 1) {
-      return otherStagesFilters.leadTypes[0] as LeadType;
-    }
-    return undefined;
-  };
-
-  const allStageLeads = getLeadsForStage(leads, activeStage);
-  const filteredLeads = casesView === 'my_cases'
+  // Get stage leads first (by pipeline stage logic)
+  const stageLeads = getLeadsForStage(leads, activeStage);
+  
+  // Apply My Cases / All Cases filter
+  const casesFilteredLeads = casesView === 'my_cases'
     ? getLeadsOwnedByUser(leads, activeStage, CURRENT_USER)
-    : allStageLeads;
-  const leadTypeFilter = getLeadTypeFilter();
+    : stageLeads;
+  
+  // Apply all filters (search, date, panel filters)
+  const filteredLeads = applyAllFilters(
+    casesFilteredLeads,
+    searchQuery,
+    dateRange,
+    toPayFilters,
+    otherStagesFilters,
+    isToPayStage
+  );
 
-  const isToPayStage = activeStage === 'to_pay';
 
   return (
     <>
@@ -161,7 +159,6 @@ const Index = () => {
         <LeadsTable
           leads={filteredLeads}
           stage={activeStage}
-          leadTypeFilter={leadTypeFilter}
           reworkConfigs={reworkConfigs}
           onLeadUpdate={handleLeadUpdate}
         />

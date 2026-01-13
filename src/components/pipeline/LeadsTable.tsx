@@ -28,7 +28,6 @@ import { ReworkHistoryDialog } from './ReworkHistoryDialog';
 interface LeadsTableProps {
   leads: Lead[];
   stage: PipelineStage;
-  leadTypeFilter?: LeadType;
   reworkConfigs: ReworkConfig[];
   onLeadUpdate?: (leadId: string, updates: Partial<Lead>) => void;
 }
@@ -135,7 +134,7 @@ function getNextDERoundRobin(): string | undefined {
   return getNextRoundRobinStaff('DE');
 }
 
-export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLeadUpdate }: LeadsTableProps) {
+export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsTableProps) {
   const [reworkDialogOpen, setReworkDialogOpen] = useState(false);
   const [reworkHistoryDialogOpen, setReworkHistoryDialogOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
@@ -337,14 +336,8 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
     setReworkHistoryDialogOpen(true);
   };
 
-  // Filter leads based on lead type
-  let filteredLeads = leads;
-  if (leadTypeFilter) {
-    filteredLeads = leads.filter((lead) => lead.leadType === leadTypeFilter);
-  }
-
   // Sort leads by timestamp (most recent first), then rework required
-  const sortedLeads = [...filteredLeads].sort((a, b) => {
+  const sortedLeads = [...leads].sort((a, b) => {
     // First, sort by createdOn date (most recent first)
     const dateA = new Date(a.createdOn).getTime();
     const dateB = new Date(b.createdOn).getTime();
