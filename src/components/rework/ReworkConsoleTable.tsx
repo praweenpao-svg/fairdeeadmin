@@ -248,7 +248,6 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
 
                 {/* Date Automation Section */}
                 <div className="border-t pt-4 mt-2">
-                  <h4 className="text-sm font-medium mb-3">Date Automation (Self-Healing)</h4>
                   
                   <div className="flex items-center justify-between mb-4">
                     <div className="space-y-0.5">
