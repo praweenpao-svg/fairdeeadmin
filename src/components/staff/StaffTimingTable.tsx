@@ -5,6 +5,7 @@ import { useTeamsStore } from '@/stores/teamsStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { TablePagination } from '@/components/ui/table-pagination';
 import {
   Select,
   SelectContent,
@@ -28,6 +29,8 @@ export function StaffTimingTable() {
   const [editingStaff, setEditingStaff] = useState<StaffMember | null>(null);
   const [newTeamName, setNewTeamName] = useState('');
   const [editingTeam, setEditingTeam] = useState<{ index: number; name: string } | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const handleTeamChange = (staffId: string, team: string | null) => {
     setStaff((prev) =>
@@ -80,6 +83,23 @@ export function StaffTimingTable() {
     }
     setIsAddTimingsOpen(false);
     setEditingStaff(null);
+  };
+
+  // Pagination
+  const totalItems = staff.length;
+  const totalPages = Math.ceil(totalItems / rowsPerPage) || 1;
+  const paginatedStaff = staff.slice(
+    (currentPage - 1) * rowsPerPage,
+    currentPage * rowsPerPage
+  );
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handleRowsPerPageChange = (rows: number) => {
+    setRowsPerPage(rows);
+    setCurrentPage(1);
   };
 
   return (
@@ -326,7 +346,7 @@ export function StaffTimingTable() {
               </tr>
             </thead>
             <tbody>
-              {staff.map((member) => (
+              {paginatedStaff.map((member) => (
                 <tr key={member.id} className="data-table-row">
                   <td className="px-4 py-3 text-sm font-medium">{member.name}</td>
                   <td className="px-4 py-3 text-sm text-muted-foreground">{member.email}</td>
@@ -379,6 +399,16 @@ export function StaffTimingTable() {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
+        <TablePagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          rowsPerPage={rowsPerPage}
+          onPageChange={handlePageChange}
+          onRowsPerPageChange={handleRowsPerPageChange}
+        />
       </div>
     </div>
   );

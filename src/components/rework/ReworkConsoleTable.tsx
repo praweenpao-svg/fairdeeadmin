@@ -4,6 +4,7 @@ import { ReworkConfig, AssignmentType, PipelineStage } from '@/types/pipeline';
 import { useTeamsStore } from '@/stores/teamsStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { TablePagination } from '@/components/ui/table-pagination';
 import {
   Select,
   SelectContent,
@@ -45,6 +46,8 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
   const { teams } = useTeamsStore();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingConfig, setEditingConfig] = useState<ReworkConfig | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const [formData, setFormData] = useState<Partial<ReworkConfig>>({
     descriptionTh: '',
@@ -135,6 +138,23 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
     if (!targetReasonId) return '-';
     const targetConfig = reworkConfigs.find(c => c.id === targetReasonId);
     return targetConfig?.descriptionEn || '-';
+  };
+
+  // Pagination
+  const totalItems = reworkConfigs.length;
+  const totalPages = Math.ceil(totalItems / rowsPerPage) || 1;
+  const paginatedConfigs = reworkConfigs.slice(
+    (currentPage - 1) * rowsPerPage,
+    currentPage * rowsPerPage
+  );
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handleRowsPerPageChange = (rows: number) => {
+    setRowsPerPage(rows);
+    setCurrentPage(1);
   };
 
   return (
@@ -327,65 +347,77 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
       </div>
 
       <div className="bg-card rounded-lg border border-border overflow-hidden">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-border">
-              <th className="data-table-header px-4 py-3 text-left">Description (TH)</th>
-              <th className="data-table-header px-4 py-3 text-left">Description (EN)</th>
-              <th className="data-table-header px-4 py-3 text-left">Assignment Logic</th>
-              <th className="data-table-header px-4 py-3 text-left">Teams</th>
-              <th className="data-table-header px-4 py-3 text-left">Stages</th>
-              <th className="data-table-header px-4 py-3 text-center">Auto-Move</th>
-              <th className="data-table-header px-4 py-3 text-center">Threshold</th>
-              <th className="data-table-header px-4 py-3 text-left">Target Status</th>
-              <th className="data-table-header px-4 py-3 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {reworkConfigs.map((config) => (
-              <tr key={config.id} className="data-table-row">
-                <td className="px-4 py-3 text-sm">{config.descriptionTh}</td>
-                <td className="px-4 py-3 text-sm">{config.descriptionEn}</td>
-                <td className="px-4 py-3 text-sm">
-                  {assignmentOptions.find(o => o.value === config.assignment)?.label || config.assignment}
-                </td>
-                <td className="px-4 py-3 text-sm">{getTeamDisplay(config)}</td>
-                <td className="px-4 py-3 text-sm">{getStageLabels(config.stages || [])}</td>
-                <td className="px-4 py-3 text-sm text-center">
-                  <span className={config.automationEnabled ? 'text-green-500' : 'text-muted-foreground'}>
-                    {config.automationEnabled ? 'ON' : 'OFF'}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-sm text-center">
-                  {config.automationEnabled && config.automationDays ? `${config.automationDays} days` : '-'}
-                </td>
-                <td className="px-4 py-3 text-sm">
-                  {config.automationEnabled ? getTargetReasonLabel(config.targetReason) : '-'}
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex items-center justify-end gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => openDialog(config)}
-                      className="h-8 w-8 p-0"
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDelete(config.id)}
-                      className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="data-table-header px-4 py-3 text-left">Description (TH)</th>
+                <th className="data-table-header px-4 py-3 text-left">Description (EN)</th>
+                <th className="data-table-header px-4 py-3 text-left">Assignment Logic</th>
+                <th className="data-table-header px-4 py-3 text-left">Teams</th>
+                <th className="data-table-header px-4 py-3 text-left">Stages</th>
+                <th className="data-table-header px-4 py-3 text-center">Auto-Move</th>
+                <th className="data-table-header px-4 py-3 text-center">Threshold</th>
+                <th className="data-table-header px-4 py-3 text-left">Target Status</th>
+                <th className="data-table-header px-4 py-3 text-right">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {paginatedConfigs.map((config) => (
+                <tr key={config.id} className="data-table-row">
+                  <td className="px-4 py-3 text-sm">{config.descriptionTh}</td>
+                  <td className="px-4 py-3 text-sm">{config.descriptionEn}</td>
+                  <td className="px-4 py-3 text-sm">
+                    {assignmentOptions.find(o => o.value === config.assignment)?.label || config.assignment}
+                  </td>
+                  <td className="px-4 py-3 text-sm">{getTeamDisplay(config)}</td>
+                  <td className="px-4 py-3 text-sm">{getStageLabels(config.stages || [])}</td>
+                  <td className="px-4 py-3 text-sm text-center">
+                    <span className={config.automationEnabled ? 'text-green-500' : 'text-muted-foreground'}>
+                      {config.automationEnabled ? 'ON' : 'OFF'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-sm text-center">
+                    {config.automationEnabled && config.automationDays ? `${config.automationDays} days` : '-'}
+                  </td>
+                  <td className="px-4 py-3 text-sm">
+                    {config.automationEnabled ? getTargetReasonLabel(config.targetReason) : '-'}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-end gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => openDialog(config)}
+                        className="h-8 w-8 p-0"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDelete(config.id)}
+                        className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Pagination */}
+        <TablePagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          rowsPerPage={rowsPerPage}
+          onPageChange={handlePageChange}
+          onRowsPerPageChange={handleRowsPerPageChange}
+        />
       </div>
     </div>
   );

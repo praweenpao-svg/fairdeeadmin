@@ -20,6 +20,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
+import { TablePagination } from '@/components/ui/table-pagination';
 import { mockStaffMembers } from '@/data/mockStaff';
 import { ReworkDialog } from './ReworkDialog';
 import { ReworkHistoryDialog } from './ReworkHistoryDialog';
@@ -138,6 +139,8 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
   const [reworkDialogOpen, setReworkDialogOpen] = useState(false);
   const [reworkHistoryDialogOpen, setReworkHistoryDialogOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   // Check if we should show DE column (all stages except to_pay)
   const showDEColumn = stage !== 'to_pay';
@@ -353,6 +356,23 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
     return 0;
   });
 
+  // Pagination
+  const totalItems = sortedLeads.length;
+  const totalPages = Math.ceil(totalItems / rowsPerPage) || 1;
+  const paginatedLeads = sortedLeads.slice(
+    (currentPage - 1) * rowsPerPage,
+    currentPage * rowsPerPage
+  );
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handleRowsPerPageChange = (rows: number) => {
+    setRowsPerPage(rows);
+    setCurrentPage(1);
+  };
+
   // Get owner based on stage and rework status
   const getOwner = (lead: Lead): string | undefined => {
     // If rework is required, assignedTo takes priority
@@ -400,7 +420,7 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
                   </td>
                 </tr>
               ) : (
-                sortedLeads.map((lead) => (
+              paginatedLeads.map((lead) => (
                   <tr 
                     key={lead.id} 
                     className={cn(
@@ -567,6 +587,16 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
             </tbody>
           </table>
         </div>
+        
+        {/* Pagination */}
+        <TablePagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          rowsPerPage={rowsPerPage}
+          onPageChange={handlePageChange}
+          onRowsPerPageChange={handleRowsPerPageChange}
+        />
       </div>
 
       {/* Rework Dialog */}
