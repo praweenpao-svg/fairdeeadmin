@@ -19,7 +19,6 @@ const Index = () => {
   const [reworkConfigs, setReworkConfigs] = useState<ReworkConfig[]>(mockReworkConfigs);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [myCasesOnly, setMyCasesOnly] = useState(true);
-  const [reworkOnly, setReworkOnly] = useState(false);
   
   // Filters for To Pay stage
   const [toPayFilters, setToPayFilters] = useState<FilterState>(defaultFilterState);
@@ -80,14 +79,9 @@ const Index = () => {
     ? getLeadsOwnedByUser(leads, activeStage, CURRENT_USER)
     : stageLeads;
   
-  // Apply Rework Required filter
-  const reworkFilteredLeads = reworkOnly
-    ? casesFilteredLeads.filter(lead => lead.reworkRequired)
-    : casesFilteredLeads;
-  
   // Apply all filters (search, date, panel filters)
   const filteredLeads = applyAllFilters(
-    reworkFilteredLeads,
+    casesFilteredLeads,
     searchQuery,
     dateRange,
     toPayFilters,
@@ -114,8 +108,6 @@ const Index = () => {
           leads={leads}
           myCasesOnly={myCasesOnly}
           onMyCasesChange={setMyCasesOnly}
-          reworkOnly={reworkOnly}
-          onReworkOnlyChange={setReworkOnly}
         />
       </header>
 
