@@ -45,7 +45,7 @@ const Index = () => {
     } else if (key === 'status') {
       setFilters({ ...filters, status: 'all' });
     } else {
-      setFilters({ ...filters, [key]: '' });
+      setFilters({ ...filters, [key]: 'all' });
     }
   };
 
