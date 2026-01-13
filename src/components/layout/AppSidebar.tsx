@@ -111,12 +111,12 @@ export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
       <div className="border-t border-sidebar-border p-3">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-sidebar-accent flex items-center justify-center">
-            <span className="text-xs font-medium">AB</span>
+            <span className="text-xs font-medium">P</span>
           </div>
           {!collapsed && (
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">Akshay Bazad</p>
-              <p className="text-xs text-sidebar-muted">super_admin</p>
+              <p className="text-sm font-medium truncate">Pao</p>
+              <p className="text-xs text-sidebar-muted">admin</p>
             </div>
           )}
         </div>

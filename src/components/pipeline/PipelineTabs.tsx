@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils';
 import { PipelineStage, Lead } from '@/types/pipeline';
+import { CURRENT_USER } from '@/data/mockLeads';
 import { 
   CreditCard, 
   FileText, 
@@ -86,6 +87,29 @@ export function getLeadsForStage(leads: Lead[], stage: PipelineStage): Lead[] {
   }
 }
 
+// Get owner field based on stage
+function getOwnerField(stage: PipelineStage): keyof Lead | null {
+  switch (stage) {
+    case 'to_pay':
+      return 'rfAssignee'; // RF handles To Pay
+    case 'to_report':
+    case 'to_issue':
+    case 'to_deliver':
+    case 'completed':
+      return 'deAssignee'; // DE handles these stages
+    default:
+      return null;
+  }
+}
+
+// Get leads owned by current user for a stage
+export function getLeadsOwnedByUser(leads: Lead[], stage: PipelineStage, user: string): Lead[] {
+  const stageLeads = getLeadsForStage(leads, stage);
+  const ownerField = getOwnerField(stage);
+  if (!ownerField) return stageLeads;
+  return stageLeads.filter(lead => lead[ownerField] === user);
+}
+
 export function PipelineTabs({
   activeStage,
   onStageChange,
@@ -94,7 +118,8 @@ export function PipelineTabs({
   return (
     <div className="flex items-center gap-1 border-b border-border bg-card px-4">
       {stageConfig.map((stage) => {
-        const count = getLeadsForStage(leads, stage.id).length;
+        const userLeads = getLeadsOwnedByUser(leads, stage.id, CURRENT_USER);
+        const count = userLeads.length;
         const isActive = activeStage === stage.id;
         const Icon = stage.icon;
 
