@@ -509,24 +509,32 @@ export function LeadsTable({ leads, stage, leadTypeFilter, reworkConfigs, onLead
                       </td>
                     )}
                     <td className="px-4 py-3">
-                      <Select 
-                        value={lead.reworkRequired ? 'rework_required' : (lead.saleStatus || defaultStatusByStage[stage])}
-                        onValueChange={(value) => handleStatusChange(lead, value)}
-                      >
-                        <SelectTrigger className={cn(
-                          "w-[200px] h-8 text-xs",
-                          lead.reworkRequired && "border-warning text-warning"
-                        )}>
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {statusOptionsByStage[stage].map((option) => (
-                            <SelectItem key={option.value} value={option.value}>
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      {lead.reworkRequired ? (
+                        <div 
+                          className="w-[200px] h-8 text-xs border border-warning text-warning rounded-md px-3 flex items-center justify-between cursor-pointer hover:bg-warning/10"
+                          onClick={() => handleOpenReworkHistory(lead)}
+                          title="Click to resolve rework"
+                        >
+                          <span>Rework Required</span>
+                          <span className="text-[10px] opacity-70">Click to resolve</span>
+                        </div>
+                      ) : (
+                        <Select 
+                          value={lead.saleStatus || defaultStatusByStage[stage]}
+                          onValueChange={(value) => handleStatusChange(lead, value)}
+                        >
+                          <SelectTrigger className="w-[200px] h-8 text-xs">
+                            <SelectValue placeholder="Select status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {statusOptionsByStage[stage].map((option) => (
+                              <SelectItem key={option.value} value={option.value}>
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
                     </td>
                     <td className="px-4 py-3">
                       {(() => {
