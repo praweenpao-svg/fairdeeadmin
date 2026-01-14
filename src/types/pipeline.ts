@@ -1,6 +1,6 @@
 export type LeadType = 'new_leads' | 'coa' | 'renewals';
 export type PaymentType = 'full' | 'installment';
-export type PipelineStage = 'to_pay' | 'to_report' | 'to_issue' | 'to_deliver' | 'completed' | 'cancelled';
+export type PipelineStage = 'all' | 'to_pay' | 'to_report' | 'to_issue' | 'to_deliver' | 'completed' | 'cancelled';
 
 export type SaleStatus = 
   | 'pending'

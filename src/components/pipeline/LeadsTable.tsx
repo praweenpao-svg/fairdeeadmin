@@ -39,6 +39,23 @@ interface LeadsTableProps {
 }
 
 const statusOptionsByStage: Record<PipelineStage, { value: string; label: string }[]> = {
+  all: [
+    { value: 'pending', label: 'Pending' },
+    { value: 'waiting_for_insurer', label: 'Waiting for Insurer' },
+    { value: 'partially_added', label: 'Partially Added' },
+    { value: 'completed', label: 'Completed' },
+    { value: 'quotation_shared', label: 'Quotation Shared With Agent' },
+    { value: 'invalid', label: 'Invalid' },
+    { value: 'pending_review', label: 'Pending Review' },
+    { value: 'under_review', label: 'Under Review' },
+    { value: 'de_in_progress', label: 'DE in Progress' },
+    { value: 'pending_issuance', label: 'Pending Issuance' },
+    { value: 'policy_issued', label: 'Policy Issued' },
+    { value: 'policy_shipped', label: 'Policy Shipped' },
+    { value: 'policy_delivered', label: 'Policy Delivered' },
+    { value: 'policy_cancelled', label: 'Policy Cancelled' },
+    { value: 'rework_required', label: 'Rework Required' },
+  ],
   to_pay: [
     { value: 'pending', label: 'Pending' },
     { value: 'waiting_for_insurer', label: 'Waiting for Insurer' },
@@ -74,6 +91,7 @@ const statusOptionsByStage: Record<PipelineStage, { value: string; label: string
 };
 
 const defaultStatusByStage: Record<PipelineStage, string> = {
+  all: 'pending',
   to_pay: 'pending',
   to_report: 'pending_review',
   to_issue: 'pending_issuance',
@@ -159,8 +177,8 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConf
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  // Check if we should show DE column (all stages except to_pay)
-  const showDEColumn = stage !== 'to_pay';
+  // Check if we should show DE column (all stages except to_pay, or when on "all" tab)
+  const showDEColumn = stage === 'all' || stage !== 'to_pay';
 
   // Filter rework configs by current stage
   const stageReworkConfigs = reworkConfigs.filter(config => config.stages.includes(stage));
@@ -394,7 +412,10 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConf
     }
 
     // Stage-specific ownership logic
-    if (stage === 'to_pay') {
+    if (stage === 'all') {
+      // For "All" tab, show DE if assigned, else SC/RF
+      return lead.deAssignee || lead.scAssignee || lead.rfAssignee;
+    } else if (stage === 'to_pay') {
       // To Pay: SC if available, else RF
       return lead.scAssignee || lead.rfAssignee;
     } else {

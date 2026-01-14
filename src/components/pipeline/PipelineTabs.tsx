@@ -8,6 +8,7 @@ import {
   Truck, 
   CheckCircle2,
   XCircle,
+  LayoutGrid,
 } from 'lucide-react';
 
 
@@ -19,6 +20,12 @@ interface PipelineTabsProps {
 }
 
 const stageConfig = [
+  { 
+    id: 'all' as const, 
+    label: 'All', 
+    icon: LayoutGrid,
+    description: 'All leads'
+  },
   { 
     id: 'to_pay' as const, 
     label: 'To Pay', 
@@ -59,6 +66,8 @@ const stageConfig = [
 
 export function getLeadsForStage(leads: Lead[], stage: PipelineStage): Lead[] {
   switch (stage) {
+    case 'all':
+      return leads;
     case 'to_pay':
       return leads.filter(
         (lead) =>
@@ -107,6 +116,9 @@ function getLeadOwner(lead: Lead, stage: PipelineStage): string | undefined {
   
   // Otherwise, use the stage-based owner field
   switch (stage) {
+    case 'all':
+      // For "All" tab, show SC/RF or DE based on what's assigned
+      return lead.deAssignee || lead.scAssignee || lead.rfAssignee;
     case 'to_pay':
       return lead.rfAssignee;
     case 'to_report':

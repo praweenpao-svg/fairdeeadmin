@@ -15,7 +15,7 @@ import { cn } from '@/lib/utils';
 import { applyAllFilters } from '@/utils/leadFilters';
 
 const Index = () => {
-  const [activeStage, setActiveStage] = useState<PipelineStage>('to_pay');
+  const [activeStage, setActiveStage] = useState<PipelineStage>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [leads, setLeads] = useState<Lead[]>(mockLeads);
   const [reworkConfigs, setReworkConfigs] = useState<ReworkConfig[]>(mockReworkConfigs);
@@ -23,13 +23,14 @@ const Index = () => {
   const [myCasesOnly, setMyCasesOnly] = useState(true);
   const [sortConfig, setSortConfig] = useState<SortConfig>({ field: 'createdOn', direction: 'desc' });
   
-  // Filters for To Pay stage
+  // Filters for To Pay stage and All stage (using combined filters)
   const [toPayFilters, setToPayFilters] = useState<FilterState>(defaultFilterState);
   
   // Filters for other stages (To Report, To Issue, To Deliver, Completed)
   const [otherStagesFilters, setOtherStagesFilters] = useState<OtherStagesFilterState>(defaultOtherStagesFilterState);
 
-  const isToPayStage = activeStage === 'to_pay';
+  // "All" and "To Pay" stages use the full filter panel
+  const useAllFiltersPanel = activeStage === 'all' || activeStage === 'to_pay';
 
   const handleLeadUpdate = (leadId: string, updates: Partial<Lead>) => {
     // Generate current timestamp in DD-MM-YYYY HH:MM format
@@ -93,7 +94,7 @@ const Index = () => {
     dateRange,
     toPayFilters,
     otherStagesFilters,
-    isToPayStage
+    useAllFiltersPanel
   );
 
 
@@ -150,7 +151,7 @@ const Index = () => {
             onDateRangeChange={setDateRange}
           />
           
-          {isToPayStage ? (
+          {useAllFiltersPanel ? (
             <AllFiltersPanel
               filters={toPayFilters}
               onFiltersChange={setToPayFilters}
@@ -164,8 +165,8 @@ const Index = () => {
             />
           )}
 
-          {/* Filter Chips - only for To Pay stage for now */}
-          {isToPayStage && (
+          {/* Filter Chips - for All and To Pay stages */}
+          {useAllFiltersPanel && (
             <FilterChips
               dateRange={dateRange}
               filters={toPayFilters}
