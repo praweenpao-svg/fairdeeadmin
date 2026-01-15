@@ -26,6 +26,7 @@ import { TablePagination } from '@/components/ui/table-pagination';
 import { mockStaffMembers } from '@/data/mockStaff';
 import { ReworkDialog } from './ReworkDialog';
 import { ReworkHistoryDialog } from './ReworkHistoryDialog';
+import { InlineReworkActions } from './InlineReworkActions';
 
 import { SortConfig, SortField, SortDirection } from './AllFiltersPanel';
 
@@ -475,6 +476,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConf
                   <th className="data-table-header px-4 py-3 text-left">DE</th>
                 )}
                 <th className="data-table-header px-4 py-3 text-left">Status</th>
+                <th className="data-table-header px-4 py-3 text-left">Rework Actions</th>
                 <th className="data-table-header px-4 py-3 text-left">Owner</th>
                 <th className="data-table-header w-10 px-4 py-3"></th>
               </tr>
@@ -487,7 +489,11 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConf
                   </td>
                 </tr>
               ) : (
-              paginatedLeads.map((lead) => (
+              paginatedLeads.map((lead) => {
+                const latestReworkEntry = lead.reworkHistory[0];
+                const hasActiveRework = lead.reworkRequired && latestReworkEntry && !latestReworkEntry.resolved;
+                
+                return (
                   <tr 
                     key={lead.id} 
                     className={cn(
@@ -623,6 +629,18 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConf
                       )}
                     </td>
                     <td className="px-4 py-3">
+                      {hasActiveRework ? (
+                        <InlineReworkActions
+                          latestEntry={latestReworkEntry}
+                          reworkConfigs={stageReworkConfigs}
+                          onResolve={handleResolveRework}
+                          onReassign={handleReassignRework}
+                        />
+                      ) : (
+                        <span className="text-xs text-muted-foreground">-</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
                       {(() => {
                         const owner = getOwner(lead);
                         if (owner) {
@@ -650,7 +668,8 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConf
                       </DropdownMenu>
                     </td>
                   </tr>
-                ))
+                );
+              })
               )}
             </tbody>
           </table>
@@ -680,7 +699,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConf
         onConfirm={handleReworkConfirm}
       />
 
-      {/* Rework History Dialog */}
+      {/* Rework History Dialog - View Only */}
       <ReworkHistoryDialog
         open={reworkHistoryDialogOpen}
         onOpenChange={(open) => {
@@ -691,9 +710,6 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConf
         }}
         leadNumber={selectedLead?.leadNumber || ''}
         history={selectedLead?.reworkHistory || []}
-        reworkConfigs={stageReworkConfigs}
-        onResolve={handleResolveRework}
-        onReassign={handleReassignRework}
       />
     </>
   );
