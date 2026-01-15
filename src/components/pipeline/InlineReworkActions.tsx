@@ -15,16 +15,18 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { ReworkConfig, ReworkAttachment, ReworkHistoryEntry } from '@/types/pipeline';
+import { ReworkConfig, ReworkAttachment, ReworkHistoryEntry, Lead } from '@/types/pipeline';
 
 interface InlineReworkActionsProps {
+  lead: Lead;
   latestEntry: ReworkHistoryEntry;
   reworkConfigs: ReworkConfig[];
-  onResolve: (entryId: string) => void;
-  onReassign: (entryId: string, newReasonId: string, details: string, attachments: ReworkAttachment[]) => void;
+  onResolve: (lead: Lead, entryId: string) => void;
+  onReassign: (lead: Lead, entryId: string, newReasonId: string, details: string, attachments: ReworkAttachment[]) => void;
 }
 
 export function InlineReworkActions({
+  lead,
   latestEntry,
   reworkConfigs,
   onResolve,
@@ -69,7 +71,7 @@ export function InlineReworkActions({
 
   const handleReassignConfirm = () => {
     if (selectedNewReasonId) {
-      onReassign(latestEntry.id, selectedNewReasonId, reassignDetails, reassignAttachments);
+      onReassign(lead, latestEntry.id, selectedNewReasonId, reassignDetails, reassignAttachments);
       setReassignOpen(false);
       setSelectedNewReasonId('');
       setReassignDetails('');
@@ -91,7 +93,7 @@ export function InlineReworkActions({
         size="sm"
         variant="ghost"
         className="h-7 px-2 text-xs text-green-600 hover:text-green-700 hover:bg-green-50"
-        onClick={() => onResolve(latestEntry.id)}
+        onClick={() => onResolve(lead, latestEntry.id)}
       >
         <CheckCircle className="w-3.5 h-3.5 mr-1" />
         Resolve

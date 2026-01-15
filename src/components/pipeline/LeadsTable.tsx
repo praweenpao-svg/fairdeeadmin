@@ -253,13 +253,11 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConf
     setSelectedLead(null);
   };
 
-  const handleResolveRework = (entryId: string) => {
-    if (!selectedLead) return;
-
-    const entryIndex = selectedLead.reworkHistory.findIndex(e => e.id === entryId);
+  const handleResolveRework = (lead: Lead, entryId: string) => {
+    const entryIndex = lead.reworkHistory.findIndex(e => e.id === entryId);
     if (entryIndex === -1) return;
 
-    const entry = selectedLead.reworkHistory[entryIndex];
+    const entry = lead.reworkHistory[entryIndex];
     const resolvedAt = new Date().toLocaleString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -269,7 +267,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConf
     });
 
     // Update the history entry with resolved status
-    const updatedHistory = [...selectedLead.reworkHistory];
+    const updatedHistory = [...lead.reworkHistory];
     updatedHistory[entryIndex] = {
       ...entry,
       resolved: true,
@@ -295,22 +293,14 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConf
       updates.saleStatus = entry.previousStatus || defaultStatusByStage[stage] as Lead['saleStatus'];
     }
 
-    // Update selectedLead state immediately so the dialog reflects the change
-    setSelectedLead({
-      ...selectedLead,
-      ...updates,
-    });
-
-    onLeadUpdate?.(selectedLead.id, updates);
+    onLeadUpdate?.(lead.id, updates);
   };
 
-  const handleReassignRework = (entryId: string, newReasonId: string, details: string, attachments: ReworkAttachment[]) => {
-    if (!selectedLead) return;
-
-    const entryIndex = selectedLead.reworkHistory.findIndex(e => e.id === entryId);
+  const handleReassignRework = (lead: Lead, entryId: string, newReasonId: string, details: string, attachments: ReworkAttachment[]) => {
+    const entryIndex = lead.reworkHistory.findIndex(e => e.id === entryId);
     if (entryIndex === -1) return;
 
-    const entry = selectedLead.reworkHistory[entryIndex];
+    const entry = lead.reworkHistory[entryIndex];
     const newReworkConfig = reworkConfigs.find(r => r.id === newReasonId);
     const newReasonLabel = newReworkConfig?.descriptionEn || 'Unknown';
 
@@ -323,7 +313,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConf
     });
 
     // Mark original entry as resolved (reassigned)
-    const updatedHistory = [...selectedLead.reworkHistory];
+    const updatedHistory = [...lead.reworkHistory];
     updatedHistory[entryIndex] = {
       ...entry,
       resolved: true,
@@ -349,7 +339,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConf
       if (newReworkConfig.assignment === 'round_robin') {
         assignedOwner = getNextRoundRobinStaff(newReworkConfig.team);
       } else if (newReworkConfig.assignment === 'rf_sc') {
-        assignedOwner = selectedLead.scAssignee || selectedLead.rfAssignee;
+        assignedOwner = lead.scAssignee || lead.rfAssignee;
       }
     }
 
@@ -359,13 +349,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConf
       assignedTo: assignedOwner,
     };
 
-    // Update selectedLead state immediately so the dialog reflects the change
-    setSelectedLead({
-      ...selectedLead,
-      ...updates,
-    });
-
-    onLeadUpdate?.(selectedLead.id, updates);
+    onLeadUpdate?.(lead.id, updates);
   };
 
   const handleOpenReworkHistory = (lead: Lead) => {
@@ -631,6 +615,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConf
                     <td className="px-4 py-3">
                       {hasActiveRework ? (
                         <InlineReworkActions
+                          lead={lead}
                           latestEntry={latestReworkEntry}
                           reworkConfigs={stageReworkConfigs}
                           onResolve={handleResolveRework}
