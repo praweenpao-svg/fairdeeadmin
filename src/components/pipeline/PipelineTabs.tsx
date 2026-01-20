@@ -81,7 +81,7 @@ export function getLeadsForStage(leads: Lead[], stage: PipelineStage): Lead[] {
         (lead) =>
           ['new_leads', 'coa', 'renewals'].includes(lead.leadType) &&
           lead.paymentStatus === 'unpaid' &&
-          ['pending', 'waiting_for_insurer', 'partially_added', 'completed', 'quotation_shared', 'invalid'].includes(lead.saleStatus)
+          ['pending', 'docs_missing', 'waiting_for_insurer', 'partially_added', 'completed', 'quotation_shared', 'invalid'].includes(lead.saleStatus)
       );
     case 'to_pay':
       // To Pay: leads with "pending_payment" saleStatus or partial payment
