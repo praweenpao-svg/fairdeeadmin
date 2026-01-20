@@ -10,7 +10,7 @@ const agents = [
 ];
 
 const rfStaff = ['Ricky', 'Jenny', 'Tommy'];
-const scStaff = ['Lisa', 'Mike', 'Nina'];
+const scStaff = ['Lisa', 'Mike', 'Nina', 'Pao'];
 const deStaff = ['Oscar', 'Paula', 'Quinn', 'Pao'];
 
 // Current user constant
@@ -187,6 +187,44 @@ const generateLeads = (): Lead[] => {
     return `${String(date.getDate()).padStart(2, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}-${date.getFullYear()} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
   };
 
+  // TO CONVERT (10 leads) - unconverted leads with unpaid + conversion statuses
+  for (let i = 0; i < 10; i++) {
+    const agent = agents[i % agents.length];
+    const hasSC = i % 3 !== 0;
+    const createdOn = `${String(15 - i).padStart(2, '0')}-01-2026`;
+    const createdOnFull = `${createdOn} 09:00`;
+    const conversionStatuses = ['pending', 'waiting_for_insurer', 'partially_added', 'completed', 'quotation_shared', 'invalid'];
+
+    const leadData: Partial<Lead> = {
+      id: String(id),
+      leadNumber: `#${10170 - i}`,
+      leadType: i % 3 === 0 ? 'coa' : i % 5 === 0 ? 'renewals' : 'new_leads',
+      paymentType: i % 2 === 0 ? 'full' : 'installment',
+      agentId: agent.id,
+      agentName: agent.name,
+      createdOn: createdOnFull,
+      updatedOn: generateUpdatedOn(createdOn, i % 8),
+      vehicleDetails: vehiclePlates[i % vehiclePlates.length],
+      rfStatus: i < 2 ? 'pending' : 'transferred',
+      scStatus: hasSC ? 'claimed' : 'pending',
+      // To Convert: unpaid + conversion status
+      saleStatus: conversionStatuses[i % conversionStatuses.length] as Lead['saleStatus'],
+      paymentStatus: 'unpaid',
+      policyAttached: false,
+      reworkRequired: false,
+      createdBy: i % 2 === 0 ? 'agent' : 'admin',
+      rfAssignee: rfStaff[i % rfStaff.length],
+      scAssignee: hasSC ? scStaff[i % scStaff.length] : undefined,
+    };
+
+    leads.push({
+      ...leadData,
+      historyLog: generateHistoryLog(leadData, false, createdOnFull),
+      reworkHistory: [],
+    } as Lead);
+    id++;
+  }
+
   // TO PAY (15 leads)
   for (let i = 0; i < 15; i++) {
     const agent = agents[i % agents.length];
@@ -194,7 +232,7 @@ const generateLeads = (): Lead[] => {
     const hasSC = i % 3 !== 0;
     const createdOn = `${String(7 - Math.floor(i / 3)).padStart(2, '0')}-01-2026`;
     const createdOnFull = `${createdOn} 09:00`;
-    
+
     const leadData: Partial<Lead> = {
       id: String(id),
       leadNumber: `#${10154 - i}`,
@@ -207,7 +245,7 @@ const generateLeads = (): Lead[] => {
       vehicleDetails: vehiclePlates[i % vehiclePlates.length],
       rfStatus: i < 2 ? 'pending' : 'transferred',
       scStatus: hasSC ? 'claimed' : 'pending',
-      // To Pay should default to "Pending" (stored as pending_payment)
+      // To Pay: pending_payment status
       saleStatus: 'pending_payment',
       paymentStatus: i % 3 === 0 ? 'paid' : i % 3 === 1 ? 'partial' : 'unpaid',
       policyAttached: false,
