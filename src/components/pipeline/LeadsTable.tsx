@@ -45,7 +45,7 @@ const statusOptionsByStage: Record<PipelineStage, { value: string; label: string
     { value: 'waiting_for_insurer', label: 'Waiting for Insurer' },
     { value: 'partially_added', label: 'Partially Added' },
     { value: 'completed', label: 'Completed' },
-    { value: 'quotation_shared', label: 'Quotation Shared With Agent' },
+    { value: 'quotation_shared', label: 'Quotation Shared' },
     { value: 'invalid', label: 'Invalid' },
     { value: 'pending_payment', label: 'Pending' },
     { value: 'pending_review', label: 'Pending Review' },
@@ -63,7 +63,7 @@ const statusOptionsByStage: Record<PipelineStage, { value: string; label: string
     { value: 'waiting_for_insurer', label: 'Waiting for Insurer' },
     { value: 'partially_added', label: 'Partially Added' },
     { value: 'completed', label: 'Completed' },
-    { value: 'quotation_shared', label: 'Quotation Shared With Agent' },
+    { value: 'quotation_shared', label: 'Quotation Shared' },
     { value: 'invalid', label: 'Invalid' },
   ],
   to_pay: [
