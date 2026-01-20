@@ -645,12 +645,12 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConf
                       </Select>
                     </td>
                     <td className="px-4 py-3">
-                      <Select 
+                      <Select
                         value={lead.scAssignee || '__none__'}
                         onValueChange={(value) => onLeadUpdate?.(lead.id, { scAssignee: value === '__none__' ? undefined : value })}
                       >
                         <SelectTrigger className="w-[140px] h-8 text-xs">
-                          <SelectValue placeholder="Select SC" />
+                          <SelectValue placeholder="— Unassigned —" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="__none__" className="text-muted-foreground">
@@ -666,29 +666,24 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConf
                     </td>
                     {showDEColumn && (
                       <td className="px-4 py-3">
-                        {(stage === 'to_convert' || stage === 'to_pay') ? (
-                          // DE is not assigned in To Convert / To Pay stages - show as static unassigned
-                          <span className="text-xs text-muted-foreground">— Unassigned —</span>
-                        ) : (
-                          <Select
-                            value={lead.deAssignee || '__none__'}
-                            onValueChange={(value) => onLeadUpdate?.(lead.id, { deAssignee: value === '__none__' ? undefined : value })}
-                          >
-                            <SelectTrigger className="w-[140px] h-8 text-xs">
-                              <SelectValue placeholder="Select DE" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="__none__" className="text-muted-foreground">
-                                — Unassigned —
+                        <Select
+                          value={lead.deAssignee || '__none__'}
+                          onValueChange={(value) => onLeadUpdate?.(lead.id, { deAssignee: value === '__none__' ? undefined : value })}
+                        >
+                          <SelectTrigger className="w-[140px] h-8 text-xs">
+                            <SelectValue placeholder="— Unassigned —" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="__none__" className="text-muted-foreground">
+                              — Unassigned —
+                            </SelectItem>
+                            {getDEStaff().map((staff) => (
+                              <SelectItem key={staff.id} value={staff.name}>
+                                {staff.name}
                               </SelectItem>
-                              {getDEStaff().map((staff) => (
-                                <SelectItem key={staff.id} value={staff.name}>
-                                  {staff.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        )}
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </td>
                     )}
                     <td className="px-4 py-3">
