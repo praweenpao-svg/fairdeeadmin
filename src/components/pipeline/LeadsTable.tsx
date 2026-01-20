@@ -343,10 +343,15 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConf
       }
     }
 
+    // Build the updated history with the new entry appended
+    const newHistory = [...updatedHistory, newHistoryEntry];
+
     const updates: Partial<Lead> = {
-      reworkHistory: [...updatedHistory, newHistoryEntry],
+      reworkHistory: newHistory,
       reworkReasonId: newReasonId,
       assignedTo: assignedOwner,
+      // Keep reworkRequired as true since we're just reassigning
+      reworkRequired: true,
     };
 
     onLeadUpdate?.(lead.id, updates);
@@ -473,7 +478,8 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConf
                 </tr>
               ) : (
               paginatedLeads.map((lead) => {
-                const latestReworkEntry = lead.reworkHistory[0];
+                // Get the latest unresolved rework entry (entries are appended, so search from end)
+                const latestReworkEntry = [...lead.reworkHistory].reverse().find(e => !e.resolved);
                 const hasActiveRework = lead.reworkRequired && latestReworkEntry && !latestReworkEntry.resolved;
                 
                 return (
