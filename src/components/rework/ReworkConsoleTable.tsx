@@ -43,6 +43,11 @@ const stageOptions: { value: PipelineStage; label: string }[] = [
   { value: 'cancelled', label: 'Cancelled' },
 ];
 
+// Filter out 'to_convert' from any stages array (not allowed in rework console)
+const sanitizeStages = (stages: PipelineStage[]): PipelineStage[] => {
+  return stages.filter(s => s !== 'to_convert');
+};
+
 export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTableProps) {
   const { teams } = useTeamsStore();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
