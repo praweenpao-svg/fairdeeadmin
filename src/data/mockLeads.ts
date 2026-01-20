@@ -9,7 +9,7 @@ const agents = [
   { id: 'FM-5372', name: 'Sarah Wilson' },
 ];
 
-const rfStaff = ['Ricky', 'Jenny', 'Tommy', 'Pao'];
+const rfStaff = ['Ricky', 'Jenny', 'Tommy'];
 const scStaff = ['Lisa', 'Mike', 'Nina'];
 const deStaff = ['Oscar', 'Paula', 'Quinn', 'Pao'];
 
