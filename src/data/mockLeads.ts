@@ -9,8 +9,8 @@ const agents = [
   { id: 'FM-5372', name: 'Sarah Wilson' },
 ];
 
-const rfStaff = ['Ricky', 'Jenny', 'Tommy'];
-const scStaff = ['Lisa', 'Mike', 'Nina', 'Pao'];
+const rfStaff = ['Ricky', 'Jenny', 'Tommy', 'Pao'];
+const scStaff = ['Lisa', 'Mike', 'Nina'];
 const deStaff = ['Oscar', 'Paula', 'Quinn', 'Pao'];
 
 // Current user constant
