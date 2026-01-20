@@ -460,7 +460,6 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConf
                   <th className="data-table-header px-4 py-3 text-left">DE</th>
                 )}
                 <th className="data-table-header px-4 py-3 text-left">Status</th>
-                <th className="data-table-header px-4 py-3 text-left">Rework Actions</th>
                 <th className="data-table-header px-4 py-3 text-left">Owner</th>
                 <th className="data-table-header w-10 px-4 py-3"></th>
               </tr>
@@ -468,7 +467,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConf
             <tbody>
               {sortedLeads.length === 0 ? (
                 <tr>
-                  <td colSpan={showDEColumn ? 12 : 11} className="px-4 py-12 text-center text-muted-foreground">
+                  <td colSpan={showDEColumn ? 11 : 10} className="px-4 py-12 text-center text-muted-foreground">
                     No leads found for this stage
                   </td>
                 </tr>
@@ -587,13 +586,14 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConf
                       </td>
                     )}
                     <td className="px-4 py-3">
-                      {lead.reworkRequired ? (
-                        <div 
-                          className="w-[200px] h-8 text-xs border border-warning text-warning rounded-md px-3 flex items-center cursor-pointer hover:bg-warning/10"
-                          onClick={() => handleOpenReworkHistory(lead)}
-                        >
-                          Rework Required
-                        </div>
+                      {hasActiveRework ? (
+                        <InlineReworkActions
+                          lead={lead}
+                          latestEntry={latestReworkEntry}
+                          reworkConfigs={stageReworkConfigs}
+                          onResolve={handleResolveRework}
+                          onReassign={handleReassignRework}
+                        />
                       ) : (
                         <Select 
                           value={lead.saleStatus || defaultStatusByStage[stage]}
@@ -610,19 +610,6 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConf
                             ))}
                           </SelectContent>
                         </Select>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      {hasActiveRework ? (
-                        <InlineReworkActions
-                          lead={lead}
-                          latestEntry={latestReworkEntry}
-                          reworkConfigs={stageReworkConfigs}
-                          onResolve={handleResolveRework}
-                          onReassign={handleReassignRework}
-                        />
-                      ) : (
-                        <span className="text-xs text-muted-foreground">-</span>
                       )}
                     </td>
                     <td className="px-4 py-3">
