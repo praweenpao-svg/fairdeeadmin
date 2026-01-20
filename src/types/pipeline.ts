@@ -4,6 +4,7 @@ export type PipelineStage = 'all' | 'to_convert' | 'to_pay' | 'to_report' | 'to_
 
 export type SaleStatus = 
   | 'pending'
+  | 'docs_missing'
   | 'waiting_for_insurer'
   | 'partially_added'
   | 'completed'
