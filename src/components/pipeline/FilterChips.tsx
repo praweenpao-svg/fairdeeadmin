@@ -161,12 +161,13 @@ export function FilterChips({
     );
   }
 
-  // Lead Type chip (for To Pay - single select)
-  if (filters.leadType && filters.leadType !== 'new_leads') {
+  // Lead Type chip (for All/To Pay - single select)
+  if (filters.leadType && filters.leadType !== 'all') {
     const leadTypeLabels: Record<string, string> = {
       new_leads: 'New Leads',
       coa: 'COA',
       renewals: 'Renewals',
+      sales: 'Sales',
     };
     chips.push(
       <Badge

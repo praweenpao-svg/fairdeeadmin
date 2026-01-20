@@ -36,7 +36,8 @@ export interface FilterState {
   agentTypes: string[];
   leadsType: string;
   createdBy: string;
-  leadType: string; // Single-select for To Pay: 'new_leads', 'coa', 'renewals'
+  // For All: new_leads/coa/renewals (unconverted) + sales (converted). For To Pay: only lead types.
+  leadType: 'all' | 'new_leads' | 'coa' | 'renewals' | 'sales';
   installmentType: string;
 }
 
@@ -49,7 +50,7 @@ export const defaultFilterState: FilterState = {
   agentTypes: [],
   leadsType: 'all',
   createdBy: 'all',
-  leadType: 'new_leads', // Default to new_leads for To Pay
+  leadType: 'all',
   installmentType: 'all',
 };
 
@@ -86,11 +87,19 @@ const createdByOptions = [
   { value: 'admin', label: 'Admin' },
 ];
 
-const leadTypeOptions = [
-  { value: 'new_leads', label: 'New Leads' },
-  { value: 'coa', label: 'COA' },
-  { value: 'renewals', label: 'Renewals' },
-];
+const leadTypeOptionsByStage = {
+  to_pay: [
+    { value: 'new_leads', label: 'New Leads' },
+    { value: 'coa', label: 'COA' },
+    { value: 'renewals', label: 'Renewals' },
+  ],
+  all: [
+    { value: 'new_leads', label: 'New Leads' },
+    { value: 'coa', label: 'COA' },
+    { value: 'renewals', label: 'Renewals' },
+    { value: 'sales', label: 'Sales' },
+  ],
+} as const;
 
 const installmentOptions = [
   { value: 'all', label: 'All' },
@@ -108,12 +117,13 @@ const mockAgents = [
 ];
 
 interface AllFiltersPanelProps {
+  stage: 'all' | 'to_convert' | 'to_pay';
   filters: FilterState;
   onFiltersChange: (filters: FilterState) => void;
   onClear: () => void;
 }
 
-export function AllFiltersPanel({ filters, onFiltersChange, onClear }: AllFiltersPanelProps) {
+export function AllFiltersPanel({ stage, filters, onFiltersChange, onClear }: AllFiltersPanelProps) {
   const [open, setOpen] = React.useState(false);
   const [localFilters, setLocalFilters] = React.useState<FilterState>(filters);
 
@@ -159,7 +169,7 @@ export function AllFiltersPanel({ filters, onFiltersChange, onClear }: AllFilter
     filters.agentTypes.length > 0 ||
     filters.leadsType !== 'all' ||
     filters.createdBy !== 'all' ||
-    filters.leadType !== 'new_leads' ||
+    filters.leadType !== 'all' ||
     filters.installmentType !== 'all';
 
   return (
@@ -335,31 +345,33 @@ export function AllFiltersPanel({ filters, onFiltersChange, onClear }: AllFilter
               </div>
             </div>
 
-            {/* Lead Type (Single-select for To Pay) */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Lead Type</Label>
-              <RadioGroup
-                value={localFilters.leadType}
-                onValueChange={(value) => setLocalFilters({ ...localFilters, leadType: value })}
-                className="flex flex-wrap gap-4"
-              >
-                {leadTypeOptions.map((option) => (
-                  <div key={option.value} className="flex items-center space-x-2">
-                    <RadioGroupItem 
-                      value={option.value} 
-                      id={`lead-type-${option.value}`}
-                      className="border-primary text-primary"
-                    />
-                    <Label
-                      htmlFor={`lead-type-${option.value}`}
-                      className="text-sm font-normal cursor-pointer"
-                    >
-                      {option.label}
-                    </Label>
-                  </div>
-                ))}
-              </RadioGroup>
-            </div>
+            {/* Lead Type (stage-aware) */}
+            {stage !== 'to_convert' && (
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Lead Type</Label>
+                <RadioGroup
+                  value={localFilters.leadType}
+                  onValueChange={(value) => setLocalFilters({ ...localFilters, leadType: value as FilterState['leadType'] })}
+                  className="flex flex-wrap gap-4"
+                >
+                  {(stage === 'all' ? leadTypeOptionsByStage.all : leadTypeOptionsByStage.to_pay).map((option) => (
+                    <div key={option.value} className="flex items-center space-x-2">
+                      <RadioGroupItem
+                        value={option.value}
+                        id={`lead-type-${option.value}`}
+                        className="border-primary text-primary"
+                      />
+                      <Label
+                        htmlFor={`lead-type-${option.value}`}
+                        className="text-sm font-normal cursor-pointer"
+                      >
+                        {option.label}
+                      </Label>
+                    </div>
+                  ))}
+                </RadioGroup>
+              </div>
+            )}
           </div>
 
           {/* Column 3 */}

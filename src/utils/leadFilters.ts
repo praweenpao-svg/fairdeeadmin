@@ -1,4 +1,4 @@
-import { Lead, LeadType } from '@/types/pipeline';
+import { Lead } from '@/types/pipeline';
 import { FilterState } from '@/components/pipeline/AllFiltersPanel';
 import { OtherStagesFilterState } from '@/components/pipeline/OtherStagesFilterPanel';
 import { mockStaffMembers } from '@/data/mockStaff';
@@ -51,14 +51,26 @@ export function applyDateRangeFilter(leads: Lead[], dateRange: DateRange | undef
   });
 }
 
-// Apply To Pay stage filters
-export function applyToPayFilters(leads: Lead[], filters: FilterState): Lead[] {
-  return leads.filter(lead => {
+// Apply filters used by the All/To Convert/To Pay filter panel
+export function applyToPayFilters(
+  leads: Lead[],
+  filters: FilterState,
+  stage: 'all' | 'to_convert' | 'to_pay'
+): Lead[] {
+  const isToConvertLead = (lead: Lead) => {
+    return (
+      ['new_leads', 'coa', 'renewals'].includes(lead.leadType) &&
+      lead.paymentStatus === 'unpaid' &&
+      ['pending', 'waiting_for_insurer', 'partially_added', 'completed', 'quotation_shared', 'invalid'].includes(lead.saleStatus)
+    );
+  };
+
+  return leads.filter((lead) => {
     // Status filter
     if (filters.status !== 'all' && lead.saleStatus !== filters.status) {
       return false;
     }
-    
+
     // RF Assignee filter (uses staff ID, need to match by name)
     if (filters.rfAssignee !== 'all') {
       const staffName = getStaffNameById(filters.rfAssignee);
@@ -66,7 +78,7 @@ export function applyToPayFilters(leads: Lead[], filters: FilterState): Lead[] {
         return false;
       }
     }
-    
+
     // SC Assignee filter
     if (filters.scAssignee !== 'all') {
       const staffName = getStaffNameById(filters.scAssignee);
@@ -74,7 +86,7 @@ export function applyToPayFilters(leads: Lead[], filters: FilterState): Lead[] {
         return false;
       }
     }
-    
+
     // DE Assignee filter
     if (filters.deAssignee !== 'all') {
       const staffName = getStaffNameById(filters.deAssignee);
@@ -82,22 +94,41 @@ export function applyToPayFilters(leads: Lead[], filters: FilterState): Lead[] {
         return false;
       }
     }
-    
+
     // Agent filter
     if (filters.agent !== 'all' && lead.agentId !== filters.agent) {
       return false;
     }
-    
-    // Lead Type filter (single-select for To Pay)
-    if (filters.leadType && lead.leadType !== filters.leadType) {
-      return false;
+
+    // Lead Type (stage-specific)
+    if (stage === 'to_pay') {
+      if (filters.leadType !== 'all' && lead.leadType !== filters.leadType) {
+        return false;
+      }
     }
-    
+
+    if (stage === 'to_convert') {
+      // No lead-type toggle/filter in To Convert
+    }
+
+    if (stage === 'all') {
+      if (filters.leadType !== 'all') {
+        if (filters.leadType === 'sales') {
+          // Sales = anything post To Convert
+          if (isToConvertLead(lead)) return false;
+        } else {
+          // New Leads / COA / Renewals = unconverted leads (To Convert bucket)
+          if (!isToConvertLead(lead)) return false;
+          if (lead.leadType !== filters.leadType) return false;
+        }
+      }
+    }
+
     // Created By filter
     if (filters.createdBy !== 'all' && lead.createdBy !== filters.createdBy) {
       return false;
     }
-    
+
     // Installment Type filter
     if (filters.installmentType !== 'all') {
       const isInstallment = lead.paymentType === 'installment';
@@ -108,7 +139,7 @@ export function applyToPayFilters(leads: Lead[], filters: FilterState): Lead[] {
         return false;
       }
     }
-    
+
     return true;
   });
 }
@@ -179,7 +210,8 @@ export function applyAllFilters(
   dateRange: DateRange | undefined,
   toPayFilters: FilterState,
   otherStagesFilters: OtherStagesFilterState,
-  isToPayStage: boolean
+  isToPayStage: boolean,
+  activeStage: 'all' | 'to_convert' | 'to_pay' | 'to_report' | 'to_issue' | 'to_deliver' | 'completed' | 'cancelled'
 ): Lead[] {
   let result = leads;
   
@@ -190,8 +222,8 @@ export function applyAllFilters(
   result = applyDateRangeFilter(result, dateRange);
   
   // Apply stage-specific filters
-  if (isToPayStage) {
-    result = applyToPayFilters(result, toPayFilters);
+  if (activeStage === 'all' || activeStage === 'to_convert' || activeStage === 'to_pay') {
+    result = applyToPayFilters(result, toPayFilters, activeStage);
   } else {
     result = applyOtherStagesFilters(result, otherStagesFilters);
   }

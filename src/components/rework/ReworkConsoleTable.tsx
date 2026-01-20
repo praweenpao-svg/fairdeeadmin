@@ -142,14 +142,26 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
 
   const getTargetReasonLabel = (targetReasonId?: string) => {
     if (!targetReasonId) return '-';
-    const targetConfig = reworkConfigs.find(c => c.id === targetReasonId);
+    const targetConfig = uniqueConfigs.find(c => c.id === targetReasonId);
     return targetConfig?.descriptionEn || '-';
   };
 
-  // Pagination
-  const totalItems = reworkConfigs.length;
+  // Pagination (dedupe by descriptions so "ซ้ำ" doesn't show in console)
+  const uniqueConfigs = (() => {
+    const seen = new Set<string>();
+    const result: ReworkConfig[] = [];
+    for (const c of reworkConfigs) {
+      const key = `${(c.descriptionTh || '').trim().toLowerCase()}|${(c.descriptionEn || '').trim().toLowerCase()}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      result.push(c);
+    }
+    return result;
+  })();
+
+  const totalItems = uniqueConfigs.length;
   const totalPages = Math.ceil(totalItems / rowsPerPage) || 1;
-  const paginatedConfigs = reworkConfigs.slice(
+  const paginatedConfigs = uniqueConfigs.slice(
     (currentPage - 1) * rowsPerPage,
     currentPage * rowsPerPage
   );
@@ -322,7 +334,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="__none__">Select target reason</SelectItem>
-                            {reworkConfigs
+                            {uniqueConfigs
                               .filter(c => c.id !== editingConfig?.id)
                               .map((config) => (
                                 <SelectItem key={config.id} value={config.id}>
