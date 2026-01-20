@@ -47,7 +47,7 @@ const statusOptionsByStage: Record<PipelineStage, { value: string; label: string
     { value: 'completed', label: 'Completed' },
     { value: 'quotation_shared', label: 'Quotation Shared With Agent' },
     { value: 'invalid', label: 'Invalid' },
-    { value: 'pending_payment', label: 'Pending Payment' },
+    { value: 'pending_payment', label: 'Pending' },
     { value: 'pending_review', label: 'Pending Review' },
     { value: 'under_review', label: 'Under Review' },
     { value: 'de_in_progress', label: 'DE in Progress' },
@@ -56,7 +56,6 @@ const statusOptionsByStage: Record<PipelineStage, { value: string; label: string
     { value: 'policy_shipped', label: 'Policy Shipped' },
     { value: 'policy_delivered', label: 'Policy Delivered' },
     { value: 'policy_cancelled', label: 'Policy Cancelled' },
-    { value: 'rework_required', label: 'Rework Required' },
   ],
   to_convert: [
     { value: 'pending', label: 'Pending' },
@@ -65,10 +64,9 @@ const statusOptionsByStage: Record<PipelineStage, { value: string; label: string
     { value: 'completed', label: 'Completed' },
     { value: 'quotation_shared', label: 'Quotation Shared With Agent' },
     { value: 'invalid', label: 'Invalid' },
-    { value: 'rework_required', label: 'Rework Required' },
   ],
   to_pay: [
-    { value: 'pending_payment', label: 'Pending Payment' },
+    { value: 'pending_payment', label: 'Pending' },
     { value: 'rework_required', label: 'Rework Required' },
   ],
   to_report: [

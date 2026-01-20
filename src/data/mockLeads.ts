@@ -430,10 +430,10 @@ const generateLeads = (): Lead[] => {
 export const mockLeads: Lead[] = generateLeads();
 
 export const mockReworkConfigs: ReworkConfig[] = [
-  { id: '1', descriptionTh: 'ขาดเอกสาร', descriptionEn: 'Missing Documents', team: '', teamMembers: [], automationEnabled: true, automationDays: 8, targetReason: '15', assignment: 'rf_sc', stages: ['to_convert', 'to_pay', 'to_report'] },
-  { id: '2', descriptionTh: 'ต้องการคอนเฟิร์ม', descriptionEn: 'Pending Confirmation', team: '', teamMembers: [], automationEnabled: true, automationDays: 8, targetReason: '15', assignment: 'rf_sc', stages: ['to_convert', 'to_pay', 'to_report'] },
-  { id: '3', descriptionTh: 'รอยืนยันตัวตน', descriptionEn: 'Pending Verification', team: '', teamMembers: [], automationEnabled: true, automationDays: 8, targetReason: '15', assignment: 'rf_sc', stages: ['to_convert', 'to_pay', 'to_report'] },
-  { id: '4', descriptionTh: 'รอจ่ายงวดแรก', descriptionEn: 'Pending Initial Payment', team: '', teamMembers: [], automationEnabled: true, automationDays: 8, targetReason: '15', assignment: 'rf_sc', stages: ['to_convert', 'to_pay', 'to_report'] },
+  { id: '1', descriptionTh: 'ขาดเอกสาร', descriptionEn: 'Missing Documents', team: '', teamMembers: [], automationEnabled: true, automationDays: 8, targetReason: '15', assignment: 'rf_sc', stages: ['to_pay', 'to_report'] },
+  { id: '2', descriptionTh: 'ต้องการคอนเฟิร์ม', descriptionEn: 'Pending Confirmation', team: '', teamMembers: [], automationEnabled: true, automationDays: 8, targetReason: '15', assignment: 'rf_sc', stages: ['to_pay', 'to_report'] },
+  { id: '3', descriptionTh: 'รอยืนยันตัวตน', descriptionEn: 'Pending Verification', team: '', teamMembers: [], automationEnabled: true, automationDays: 8, targetReason: '15', assignment: 'rf_sc', stages: ['to_pay', 'to_report'] },
+  { id: '4', descriptionTh: 'รอจ่ายงวดแรก', descriptionEn: 'Pending Initial Payment', team: '', teamMembers: [], automationEnabled: true, automationDays: 8, targetReason: '15', assignment: 'rf_sc', stages: ['to_pay', 'to_report'] },
   { id: '5', descriptionTh: 'แจ้งงานก่อน ตีกลับให้ AST', descriptionEn: 'Pre-submission: Return to AST', team: '', teamMembers: [], automationEnabled: false, assignment: 'rf_sc', stages: ['to_issue', 'to_deliver', 'completed'] },
   { id: '6', descriptionTh: 'บ.ประกันตีกลับ', descriptionEn: 'Reverted by Insurer', team: '', teamMembers: [], automationEnabled: false, assignment: 'rf_sc', stages: ['to_issue', 'to_deliver', 'completed'] },
   { id: '7', descriptionTh: 'บ.ประกันปฎิเสธ', descriptionEn: 'Rejected by Insurer', team: '', teamMembers: [], automationEnabled: false, assignment: 'rf_sc', stages: ['to_issue', 'to_deliver', 'completed'] },
@@ -444,9 +444,9 @@ export const mockReworkConfigs: ReworkConfig[] = [
   { id: '12', descriptionTh: 'รอแจ้งประกันยกเลิก เอกสารครบ', descriptionEn: 'Pending Cancellation: Documents Complete', team: 'Admin', teamMembers: [], automationEnabled: false, assignment: 'round_robin', stages: ['to_issue', 'to_deliver', 'completed'] },
   { id: '13', descriptionTh: 'แจ้งประกันยกเลิกแล้ว รอเอกสาร', descriptionEn: 'Cancellation Submitted: Awaiting Documents', team: '', teamMembers: [], automationEnabled: false, assignment: 'rf_sc', stages: ['to_issue', 'to_deliver', 'completed'] },
   { id: '14', descriptionTh: 'แจ้งประกันยกเลิกแล้ว เอกสารครบ', descriptionEn: 'Cancellation Submitted: Documents Complete', team: 'Admin', teamMembers: [], automationEnabled: false, assignment: 'round_robin', stages: ['to_issue', 'to_deliver', 'completed'] },
-  { id: '15', descriptionTh: 'รอยกเลิก', descriptionEn: 'Pending Cancellation', team: '', teamMembers: [], automationEnabled: false, assignment: 'rf_sc', stages: ['to_convert', 'to_pay', 'to_report'] },
-  { id: '16', descriptionTh: 'ยกเลิก', descriptionEn: 'Cancelled', team: '', teamMembers: [], automationEnabled: false, assignment: 'none', stages: ['to_convert', 'to_pay', 'to_report'] },
-  { id: '17', descriptionTh: 'ซ้ำ', descriptionEn: 'Duplicated', team: '', teamMembers: [], automationEnabled: false, assignment: 'none', stages: ['to_convert', 'to_pay', 'to_report'] },
+  { id: '15', descriptionTh: 'รอยกเลิก', descriptionEn: 'Pending Cancellation', team: '', teamMembers: [], automationEnabled: false, assignment: 'rf_sc', stages: ['to_pay', 'to_report'] },
+  { id: '16', descriptionTh: 'ยกเลิก', descriptionEn: 'Cancelled', team: '', teamMembers: [], automationEnabled: false, assignment: 'none', stages: ['to_pay', 'to_report'] },
+  { id: '17', descriptionTh: 'ซ้ำ', descriptionEn: 'Duplicated', team: '', teamMembers: [], automationEnabled: false, assignment: 'none', stages: ['to_pay', 'to_report'] },
 ];
 
 export const teams = ['AST RF', 'AST SC', 'DE', 'Admin'];
