@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { CheckCircle, ArrowRightLeft, Upload, X, FileText, Image } from 'lucide-react';
+import { CheckCircle, ArrowRightLeft, Upload, X, FileText, Image, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -32,7 +32,8 @@ export function InlineReworkActions({
   onResolve,
   onReassign,
 }: InlineReworkActionsProps) {
-  const [reassignOpen, setReassignOpen] = useState(false);
+  const [mainPopoverOpen, setMainPopoverOpen] = useState(false);
+  const [showReassignForm, setShowReassignForm] = useState(false);
   const [selectedNewReasonId, setSelectedNewReasonId] = useState<string>('');
   const [reassignDetails, setReassignDetails] = useState('');
   const [reassignAttachments, setReassignAttachments] = useState<ReworkAttachment[]>([]);
@@ -72,48 +73,94 @@ export function InlineReworkActions({
   const handleReassignConfirm = () => {
     if (selectedNewReasonId) {
       onReassign(lead, latestEntry.id, selectedNewReasonId, reassignDetails, reassignAttachments);
-      setReassignOpen(false);
-      setSelectedNewReasonId('');
-      setReassignDetails('');
-      setReassignAttachments([]);
+      resetAndClose();
     }
   };
 
-  const handleCancelReassign = () => {
-    setReassignOpen(false);
+  const resetAndClose = () => {
+    setMainPopoverOpen(false);
+    setShowReassignForm(false);
     setSelectedNewReasonId('');
     setReassignDetails('');
     setReassignAttachments([]);
   };
 
-  return (
-    <div className="flex items-center gap-1">
-      {/* Resolve Button */}
-      <Button
-        size="sm"
-        variant="ghost"
-        className="h-7 px-2 text-xs text-green-600 hover:text-green-700 hover:bg-green-50"
-        onClick={() => onResolve(lead, latestEntry.id)}
-      >
-        <CheckCircle className="w-3.5 h-3.5 mr-1" />
-        Resolve
-      </Button>
+  const handleResolve = () => {
+    onResolve(lead, latestEntry.id);
+    resetAndClose();
+  };
 
-      {/* Reassign Popover */}
-      <Popover open={reassignOpen} onOpenChange={setReassignOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
-          >
-            <ArrowRightLeft className="w-3.5 h-3.5 mr-1" />
-            Reassign
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-80" align="end">
+  return (
+    <Popover open={mainPopoverOpen} onOpenChange={(open) => {
+      setMainPopoverOpen(open);
+      if (!open) {
+        setShowReassignForm(false);
+        setSelectedNewReasonId('');
+        setReassignDetails('');
+        setReassignAttachments([]);
+      }
+    }}>
+      <PopoverTrigger asChild>
+        <div 
+          className="w-[200px] h-8 text-xs border border-warning text-warning rounded-md px-3 flex items-center gap-2 cursor-pointer hover:bg-warning/10 transition-colors"
+        >
+          <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
+          <span className="truncate">Rework Required</span>
+        </div>
+      </PopoverTrigger>
+      <PopoverContent className="w-80" align="start">
+        {!showReassignForm ? (
           <div className="space-y-4">
-            <div className="text-sm font-medium">Reassign rework</div>
+            {/* Latest Reason Display */}
+            <div className="space-y-2">
+              <div className="text-xs font-medium text-muted-foreground">Latest Rework Reason</div>
+              <div className="p-3 bg-warning/10 border border-warning/20 rounded-md">
+                <p className="text-sm font-medium text-warning">{latestEntry.reasonLabel}</p>
+                {latestEntry.details && (
+                  <p className="text-xs text-muted-foreground mt-1">{latestEntry.details}</p>
+                )}
+                <div className="text-xs text-muted-foreground mt-2">
+                  <span>By {latestEntry.savedBy}</span>
+                  <span className="mx-1">•</span>
+                  <span>{latestEntry.savedAt}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-2 pt-2 border-t">
+              <Button
+                size="sm"
+                className="flex-1 h-8 text-xs bg-green-600 hover:bg-green-700"
+                onClick={handleResolve}
+              >
+                <CheckCircle className="w-3.5 h-3.5 mr-1.5" />
+                Resolve
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="flex-1 h-8 text-xs"
+                onClick={() => setShowReassignForm(true)}
+              >
+                <ArrowRightLeft className="w-3.5 h-3.5 mr-1.5" />
+                Reassign
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="text-sm font-medium">Reassign rework</div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 text-xs"
+                onClick={() => setShowReassignForm(false)}
+              >
+                Back
+              </Button>
+            </div>
             
             <div className="space-y-2">
               <Label className="text-xs">Select new reason</Label>
@@ -188,7 +235,7 @@ export function InlineReworkActions({
             </div>
 
             <div className="flex justify-end gap-2 pt-2 border-t">
-              <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={handleCancelReassign}>
+              <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={resetAndClose}>
                 Cancel
               </Button>
               <Button
@@ -201,8 +248,8 @@ export function InlineReworkActions({
               </Button>
             </div>
           </div>
-        </PopoverContent>
-      </Popover>
-    </div>
+        )}
+      </PopoverContent>
+    </Popover>
   );
 }
