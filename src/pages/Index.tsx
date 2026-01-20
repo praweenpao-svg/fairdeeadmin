@@ -29,8 +29,8 @@ const Index = () => {
   // Filters for other stages (To Report, To Issue, To Deliver, Completed)
   const [otherStagesFilters, setOtherStagesFilters] = useState<OtherStagesFilterState>(defaultOtherStagesFilterState);
 
-  // "All" and "To Pay" stages use the full filter panel
-  const useAllFiltersPanel = activeStage === 'all' || activeStage === 'to_pay';
+  // "All", "To Convert", and "To Pay" stages use the full filter panel
+  const useAllFiltersPanel = activeStage === 'all' || activeStage === 'to_convert' || activeStage === 'to_pay';
 
   const handleLeadUpdate = (leadId: string, updates: Partial<Lead>) => {
     // Generate current timestamp in DD-MM-YYYY HH:MM format

@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   XCircle,
   LayoutGrid,
+  RefreshCw,
 } from 'lucide-react';
 
 
@@ -25,6 +26,12 @@ const stageConfig = [
     label: 'All', 
     icon: LayoutGrid,
     description: 'All leads'
+  },
+  { 
+    id: 'to_convert' as const, 
+    label: 'To Convert', 
+    icon: RefreshCw,
+    description: 'Awaiting conversion'
   },
   { 
     id: 'to_pay' as const, 
@@ -68,11 +75,20 @@ export function getLeadsForStage(leads: Lead[], stage: PipelineStage): Lead[] {
   switch (stage) {
     case 'all':
       return leads;
-    case 'to_pay':
+    case 'to_convert':
+      // To Convert: leads with conversion statuses (unpaid, awaiting conversion)
       return leads.filter(
         (lead) =>
           ['new_leads', 'coa', 'renewals'].includes(lead.leadType) &&
-          lead.paymentStatus === 'unpaid'
+          lead.paymentStatus === 'unpaid' &&
+          ['pending', 'waiting_for_insurer', 'partially_added', 'completed', 'quotation_shared', 'invalid'].includes(lead.saleStatus)
+      );
+    case 'to_pay':
+      // To Pay: leads with "pending_payment" saleStatus or partial payment
+      return leads.filter(
+        (lead) =>
+          ['new_leads', 'coa', 'renewals'].includes(lead.leadType) &&
+          (lead.paymentStatus === 'partial' || lead.saleStatus === 'pending_payment')
       );
     case 'to_report':
       return leads.filter((lead) =>
@@ -119,8 +135,10 @@ function getLeadOwner(lead: Lead, stage: PipelineStage): string | undefined {
     case 'all':
       // For "All" tab, show SC/RF or DE based on what's assigned
       return lead.deAssignee || lead.scAssignee || lead.rfAssignee;
+    case 'to_convert':
     case 'to_pay':
-      return lead.rfAssignee;
+      // To Convert and To Pay: SC if available, else RF (DE not assigned yet)
+      return lead.scAssignee || lead.rfAssignee;
     case 'to_report':
     case 'to_issue':
     case 'to_deliver':
