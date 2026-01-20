@@ -59,6 +59,7 @@ const statusOptionsByStage: Record<PipelineStage, { value: string; label: string
   ],
   to_convert: [
     { value: 'pending', label: 'Pending' },
+    { value: 'docs_missing', label: 'Docs Missing' },
     { value: 'waiting_for_insurer', label: 'Waiting for Insurer' },
     { value: 'partially_added', label: 'Partially Added' },
     { value: 'completed', label: 'Completed' },
