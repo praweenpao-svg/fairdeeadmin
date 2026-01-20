@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { 
   ExternalLink, 
   MoreVertical,
-  AlertTriangle,
+  History,
   ArrowUp,
   ArrowDown,
 } from 'lucide-react';
-import { Lead, PipelineStage, LeadType, ReworkConfig, CreatedByType, ReworkAttachment, ReworkHistoryEntry } from '@/types/pipeline';
+import { Lead, PipelineStage, LeadType, ReworkConfig, CreatedByType, ReworkAttachment, ReworkHistoryEntry, HistoryLogEntry } from '@/types/pipeline';
 import { cn } from '@/lib/utils';
 import {
   Select,
@@ -25,7 +25,7 @@ import { Button } from '@/components/ui/button';
 import { TablePagination } from '@/components/ui/table-pagination';
 import { mockStaffMembers } from '@/data/mockStaff';
 import { ReworkDialog } from './ReworkDialog';
-import { ReworkHistoryDialog } from './ReworkHistoryDialog';
+import { HistoryLogDialog } from './HistoryLogDialog';
 import { InlineReworkActions } from './InlineReworkActions';
 
 import { SortConfig, SortField, SortDirection } from './AllFiltersPanel';
@@ -173,7 +173,7 @@ function parseDateTime(dateStr: string): Date {
 
 export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConfig, onSortChange }: LeadsTableProps) {
   const [reworkDialogOpen, setReworkDialogOpen] = useState(false);
-  const [reworkHistoryDialogOpen, setReworkHistoryDialogOpen] = useState(false);
+  const [historyLogDialogOpen, setHistoryLogDialogOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -189,17 +189,49 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConf
       setSelectedLead(lead);
       setReworkDialogOpen(true);
     } else {
+      const timestamp = new Date().toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+
+      // Create history log entry for status change
+      const historyLogEntry: HistoryLogEntry = {
+        id: crypto.randomUUID(),
+        action: 'status_changed',
+        triggeredBy: 'Akshay Bazad',
+        triggeredAt: timestamp,
+        fromStatus: lead.saleStatus,
+        toStatus: newStatus,
+      };
+
       // When status changes to pending_review at To Report, assign DE
       const updates: Partial<Lead> = {
         saleStatus: newStatus as Lead['saleStatus'],
         reworkRequired: false,
         reworkReasonId: undefined,
         assignedTo: undefined,
+        historyLog: [...(lead.historyLog || []), historyLogEntry],
       };
 
       // Auto-assign DE when entering pending_review at To Report stage
       if (stage === 'to_report' && newStatus === 'pending_review' && !lead.deAssignee) {
-        updates.deAssignee = getNextDERoundRobin();
+        const newDE = getNextDERoundRobin();
+        updates.deAssignee = newDE;
+        // Add assignee change to history
+        if (newDE) {
+          updates.historyLog = [...(updates.historyLog || []), {
+            id: crypto.randomUUID(),
+            action: 'assignee_changed' as const,
+            triggeredBy: 'System (Round Robin)',
+            triggeredAt: timestamp,
+            assigneeType: 'de' as const,
+            fromAssignee: undefined,
+            toAssignee: newDE,
+          }];
+        }
       }
 
       onLeadUpdate?.(lead.id, updates);
@@ -214,6 +246,14 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConf
     
     const reworkConfig = reworkConfigs.find(r => r.id === reasonId);
     const reasonLabel = reworkConfig?.descriptionEn || 'Unknown';
+
+    const timestamp = new Date().toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
     
     const newHistoryEntry: ReworkHistoryEntry = {
       id: crypto.randomUUID(),
@@ -222,14 +262,25 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConf
       details,
       attachments,
       savedBy: 'Akshay Bazad',
-      savedAt: new Date().toLocaleString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      }),
+      savedAt: timestamp,
       previousStatus,
+    };
+
+    // Create history log entry for rework creation
+    const historyLogEntry: HistoryLogEntry = {
+      id: crypto.randomUUID(),
+      action: 'rework_created',
+      triggeredBy: 'Akshay Bazad',
+      triggeredAt: timestamp,
+      reworkReasonId: reasonId,
+      reworkReasonLabel: reasonLabel,
+      comment: details,
+      attachments: attachments.map(a => ({
+        id: a.id,
+        name: a.name,
+        type: a.type,
+        url: a.url,
+      })),
     };
 
     // Determine assigned owner based on assignment type
@@ -248,6 +299,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConf
       reworkReasonId: reasonId,
       assignedTo: assignedOwner,
       reworkHistory: [...selectedLead.reworkHistory, newHistoryEntry],
+      historyLog: [...(selectedLead.historyLog || []), historyLogEntry],
     });
 
     setSelectedLead(null);
@@ -275,6 +327,16 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConf
       resolvedBy: 'Akshay Bazad',
     };
 
+    // Create history log entry for rework resolution
+    const historyLogEntry: HistoryLogEntry = {
+      id: crypto.randomUUID(),
+      action: 'rework_resolved',
+      triggeredBy: 'Akshay Bazad',
+      triggeredAt: resolvedAt,
+      reworkReasonId: entry.reasonId,
+      reworkReasonLabel: entry.reasonLabel,
+    };
+
     // Check if this is the latest unresolved rework entry
     const hasOtherUnresolvedRework = updatedHistory.some(
       (e, idx) => idx !== entryIndex && !e.resolved
@@ -283,6 +345,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConf
     // Restore previous status if no other unresolved rework exists
     const updates: Partial<Lead> = {
       reworkHistory: updatedHistory,
+      historyLog: [...(lead.historyLog || []), historyLogEntry],
     };
 
     if (!hasOtherUnresolvedRework) {
@@ -290,7 +353,18 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConf
       updates.reworkReasonId = undefined;
       updates.assignedTo = undefined;
       // Restore to previous status or default for this stage
-      updates.saleStatus = entry.previousStatus || defaultStatusByStage[stage] as Lead['saleStatus'];
+      const restoredStatus = entry.previousStatus || defaultStatusByStage[stage] as Lead['saleStatus'];
+      updates.saleStatus = restoredStatus;
+      
+      // Add status change to history log
+      updates.historyLog = [...(updates.historyLog || []), {
+        id: crypto.randomUUID(),
+        action: 'status_changed' as const,
+        triggeredBy: 'System',
+        triggeredAt: resolvedAt,
+        fromStatus: 'rework_required',
+        toStatus: restoredStatus,
+      }];
     }
 
     onLeadUpdate?.(lead.id, updates);
@@ -343,6 +417,24 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConf
       }
     }
 
+    // Create history log entry for rework reassignment
+    const historyLogEntry: HistoryLogEntry = {
+      id: crypto.randomUUID(),
+      action: 'rework_reassigned',
+      triggeredBy: 'Akshay Bazad',
+      triggeredAt: resolvedAt,
+      reworkReasonId: newReasonId,
+      reworkReasonLabel: newReasonLabel,
+      toAssignee: assignedOwner,
+      comment: details || `Reassigned from: ${entry.reasonLabel}`,
+      attachments: attachments.map(a => ({
+        id: a.id,
+        name: a.name,
+        type: a.type,
+        url: a.url,
+      })),
+    };
+
     // Build the updated history with the new entry appended
     const newHistory = [...updatedHistory, newHistoryEntry];
 
@@ -352,14 +444,15 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConf
       assignedTo: assignedOwner,
       // Keep reworkRequired as true since we're just reassigning
       reworkRequired: true,
+      historyLog: [...(lead.historyLog || []), historyLogEntry],
     };
 
     onLeadUpdate?.(lead.id, updates);
   };
 
-  const handleOpenReworkHistory = (lead: Lead) => {
+  const handleOpenHistoryLog = (lead: Lead) => {
     setSelectedLead(lead);
-    setReworkHistoryDialogOpen(true);
+    setHistoryLogDialogOpen(true);
   };
 
   // Sort leads based on sortConfig
@@ -494,13 +587,11 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConf
                       <Button
                         variant="ghost"
                         size="sm"
-                        className={cn(
-                          'h-8 w-8 p-0',
-                          lead.reworkHistory.length > 0 && 'text-warning hover:text-warning'
-                        )}
-                        onClick={() => handleOpenReworkHistory(lead)}
+                        className="h-8 w-8 p-0"
+                        onClick={() => handleOpenHistoryLog(lead)}
+                        title="View History Log"
                       >
-                        <AlertTriangle className="w-4 h-4" />
+                        <History className="w-4 h-4" />
                       </Button>
                     </td>
                     <td className="px-4 py-3">
@@ -677,17 +768,17 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConf
         onConfirm={handleReworkConfirm}
       />
 
-      {/* Rework History Dialog - View Only */}
-      <ReworkHistoryDialog
-        open={reworkHistoryDialogOpen}
+      {/* History Log Dialog */}
+      <HistoryLogDialog
+        open={historyLogDialogOpen}
         onOpenChange={(open) => {
-          setReworkHistoryDialogOpen(open);
+          setHistoryLogDialogOpen(open);
           if (!open) {
             setSelectedLead(null);
           }
         }}
         leadNumber={selectedLead?.leadNumber || ''}
-        history={selectedLead?.reworkHistory || []}
+        historyLog={selectedLead?.historyLog || []}
       />
     </>
   );

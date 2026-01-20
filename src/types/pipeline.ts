@@ -23,6 +23,55 @@ export type ShippingMethod = 'e_policy' | 'print_by_myself' | 'print_by_fairdee'
 
 export type CreatedByType = 'agent' | 'admin';
 
+// History Log Action Types
+export type HistoryActionType = 
+  | 'lead_created'
+  | 'status_changed'
+  | 'rework_created'
+  | 'rework_resolved'
+  | 'rework_reassigned'
+  | 'assignee_changed'
+  | 'payment_status_changed'
+  | 'rf_status_changed'
+  | 'sc_status_changed'
+  | 'policy_attached'
+  | 'shipping_updated';
+
+export interface HistoryAttachment {
+  id: string;
+  name: string;
+  type: 'png' | 'jpg' | 'pdf';
+  url: string;
+}
+
+export interface HistoryLogEntry {
+  id: string;
+  action: HistoryActionType;
+  triggeredBy: string;
+  triggeredAt: string;
+  // For status changes
+  fromStatus?: string;
+  toStatus?: string;
+  // For rework actions
+  reworkReasonId?: string;
+  reworkReasonLabel?: string;
+  // For assignee changes
+  assigneeType?: 'rf' | 'sc' | 'de' | 'owner';
+  fromAssignee?: string;
+  toAssignee?: string;
+  // Optional details
+  comment?: string;
+  attachments?: HistoryAttachment[];
+}
+
+// Legacy type alias for backwards compatibility during transition
+export interface ReworkAttachment {
+  id: string;
+  name: string;
+  type: 'png' | 'jpg' | 'pdf';
+  url: string;
+}
+
 export interface ReworkHistoryEntry {
   id: string;
   reasonId: string;
@@ -35,13 +84,6 @@ export interface ReworkHistoryEntry {
   resolvedAt?: string;
   resolvedBy?: string;
   previousStatus?: SaleStatus;
-}
-
-export interface ReworkAttachment {
-  id: string;
-  name: string;
-  type: 'png' | 'jpg' | 'pdf';
-  url: string;
 }
 
 export interface Lead {
@@ -65,6 +107,9 @@ export interface Lead {
   reworkReasonId?: string;
   assignedTo?: string;
   createdBy: CreatedByType;
+  // New unified history log
+  historyLog: HistoryLogEntry[];
+  // Legacy rework history (kept for backwards compatibility)
   reworkHistory: ReworkHistoryEntry[];
   rfAssignee?: string;
   scAssignee?: string;
