@@ -61,7 +61,7 @@ export function applyToPayFilters(
     return (
       ['new_leads', 'coa', 'renewals'].includes(lead.leadType) &&
       lead.paymentStatus === 'unpaid' &&
-      ['pending', 'waiting_for_insurer', 'partially_added', 'completed', 'quotation_shared', 'invalid'].includes(lead.saleStatus)
+      ['pending', 'docs_missing', 'waiting_for_insurer', 'partially_added', 'completed', 'quotation_shared', 'invalid'].includes(lead.saleStatus)
     );
   };
 
