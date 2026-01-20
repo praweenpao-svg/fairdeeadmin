@@ -23,24 +23,23 @@ const Index = () => {
   const [myCasesOnly, setMyCasesOnly] = useState(true);
   const [sortConfig, setSortConfig] = useState<SortConfig>({ field: 'createdOn', direction: 'desc' });
   
-  // Filters for To Pay stage and All stage (using combined filters)
+  // Filters for To Pay stage and All/To Convert (shared filter state + UI)
   const [toPayFilters, setToPayFilters] = useState<FilterState>(defaultFilterState);
-  
+
   // Filters for other stages (To Report, To Issue, To Deliver, Completed)
   const [otherStagesFilters, setOtherStagesFilters] = useState<OtherStagesFilterState>(defaultOtherStagesFilterState);
 
   // "All", "To Convert", and "To Pay" stages use the full filter panel
   const useAllFiltersPanel = activeStage === 'all' || activeStage === 'to_convert' || activeStage === 'to_pay';
+  const isToPayStage = activeStage === 'to_pay';
 
   const handleLeadUpdate = (leadId: string, updates: Partial<Lead>) => {
     // Generate current timestamp in DD-MM-YYYY HH:MM format
     const now = new Date();
     const updatedOn = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-    
+
     setLeads((prev) =>
-      prev.map((lead) =>
-        lead.id === leadId ? { ...lead, ...updates, updatedOn } : lead
-      )
+      prev.map((lead) => (lead.id === leadId ? { ...lead, ...updates, updatedOn } : lead))
     );
   };
 
@@ -61,7 +60,7 @@ const Index = () => {
     } else if (key === 'status') {
       setToPayFilters({ ...toPayFilters, status: 'all' });
     } else if (key === 'leadType') {
-      setToPayFilters({ ...toPayFilters, leadType: 'new_leads' });
+      setToPayFilters({ ...toPayFilters, leadType: 'all' });
     } else if (key === 'installmentType') {
       setToPayFilters({ ...toPayFilters, installmentType: 'all' });
     } else {
@@ -94,7 +93,8 @@ const Index = () => {
     dateRange,
     toPayFilters,
     otherStagesFilters,
-    useAllFiltersPanel
+    isToPayStage,
+    activeStage
   );
 
 
@@ -153,6 +153,7 @@ const Index = () => {
           
           {useAllFiltersPanel ? (
             <AllFiltersPanel
+              stage={activeStage}
               filters={toPayFilters}
               onFiltersChange={setToPayFilters}
               onClear={handleClearToPayFilters}

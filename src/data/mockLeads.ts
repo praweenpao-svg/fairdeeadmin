@@ -207,7 +207,8 @@ const generateLeads = (): Lead[] => {
       vehicleDetails: vehiclePlates[i % vehiclePlates.length],
       rfStatus: i < 2 ? 'pending' : 'transferred',
       scStatus: hasSC ? 'claimed' : 'pending',
-      saleStatus: i % 4 === 0 ? 'waiting_for_insurer' : i % 4 === 1 ? 'partially_added' : 'pending',
+      // To Pay should default to "Pending" (stored as pending_payment)
+      saleStatus: 'pending_payment',
       paymentStatus: i % 3 === 0 ? 'paid' : i % 3 === 1 ? 'partial' : 'unpaid',
       policyAttached: false,
       reworkRequired: hasRework,
