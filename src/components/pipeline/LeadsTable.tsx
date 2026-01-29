@@ -112,8 +112,8 @@ const statusOptionsByStage: Record<PipelineStage, string[]> = {
     'revision_required',
     'pending_payment',
     'pending_review',
-    'under_review',
-    'de_in_progress',
+    // 'under_review', // Hidden for now
+    // 'de_in_progress', // Hidden for now
     'pending_issuance',
     'policy_issued',
     'policy_shipped',
@@ -135,8 +135,8 @@ const statusOptionsByStage: Record<PipelineStage, string[]> = {
   ],
   to_report: [
     'pending_review',
-    'under_review',
-    'de_in_progress',
+    // 'under_review', // Hidden for now
+    // 'de_in_progress', // Hidden for now
     'rework_required',
   ],
   to_issue: [
