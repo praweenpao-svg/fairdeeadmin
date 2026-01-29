@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 
 interface PolicyRecordRowProps {
   policy: PolicyRecord;
+  isStageRelevant?: boolean; // Whether this policy is relevant to the current stage
   onStatusChange?: (policyId: string, newStatus: PolicyStatus) => void;
 }
 
@@ -70,11 +71,16 @@ function getStatusBadgeColor(status: PolicyStatus): string {
   }
 }
 
-export function PolicyRecordRow({ policy, onStatusChange }: PolicyRecordRowProps) {
+export function PolicyRecordRow({ policy, isStageRelevant = true, onStatusChange }: PolicyRecordRowProps) {
   const { language } = useLanguageStore();
 
   return (
-    <div className="flex items-center gap-4 py-2 px-4 bg-muted/30 border-l-2 border-primary/30">
+    <div className={cn(
+      'flex items-center gap-4 py-2 px-4 border-l-2',
+      isStageRelevant 
+        ? 'bg-muted/30 border-primary/50' 
+        : 'bg-muted/10 border-muted-foreground/20 opacity-60'
+    )}>
       {/* Policy Kind Badge */}
       <Badge 
         variant="secondary" 
@@ -123,6 +129,7 @@ export function PolicyRecordRow({ policy, onStatusChange }: PolicyRecordRowProps
 
 interface ExpandablePolicyRowsProps {
   policyRecords: PolicyRecord[];
+  stagePolicies?: PolicyRecord[]; // Policies relevant to current stage (for highlighting)
   isExpanded: boolean;
   onToggle: () => void;
   onPolicyStatusChange?: (policyId: string, newStatus: PolicyStatus) => void;
@@ -130,11 +137,15 @@ interface ExpandablePolicyRowsProps {
 
 export function ExpandablePolicyRows({ 
   policyRecords, 
+  stagePolicies,
   isExpanded, 
   onToggle,
   onPolicyStatusChange,
 }: ExpandablePolicyRowsProps) {
   const { language } = useLanguageStore();
+  
+  // IDs of stage-relevant policies for quick lookup
+  const stagePolicyIds = new Set(stagePolicies?.map(p => p.id) || policyRecords.map(p => p.id));
   
   if (!policyRecords || policyRecords.length === 0) {
     return null;
@@ -177,13 +188,21 @@ export function ExpandablePolicyRows({
       {/* Expanded Policy Records */}
       {isExpanded && (
         <div className="mt-2 space-y-1 rounded-md overflow-hidden">
-          {policyRecords.map((policy) => (
-            <PolicyRecordRow 
-              key={policy.id} 
-              policy={policy} 
-              onStatusChange={onPolicyStatusChange}
-            />
-          ))}
+          {/* Show stage-relevant policies first */}
+          {policyRecords
+            .sort((a, b) => {
+              const aRelevant = stagePolicyIds.has(a.id) ? 0 : 1;
+              const bRelevant = stagePolicyIds.has(b.id) ? 0 : 1;
+              return aRelevant - bRelevant;
+            })
+            .map((policy) => (
+              <PolicyRecordRow 
+                key={policy.id} 
+                policy={policy}
+                isStageRelevant={stagePolicyIds.has(policy.id)}
+                onStatusChange={onPolicyStatusChange}
+              />
+            ))}
         </div>
       )}
     </div>
