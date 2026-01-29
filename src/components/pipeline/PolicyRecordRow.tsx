@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 interface PolicyRecordRowProps {
   policy: PolicyRecord;
   isStageRelevant?: boolean; // Whether this policy is relevant to the current stage
+  isEditable?: boolean; // Whether this policy status can be edited in this stage
   onStatusChange?: (policyId: string, newStatus: PolicyStatus) => void;
 }
 
@@ -71,7 +72,7 @@ function getStatusBadgeColor(status: PolicyStatus): string {
   }
 }
 
-export function PolicyRecordRow({ policy, isStageRelevant = true, onStatusChange }: PolicyRecordRowProps) {
+export function PolicyRecordRow({ policy, isStageRelevant = true, isEditable = true, onStatusChange }: PolicyRecordRowProps) {
   const { language } = useLanguageStore();
 
   return (
@@ -89,23 +90,32 @@ export function PolicyRecordRow({ policy, isStageRelevant = true, onStatusChange
         {policyKindLabels[policy.kind][language]}
       </Badge>
 
-      {/* Status Selector */}
+      {/* Status Selector - editable only if in correct stage */}
       <div className="flex-1">
-        <Select
-          value={policy.status}
-          onValueChange={(value) => onStatusChange?.(policy.id, value as PolicyStatus)}
-        >
-          <SelectTrigger className="w-[180px] h-8 text-xs">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {policyStatusOptions.map((status) => (
-              <SelectItem key={status} value={status}>
-                {policyStatusTranslations[status][language]}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {isEditable ? (
+          <Select
+            value={policy.status}
+            onValueChange={(value) => onStatusChange?.(policy.id, value as PolicyStatus)}
+          >
+            <SelectTrigger className="w-[180px] h-8 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {policyStatusOptions.map((status) => (
+                <SelectItem key={status} value={status}>
+                  {policyStatusTranslations[status][language]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : (
+          <Badge 
+            variant="secondary" 
+            className={cn('text-xs font-medium cursor-not-allowed', getStatusBadgeColor(policy.status))}
+          >
+            {policyStatusTranslations[policy.status][language]}
+          </Badge>
+        )}
       </div>
 
       {/* Shipping Method if applicable */}
@@ -129,7 +139,7 @@ export function PolicyRecordRow({ policy, isStageRelevant = true, onStatusChange
 
 interface ExpandablePolicyRowsProps {
   policyRecords: PolicyRecord[];
-  stagePolicies?: PolicyRecord[]; // Policies relevant to current stage (for highlighting)
+  stagePolicies?: PolicyRecord[]; // Policies relevant to current stage (for highlighting and editing)
   isExpanded: boolean;
   onToggle: () => void;
   onPolicyStatusChange?: (policyId: string, newStatus: PolicyStatus) => void;
@@ -195,14 +205,18 @@ export function ExpandablePolicyRows({
               const bRelevant = stagePolicyIds.has(b.id) ? 0 : 1;
               return aRelevant - bRelevant;
             })
-            .map((policy) => (
-              <PolicyRecordRow 
-                key={policy.id} 
-                policy={policy}
-                isStageRelevant={stagePolicyIds.has(policy.id)}
-                onStatusChange={onPolicyStatusChange}
-              />
-            ))}
+            .map((policy) => {
+              const isRelevant = stagePolicyIds.has(policy.id);
+              return (
+                <PolicyRecordRow 
+                  key={policy.id} 
+                  policy={policy}
+                  isStageRelevant={isRelevant}
+                  isEditable={isRelevant} // Only editable if in correct stage
+                  onStatusChange={onPolicyStatusChange}
+                />
+              );
+            })}
         </div>
       )}
     </div>
