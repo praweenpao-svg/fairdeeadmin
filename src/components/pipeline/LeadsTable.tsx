@@ -666,7 +666,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="__none__" className="text-muted-foreground">
-                            {language === 'th' ? '— ยังไม่มอบหมาย —' : '— Unassigned —'}
+                            {language === 'th' ? 'ยังไม่มอบหมาย' : 'Unassigned'}
                           </SelectItem>
                           {getRFStaff().map((staff) => (
                             <SelectItem key={staff.id} value={staff.name}>
@@ -682,11 +682,11 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                         onValueChange={(value) => onLeadUpdate?.(lead.id, { scAssignee: value === '__none__' ? undefined : value })}
                       >
                         <SelectTrigger className="w-[140px] h-8 text-xs">
-                          <SelectValue placeholder={language === 'th' ? '— ยังไม่มอบหมาย —' : '— Unassigned —'} />
+                          <SelectValue placeholder={language === 'th' ? 'ยังไม่มอบหมาย' : 'Unassigned'} />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="__none__" className="text-muted-foreground">
-                            {language === 'th' ? '— ยังไม่มอบหมาย —' : '— Unassigned —'}
+                            {language === 'th' ? 'ยังไม่มอบหมาย' : 'Unassigned'}
                           </SelectItem>
                           {getSCStaff().map((staff) => (
                             <SelectItem key={staff.id} value={staff.name}>
@@ -703,11 +703,11 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                           onValueChange={(value) => onLeadUpdate?.(lead.id, { deAssignee: value === '__none__' ? undefined : value })}
                         >
                           <SelectTrigger className="w-[140px] h-8 text-xs">
-                            <SelectValue placeholder={language === 'th' ? '— ยังไม่มอบหมาย —' : '— Unassigned —'} />
+                            <SelectValue placeholder={language === 'th' ? 'ยังไม่มอบหมาย' : 'Unassigned'} />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="__none__" className="text-muted-foreground">
-                              {language === 'th' ? '— ยังไม่มอบหมาย —' : '— Unassigned —'}
+                              {language === 'th' ? 'ยังไม่มอบหมาย' : 'Unassigned'}
                             </SelectItem>
                             {getDEStaff().map((staff) => (
                               <SelectItem key={staff.id} value={staff.name}>
