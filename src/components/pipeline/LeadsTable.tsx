@@ -1,13 +1,11 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { 
   ExternalLink, 
   MoreVertical,
   History,
-  ChevronRight,
-  ChevronDown,
   Eye,
 } from 'lucide-react';
-import { Lead, PipelineStage, LeadType, ReworkConfig, CreatedByType, ReworkAttachment, ReworkHistoryEntry, HistoryLogEntry, PolicyStatus, PolicyRecord } from '@/types/pipeline';
+import { Lead, PipelineStage, LeadType, ReworkConfig, CreatedByType, ReworkAttachment, ReworkHistoryEntry, HistoryLogEntry, PolicyStatus } from '@/types/pipeline';
 import { cn } from '@/lib/utils';
 import { useLanguageStore } from '@/stores/languageStore';
 import {
@@ -29,7 +27,7 @@ import { mockStaffMembers } from '@/data/mockStaff';
 import { ReworkDialog } from './ReworkDialog';
 import { HistoryLogDialog } from './HistoryLogDialog';
 import { InlineReworkActions } from './InlineReworkActions';
-import { PolicyRecordRow } from './PolicyRecordRow';
+import { PolicyStatusCell } from './PolicyStatusCell';
 import { getPoliciesForStage } from './PipelineTabs';
 
 interface LeadsTableProps {
@@ -251,7 +249,6 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
   // Check if current stage is a post-lead stage (To Pay onwards)
   const isPostLeadStage = ['to_pay', 'to_report', 'to_issue', 'to_deliver', 'completed', 'cancelled'].includes(stage);
@@ -261,19 +258,6 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
 
   // Filter rework configs by current stage
   const stageReworkConfigs = reworkConfigs.filter(config => config.stages.includes(stage));
-
-  // Toggle expanded state for a row
-  const toggleRowExpanded = (leadId: string) => {
-    setExpandedRows(prev => {
-      const next = new Set(prev);
-      if (next.has(leadId)) {
-        next.delete(leadId);
-      } else {
-        next.add(leadId);
-      }
-      return next;
-    });
-  };
 
   // Handle policy status change
   const handlePolicyStatusChange = (lead: Lead, policyId: string, newStatus: PolicyStatus) => {
@@ -638,7 +622,6 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
           <table className="w-full">
             <thead>
               <tr className="border-b border-border">
-                <th className="data-table-header w-10 px-4 py-3"></th>
                 <th className="data-table-header px-4 py-3 text-left">ID</th>
                 <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'ตัวแทน' : 'Agent'}</th>
                 <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'วันที่สร้าง' : 'Created On'}</th>
@@ -652,6 +635,12 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                 {!isPostLeadStage && (
                   <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'สถานะงาน' : 'Status'}</th>
                 )}
+                {isPostLeadStage && (
+                  <>
+                    <th className="data-table-header px-4 py-3 text-left">VMI</th>
+                    <th className="data-table-header px-4 py-3 text-left">CMI</th>
+                  </>
+                )}
                 <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'ผู้รับผิดชอบ' : 'Owner'}</th>
                 <th className="data-table-header w-10 px-4 py-3"></th>
               </tr>
@@ -659,7 +648,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
             <tbody>
               {sortedLeads.length === 0 ? (
                 <tr>
-                  <td colSpan={showDEColumn ? 11 : 10} className="px-4 py-12 text-center text-muted-foreground">
+                  <td colSpan={isPostLeadStage ? (showDEColumn ? 12 : 11) : (showDEColumn ? 11 : 10)} className="px-4 py-12 text-center text-muted-foreground">
                     No leads found for this stage
                   </td>
                 </tr>
@@ -668,48 +657,25 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                 // Get the latest unresolved rework entry (entries are appended, so search from end)
                 const latestReworkEntry = [...lead.reworkHistory].reverse().find(e => !e.resolved);
                 const hasActiveRework = lead.reworkRequired && latestReworkEntry && !latestReworkEntry.resolved;
-                const isExpanded = expandedRows.has(lead.id);
                 
                 // Get only the policy records relevant to this stage
                 const stagePolicies = isPostLeadStage ? getPoliciesForStage(lead, stage) : [];
-                const hasPolicyRecords = stagePolicies.length > 0;
-                // Show all policies for this lead (for context) but highlight stage-relevant ones
+                // Get VMI and CMI policies
                 const allPolicies = lead.policyRecords || [];
+                const vmiPolicy = allPolicies.find(p => p.kind === 'vmi');
+                const cmiPolicy = allPolicies.find(p => p.kind === 'cmi');
+                // Check if each policy is editable (in current stage)
+                const isVmiEditable = vmiPolicy ? stagePolicies.some(p => p.id === vmiPolicy.id) : false;
+                const isCmiEditable = cmiPolicy ? stagePolicies.some(p => p.id === cmiPolicy.id) : false;
                 
                 return (
-                  <React.Fragment key={lead.id}>
-                    <tr 
-                      className={cn(
-                        'data-table-row',
-                        lead.reworkRequired && 'bg-warning/5'
-                      )}
-                    >
-                      <td className="px-4 py-3">
-                        {hasPolicyRecords ? (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
-                            title={language === 'th' ? (isExpanded ? 'ซ่อนกรมธรรม์' : 'ดูกรมธรรม์') : (isExpanded ? 'Hide policies' : 'View policies')}
-                            onClick={() => toggleRowExpanded(lead.id)}
-                          >
-                            {isExpanded ? (
-                              <ChevronDown className="w-4 h-4" />
-                            ) : (
-                              <ChevronRight className="w-4 h-4" />
-                            )}
-                          </Button>
-                        ) : (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
-                            title={language === 'th' ? 'ดูรายละเอียดเพิ่มเติม' : 'View more details'}
-                          >
-                            <ChevronRight className="w-4 h-4" />
-                          </Button>
-                        )}
-                      </td>
+                  <tr 
+                    key={lead.id}
+                    className={cn(
+                      'data-table-row',
+                      lead.reworkRequired && 'bg-warning/5'
+                    )}
+                  >
                       <td className="px-4 py-3">
                         <div className="flex flex-col gap-1">
                           <span className="font-medium text-sm">{lead.leadNumber}</span>
@@ -844,6 +810,24 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                           )}
                         </td>
                       )}
+                      {isPostLeadStage && (
+                        <>
+                          <td className="px-4 py-3">
+                            <PolicyStatusCell
+                              policy={vmiPolicy}
+                              isEditable={isVmiEditable}
+                              onStatusChange={(policyId, newStatus) => handlePolicyStatusChange(lead, policyId, newStatus)}
+                            />
+                          </td>
+                          <td className="px-4 py-3">
+                            <PolicyStatusCell
+                              policy={cmiPolicy}
+                              isEditable={isCmiEditable}
+                              onStatusChange={(policyId, newStatus) => handlePolicyStatusChange(lead, policyId, newStatus)}
+                            />
+                          </td>
+                        </>
+                      )}
                       <td className="px-4 py-3">
                         {(() => {
                           const owner = getOwner(lead);
@@ -877,36 +861,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                         </DropdownMenu>
                       </td>
                     </tr>
-                    {/* Expanded Policy Records Row */}
-                    {hasPolicyRecords && isExpanded && (
-                      <tr key={`${lead.id}-policies`} className="bg-muted/20">
-                        <td colSpan={showDEColumn ? 12 : 11} className="px-4 py-3">
-                          <div className="pl-8 space-y-1">
-                            {allPolicies
-                              .sort((a, b) => {
-                                // VMI always comes first, CMI second
-                                if (a.kind === 'vmi' && b.kind === 'cmi') return -1;
-                                if (a.kind === 'cmi' && b.kind === 'vmi') return 1;
-                                return 0;
-                              })
-                              .map((policy) => {
-                                const isRelevant = stagePolicies.some(p => p.id === policy.id);
-                                return (
-                                  <PolicyRecordRow 
-                                    key={policy.id} 
-                                    policy={policy}
-                                    isStageRelevant={isRelevant}
-                                    isEditable={isRelevant}
-                                    onStatusChange={(policyId, newStatus) => handlePolicyStatusChange(lead, policyId, newStatus)}
-                                  />
-                                );
-                              })}
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                  </React.Fragment>
-                );
+                  );
               })
               )}
             </tbody>
