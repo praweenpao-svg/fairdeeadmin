@@ -17,128 +17,223 @@ const deStaff = ['Oscar', 'Paula', 'Quinn', 'Pao'];
 export const CURRENT_USER = 'Pao';
 const vehiclePlates = ['2มว7814', '2ศย8965', 'KL4521', 'PQ8823', 'AB1234', 'CD5678', 'EF9012', 'GH3456', 'IJ7890', 'MN6789', 'OP1234', 'QR5678'];
 
-// Helper to generate history log entries for a lead
+// Rework reason labels mapping
+const reworkReasonLabels: Record<string, { en: string; th: string }> = {
+  '1': { en: 'Missing Documents', th: 'เอกสารไม่ครบ' },
+  '2': { en: 'Pending Confirmation', th: 'รอยืนยันข้อมูล' },
+  '3': { en: 'Pending Verification', th: 'รอตรวจสอบ' },
+  '4': { en: 'Pending Initial Payment', th: 'รองวดแรก' },
+  '5': { en: 'Pre-submission: Return to AST', th: 'ตีกลับก่อนแจ้งงาน' },
+  '6': { en: 'Reverted by Insurer', th: 'บ.ประกันตีกลับ' },
+  '7': { en: 'Rejected by Insurer', th: 'บ.ประกันปฎิเสธ' },
+  '8': { en: 'Pending Re-submission', th: 'รอแจ้งงานอีกครั้ง' },
+  '9': { en: 'Return to OPS', th: 'ตีกลับให้ OPS' },
+};
+
+// Helper to generate realistic history log entries based on lead's journey stage
 function generateHistoryLog(lead: Partial<Lead>, hasRework: boolean, createdOn: string): HistoryLogEntry[] {
   const logs: HistoryLogEntry[] = [];
   const agent = lead.agentName || 'System';
+  let minuteOffset = 0;
   
-  // 1. Lead created
+  // Helper to add time offset
+  const getTime = (additionalMinutes: number = 0) => {
+    minuteOffset += additionalMinutes;
+    return addMinutes(createdOn, minuteOffset);
+  };
+
+  // ===== STAGE 1: Lead Created =====
   logs.push({
     id: `hl-${lead.id}-created`,
     action: 'lead_created',
-    triggeredBy: agent,
-    triggeredAt: createdOn,
+    triggeredBy: lead.createdBy === 'agent' ? agent : 'Admin',
+    triggeredAt: getTime(0),
   });
 
-  // 2. RF assigned
+  // ===== STAGE 2: RF Assigned (auto round-robin) =====
   if (lead.rfAssignee) {
     logs.push({
-      id: `hl-${lead.id}-rf`,
+      id: `hl-${lead.id}-rf-assign`,
       action: 'assignee_changed',
-      triggeredBy: 'System',
-      triggeredAt: addMinutes(createdOn, 5),
+      triggeredBy: 'System (Round Robin)',
+      triggeredAt: getTime(2),
       assigneeType: 'rf',
       fromAssignee: undefined,
       toAssignee: lead.rfAssignee,
     });
   }
 
-  // 3. SC claimed
+  // ===== STAGE 3: SC Claims the lead =====
   if (lead.scAssignee) {
     logs.push({
-      id: `hl-${lead.id}-sc`,
+      id: `hl-${lead.id}-sc-claim`,
       action: 'assignee_changed',
       triggeredBy: lead.scAssignee,
-      triggeredAt: addMinutes(createdOn, 30),
+      triggeredAt: getTime(15 + Math.floor(Math.random() * 30)),
       assigneeType: 'sc',
       fromAssignee: undefined,
       toAssignee: lead.scAssignee,
     });
   }
 
-  // 4. RF status transferred
+  // ===== STAGE 4: RF transfers to SC (for to_convert onwards) =====
   if (lead.rfStatus === 'transferred' || lead.rfStatus === 'completed') {
     logs.push({
-      id: `hl-${lead.id}-rf-status`,
+      id: `hl-${lead.id}-rf-transfer`,
       action: 'rf_status_changed',
       triggeredBy: lead.rfAssignee || 'System',
-      triggeredAt: addMinutes(createdOn, 60),
+      triggeredAt: getTime(30 + Math.floor(Math.random() * 60)),
       fromStatus: 'pending',
       toStatus: 'transferred',
     });
   }
 
-  // 5. Payment status
-  if (lead.paymentStatus === 'paid') {
+  // ===== STAGE 5: Status progression in to_convert stage =====
+  // Simulate realistic status changes during conversion
+  const conversionStatuses = ['pending', 'docs_missing', 'waiting_for_insurer', 'partially_added', 'completed', 'quotation_shared'];
+  const renewalStatuses = ['price_pending', 'revision_pending', 'price_ready'];
+  
+  const isRenewal = lead.leadType === 'renewals';
+  const statusList = isRenewal ? renewalStatuses : conversionStatuses;
+  
+  // For leads past to_convert, show progression through conversion
+  if (lead.paymentStatus === 'paid' || lead.paymentStatus === 'partial' || lead.saleStatus === 'pending_payment') {
+    // Lead has progressed past conversion - show status journey
+    if (isRenewal) {
+      logs.push({
+        id: `hl-${lead.id}-status-1`,
+        action: 'status_changed',
+        triggeredBy: lead.scAssignee || lead.rfAssignee || 'System',
+        triggeredAt: getTime(60),
+        fromStatus: 'pending',
+        toStatus: 'price_pending',
+      });
+      logs.push({
+        id: `hl-${lead.id}-status-2`,
+        action: 'status_changed',
+        triggeredBy: lead.scAssignee || 'System',
+        triggeredAt: getTime(120),
+        fromStatus: 'price_pending',
+        toStatus: 'price_ready',
+      });
+    } else {
+      logs.push({
+        id: `hl-${lead.id}-status-1`,
+        action: 'status_changed',
+        triggeredBy: lead.scAssignee || lead.rfAssignee || 'System',
+        triggeredAt: getTime(45),
+        fromStatus: 'pending',
+        toStatus: 'waiting_for_insurer',
+      });
+      logs.push({
+        id: `hl-${lead.id}-status-2`,
+        action: 'status_changed',
+        triggeredBy: lead.scAssignee || 'System',
+        triggeredAt: getTime(180),
+        fromStatus: 'waiting_for_insurer',
+        toStatus: 'quotation_shared',
+      });
+    }
+  } else if (lead.saleStatus && lead.saleStatus !== 'pending' && !['pending_review', 'pending_issuance', 'policy_issued', 'policy_delivered', 'policy_shipped', 'policy_cancelled'].includes(lead.saleStatus)) {
+    // Lead is still in to_convert with a non-pending status
     logs.push({
-      id: `hl-${lead.id}-payment`,
-      action: 'payment_status_changed',
-      triggeredBy: 'Payment System',
-      triggeredAt: addMinutes(createdOn, 120),
-      fromStatus: 'unpaid',
-      toStatus: 'paid',
-    });
-  }
-
-  // 6. DE assigned
-  if (lead.deAssignee) {
-    logs.push({
-      id: `hl-${lead.id}-de`,
-      action: 'assignee_changed',
-      triggeredBy: 'System (Round Robin)',
-      triggeredAt: addMinutes(createdOn, 180),
-      assigneeType: 'de',
-      fromAssignee: undefined,
-      toAssignee: lead.deAssignee,
-    });
-  }
-
-  // 7. Status progression (example)
-  if (lead.saleStatus && lead.saleStatus !== 'pending') {
-    logs.push({
-      id: `hl-${lead.id}-status`,
+      id: `hl-${lead.id}-status-current`,
       action: 'status_changed',
-      triggeredBy: lead.deAssignee || lead.scAssignee || 'System',
-      triggeredAt: addMinutes(createdOn, 240),
+      triggeredBy: lead.scAssignee || lead.rfAssignee || 'System',
+      triggeredAt: getTime(60 + Math.floor(Math.random() * 120)),
       fromStatus: 'pending',
       toStatus: lead.saleStatus,
     });
   }
 
-  // 8. Rework if applicable
-  if (hasRework && lead.reworkReasonId) {
-    const reworkReasonLabels: Record<string, string> = {
-      '1': 'Missing Documents',
-      '2': 'Pending Confirmation',
-      '3': 'Pending Verification',
-      '4': 'Pending Initial Payment',
-      '5': 'Pre-submission: Return to AST',
-      '6': 'Reverted by Insurer',
-      '7': 'Rejected by Insurer',
-    };
-    
+  // ===== STAGE 6: Payment received (to_pay → to_report transition) =====
+  if (lead.paymentStatus === 'paid') {
     logs.push({
-      id: `hl-${lead.id}-rework`,
-      action: 'rework_created',
-      triggeredBy: lead.deAssignee || 'System',
-      triggeredAt: addMinutes(createdOn, 300),
-      reworkReasonId: lead.reworkReasonId,
-      reworkReasonLabel: reworkReasonLabels[lead.reworkReasonId] || 'Unknown',
-      comment: 'Verification needed',
+      id: `hl-${lead.id}-payment`,
+      action: 'payment_status_changed',
+      triggeredBy: 'Payment System',
+      triggeredAt: getTime(60),
+      fromStatus: 'unpaid',
+      toStatus: 'paid',
+    });
+    
+    // Status changes to pending_payment then to pending_review
+    logs.push({
+      id: `hl-${lead.id}-to-pay-status`,
+      action: 'status_changed',
+      triggeredBy: 'System',
+      triggeredAt: getTime(5),
+      fromStatus: 'quotation_shared',
+      toStatus: 'pending_payment',
+    });
+  } else if (lead.paymentStatus === 'partial') {
+    logs.push({
+      id: `hl-${lead.id}-payment-partial`,
+      action: 'payment_status_changed',
+      triggeredBy: 'Payment System',
+      triggeredAt: getTime(60),
+      fromStatus: 'unpaid',
+      toStatus: 'partial',
     });
   }
 
-  // 9. Policy attached
+  // ===== STAGE 7: DE Assigned (entering to_report) =====
+  if (lead.deAssignee) {
+    logs.push({
+      id: `hl-${lead.id}-de-assign`,
+      action: 'assignee_changed',
+      triggeredBy: 'System (Round Robin)',
+      triggeredAt: getTime(30),
+      assigneeType: 'de',
+      fromAssignee: undefined,
+      toAssignee: lead.deAssignee,
+    });
+    
+    // Status to pending_review
+    if (['pending_review', 'pending_issuance', 'policy_issued', 'policy_delivered', 'policy_shipped'].includes(lead.saleStatus || '')) {
+      logs.push({
+        id: `hl-${lead.id}-to-report`,
+        action: 'status_changed',
+        triggeredBy: 'System',
+        triggeredAt: getTime(5),
+        fromStatus: 'pending_payment',
+        toStatus: 'pending_review',
+      });
+    }
+  }
+
+  // ===== STAGE 8: to_issue - Pending Issuance =====
+  if (['pending_issuance', 'policy_issued', 'policy_delivered', 'policy_shipped'].includes(lead.saleStatus || '')) {
+    logs.push({
+      id: `hl-${lead.id}-to-issue`,
+      action: 'status_changed',
+      triggeredBy: lead.deAssignee || 'System',
+      triggeredAt: getTime(240 + Math.floor(Math.random() * 120)),
+      fromStatus: 'pending_review',
+      toStatus: 'pending_issuance',
+    });
+  }
+
+  // ===== STAGE 9: Policy Attached & Issued =====
   if (lead.policyAttached) {
     logs.push({
       id: `hl-${lead.id}-policy`,
       action: 'policy_attached',
       triggeredBy: lead.deAssignee || 'System',
-      triggeredAt: addMinutes(createdOn, 360),
+      triggeredAt: getTime(180 + Math.floor(Math.random() * 60)),
+    });
+    
+    logs.push({
+      id: `hl-${lead.id}-policy-issued`,
+      action: 'status_changed',
+      triggeredBy: lead.deAssignee || 'System',
+      triggeredAt: getTime(10),
+      fromStatus: 'pending_issuance',
+      toStatus: 'policy_issued',
     });
   }
 
-  // 10. Shipping
+  // ===== STAGE 10: Shipping =====
   if (lead.shippingMethod) {
     const shippingLabels: Record<string, string> = {
       'e_policy': 'E-Policy',
@@ -149,8 +244,58 @@ function generateHistoryLog(lead: Partial<Lead>, hasRework: boolean, createdOn: 
       id: `hl-${lead.id}-shipping`,
       action: 'shipping_updated',
       triggeredBy: lead.deAssignee || 'System',
-      triggeredAt: addMinutes(createdOn, 420),
+      triggeredAt: getTime(30),
       toStatus: shippingLabels[lead.shippingMethod] || lead.shippingMethod,
+    });
+  }
+
+  // ===== STAGE 11: Delivery Complete =====
+  if (lead.saleStatus === 'policy_shipped' || lead.saleStatus === 'policy_delivered') {
+    logs.push({
+      id: `hl-${lead.id}-shipped`,
+      action: 'status_changed',
+      triggeredBy: lead.deAssignee || 'Shipping System',
+      triggeredAt: getTime(1440), // 1 day later
+      fromStatus: 'policy_issued',
+      toStatus: 'policy_shipped',
+    });
+    
+    if (lead.saleStatus === 'policy_delivered') {
+      logs.push({
+        id: `hl-${lead.id}-delivered`,
+        action: 'status_changed',
+        triggeredBy: 'Shipping System',
+        triggeredAt: getTime(2880), // 2 days later
+        fromStatus: 'policy_shipped',
+        toStatus: 'policy_delivered',
+      });
+    }
+  }
+
+  // ===== STAGE 12: Cancellation =====
+  if (lead.saleStatus === 'policy_cancelled') {
+    logs.push({
+      id: `hl-${lead.id}-cancelled`,
+      action: 'status_changed',
+      triggeredBy: 'Admin',
+      triggeredAt: getTime(60),
+      fromStatus: lead.policyAttached ? 'policy_issued' : 'pending_review',
+      toStatus: 'policy_cancelled',
+    });
+  }
+
+  // ===== Rework Events (if applicable) =====
+  if (hasRework && lead.reworkReasonId) {
+    const reasonLabel = reworkReasonLabels[lead.reworkReasonId]?.en || 'Unknown';
+    
+    logs.push({
+      id: `hl-${lead.id}-rework`,
+      action: 'rework_created',
+      triggeredBy: lead.deAssignee || lead.scAssignee || 'System',
+      triggeredAt: getTime(120),
+      reworkReasonId: lead.reworkReasonId,
+      reworkReasonLabel: reasonLabel,
+      comment: 'ต้องการข้อมูลเพิ่มเติม',
     });
   }
 
