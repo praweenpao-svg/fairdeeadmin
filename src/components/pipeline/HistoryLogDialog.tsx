@@ -269,10 +269,9 @@ export function HistoryLogDialog({
 }: HistoryLogDialogProps) {
   const { language } = useLanguageStore();
 
-  // Sort entries by date (newest first)
+  // Sort entries by date (oldest first - Previous -> Latest timeline)
   const sortedLog = [...historyLog].sort((a, b) => {
-    // Try to parse dates for proper sorting
-    return new Date(b.triggeredAt).getTime() - new Date(a.triggeredAt).getTime();
+    return new Date(a.triggeredAt).getTime() - new Date(b.triggeredAt).getTime();
   });
 
   if (historyLog.length === 0) {
