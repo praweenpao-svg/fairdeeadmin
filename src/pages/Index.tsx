@@ -192,14 +192,12 @@ const Index = () => {
           )}
           */}
           
-          {/* Lead Sub-tabs for Leads stage - right aligned */}
+          {/* Lead Sub-tabs for Leads stage */}
           {activeStage === 'to_convert' && (
-            <div className="ml-auto">
-              <LeadSubTabs
-                activeSubTab={leadSubTab}
-                onSubTabChange={setLeadSubTab}
-              />
-            </div>
+            <LeadSubTabs
+              activeSubTab={leadSubTab}
+              onSubTabChange={setLeadSubTab}
+            />
           )}
         </div>
 
