@@ -23,6 +23,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { HistoryLogEntry, HistoryActionType, HistoryAttachment } from '@/types/pipeline';
 import { cn } from '@/lib/utils';
+import { useLanguageStore } from '@/stores/languageStore';
 
 interface HistoryLogDialogProps {
   open: boolean;
