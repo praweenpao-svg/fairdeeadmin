@@ -161,9 +161,6 @@ export function PipelineTabs({
     <div className="border-b border-border bg-card px-4">
       <div className="flex items-center gap-1">
         {stageConfig.map((stage) => {
-          const count = myCasesOnly 
-            ? getLeadsOwnedByUser(leads, stage.id, CURRENT_USER).length
-            : getLeadsForStage(leads, stage.id).length;
           const isActive = activeStage === stage.id;
           const Icon = stage.icon;
           const label = stageTranslations[stage.id as StageKey][language];
@@ -179,16 +176,6 @@ export function PipelineTabs({
             >
               <Icon className="w-4 h-4" />
               <span>{label}</span>
-              <span
-                className={cn(
-                  'inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-xs font-medium',
-                  isActive
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted text-muted-foreground'
-                )}
-              >
-                {count}
-              </span>
             </button>
           );
         })}
