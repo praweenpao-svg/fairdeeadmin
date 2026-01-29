@@ -8,6 +8,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { useLanguageStore } from '@/stores/languageStore';
 
 interface TablePaginationProps {
   currentPage: number;
@@ -28,6 +29,7 @@ export function TablePagination({
   onRowsPerPageChange,
   rowsPerPageOptions = [10, 20, 30, 40, 50],
 }: TablePaginationProps) {
+  const { language } = useLanguageStore();
   const startItem = totalItems === 0 ? 0 : (currentPage - 1) * rowsPerPage + 1;
   const endItem = Math.min(currentPage * rowsPerPage, totalItems);
 
@@ -41,12 +43,16 @@ export function TablePagination({
   return (
     <div className="flex items-center justify-between px-4 py-3 border-t border-border">
       <div className="text-sm text-muted-foreground">
-        Showing {startItem} to {endItem} of {totalItems} results
+        {language === 'th' 
+          ? `แสดง ${startItem} ถึง ${endItem} จาก ${totalItems} รายการ`
+          : `Showing ${startItem} to ${endItem} of ${totalItems} results`}
       </div>
       
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">Rows per page</span>
+          <span className="text-sm text-muted-foreground">
+            {language === 'th' ? 'แถวต่อหน้า' : 'Rows per page'}
+          </span>
           <Select
             value={String(rowsPerPage)}
             onValueChange={(value) => onRowsPerPageChange(Number(value))}
@@ -85,7 +91,9 @@ export function TablePagination({
           </Button>
           
           <div className="flex items-center gap-2 mx-2">
-            <span className="text-sm text-muted-foreground">Page</span>
+            <span className="text-sm text-muted-foreground">
+              {language === 'th' ? 'หน้า' : 'Page'}
+            </span>
             <Input
               type="number"
               min={1}
@@ -94,7 +102,9 @@ export function TablePagination({
               onChange={handlePageInputChange}
               className="w-[60px] h-8 text-center"
             />
-            <span className="text-sm text-muted-foreground">of {totalPages}</span>
+            <span className="text-sm text-muted-foreground">
+              {language === 'th' ? `จาก ${totalPages}` : `of ${totalPages}`}
+            </span>
           </div>
 
           <Button

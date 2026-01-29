@@ -11,11 +11,13 @@ import { OtherStagesFilterPanel, OtherStagesFilterState, defaultOtherStagesFilte
 import { FilterChips } from '@/components/pipeline/FilterChips';
 import { LeadSubTabs, LeadSubTab } from '@/components/pipeline/LeadSubTabs';
 import { LanguageToggle } from '@/components/LanguageToggle';
+import { useLanguageStore } from '@/stores/languageStore';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { applyAllFilters } from '@/utils/leadFilters';
 
 const Index = () => {
+  const { language } = useLanguageStore();
   const [activeStage, setActiveStage] = useState<PipelineStage>('to_convert');
   const [searchQuery, setSearchQuery] = useState('');
   const [leads, setLeads] = useState<Lead[]>(mockLeads);
@@ -113,7 +115,7 @@ const Index = () => {
         <div className="flex items-center justify-between px-6 py-3">
           <div className="flex items-center gap-2 text-muted-foreground">
             <Home className="w-4 h-4" />
-            <span className="text-sm">Home</span>
+            <span className="text-sm">{language === 'th' ? 'หน้าหลัก' : 'Home'}</span>
           </div>
           <LanguageToggle />
         </div>
