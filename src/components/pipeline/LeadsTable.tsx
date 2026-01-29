@@ -3,8 +3,6 @@ import {
   ExternalLink, 
   MoreVertical,
   History,
-  ArrowUp,
-  ArrowDown,
 } from 'lucide-react';
 import { Lead, PipelineStage, LeadType, ReworkConfig, CreatedByType, ReworkAttachment, ReworkHistoryEntry, HistoryLogEntry } from '@/types/pipeline';
 import { cn } from '@/lib/utils';
@@ -28,15 +26,11 @@ import { ReworkDialog } from './ReworkDialog';
 import { HistoryLogDialog } from './HistoryLogDialog';
 import { InlineReworkActions } from './InlineReworkActions';
 
-import { SortConfig, SortField, SortDirection } from './AllFiltersPanel';
-
 interface LeadsTableProps {
   leads: Lead[];
   stage: PipelineStage;
   reworkConfigs: ReworkConfig[];
   onLeadUpdate?: (leadId: string, updates: Partial<Lead>) => void;
-  sortConfig: SortConfig;
-  onSortChange: (config: SortConfig) => void;
 }
 
 const statusOptionsByStage: Record<PipelineStage, { value: string; label: string }[]> = {
@@ -176,7 +170,7 @@ function parseDateTime(dateStr: string): Date {
   return new Date(year, month - 1, day, hours, minutes);
 }
 
-export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConfig, onSortChange }: LeadsTableProps) {
+export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsTableProps) {
   const [reworkDialogOpen, setReworkDialogOpen] = useState(false);
   const [historyLogDialogOpen, setHistoryLogDialogOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
@@ -460,13 +454,12 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConf
     setHistoryLogDialogOpen(true);
   };
 
-  // Sort leads based on sortConfig
+  // Sort leads by createdOn descending (newest first)
   const sortedLeads = [...leads].sort((a, b) => {
-    const dateField = sortConfig.field;
-    const dateA = parseDateTime(a[dateField]).getTime();
-    const dateB = parseDateTime(b[dateField]).getTime();
+    const dateA = parseDateTime(a.createdOn).getTime();
+    const dateB = parseDateTime(b.createdOn).getTime();
     
-    const comparison = sortConfig.direction === 'asc' ? dateA - dateB : dateB - dateA;
+    const comparison = dateB - dateA; // descending (newest first)
     if (comparison !== 0) return comparison;
     
     // Then prioritize rework required
@@ -512,38 +505,6 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConf
     }
   };
 
-  const handleSortClick = (field: SortField) => {
-    if (sortConfig.field === field) {
-      // Toggle direction if same field
-      onSortChange({
-        field,
-        direction: sortConfig.direction === 'asc' ? 'desc' : 'asc',
-      });
-    } else {
-      // New field, default to desc (newest first)
-      onSortChange({ field, direction: 'desc' });
-    }
-  };
-
-  const SortableHeader = ({ field, label }: { field: SortField; label: string }) => {
-    const isActive = sortConfig.field === field;
-    const ArrowIcon = sortConfig.direction === 'asc' ? ArrowUp : ArrowDown;
-    
-    return (
-      <th
-        className="data-table-header px-4 py-3 text-left cursor-pointer hover:bg-muted/50 transition-colors select-none"
-        onClick={() => handleSortClick(field)}
-      >
-        <div className="flex items-center gap-1">
-          <span>{label}</span>
-          {isActive && (
-            <ArrowIcon className="h-4 w-4 text-primary" />
-          )}
-        </div>
-      </th>
-    );
-  };
-
   return (
     <>
       <div className="bg-card rounded-lg border border-border overflow-hidden">
@@ -554,8 +515,8 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate, sortConf
                 <th className="data-table-header w-10 px-4 py-3"></th>
                 <th className="data-table-header px-4 py-3 text-left">Leads</th>
                 <th className="data-table-header px-4 py-3 text-left">Agent</th>
-                <SortableHeader field="createdOn" label="Created On" />
-                <SortableHeader field="updatedOn" label="Updated On" />
+                <th className="data-table-header px-4 py-3 text-left">Created On</th>
+                <th className="data-table-header px-4 py-3 text-left">Updated On</th>
                 <th className="data-table-header px-4 py-3 text-left">Vehicle details</th>
                 <th className="data-table-header px-4 py-3 text-left">RF</th>
                 <th className="data-table-header px-4 py-3 text-left">SC</th>
