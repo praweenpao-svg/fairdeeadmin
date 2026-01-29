@@ -1,4 +1,4 @@
-import { PolicyRecord, PolicyStatus, PipelineStage } from '@/types/pipeline';
+import { PolicyRecord, PolicyStatus, PipelineStage, ReworkConfig, ReworkAttachment } from '@/types/pipeline';
 import { useLanguageStore } from '@/stores/languageStore';
 import {
   Select,
@@ -7,12 +7,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { PolicyReworkActions } from './PolicyReworkActions';
 
 interface PolicyStatusCellProps {
   policy: PolicyRecord | undefined;
   stage: PipelineStage;
   isEditable?: boolean;
+  reworkConfigs?: ReworkConfig[];
   onStatusChange?: (policyId: string, newStatus: PolicyStatus) => void;
+  onReworkResolve?: (policyId: string) => void;
+  onReworkReassign?: (policyId: string, newReasonId: string, details: string, attachments: ReworkAttachment[]) => void;
 }
 
 // Policy status translations
@@ -42,38 +46,58 @@ const policyStatusOptionsByStage: Record<PipelineStage, PolicyStatus[]> = {
   to_convert: [], // No policy statuses in to_convert
   to_pay: [
     'pending_payment',
-    'rework_required' as PolicyStatus,
+    'rework_required',
   ],
   to_report: [
     'pending_review',
-    'rework_required' as PolicyStatus,
+    'rework_required',
   ],
   to_issue: [
     'pending_issuance',
-    'rework_required' as PolicyStatus,
+    'rework_required',
   ],
   to_deliver: [
     'policy_issued',
-    'rework_required' as PolicyStatus,
+    'rework_required',
   ],
   completed: [
     'policy_issued',
     'policy_shipped',
     'policy_delivered',
-    'rework_required' as PolicyStatus,
+    'rework_required',
   ],
   cancelled: [
     'policy_cancelled',
   ],
 };
 
-export function PolicyStatusCell({ policy, stage, isEditable = false, onStatusChange }: PolicyStatusCellProps) {
+export function PolicyStatusCell({ 
+  policy, 
+  stage, 
+  isEditable = false, 
+  reworkConfigs = [],
+  onStatusChange,
+  onReworkResolve,
+  onReworkReassign,
+}: PolicyStatusCellProps) {
   const { language } = useLanguageStore();
 
   // No policy - show dash
   if (!policy) {
     return (
       <span className="text-muted-foreground">-</span>
+    );
+  }
+
+  // If policy is in rework_required state, show rework actions
+  if (policy.status === 'rework_required' && isEditable && onReworkResolve && onReworkReassign) {
+    return (
+      <PolicyReworkActions
+        policy={policy}
+        reworkConfigs={reworkConfigs}
+        onResolve={onReworkResolve}
+        onReassign={onReworkReassign}
+      />
     );
   }
 

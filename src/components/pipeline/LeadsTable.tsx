@@ -5,7 +5,7 @@ import {
   History,
   Eye,
 } from 'lucide-react';
-import { Lead, PipelineStage, LeadType, ReworkConfig, CreatedByType, ReworkAttachment, ReworkHistoryEntry, HistoryLogEntry, PolicyStatus } from '@/types/pipeline';
+import { Lead, PipelineStage, LeadType, ReworkConfig, CreatedByType, ReworkAttachment, ReworkHistoryEntry, HistoryLogEntry, PolicyStatus, PolicyReworkEntry } from '@/types/pipeline';
 import { cn } from '@/lib/utils';
 import { useLanguageStore } from '@/stores/languageStore';
 import {
@@ -247,6 +247,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
   const [reworkDialogOpen, setReworkDialogOpen] = useState(false);
   const [historyLogDialogOpen, setHistoryLogDialogOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [selectedPolicyId, setSelectedPolicyId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -259,9 +260,17 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
   // Filter rework configs by current stage
   const stageReworkConfigs = reworkConfigs.filter(config => config.stages.includes(stage));
 
-  // Handle policy status change
+  // Handle policy status change (for non-rework status changes)
   const handlePolicyStatusChange = (lead: Lead, policyId: string, newStatus: PolicyStatus) => {
     if (!lead.policyRecords) return;
+    
+    // If changing to rework_required, open rework dialog
+    if (newStatus === 'rework_required') {
+      setSelectedLead(lead);
+      setSelectedPolicyId(policyId);
+      setReworkDialogOpen(true);
+      return;
+    }
     
     const updatedRecords = lead.policyRecords.map(record => 
       record.id === policyId ? { ...record, status: newStatus } : record
@@ -285,6 +294,135 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
       fromStatus: policy?.status,
       toStatus: newStatus,
       comment: `${policy?.kind.toUpperCase()} policy status updated`,
+    };
+
+    onLeadUpdate?.(lead.id, {
+      policyRecords: updatedRecords,
+      historyLog: [...(lead.historyLog || []), historyLogEntry],
+    });
+  };
+
+  // Handle policy rework resolve
+  const handlePolicyReworkResolve = (lead: Lead, policyId: string) => {
+    if (!lead.policyRecords) return;
+
+    const timestamp = new Date().toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+    const updatedRecords = lead.policyRecords.map(record => {
+      if (record.id !== policyId) return record;
+      
+      // Find latest unresolved rework entry
+      const reworkHistory = record.reworkHistory || [];
+      const latestEntryIndex = reworkHistory.slice().reverse().findIndex(e => !e.resolved);
+      if (latestEntryIndex === -1) return record;
+      
+      const actualIndex = reworkHistory.length - 1 - latestEntryIndex;
+      const latestEntry = reworkHistory[actualIndex];
+      
+      // Mark as resolved and restore previous status
+      const updatedHistory = [...reworkHistory];
+      updatedHistory[actualIndex] = {
+        ...latestEntry,
+        resolved: true,
+        resolvedAt: timestamp,
+        resolvedBy: 'Akshay Bazad',
+      };
+
+      return {
+        ...record,
+        status: latestEntry.previousStatus,
+        reworkRequired: false,
+        reworkHistory: updatedHistory,
+      };
+    });
+
+    const policy = lead.policyRecords.find(r => r.id === policyId);
+    const historyLogEntry: HistoryLogEntry = {
+      id: crypto.randomUUID(),
+      action: 'rework_resolved',
+      triggeredBy: 'Akshay Bazad',
+      triggeredAt: timestamp,
+      comment: `${policy?.kind.toUpperCase()} policy rework resolved`,
+    };
+
+    onLeadUpdate?.(lead.id, {
+      policyRecords: updatedRecords,
+      historyLog: [...(lead.historyLog || []), historyLogEntry],
+    });
+  };
+
+  // Handle policy rework reassign
+  const handlePolicyReworkReassign = (lead: Lead, policyId: string, newReasonId: string, details: string, attachments: ReworkAttachment[]) => {
+    if (!lead.policyRecords) return;
+
+    const timestamp = new Date().toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+    const reworkConfig = reworkConfigs.find(r => r.id === newReasonId);
+    const reasonLabel = reworkConfig?.descriptionEn || 'Unknown';
+
+    const updatedRecords = lead.policyRecords.map(record => {
+      if (record.id !== policyId) return record;
+      
+      const reworkHistory = record.reworkHistory || [];
+      const latestEntryIndex = reworkHistory.slice().reverse().findIndex(e => !e.resolved);
+      
+      let previousStatus = record.status as PolicyStatus;
+      const updatedHistory = [...reworkHistory];
+      
+      // If there's an existing unresolved entry, mark it as resolved (reassigned)
+      if (latestEntryIndex !== -1) {
+        const actualIndex = reworkHistory.length - 1 - latestEntryIndex;
+        const latestEntry = reworkHistory[actualIndex];
+        previousStatus = latestEntry.previousStatus;
+        updatedHistory[actualIndex] = {
+          ...latestEntry,
+          resolved: true,
+          resolvedAt: timestamp,
+          resolvedBy: 'Akshay Bazad (Reassigned)',
+        };
+      }
+
+      // Add new rework entry
+      const newEntry: PolicyReworkEntry = {
+        id: crypto.randomUUID(),
+        reasonId: newReasonId,
+        reasonLabel,
+        details,
+        attachments,
+        savedBy: 'Akshay Bazad',
+        savedAt: timestamp,
+        previousStatus,
+      };
+
+      return {
+        ...record,
+        status: 'rework_required' as PolicyStatus,
+        reworkRequired: true,
+        reworkHistory: [...updatedHistory, newEntry],
+      };
+    });
+
+    const policy = lead.policyRecords.find(r => r.id === policyId);
+    const historyLogEntry: HistoryLogEntry = {
+      id: crypto.randomUUID(),
+      action: 'rework_reassigned',
+      triggeredBy: 'Akshay Bazad',
+      triggeredAt: timestamp,
+      reworkReasonId: newReasonId,
+      reworkReasonLabel: reasonLabel,
+      comment: `${policy?.kind.toUpperCase()} policy rework reassigned: ${details || reasonLabel}`,
     };
 
     onLeadUpdate?.(lead.id, {
@@ -350,9 +488,6 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
   const handleReworkConfirm = (reasonId: string, details: string, attachments: ReworkAttachment[]) => {
     if (!selectedLead || !reasonId) return;
 
-    // Store current status before marking as rework required
-    const previousStatus = selectedLead.saleStatus;
-    
     const reworkConfig = reworkConfigs.find(r => r.id === reasonId);
     const reasonLabel = reworkConfig?.descriptionEn || 'Unknown';
 
@@ -363,6 +498,64 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
       hour: '2-digit',
       minute: '2-digit',
     });
+
+    // Check if this is a policy-level rework
+    if (selectedPolicyId && selectedLead.policyRecords) {
+      // Policy-level rework
+      const policy = selectedLead.policyRecords.find(p => p.id === selectedPolicyId);
+      if (!policy) return;
+
+      const previousStatus = policy.status as PolicyStatus;
+
+      const newPolicyReworkEntry: PolicyReworkEntry = {
+        id: crypto.randomUUID(),
+        reasonId,
+        reasonLabel,
+        details,
+        attachments,
+        savedBy: 'Akshay Bazad',
+        savedAt: timestamp,
+        previousStatus,
+      };
+
+      const updatedRecords = selectedLead.policyRecords.map(record => {
+        if (record.id !== selectedPolicyId) return record;
+        return {
+          ...record,
+          status: 'rework_required' as PolicyStatus,
+          reworkRequired: true,
+          reworkHistory: [...(record.reworkHistory || []), newPolicyReworkEntry],
+        };
+      });
+
+      const historyLogEntry: HistoryLogEntry = {
+        id: crypto.randomUUID(),
+        action: 'rework_created',
+        triggeredBy: 'Akshay Bazad',
+        triggeredAt: timestamp,
+        reworkReasonId: reasonId,
+        reworkReasonLabel: reasonLabel,
+        comment: `${policy.kind.toUpperCase()} policy: ${details || reasonLabel}`,
+        attachments: attachments.map(a => ({
+          id: a.id,
+          name: a.name,
+          type: a.type,
+          url: a.url,
+        })),
+      };
+
+      onLeadUpdate?.(selectedLead.id, {
+        policyRecords: updatedRecords,
+        historyLog: [...(selectedLead.historyLog || []), historyLogEntry],
+      });
+
+      setSelectedLead(null);
+      setSelectedPolicyId(null);
+      return;
+    }
+
+    // Lead-level rework (legacy)
+    const previousStatus = selectedLead.saleStatus;
     
     const newHistoryEntry: ReworkHistoryEntry = {
       id: crypto.randomUUID(),
@@ -412,6 +605,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
     });
 
     setSelectedLead(null);
+    setSelectedPolicyId(null);
   };
 
   const handleResolveRework = (lead: Lead, entryId: string) => {
@@ -817,7 +1011,10 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                               policy={vmiPolicy}
                               stage={stage}
                               isEditable={isVmiEditable}
+                              reworkConfigs={stageReworkConfigs}
                               onStatusChange={(policyId, newStatus) => handlePolicyStatusChange(lead, policyId, newStatus)}
+                              onReworkResolve={(policyId) => handlePolicyReworkResolve(lead, policyId)}
+                              onReworkReassign={(policyId, reasonId, details, attachments) => handlePolicyReworkReassign(lead, policyId, reasonId, details, attachments)}
                             />
                           </td>
                           <td className="px-4 py-3">
@@ -825,7 +1022,10 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                               policy={cmiPolicy}
                               stage={stage}
                               isEditable={isCmiEditable}
+                              reworkConfigs={stageReworkConfigs}
                               onStatusChange={(policyId, newStatus) => handlePolicyStatusChange(lead, policyId, newStatus)}
+                              onReworkResolve={(policyId) => handlePolicyReworkResolve(lead, policyId)}
+                              onReworkReassign={(policyId, reasonId, details, attachments) => handlePolicyReworkReassign(lead, policyId, reasonId, details, attachments)}
                             />
                           </td>
                         </>
