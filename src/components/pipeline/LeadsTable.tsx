@@ -815,6 +815,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                           <td className="px-4 py-3">
                             <PolicyStatusCell
                               policy={vmiPolicy}
+                              stage={stage}
                               isEditable={isVmiEditable}
                               onStatusChange={(policyId, newStatus) => handlePolicyStatusChange(lead, policyId, newStatus)}
                             />
@@ -822,6 +823,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                           <td className="px-4 py-3">
                             <PolicyStatusCell
                               policy={cmiPolicy}
+                              stage={stage}
                               isEditable={isCmiEditable}
                               onStatusChange={(policyId, newStatus) => handlePolicyStatusChange(lead, policyId, newStatus)}
                             />

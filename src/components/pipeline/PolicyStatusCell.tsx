@@ -1,4 +1,4 @@
-import { PolicyRecord, PolicyStatus } from '@/types/pipeline';
+import { PolicyRecord, PolicyStatus, PipelineStage } from '@/types/pipeline';
 import { useLanguageStore } from '@/stores/languageStore';
 import {
   Select,
@@ -7,16 +7,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { cn } from '@/lib/utils';
 
 interface PolicyStatusCellProps {
   policy: PolicyRecord | undefined;
+  stage: PipelineStage;
   isEditable?: boolean;
   onStatusChange?: (policyId: string, newStatus: PolicyStatus) => void;
 }
 
 // Policy status translations
-const policyStatusTranslations: Record<PolicyStatus, { en: string; th: string }> = {
+const policyStatusTranslations: Record<string, { en: string; th: string }> = {
   pending_payment: { en: 'Pending Payment', th: 'รอชำระเงิน' },
   pending_review: { en: 'Pending Review', th: 'รอตรวจเอกสาร' },
   pending_issuance: { en: 'Pending Issuance', th: 'รอออกกรมธรรม์' },
@@ -24,20 +24,50 @@ const policyStatusTranslations: Record<PolicyStatus, { en: string; th: string }>
   policy_shipped: { en: 'Policy Shipped', th: 'กรมธรรม์ถูกจัดส่ง' },
   policy_delivered: { en: 'Policy Delivered', th: 'กรมธรรม์จัดส่งสำเร็จ' },
   policy_cancelled: { en: 'Policy Cancelled', th: 'กรมธรรม์ยกเลิก' },
+  rework_required: { en: 'Rework Required', th: 'งานติดปัญหา' },
 };
 
-// Status options available for each stage context
-const policyStatusOptions: PolicyStatus[] = [
-  'pending_payment',
-  'pending_review',
-  'pending_issuance',
-  'policy_issued',
-  'policy_shipped',
-  'policy_delivered',
-  'policy_cancelled',
-];
+// Stage-specific policy status options (mirrors statusOptionsByStage but for policies)
+// rework_required is included for stages that have rework configs
+const policyStatusOptionsByStage: Record<PipelineStage, PolicyStatus[]> = {
+  all: [
+    'pending_payment',
+    'pending_review',
+    'pending_issuance',
+    'policy_issued',
+    'policy_shipped',
+    'policy_delivered',
+    'policy_cancelled',
+  ],
+  to_convert: [], // No policy statuses in to_convert
+  to_pay: [
+    'pending_payment',
+    'rework_required' as PolicyStatus,
+  ],
+  to_report: [
+    'pending_review',
+    'rework_required' as PolicyStatus,
+  ],
+  to_issue: [
+    'pending_issuance',
+    'rework_required' as PolicyStatus,
+  ],
+  to_deliver: [
+    'policy_issued',
+    'rework_required' as PolicyStatus,
+  ],
+  completed: [
+    'policy_issued',
+    'policy_shipped',
+    'policy_delivered',
+    'rework_required' as PolicyStatus,
+  ],
+  cancelled: [
+    'policy_cancelled',
+  ],
+};
 
-export function PolicyStatusCell({ policy, isEditable = false, onStatusChange }: PolicyStatusCellProps) {
+export function PolicyStatusCell({ policy, stage, isEditable = false, onStatusChange }: PolicyStatusCellProps) {
   const { language } = useLanguageStore();
 
   // No policy - show dash
@@ -47,8 +77,11 @@ export function PolicyStatusCell({ policy, isEditable = false, onStatusChange }:
     );
   }
 
+  // Get status options for the current stage
+  const statusOptions = policyStatusOptionsByStage[stage] || [];
+
   // Editable - show dropdown
-  if (isEditable) {
+  if (isEditable && statusOptions.length > 0) {
     return (
       <Select
         value={policy.status}
@@ -58,9 +91,9 @@ export function PolicyStatusCell({ policy, isEditable = false, onStatusChange }:
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          {policyStatusOptions.map((status) => (
+          {statusOptions.map((status) => (
             <SelectItem key={status} value={status}>
-              {policyStatusTranslations[status][language]}
+              {policyStatusTranslations[status]?.[language] || status}
             </SelectItem>
           ))}
         </SelectContent>
@@ -71,7 +104,7 @@ export function PolicyStatusCell({ policy, isEditable = false, onStatusChange }:
   // Not editable - show greyed out box
   return (
     <div className="w-[160px] h-8 text-xs flex items-center px-3 rounded-md border border-input bg-muted/50 text-muted-foreground cursor-not-allowed">
-      {policyStatusTranslations[policy.status][language]}
+      {policyStatusTranslations[policy.status]?.[language] || policy.status}
     </div>
   );
 }
