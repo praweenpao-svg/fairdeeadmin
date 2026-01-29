@@ -21,7 +21,7 @@ const Index = () => {
   const [leads, setLeads] = useState<Lead[]>(mockLeads);
   const [reworkConfigs, setReworkConfigs] = useState<ReworkConfig[]>(mockReworkConfigs);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
-  const [myCasesOnly, setMyCasesOnly] = useState(true);
+  const [myCasesOnly, setMyCasesOnly] = useState(false);
   
   // Sub-tab for Leads stage (New Leads / COA / Renewals)
   const [leadSubTab, setLeadSubTab] = useState<LeadSubTab>('new_leads');
