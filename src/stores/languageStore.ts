@@ -26,7 +26,7 @@ export const useLanguageStore = create<LanguageState>()(
 export const stageTranslations = {
   all: {
     en: 'All',
-    th: 'All',
+    th: 'ทั้งหมด',
   },
   to_convert: {
     en: 'Leads',
