@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { Lead, PipelineStage, LeadType, ReworkConfig, CreatedByType, ReworkAttachment, ReworkHistoryEntry, HistoryLogEntry } from '@/types/pipeline';
 import { cn } from '@/lib/utils';
+import { useLanguageStore } from '@/stores/languageStore';
 import {
   Select,
   SelectContent,
@@ -171,6 +172,7 @@ function parseDateTime(dateStr: string): Date {
 }
 
 export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsTableProps) {
+  const { language } = useLanguageStore();
   const [reworkDialogOpen, setReworkDialogOpen] = useState(false);
   const [historyLogDialogOpen, setHistoryLogDialogOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
@@ -696,9 +698,9 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem>View Details</DropdownMenuItem>
-                          <DropdownMenuItem>Edit Lead</DropdownMenuItem>
-                          <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
+                          <DropdownMenuItem>
+                            {language === 'th' ? 'รายละเอียด' : 'View Details'}
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </td>
