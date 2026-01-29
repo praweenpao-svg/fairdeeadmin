@@ -516,17 +516,17 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
               <tr className="border-b border-border">
                 <th className="data-table-header w-10 px-4 py-3"></th>
                 <th className="data-table-header px-4 py-3 text-left">ID</th>
-                <th className="data-table-header px-4 py-3 text-left">Agent</th>
-                <th className="data-table-header px-4 py-3 text-left">Created On</th>
-                <th className="data-table-header px-4 py-3 text-left">Updated On</th>
-                <th className="data-table-header px-4 py-3 text-left">Vehicle details</th>
+                <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'ตัวแทน' : 'Agent'}</th>
+                <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'วันที่สร้าง' : 'Created On'}</th>
+                <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'วันที่อัพเดท' : 'Updated On'}</th>
+                <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'รายละเอียดรถ' : 'Vehicle details'}</th>
                 <th className="data-table-header px-4 py-3 text-left">RF</th>
                 <th className="data-table-header px-4 py-3 text-left">SC</th>
                 {showDEColumn && (
                   <th className="data-table-header px-4 py-3 text-left">DE</th>
                 )}
-                <th className="data-table-header px-4 py-3 text-left">Status</th>
-                <th className="data-table-header px-4 py-3 text-left">Owner</th>
+                <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'สถานะ' : 'Status'}</th>
+                <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'เจ้าของ' : 'Owner'}</th>
                 <th className="data-table-header w-10 px-4 py-3"></th>
               </tr>
             </thead>
