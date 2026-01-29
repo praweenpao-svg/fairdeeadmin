@@ -30,6 +30,7 @@ import { ReworkDialog } from './ReworkDialog';
 import { HistoryLogDialog } from './HistoryLogDialog';
 import { InlineReworkActions } from './InlineReworkActions';
 import { ExpandablePolicyRows } from './PolicyRecordRow';
+import { getPoliciesForStage } from './PipelineTabs';
 
 interface LeadsTableProps {
   leads: Lead[];
@@ -666,7 +667,12 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                 const latestReworkEntry = [...lead.reworkHistory].reverse().find(e => !e.resolved);
                 const hasActiveRework = lead.reworkRequired && latestReworkEntry && !latestReworkEntry.resolved;
                 const isExpanded = expandedRows.has(lead.id);
-                const hasPolicyRecords = isPostLeadStage && lead.policyRecords && lead.policyRecords.length > 0;
+                
+                // Get only the policy records relevant to this stage
+                const stagePolicies = isPostLeadStage ? getPoliciesForStage(lead, stage) : [];
+                const hasPolicyRecords = stagePolicies.length > 0;
+                // Show all policies for this lead (for context) but highlight stage-relevant ones
+                const allPolicies = lead.policyRecords || [];
                 
                 return (
                   <React.Fragment key={lead.id}>
@@ -875,7 +881,8 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                         <td colSpan={showDEColumn ? 12 : 11} className="px-4 py-3">
                           <div className="pl-8">
                             <ExpandablePolicyRows
-                              policyRecords={lead.policyRecords!}
+                              policyRecords={allPolicies}
+                              stagePolicies={stagePolicies}
                               isExpanded={true}
                               onToggle={() => {}}
                               onPolicyStatusChange={(policyId, newStatus) => handlePolicyStatusChange(lead, policyId, newStatus)}

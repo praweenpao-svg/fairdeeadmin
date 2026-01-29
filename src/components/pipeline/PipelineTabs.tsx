@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { PipelineStage, Lead } from '@/types/pipeline';
+import { PipelineStage, Lead, PolicyStatus } from '@/types/pipeline';
 import { CURRENT_USER } from '@/data/mockLeads';
 import { useLanguageStore, stageTranslations, StageKey } from '@/stores/languageStore';
 import { 
@@ -65,6 +65,31 @@ const stageConfig = [
   },
 ];
 
+// Map policy statuses to pipeline stages
+const policyStatusToStage: Record<PolicyStatus, PipelineStage> = {
+  pending_payment: 'to_pay',
+  pending_review: 'to_report',
+  pending_issuance: 'to_issue',
+  policy_issued: 'to_deliver',
+  policy_shipped: 'completed',
+  policy_delivered: 'completed',
+  policy_cancelled: 'cancelled',
+};
+
+// Check if a lead has any policy in a specific stage
+function hasAnyPolicyInStage(lead: Lead, stage: PipelineStage): boolean {
+  if (!lead.policyRecords || lead.policyRecords.length === 0) {
+    return false;
+  }
+  return lead.policyRecords.some(policy => policyStatusToStage[policy.status] === stage);
+}
+
+// Get policy records that belong to a specific stage
+export function getPoliciesForStage(lead: Lead, stage: PipelineStage) {
+  if (!lead.policyRecords) return [];
+  return lead.policyRecords.filter(policy => policyStatusToStage[policy.status] === stage);
+}
+
 export function getLeadsForStage(leads: Lead[], stage: PipelineStage): Lead[] {
   switch (stage) {
     case 'all':
@@ -79,40 +104,67 @@ export function getLeadsForStage(leads: Lead[], stage: PipelineStage): Lead[] {
           ['pending', 'docs_missing', 'waiting_for_insurer', 'partially_added', 'completed', 'quotation_shared', 'invalid', 'price_pending', 'revision_pending', 'renewal_rejected', 'price_ready'].includes(lead.saleStatus)
       );
     case 'to_pay':
-      // To Pay: leads with "pending_payment" saleStatus or partial payment
-      return leads.filter(
-        (lead) =>
+      // To Pay: leads with policy records in pending_payment OR legacy logic
+      return leads.filter((lead) => {
+        // Check policy records first (for VMI/CMI leads)
+        if (lead.policyRecords && lead.policyRecords.length > 0) {
+          return hasAnyPolicyInStage(lead, 'to_pay');
+        }
+        // Legacy fallback
+        return (
           ['new_leads', 'coa', 'renewals'].includes(lead.leadType) &&
           (lead.paymentStatus === 'partial' || lead.saleStatus === 'pending_payment')
-      );
+        );
+      });
     case 'to_report':
-      return leads.filter((lead) =>
-        ['pending_review', 'under_review', 'de_in_progress', 'ready_for_de'].includes(
-          lead.saleStatus
-        )
-      );
+      // To Report: leads with policy records in pending_review OR legacy logic
+      return leads.filter((lead) => {
+        if (lead.policyRecords && lead.policyRecords.length > 0) {
+          return hasAnyPolicyInStage(lead, 'to_report');
+        }
+        return ['pending_review', 'under_review', 'de_in_progress', 'ready_for_de'].includes(lead.saleStatus);
+      });
     case 'to_issue':
-      return leads.filter(
-        (lead) =>
-          lead.saleStatus === 'pending_issuance' && !lead.policyAttached
-      );
+      // To Issue: leads with policy records in pending_issuance OR legacy logic
+      return leads.filter((lead) => {
+        if (lead.policyRecords && lead.policyRecords.length > 0) {
+          return hasAnyPolicyInStage(lead, 'to_issue');
+        }
+        return lead.saleStatus === 'pending_issuance' && !lead.policyAttached;
+      });
     case 'to_deliver':
-      return leads.filter(
-        (lead) =>
+      // To Deliver: leads with policy records in policy_issued OR legacy logic
+      return leads.filter((lead) => {
+        if (lead.policyRecords && lead.policyRecords.length > 0) {
+          return hasAnyPolicyInStage(lead, 'to_deliver');
+        }
+        return (
           lead.saleStatus === 'policy_issued' &&
           lead.shippingMethod === 'print_by_fairdee' &&
           !lead.trackingNumber
-      );
+        );
+      });
     case 'completed':
-      return leads.filter(
-        (lead) =>
+      // Completed: leads with policy records in policy_shipped/policy_delivered OR legacy logic
+      return leads.filter((lead) => {
+        if (lead.policyRecords && lead.policyRecords.length > 0) {
+          return hasAnyPolicyInStage(lead, 'completed');
+        }
+        return (
           lead.policyAttached &&
           (lead.shippingMethod === 'e_policy' ||
             lead.shippingMethod === 'print_by_myself' ||
             (lead.shippingMethod === 'print_by_fairdee' && lead.trackingNumber))
-      );
+        );
+      });
     case 'cancelled':
-      return leads.filter((lead) => lead.saleStatus === 'policy_cancelled');
+      // Cancelled: leads with any policy cancelled OR legacy logic
+      return leads.filter((lead) => {
+        if (lead.policyRecords && lead.policyRecords.length > 0) {
+          return hasAnyPolicyInStage(lead, 'cancelled');
+        }
+        return lead.saleStatus === 'policy_cancelled';
+      });
     default:
       return [];
   }
