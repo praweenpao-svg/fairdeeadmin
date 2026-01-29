@@ -384,14 +384,13 @@ const generateLeads = (): Lead[] => {
   }
 
   // TO PAY (8 leads) - with policyType and policyRecords
+  // TO PAY: 6 base records (no splits from here to avoid overflow in other stages)
   const toPayScenarios: Array<{ policyType: PolicyType; vmiStatus: PolicyStatus; cmiStatus?: PolicyStatus }> = [
     { policyType: 'vmi_only', vmiStatus: 'pending_payment' },
     { policyType: 'vmi_only', vmiStatus: 'pending_payment' },
     { policyType: 'vmi_cmi', vmiStatus: 'pending_payment', cmiStatus: 'pending_payment' }, // Both same stage
     { policyType: 'vmi_cmi', vmiStatus: 'pending_payment', cmiStatus: 'pending_payment' }, // Both same stage
-    { policyType: 'vmi_cmi', vmiStatus: 'pending_payment', cmiStatus: 'pending_review' }, // Split: To Pay + To Report
-    { policyType: 'vmi_cmi', vmiStatus: 'pending_payment', cmiStatus: 'pending_issuance' }, // Split: To Pay + To Issue
-    { policyType: 'vmi_cmi', vmiStatus: 'pending_payment', cmiStatus: 'policy_issued' }, // Split: To Pay + To Deliver
+    { policyType: 'vmi_cmi', vmiStatus: 'pending_payment', cmiStatus: 'pending_review' }, // Split: To Pay + To Report (1 split only)
     { policyType: 'vmi_only', vmiStatus: 'pending_payment' },
   ];
 
@@ -439,15 +438,13 @@ const generateLeads = (): Lead[] => {
     id++;
   }
 
-  // TO REPORT (8 leads) - with policyType and policyRecords
+  // TO REPORT: 6 base + 1 from To Pay split = 7 max
   const toReportScenarios: Array<{ policyType: PolicyType; vmiStatus: PolicyStatus; cmiStatus?: PolicyStatus }> = [
     { policyType: 'vmi_only', vmiStatus: 'pending_review' },
     { policyType: 'vmi_only', vmiStatus: 'pending_review' },
     { policyType: 'vmi_cmi', vmiStatus: 'pending_review', cmiStatus: 'pending_review' }, // Both same stage
     { policyType: 'vmi_cmi', vmiStatus: 'pending_review', cmiStatus: 'pending_review' }, // Both same stage
-    { policyType: 'vmi_cmi', vmiStatus: 'pending_review', cmiStatus: 'pending_issuance' }, // Split: To Report + To Issue
-    { policyType: 'vmi_cmi', vmiStatus: 'pending_review', cmiStatus: 'policy_issued' }, // Split: To Report + To Deliver
-    { policyType: 'vmi_cmi', vmiStatus: 'pending_review', cmiStatus: 'policy_delivered' }, // Split: To Report + Completed
+    { policyType: 'vmi_cmi', vmiStatus: 'pending_review', cmiStatus: 'pending_issuance' }, // Split: To Report + To Issue (1 split only)
     { policyType: 'vmi_only', vmiStatus: 'pending_review' },
   ];
 
@@ -496,15 +493,13 @@ const generateLeads = (): Lead[] => {
     id++;
   }
 
-  // TO ISSUE (8 leads) - with policyType and policyRecords
+  // TO ISSUE: 6 base + 1 from To Report split = 7 max
   const toIssueScenarios: Array<{ policyType: PolicyType; vmiStatus: PolicyStatus; cmiStatus?: PolicyStatus }> = [
     { policyType: 'vmi_only', vmiStatus: 'pending_issuance' },
     { policyType: 'vmi_only', vmiStatus: 'pending_issuance' },
     { policyType: 'vmi_cmi', vmiStatus: 'pending_issuance', cmiStatus: 'pending_issuance' }, // Both same stage
     { policyType: 'vmi_cmi', vmiStatus: 'pending_issuance', cmiStatus: 'pending_issuance' }, // Both same stage
-    { policyType: 'vmi_cmi', vmiStatus: 'pending_issuance', cmiStatus: 'policy_issued' }, // Split: To Issue + To Deliver
-    { policyType: 'vmi_cmi', vmiStatus: 'pending_issuance', cmiStatus: 'policy_delivered' }, // Split: To Issue + Completed
-    { policyType: 'vmi_cmi', vmiStatus: 'pending_issuance', cmiStatus: 'pending_review' }, // Split: To Issue + To Report
+    { policyType: 'vmi_cmi', vmiStatus: 'pending_issuance', cmiStatus: 'policy_issued' }, // Split: To Issue + To Deliver (1 split only)
     { policyType: 'vmi_only', vmiStatus: 'pending_issuance' },
   ];
 
@@ -553,16 +548,14 @@ const generateLeads = (): Lead[] => {
     id++;
   }
 
-  // TO DELIVER (8 leads) - with policyType and policyRecords
+  // TO DELIVER: 6 base + 1 from To Issue split = 7 max
   const shippingMethods: Array<'print_by_fairdee' | 'e_policy' | 'print_by_myself'> = ['print_by_fairdee', 'e_policy', 'print_by_myself'];
   const toDeliverScenarios: Array<{ policyType: PolicyType; vmiStatus: PolicyStatus; cmiStatus?: PolicyStatus }> = [
     { policyType: 'vmi_only', vmiStatus: 'policy_issued' },
     { policyType: 'vmi_only', vmiStatus: 'policy_issued' },
     { policyType: 'vmi_cmi', vmiStatus: 'policy_issued', cmiStatus: 'policy_issued' }, // Both same stage
     { policyType: 'vmi_cmi', vmiStatus: 'policy_issued', cmiStatus: 'policy_issued' }, // Both same stage
-    { policyType: 'vmi_cmi', vmiStatus: 'policy_issued', cmiStatus: 'policy_delivered' }, // Split: To Deliver + Completed
-    { policyType: 'vmi_cmi', vmiStatus: 'policy_issued', cmiStatus: 'pending_issuance' }, // Split: To Deliver + To Issue
-    { policyType: 'vmi_cmi', vmiStatus: 'policy_issued', cmiStatus: 'pending_review' }, // Split: To Deliver + To Report
+    { policyType: 'vmi_cmi', vmiStatus: 'policy_issued', cmiStatus: 'policy_delivered' }, // Split: To Deliver + Completed (1 split only)
     { policyType: 'vmi_only', vmiStatus: 'policy_issued' },
   ];
 
@@ -612,14 +605,12 @@ const generateLeads = (): Lead[] => {
     id++;
   }
 
-  // COMPLETED (8 leads) - with policyType and policyRecords
+  // COMPLETED: 6 base + 1 from To Deliver split = 7 max
   const completedScenarios: Array<{ policyType: PolicyType; vmiStatus: PolicyStatus; cmiStatus?: PolicyStatus }> = [
     { policyType: 'vmi_only', vmiStatus: 'policy_delivered' },
     { policyType: 'vmi_only', vmiStatus: 'policy_shipped' },
     { policyType: 'vmi_cmi', vmiStatus: 'policy_delivered', cmiStatus: 'policy_delivered' }, // Both same stage
     { policyType: 'vmi_cmi', vmiStatus: 'policy_shipped', cmiStatus: 'policy_shipped' }, // Both same stage
-    { policyType: 'vmi_cmi', vmiStatus: 'policy_delivered', cmiStatus: 'policy_shipped' }, // Both completed (diff status)
-    { policyType: 'vmi_cmi', vmiStatus: 'policy_delivered', cmiStatus: 'policy_issued' }, // Split: Completed + To Deliver
     { policyType: 'vmi_only', vmiStatus: 'policy_delivered' },
     { policyType: 'vmi_only', vmiStatus: 'policy_shipped' },
   ];
