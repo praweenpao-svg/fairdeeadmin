@@ -9,7 +9,7 @@ import { DateRangeFilter } from '@/components/pipeline/DateRangeFilter';
 import { AllFiltersPanel, FilterState, defaultFilterState } from '@/components/pipeline/AllFiltersPanel';
 import { OtherStagesFilterPanel, OtherStagesFilterState, defaultOtherStagesFilterState } from '@/components/pipeline/OtherStagesFilterPanel';
 import { FilterChips } from '@/components/pipeline/FilterChips';
-import { NotificationBell } from '@/components/notifications/NotificationBell';
+import { LeadSubTabs, LeadSubTab } from '@/components/pipeline/LeadSubTabs';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
@@ -22,6 +22,9 @@ const Index = () => {
   const [reworkConfigs, setReworkConfigs] = useState<ReworkConfig[]>(mockReworkConfigs);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [myCasesOnly, setMyCasesOnly] = useState(true);
+  
+  // Sub-tab for Leads stage (New Leads / COA / Renewals)
+  const [leadSubTab, setLeadSubTab] = useState<LeadSubTab>('all');
   
   // Filters for To Pay stage and All/To Convert (shared filter state + UI)
   const [toPayFilters, setToPayFilters] = useState<FilterState>(defaultFilterState);
@@ -79,7 +82,12 @@ const Index = () => {
   };
 
   // Get stage leads first (by pipeline stage logic)
-  const stageLeads = getLeadsForStage(leads, activeStage);
+  let stageLeads = getLeadsForStage(leads, activeStage);
+  
+  // Apply sub-tab filter for Leads stage
+  if (activeStage === 'to_convert' && leadSubTab !== 'all') {
+    stageLeads = stageLeads.filter(lead => lead.leadType === leadSubTab);
+  }
   
   // Apply My Cases filter
   const casesFilteredLeads = myCasesOnly
@@ -113,10 +121,26 @@ const Index = () => {
         {/* Pipeline Tabs */}
         <PipelineTabs
           activeStage={activeStage}
-          onStageChange={setActiveStage}
+          onStageChange={(stage) => {
+            setActiveStage(stage);
+            // Reset sub-tab when switching away from Leads stage
+            if (stage !== 'to_convert') {
+              setLeadSubTab('all');
+            }
+          }}
           leads={leads}
           myCasesOnly={myCasesOnly}
         />
+        
+        {/* Sub-tabs for Leads stage */}
+        {activeStage === 'to_convert' && (
+          <div className="px-6 py-3 bg-card border-b border-border">
+            <LeadSubTabs
+              activeSubTab={leadSubTab}
+              onSubTabChange={setLeadSubTab}
+            />
+          </div>
+        )}
       </header>
 
       {/* Content */}
