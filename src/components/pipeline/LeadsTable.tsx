@@ -4,6 +4,7 @@ import {
   MoreVertical,
   History,
   ChevronRight,
+  Eye,
 } from 'lucide-react';
 import { Lead, PipelineStage, LeadType, ReworkConfig, CreatedByType, ReworkAttachment, ReworkHistoryEntry, HistoryLogEntry } from '@/types/pipeline';
 import { cn } from '@/lib/utils';
@@ -770,6 +771,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem>
+                            <Eye className="w-4 h-4 mr-2" />
                             {language === 'th' ? 'ดูรายละเอียด' : 'View Details'}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleOpenHistoryLog(lead)}>
