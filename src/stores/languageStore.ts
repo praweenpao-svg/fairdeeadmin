@@ -50,7 +50,7 @@ export const stageTranslations = {
   },
   completed: {
     en: 'Completed',
-    th: 'กรมออก/จัดส่งแล้ว',
+    th: 'กรมออกแล้ว/จัดส่งแล้ว',
   },
   cancelled: {
     en: 'Cancellation',
