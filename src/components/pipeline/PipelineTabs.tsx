@@ -1,6 +1,7 @@
 import { cn } from '@/lib/utils';
 import { PipelineStage, Lead } from '@/types/pipeline';
 import { CURRENT_USER } from '@/data/mockLeads';
+import { useLanguageStore, stageTranslations, StageKey } from '@/stores/languageStore';
 import { 
   CreditCard, 
   FileText, 
@@ -23,49 +24,41 @@ interface PipelineTabsProps {
 const stageConfig = [
   { 
     id: 'all' as const, 
-    label: 'All', 
     icon: LayoutGrid,
     description: 'All leads'
   },
   { 
     id: 'to_convert' as const, 
-    label: 'To Convert', 
     icon: RefreshCw,
     description: 'Awaiting conversion'
   },
   { 
     id: 'to_pay' as const, 
-    label: 'To Pay', 
     icon: CreditCard,
     description: 'Awaiting payment'
   },
   { 
     id: 'to_report' as const, 
-    label: 'To Report', 
     icon: FileText,
     description: 'Pending review'
   },
   { 
     id: 'to_issue' as const, 
-    label: 'To Issue', 
     icon: FileCheck,
     description: 'Ready for issuance'
   },
   { 
     id: 'to_deliver' as const, 
-    label: 'To Deliver', 
     icon: Truck,
     description: 'Awaiting delivery'
   },
   { 
     id: 'completed' as const, 
-    label: 'Completed', 
     icon: CheckCircle2,
     description: 'Successfully completed'
   },
   { 
     id: 'cancelled' as const, 
-    label: 'Cancelled', 
     icon: XCircle,
     description: 'Policy cancelled'
   },
@@ -162,6 +155,8 @@ export function PipelineTabs({
   leads,
   myCasesOnly,
 }: PipelineTabsProps) {
+  const { language } = useLanguageStore();
+
   return (
     <div className="border-b border-border bg-card px-4">
       <div className="flex items-center gap-1">
@@ -171,6 +166,7 @@ export function PipelineTabs({
             : getLeadsForStage(leads, stage.id).length;
           const isActive = activeStage === stage.id;
           const Icon = stage.icon;
+          const label = stageTranslations[stage.id as StageKey][language];
 
           return (
             <button
@@ -182,7 +178,7 @@ export function PipelineTabs({
               )}
             >
               <Icon className="w-4 h-4" />
-              <span>{stage.label}</span>
+              <span>{label}</span>
               <span
                 className={cn(
                   'inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-xs font-medium',
