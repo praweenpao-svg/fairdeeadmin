@@ -29,7 +29,7 @@ import { mockStaffMembers } from '@/data/mockStaff';
 import { ReworkDialog } from './ReworkDialog';
 import { HistoryLogDialog } from './HistoryLogDialog';
 import { InlineReworkActions } from './InlineReworkActions';
-import { ExpandablePolicyRows } from './PolicyRecordRow';
+import { PolicyRecordRow } from './PolicyRecordRow';
 import { getPoliciesForStage } from './PipelineTabs';
 
 interface LeadsTableProps {
@@ -881,14 +881,26 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                     {hasPolicyRecords && isExpanded && (
                       <tr key={`${lead.id}-policies`} className="bg-muted/20">
                         <td colSpan={showDEColumn ? 12 : 11} className="px-4 py-3">
-                          <div className="pl-8">
-                            <ExpandablePolicyRows
-                              policyRecords={allPolicies}
-                              stagePolicies={stagePolicies}
-                              isExpanded={true}
-                              onToggle={() => {}}
-                              onPolicyStatusChange={(policyId, newStatus) => handlePolicyStatusChange(lead, policyId, newStatus)}
-                            />
+                          <div className="pl-8 space-y-1">
+                            {allPolicies
+                              .sort((a, b) => {
+                                // VMI always comes first, CMI second
+                                if (a.kind === 'vmi' && b.kind === 'cmi') return -1;
+                                if (a.kind === 'cmi' && b.kind === 'vmi') return 1;
+                                return 0;
+                              })
+                              .map((policy) => {
+                                const isRelevant = stagePolicies.some(p => p.id === policy.id);
+                                return (
+                                  <PolicyRecordRow 
+                                    key={policy.id} 
+                                    policy={policy}
+                                    isStageRelevant={isRelevant}
+                                    isEditable={isRelevant}
+                                    onStatusChange={(policyId, newStatus) => handlePolicyStatusChange(lead, policyId, newStatus)}
+                                  />
+                                );
+                              })}
                           </div>
                         </td>
                       </tr>
