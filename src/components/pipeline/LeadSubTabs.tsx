@@ -10,9 +10,9 @@ interface LeadSubTabsProps {
 }
 
 const subTabTranslations = {
-  new_leads: { en: 'New Leads', th: 'ลูกค้าใหม่' },
-  coa: { en: 'COA', th: 'COA' },
-  renewals: { en: 'Renewals', th: 'ต่ออายุ' },
+  new_leads: { en: 'New Leads', th: 'งานใหม่' },
+  coa: { en: 'COA', th: 'งานโอนโค้ด' },
+  renewals: { en: 'Renewals', th: 'งานต่ออายุ' },
 } as const;
 
 const subTabs: LeadSubTab[] = ['new_leads', 'coa', 'renewals'];
