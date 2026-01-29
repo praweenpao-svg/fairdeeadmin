@@ -131,14 +131,6 @@ const Index = () => {
       <div className="p-6">
         {/* Filters Row */}
         <div className="flex flex-wrap items-center gap-3 mb-6">
-          {/* Lead Sub-tabs for Leads stage */}
-          {activeStage === 'to_convert' && (
-            <LeadSubTabs
-              activeSubTab={leadSubTab}
-              onSubTabChange={setLeadSubTab}
-            />
-          )}
-          
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
@@ -190,6 +182,16 @@ const Index = () => {
               onRemoveDateRange={handleRemoveDateRange}
               onRemoveFilter={handleRemoveToPayFilter}
             />
+          )}
+          
+          {/* Lead Sub-tabs for Leads stage - right aligned */}
+          {activeStage === 'to_convert' && (
+            <div className="ml-auto">
+              <LeadSubTabs
+                activeSubTab={leadSubTab}
+                onSubTabChange={setLeadSubTab}
+              />
+            </div>
           )}
         </div>
 
