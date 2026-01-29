@@ -30,8 +30,8 @@ const policyStatusTranslations: Record<PolicyStatus, { en: string; th: string }>
 
 // Policy kind translations
 const policyKindLabels: Record<PolicyKind, { en: string; th: string }> = {
-  vmi: { en: 'VMI', th: 'ภาคสมัครใจ' },
-  cmi: { en: 'CMI', th: 'ภาคบังคับ' },
+  vmi: { en: 'VMI Policy', th: 'กรมธรรม์ภาคสมัครใจ' },
+  cmi: { en: 'CMI Policy', th: 'กรมธรรม์ภาคบังคับ' },
 };
 
 // Status options available for each stage context
