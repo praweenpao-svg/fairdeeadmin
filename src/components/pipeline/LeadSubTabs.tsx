@@ -2,7 +2,7 @@ import { cn } from '@/lib/utils';
 import { LeadType } from '@/types/pipeline';
 import { useLanguageStore } from '@/stores/languageStore';
 
-export type LeadSubTab = 'all' | LeadType;
+export type LeadSubTab = LeadType;
 
 interface LeadSubTabsProps {
   activeSubTab: LeadSubTab;
@@ -10,13 +10,12 @@ interface LeadSubTabsProps {
 }
 
 const subTabTranslations = {
-  all: { en: 'All', th: 'ทั้งหมด' },
   new_leads: { en: 'New Leads', th: 'ลูกค้าใหม่' },
   coa: { en: 'COA', th: 'COA' },
   renewals: { en: 'Renewals', th: 'ต่ออายุ' },
 } as const;
 
-const subTabs: LeadSubTab[] = ['all', 'new_leads', 'coa', 'renewals'];
+const subTabs: LeadSubTab[] = ['new_leads', 'coa', 'renewals'];
 
 export function LeadSubTabs({ activeSubTab, onSubTabChange }: LeadSubTabsProps) {
   const { language } = useLanguageStore();
