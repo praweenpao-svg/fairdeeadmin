@@ -24,7 +24,7 @@ const Index = () => {
   const [myCasesOnly, setMyCasesOnly] = useState(true);
   
   // Sub-tab for Leads stage (New Leads / COA / Renewals)
-  const [leadSubTab, setLeadSubTab] = useState<LeadSubTab>('all');
+  const [leadSubTab, setLeadSubTab] = useState<LeadSubTab>('new_leads');
   
   // Filters for To Pay stage and All/To Convert (shared filter state + UI)
   const [toPayFilters, setToPayFilters] = useState<FilterState>(defaultFilterState);
@@ -85,7 +85,7 @@ const Index = () => {
   let stageLeads = getLeadsForStage(leads, activeStage);
   
   // Apply sub-tab filter for Leads stage
-  if (activeStage === 'to_convert' && leadSubTab !== 'all') {
+  if (activeStage === 'to_convert') {
     stageLeads = stageLeads.filter(lead => lead.leadType === leadSubTab);
   }
   
@@ -121,32 +121,24 @@ const Index = () => {
         {/* Pipeline Tabs */}
         <PipelineTabs
           activeStage={activeStage}
-          onStageChange={(stage) => {
-            setActiveStage(stage);
-            // Reset sub-tab when switching away from Leads stage
-            if (stage !== 'to_convert') {
-              setLeadSubTab('all');
-            }
-          }}
+          onStageChange={setActiveStage}
           leads={leads}
           myCasesOnly={myCasesOnly}
         />
-        
-        {/* Sub-tabs for Leads stage */}
-        {activeStage === 'to_convert' && (
-          <div className="px-6 py-3 bg-card border-b border-border">
-            <LeadSubTabs
-              activeSubTab={leadSubTab}
-              onSubTabChange={setLeadSubTab}
-            />
-          </div>
-        )}
       </header>
 
       {/* Content */}
       <div className="p-6">
         {/* Filters Row */}
         <div className="flex flex-wrap items-center gap-3 mb-6">
+          {/* Lead Sub-tabs for Leads stage */}
+          {activeStage === 'to_convert' && (
+            <LeadSubTabs
+              activeSubTab={leadSubTab}
+              onSubTabChange={setLeadSubTab}
+            />
+          )}
+          
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
