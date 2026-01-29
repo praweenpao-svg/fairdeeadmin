@@ -21,7 +21,7 @@ interface PolicyStatusCellProps {
 
 // Policy status translations
 const policyStatusTranslations: Record<string, { en: string; th: string }> = {
-  pending_payment: { en: 'Pending Payment', th: 'รอชำระเงิน' },
+  pending_payment: { en: 'Pending', th: 'รอดำเนินการ' },
   pending_review: { en: 'Pending Review', th: 'รอตรวจเอกสาร' },
   pending_issuance: { en: 'Pending Issuance', th: 'รอออกกรมธรรม์' },
   policy_issued: { en: 'Policy Uploaded', th: 'กรมธรรม์ออกแล้ว' },
