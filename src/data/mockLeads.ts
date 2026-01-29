@@ -332,24 +332,19 @@ const generateLeads = (): Lead[] => {
     return `${String(date.getDate()).padStart(2, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}-${date.getFullYear()} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
   };
 
-  // TO CONVERT (10 leads) - unconverted leads with unpaid + conversion statuses
-  // Statuses for new_leads
-  const newLeadsStatuses = ['pending', 'docs_missing', 'waiting_for_insurer', 'partially_added', 'completed', 'quotation_shared'];
-  // Statuses for COA (no 'partially_added')
-  const coaStatuses = ['pending', 'docs_missing', 'waiting_for_insurer', 'completed', 'quotation_shared'];
-  // Statuses for renewals
-  const renewalStatuses = ['price_pending', 'revision_pending', 'renewal_rejected', 'price_ready'];
+  // TO CONVERT (8 leads) - unconverted leads with unpaid + conversion statuses
+  const newLeadsStatuses = ['pending', 'docs_missing', 'waiting_for_insurer', 'quotation_shared'];
+  const coaStatuses = ['pending', 'waiting_for_insurer', 'quotation_shared'];
+  const renewalStatuses = ['price_pending', 'price_ready'];
 
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 8; i++) {
     const agent = agents[i % agents.length];
     const hasSC = i % 3 !== 0;
     const createdOn = `${String(15 - i).padStart(2, '0')}-01-2026`;
     const createdOnFull = `${createdOn} 09:00`;
     
-    // Determine lead type: COA every 3rd, Renewals every 5th, otherwise New Leads
-    const leadType = i % 3 === 0 ? 'coa' : i % 5 === 0 ? 'renewals' : 'new_leads';
+    const leadType = i % 4 === 0 ? 'coa' : i % 5 === 0 ? 'renewals' : 'new_leads';
     
-    // Use appropriate statuses based on lead type
     let saleStatus: Lead['saleStatus'];
     if (leadType === 'renewals') {
       saleStatus = renewalStatuses[i % renewalStatuses.length] as Lead['saleStatus'];
@@ -388,136 +383,91 @@ const generateLeads = (): Lead[] => {
     id++;
   }
 
-  // TO PAY (15 leads) - with policyType and policyRecords (some with split statuses)
-  for (let i = 0; i < 15; i++) {
+  // TO PAY (8 leads) - with policyType and policyRecords
+  const toPayScenarios: Array<{ policyType: PolicyType; vmiStatus: PolicyStatus; cmiStatus?: PolicyStatus }> = [
+    { policyType: 'vmi_only', vmiStatus: 'pending_payment' },
+    { policyType: 'vmi_only', vmiStatus: 'pending_payment' },
+    { policyType: 'vmi_cmi', vmiStatus: 'pending_payment', cmiStatus: 'pending_payment' }, // Both same stage
+    { policyType: 'vmi_cmi', vmiStatus: 'pending_payment', cmiStatus: 'pending_payment' }, // Both same stage
+    { policyType: 'vmi_cmi', vmiStatus: 'pending_payment', cmiStatus: 'pending_review' }, // Split: To Pay + To Report
+    { policyType: 'vmi_cmi', vmiStatus: 'pending_payment', cmiStatus: 'pending_issuance' }, // Split: To Pay + To Issue
+    { policyType: 'vmi_cmi', vmiStatus: 'pending_payment', cmiStatus: 'policy_issued' }, // Split: To Pay + To Deliver
+    { policyType: 'vmi_only', vmiStatus: 'pending_payment' },
+  ];
+
+  for (let i = 0; i < toPayScenarios.length; i++) {
+    const scenario = toPayScenarios[i];
     const agent = agents[i % agents.length];
-    const hasRework = i >= 13;
-    const hasSC = i % 3 !== 0;
-    const createdOn = `${String(7 - Math.floor(i / 3)).padStart(2, '0')}-01-2026`;
+    const createdOn = `${String(7 - Math.floor(i / 2)).padStart(2, '0')}-01-2026`;
     const createdOnFull = `${createdOn} 09:00`;
     
-    // Alternate between vmi_only and vmi_cmi with varying statuses
-    const policyType: PolicyType = i % 3 === 0 ? 'vmi_cmi' : 'vmi_only';
-    let policyRecords: PolicyRecord[];
-    
-    if (policyType === 'vmi_only') {
-      policyRecords = [{ id: `pol-${id}-vmi`, kind: 'vmi', status: 'pending_payment', policyAttached: false }];
-    } else {
-      // For vmi_cmi, create split statuses so sale appears in multiple tabs
-      if (i === 0) {
-        // VMI pending payment, CMI already in review (shows in To Pay + To Report)
-        policyRecords = [
-          { id: `pol-${id}-vmi`, kind: 'vmi', status: 'pending_payment', policyAttached: false },
-          { id: `pol-${id}-cmi`, kind: 'cmi', status: 'pending_review', policyAttached: false },
+    const policyRecords: PolicyRecord[] = scenario.policyType === 'vmi_only'
+      ? [{ id: `pol-${id}-vmi`, kind: 'vmi', status: scenario.vmiStatus, policyAttached: false }]
+      : [
+          { id: `pol-${id}-vmi`, kind: 'vmi', status: scenario.vmiStatus, policyAttached: false },
+          { id: `pol-${id}-cmi`, kind: 'cmi', status: scenario.cmiStatus!, policyAttached: scenario.cmiStatus === 'policy_issued' || scenario.cmiStatus === 'policy_delivered' },
         ];
-      } else if (i === 3) {
-        // VMI pending payment, CMI pending issuance (shows in To Pay + To Issue)
-        policyRecords = [
-          { id: `pol-${id}-vmi`, kind: 'vmi', status: 'pending_payment', policyAttached: false },
-          { id: `pol-${id}-cmi`, kind: 'cmi', status: 'pending_issuance', policyAttached: false },
-        ];
-      } else if (i === 6) {
-        // VMI pending payment, CMI already issued (shows in To Pay + To Deliver)
-        policyRecords = [
-          { id: `pol-${id}-vmi`, kind: 'vmi', status: 'pending_payment', policyAttached: false },
-          { id: `pol-${id}-cmi`, kind: 'cmi', status: 'policy_issued', policyAttached: true },
-        ];
-      } else if (i === 9) {
-        // VMI pending payment, CMI delivered (shows in To Pay + Completed)
-        policyRecords = [
-          { id: `pol-${id}-vmi`, kind: 'vmi', status: 'pending_payment', policyAttached: false },
-          { id: `pol-${id}-cmi`, kind: 'cmi', status: 'policy_delivered', policyAttached: true },
-        ];
-      } else {
-        // Both pending payment
-        policyRecords = [
-          { id: `pol-${id}-vmi`, kind: 'vmi', status: 'pending_payment', policyAttached: false },
-          { id: `pol-${id}-cmi`, kind: 'cmi', status: 'pending_payment', policyAttached: false },
-        ];
-      }
-    }
 
     const leadData: Partial<Lead> = {
       id: String(id),
       leadNumber: `#${10154 - i}`,
-      leadType: i % 3 === 0 ? 'coa' : i % 5 === 0 ? 'renewals' : 'new_leads',
+      leadType: i % 3 === 0 ? 'coa' : 'new_leads',
       paymentType: i % 2 === 0 ? 'full' : 'installment',
       agentId: agent.id,
       agentName: agent.name,
       createdOn: createdOnFull,
       updatedOn: generateUpdatedOn(createdOn, i % 8),
       vehicleDetails: vehiclePlates[i % vehiclePlates.length],
-      rfStatus: i < 2 ? 'pending' : 'transferred',
-      scStatus: hasSC ? 'claimed' : 'pending',
-      // To Pay: pending_payment status
+      rfStatus: 'transferred',
+      scStatus: 'claimed',
       saleStatus: 'pending_payment',
-      paymentStatus: i % 3 === 0 ? 'paid' : i % 3 === 1 ? 'partial' : 'unpaid',
+      paymentStatus: i % 3 === 0 ? 'paid' : 'unpaid',
       policyAttached: false,
-      reworkRequired: hasRework,
-      reworkReasonId: hasRework ? String((i % 4) + 1) : undefined,
-      assignedTo: hasRework ? (hasSC ? scStaff[i % scStaff.length] : rfStaff[i % rfStaff.length]) : undefined,
+      reworkRequired: false,
       createdBy: i % 2 === 0 ? 'agent' : 'admin',
       rfAssignee: rfStaff[i % rfStaff.length],
-      scAssignee: hasSC ? scStaff[i % scStaff.length] : undefined,
-      policyType,
+      scAssignee: scStaff[i % scStaff.length],
+      policyType: scenario.policyType,
       policyRecords,
     };
 
     leads.push({
       ...leadData,
-      historyLog: generateHistoryLog(leadData, hasRework, createdOnFull),
-      reworkHistory: hasRework ? [{ id: `rh-pay-${i}`, reasonId: String((i % 4) + 1), reasonLabel: 'Missing Documents', details: 'Need info', attachments: [], savedBy: 'System', savedAt: 'Jan 5, 2026, 10:00 AM', previousStatus: 'pending' }] : [],
+      historyLog: generateHistoryLog(leadData, false, createdOnFull),
+      reworkHistory: [],
     } as Lead);
     id++;
   }
 
-  // TO REPORT (15 leads) - with policyType and policyRecords
-  for (let i = 0; i < 15; i++) {
+  // TO REPORT (8 leads) - with policyType and policyRecords
+  const toReportScenarios: Array<{ policyType: PolicyType; vmiStatus: PolicyStatus; cmiStatus?: PolicyStatus }> = [
+    { policyType: 'vmi_only', vmiStatus: 'pending_review' },
+    { policyType: 'vmi_only', vmiStatus: 'pending_review' },
+    { policyType: 'vmi_cmi', vmiStatus: 'pending_review', cmiStatus: 'pending_review' }, // Both same stage
+    { policyType: 'vmi_cmi', vmiStatus: 'pending_review', cmiStatus: 'pending_review' }, // Both same stage
+    { policyType: 'vmi_cmi', vmiStatus: 'pending_review', cmiStatus: 'pending_issuance' }, // Split: To Report + To Issue
+    { policyType: 'vmi_cmi', vmiStatus: 'pending_review', cmiStatus: 'policy_issued' }, // Split: To Report + To Deliver
+    { policyType: 'vmi_cmi', vmiStatus: 'pending_review', cmiStatus: 'policy_delivered' }, // Split: To Report + Completed
+    { policyType: 'vmi_only', vmiStatus: 'pending_review' },
+  ];
+
+  for (let i = 0; i < toReportScenarios.length; i++) {
+    const scenario = toReportScenarios[i];
     const agent = agents[i % agents.length];
-    const hasRework = i >= 13;
-    const hasSC = i % 4 !== 0;
     const createdOn = `${String(23 - i).padStart(2, '0')}-09-2025`;
     const createdOnFull = `${createdOn} 10:00`;
-
-    // Alternate between vmi_only and vmi_cmi with varying statuses
-    const policyType: PolicyType = i % 4 === 0 ? 'vmi_cmi' : 'vmi_only';
-    let policyRecords: PolicyRecord[];
     
-    if (policyType === 'vmi_only') {
-      policyRecords = [{ id: `pol-${id}-vmi`, kind: 'vmi', status: 'pending_review', policyAttached: false }];
-    } else {
-      // For vmi_cmi, create split statuses
-      if (i === 0) {
-        // VMI in review, CMI pending issuance (shows in To Report + To Issue)
-        policyRecords = [
-          { id: `pol-${id}-vmi`, kind: 'vmi', status: 'pending_review', policyAttached: false },
-          { id: `pol-${id}-cmi`, kind: 'cmi', status: 'pending_issuance', policyAttached: false },
+    const policyRecords: PolicyRecord[] = scenario.policyType === 'vmi_only'
+      ? [{ id: `pol-${id}-vmi`, kind: 'vmi', status: scenario.vmiStatus, policyAttached: false }]
+      : [
+          { id: `pol-${id}-vmi`, kind: 'vmi', status: scenario.vmiStatus, policyAttached: false },
+          { id: `pol-${id}-cmi`, kind: 'cmi', status: scenario.cmiStatus!, policyAttached: scenario.cmiStatus === 'policy_issued' || scenario.cmiStatus === 'policy_delivered' },
         ];
-      } else if (i === 4) {
-        // VMI in review, CMI already issued (shows in To Report + To Deliver)
-        policyRecords = [
-          { id: `pol-${id}-vmi`, kind: 'vmi', status: 'pending_review', policyAttached: false },
-          { id: `pol-${id}-cmi`, kind: 'cmi', status: 'policy_issued', policyAttached: true },
-        ];
-      } else if (i === 8) {
-        // VMI in review, CMI delivered (shows in To Report + Completed)
-        policyRecords = [
-          { id: `pol-${id}-vmi`, kind: 'vmi', status: 'pending_review', policyAttached: false },
-          { id: `pol-${id}-cmi`, kind: 'cmi', status: 'policy_delivered', policyAttached: true },
-        ];
-      } else {
-        // Both pending review
-        policyRecords = [
-          { id: `pol-${id}-vmi`, kind: 'vmi', status: 'pending_review', policyAttached: false },
-          { id: `pol-${id}-cmi`, kind: 'cmi', status: 'pending_review', policyAttached: false },
-        ];
-      }
-    }
 
     const leadData: Partial<Lead> = {
       id: String(id),
       leadNumber: `#${10143 - i}`,
-      leadType: i % 3 === 0 ? 'coa' : i % 5 === 0 ? 'renewals' : 'new_leads',
+      leadType: i % 3 === 0 ? 'coa' : 'new_leads',
       paymentType: i % 2 === 0 ? 'full' : 'installment',
       agentId: agent.id,
       agentName: agent.name,
@@ -529,76 +479,52 @@ const generateLeads = (): Lead[] => {
       saleStatus: 'pending_review',
       paymentStatus: 'paid',
       policyAttached: false,
-      reworkRequired: hasRework,
-      reworkReasonId: hasRework ? String((i % 4) + 1) : undefined,
-      assignedTo: hasRework ? scStaff[i % scStaff.length] : undefined,
+      reworkRequired: false,
       createdBy: i % 2 === 0 ? 'admin' : 'agent',
       rfAssignee: rfStaff[i % rfStaff.length],
-      scAssignee: hasSC ? scStaff[i % scStaff.length] : undefined,
+      scAssignee: scStaff[i % scStaff.length],
       deAssignee: deStaff[i % deStaff.length],
-      policyType,
+      policyType: scenario.policyType,
       policyRecords,
     };
 
     leads.push({
       ...leadData,
-      historyLog: generateHistoryLog(leadData, hasRework, createdOnFull),
-      reworkHistory: hasRework ? [{ id: `rh-report-${i}`, reasonId: String((i % 4) + 1), reasonLabel: 'Missing Documents', details: 'Verification needed', attachments: [], savedBy: deStaff[i % deStaff.length], savedAt: 'Sep 20, 2025, 11:00 AM', previousStatus: 'pending_review' }] : [],
+      historyLog: generateHistoryLog(leadData, false, createdOnFull),
+      reworkHistory: [],
     } as Lead);
     id++;
   }
 
-  // TO ISSUE (12 leads) - with policyType and policyRecords (some with split statuses)
-  for (let i = 0; i < 12; i++) {
+  // TO ISSUE (8 leads) - with policyType and policyRecords
+  const toIssueScenarios: Array<{ policyType: PolicyType; vmiStatus: PolicyStatus; cmiStatus?: PolicyStatus }> = [
+    { policyType: 'vmi_only', vmiStatus: 'pending_issuance' },
+    { policyType: 'vmi_only', vmiStatus: 'pending_issuance' },
+    { policyType: 'vmi_cmi', vmiStatus: 'pending_issuance', cmiStatus: 'pending_issuance' }, // Both same stage
+    { policyType: 'vmi_cmi', vmiStatus: 'pending_issuance', cmiStatus: 'pending_issuance' }, // Both same stage
+    { policyType: 'vmi_cmi', vmiStatus: 'pending_issuance', cmiStatus: 'policy_issued' }, // Split: To Issue + To Deliver
+    { policyType: 'vmi_cmi', vmiStatus: 'pending_issuance', cmiStatus: 'policy_delivered' }, // Split: To Issue + Completed
+    { policyType: 'vmi_cmi', vmiStatus: 'pending_issuance', cmiStatus: 'pending_review' }, // Split: To Issue + To Report
+    { policyType: 'vmi_only', vmiStatus: 'pending_issuance' },
+  ];
+
+  for (let i = 0; i < toIssueScenarios.length; i++) {
+    const scenario = toIssueScenarios[i];
     const agent = agents[i % agents.length];
-    const hasRework = i >= 10;
     const createdOn = `${String(18 - i).padStart(2, '0')}-09-2025`;
     const createdOnFull = `${createdOn} 11:00`;
-
-    // Mix of vmi_only and vmi_cmi with varying statuses
-    const policyType: PolicyType = i % 3 === 0 ? 'vmi_cmi' : 'vmi_only';
-    let policyRecords: PolicyRecord[];
     
-    if (policyType === 'vmi_only') {
-      policyRecords = [{ id: `pol-${id}-vmi`, kind: 'vmi', status: 'pending_issuance', policyAttached: false }];
-    } else {
-      // For vmi_cmi, show some with different statuses to demonstrate split appearance
-      if (i === 0) {
-        // VMI in To Issue, CMI already issued (shows in To Issue + To Deliver)
-        policyRecords = [
-          { id: `pol-${id}-vmi`, kind: 'vmi', status: 'pending_issuance', policyAttached: false },
-          { id: `pol-${id}-cmi`, kind: 'cmi', status: 'policy_issued', policyAttached: true },
+    const policyRecords: PolicyRecord[] = scenario.policyType === 'vmi_only'
+      ? [{ id: `pol-${id}-vmi`, kind: 'vmi', status: scenario.vmiStatus, policyAttached: false }]
+      : [
+          { id: `pol-${id}-vmi`, kind: 'vmi', status: scenario.vmiStatus, policyAttached: false },
+          { id: `pol-${id}-cmi`, kind: 'cmi', status: scenario.cmiStatus!, policyAttached: scenario.cmiStatus === 'policy_issued' || scenario.cmiStatus === 'policy_delivered' },
         ];
-      } else if (i === 3) {
-        // VMI in To Issue, CMI already delivered (shows in To Issue + Completed)
-        policyRecords = [
-          { id: `pol-${id}-vmi`, kind: 'vmi', status: 'pending_issuance', policyAttached: false },
-          { id: `pol-${id}-cmi`, kind: 'cmi', status: 'policy_delivered', policyAttached: true },
-        ];
-      } else if (i === 6) {
-        // VMI in To Issue, CMI pending review (shows in To Issue + To Report)
-        policyRecords = [
-          { id: `pol-${id}-vmi`, kind: 'vmi', status: 'pending_issuance', policyAttached: false },
-          { id: `pol-${id}-cmi`, kind: 'cmi', status: 'pending_review', policyAttached: false },
-        ];
-      } else if (i === 9) {
-        // VMI in To Issue, CMI pending payment (shows in To Issue + To Pay)
-        policyRecords = [
-          { id: `pol-${id}-vmi`, kind: 'vmi', status: 'pending_issuance', policyAttached: false },
-          { id: `pol-${id}-cmi`, kind: 'cmi', status: 'pending_payment', policyAttached: false },
-        ];
-      } else {
-        policyRecords = [
-          { id: `pol-${id}-vmi`, kind: 'vmi', status: 'pending_issuance', policyAttached: false },
-          { id: `pol-${id}-cmi`, kind: 'cmi', status: 'pending_issuance', policyAttached: false },
-        ];
-      }
-    }
 
     const leadData: Partial<Lead> = {
       id: String(id),
       leadNumber: `#${10135 - i}`,
-      leadType: i % 3 === 0 ? 'coa' : i % 5 === 0 ? 'renewals' : 'new_leads',
+      leadType: i % 3 === 0 ? 'coa' : 'new_leads',
       paymentType: i % 2 === 0 ? 'full' : 'installment',
       agentId: agent.id,
       agentName: agent.name,
@@ -610,83 +536,53 @@ const generateLeads = (): Lead[] => {
       saleStatus: 'pending_issuance',
       paymentStatus: 'paid',
       policyAttached: false,
-      reworkRequired: hasRework,
-      reworkReasonId: hasRework ? '5' : undefined,
-      assignedTo: hasRework ? scStaff[i % scStaff.length] : undefined,
+      reworkRequired: false,
       createdBy: i % 2 === 0 ? 'agent' : 'admin',
       rfAssignee: rfStaff[i % rfStaff.length],
       scAssignee: scStaff[i % scStaff.length],
       deAssignee: deStaff[i % deStaff.length],
-      policyType,
+      policyType: scenario.policyType,
       policyRecords,
     };
 
     leads.push({
       ...leadData,
-      historyLog: generateHistoryLog(leadData, hasRework, createdOnFull),
-      reworkHistory: hasRework ? [{ id: `rh-issue-${i}`, reasonId: '5', reasonLabel: 'Return to AST', details: 'Issue pending', attachments: [], savedBy: deStaff[i % deStaff.length], savedAt: 'Sep 15, 2025, 09:00 AM', previousStatus: 'pending_issuance' }] : [],
+      historyLog: generateHistoryLog(leadData, false, createdOnFull),
+      reworkHistory: [],
     } as Lead);
     id++;
   }
 
-  // TO DELIVER (12 leads) - with policyType and policyRecords (some with split statuses)
-  for (let i = 0; i < 12; i++) {
-    const agent = agents[i % agents.length];
-    const hasRework = i >= 10;
-    const shippingMethods: Array<'print_by_fairdee' | 'e_policy' | 'print_by_myself'> = ['print_by_fairdee', 'e_policy', 'print_by_myself'];
-    const createdOn = `${String(12 - Math.floor(i / 2)).padStart(2, '0')}-09-2025`;
-    const createdOnFull = `${createdOn} 14:00`;
+  // TO DELIVER (8 leads) - with policyType and policyRecords
+  const shippingMethods: Array<'print_by_fairdee' | 'e_policy' | 'print_by_myself'> = ['print_by_fairdee', 'e_policy', 'print_by_myself'];
+  const toDeliverScenarios: Array<{ policyType: PolicyType; vmiStatus: PolicyStatus; cmiStatus?: PolicyStatus }> = [
+    { policyType: 'vmi_only', vmiStatus: 'policy_issued' },
+    { policyType: 'vmi_only', vmiStatus: 'policy_issued' },
+    { policyType: 'vmi_cmi', vmiStatus: 'policy_issued', cmiStatus: 'policy_issued' }, // Both same stage
+    { policyType: 'vmi_cmi', vmiStatus: 'policy_issued', cmiStatus: 'policy_issued' }, // Both same stage
+    { policyType: 'vmi_cmi', vmiStatus: 'policy_issued', cmiStatus: 'policy_delivered' }, // Split: To Deliver + Completed
+    { policyType: 'vmi_cmi', vmiStatus: 'policy_issued', cmiStatus: 'pending_issuance' }, // Split: To Deliver + To Issue
+    { policyType: 'vmi_cmi', vmiStatus: 'policy_issued', cmiStatus: 'pending_review' }, // Split: To Deliver + To Report
+    { policyType: 'vmi_only', vmiStatus: 'policy_issued' },
+  ];
 
-    // Mix of vmi_only and vmi_cmi with varying statuses
-    const policyType: PolicyType = i % 3 === 0 ? 'vmi_cmi' : 'vmi_only';
-    let policyRecords: PolicyRecord[];
+  for (let i = 0; i < toDeliverScenarios.length; i++) {
+    const scenario = toDeliverScenarios[i];
+    const agent = agents[i % agents.length];
+    const createdOn = `${String(12 - i).padStart(2, '0')}-09-2025`;
+    const createdOnFull = `${createdOn} 14:00`;
     
-    if (policyType === 'vmi_only') {
-      policyRecords = [{ 
-        id: `pol-${id}-vmi`, 
-        kind: 'vmi', 
-        status: 'policy_issued', 
-        policyAttached: true,
-        shippingMethod: shippingMethods[i % 3],
-      }];
-    } else {
-      // For vmi_cmi, show different statuses
-      if (i === 0) {
-        // VMI to deliver, CMI already delivered (shows in To Deliver + Completed)
-        policyRecords = [
-          { id: `pol-${id}-vmi`, kind: 'vmi', status: 'policy_issued', policyAttached: true, shippingMethod: 'print_by_fairdee' },
-          { id: `pol-${id}-cmi`, kind: 'cmi', status: 'policy_delivered', policyAttached: true, shippingMethod: 'e_policy' },
+    const policyRecords: PolicyRecord[] = scenario.policyType === 'vmi_only'
+      ? [{ id: `pol-${id}-vmi`, kind: 'vmi', status: scenario.vmiStatus, policyAttached: true, shippingMethod: shippingMethods[i % 3] }]
+      : [
+          { id: `pol-${id}-vmi`, kind: 'vmi', status: scenario.vmiStatus, policyAttached: true, shippingMethod: shippingMethods[i % 3] },
+          { id: `pol-${id}-cmi`, kind: 'cmi', status: scenario.cmiStatus!, policyAttached: scenario.cmiStatus === 'policy_issued' || scenario.cmiStatus === 'policy_delivered', shippingMethod: scenario.cmiStatus === 'policy_issued' || scenario.cmiStatus === 'policy_delivered' ? shippingMethods[(i + 1) % 3] : undefined },
         ];
-      } else if (i === 3) {
-        // VMI to deliver, CMI pending issuance (shows in To Deliver + To Issue)
-        policyRecords = [
-          { id: `pol-${id}-vmi`, kind: 'vmi', status: 'policy_issued', policyAttached: true, shippingMethod: 'print_by_fairdee' },
-          { id: `pol-${id}-cmi`, kind: 'cmi', status: 'pending_issuance', policyAttached: false },
-        ];
-      } else if (i === 6) {
-        // VMI to deliver, CMI pending review (shows in To Deliver + To Report)
-        policyRecords = [
-          { id: `pol-${id}-vmi`, kind: 'vmi', status: 'policy_issued', policyAttached: true, shippingMethod: 'e_policy' },
-          { id: `pol-${id}-cmi`, kind: 'cmi', status: 'pending_review', policyAttached: false },
-        ];
-      } else if (i === 9) {
-        // VMI to deliver, CMI pending payment (shows in To Deliver + To Pay)
-        policyRecords = [
-          { id: `pol-${id}-vmi`, kind: 'vmi', status: 'policy_issued', policyAttached: true, shippingMethod: 'print_by_myself' },
-          { id: `pol-${id}-cmi`, kind: 'cmi', status: 'pending_payment', policyAttached: false },
-        ];
-      } else {
-        policyRecords = [
-          { id: `pol-${id}-vmi`, kind: 'vmi', status: 'policy_issued', policyAttached: true, shippingMethod: shippingMethods[i % 3] },
-          { id: `pol-${id}-cmi`, kind: 'cmi', status: 'policy_issued', policyAttached: true, shippingMethod: shippingMethods[(i + 1) % 3] },
-        ];
-      }
-    }
 
     const leadData: Partial<Lead> = {
       id: String(id),
       leadNumber: `#${10128 - i}`,
-      leadType: i % 3 === 0 ? 'coa' : i % 5 === 0 ? 'renewals' : 'new_leads',
+      leadType: i % 3 === 0 ? 'coa' : 'new_leads',
       paymentType: i % 2 === 0 ? 'full' : 'installment',
       agentId: agent.id,
       agentName: agent.name,
@@ -699,58 +595,52 @@ const generateLeads = (): Lead[] => {
       paymentStatus: 'paid',
       policyAttached: true,
       shippingMethod: shippingMethods[i % 3],
-      reworkRequired: hasRework,
-      reworkReasonId: hasRework ? '6' : undefined,
-      assignedTo: hasRework ? scStaff[i % scStaff.length] : undefined,
+      reworkRequired: false,
       createdBy: i % 2 === 0 ? 'admin' : 'agent',
       rfAssignee: rfStaff[i % rfStaff.length],
       scAssignee: scStaff[i % scStaff.length],
       deAssignee: deStaff[i % deStaff.length],
-      policyType,
+      policyType: scenario.policyType,
       policyRecords,
     };
 
     leads.push({
       ...leadData,
-      historyLog: generateHistoryLog(leadData, hasRework, createdOnFull),
-      reworkHistory: hasRework ? [{ id: `rh-deliver-${i}`, reasonId: '6', reasonLabel: 'Reverted by Insurer', details: 'Delivery issue', attachments: [], savedBy: deStaff[i % deStaff.length], savedAt: 'Sep 09, 2025, 04:00 PM', previousStatus: 'policy_issued' }] : [],
+      historyLog: generateHistoryLog(leadData, false, createdOnFull),
+      reworkHistory: [],
     } as Lead);
     id++;
   }
 
-  // COMPLETED (12 leads) - with policyType and policyRecords
-  for (let i = 0; i < 12; i++) {
-    const agent = agents[i % agents.length];
-    const hasRework = i >= 10;
-    const shippingMethods: Array<'print_by_fairdee' | 'e_policy' | 'print_by_myself'> = ['print_by_fairdee', 'e_policy', 'print_by_myself'];
-    const createdOn = `${String(5 - Math.floor(i / 3)).padStart(2, '0')}-09-2025`;
-    const createdOnFull = `${createdOn} 08:00`;
+  // COMPLETED (8 leads) - with policyType and policyRecords
+  const completedScenarios: Array<{ policyType: PolicyType; vmiStatus: PolicyStatus; cmiStatus?: PolicyStatus }> = [
+    { policyType: 'vmi_only', vmiStatus: 'policy_delivered' },
+    { policyType: 'vmi_only', vmiStatus: 'policy_shipped' },
+    { policyType: 'vmi_cmi', vmiStatus: 'policy_delivered', cmiStatus: 'policy_delivered' }, // Both same stage
+    { policyType: 'vmi_cmi', vmiStatus: 'policy_shipped', cmiStatus: 'policy_shipped' }, // Both same stage
+    { policyType: 'vmi_cmi', vmiStatus: 'policy_delivered', cmiStatus: 'policy_shipped' }, // Both completed (diff status)
+    { policyType: 'vmi_cmi', vmiStatus: 'policy_delivered', cmiStatus: 'policy_issued' }, // Split: Completed + To Deliver
+    { policyType: 'vmi_only', vmiStatus: 'policy_delivered' },
+    { policyType: 'vmi_only', vmiStatus: 'policy_shipped' },
+  ];
 
-    // Mix of vmi_only and vmi_cmi
-    const policyType: PolicyType = i % 4 === 0 ? 'vmi_cmi' : 'vmi_only';
-    const completedStatus: PolicyStatus = i % 2 === 0 ? 'policy_delivered' : 'policy_shipped';
-    let policyRecords: PolicyRecord[];
+  for (let i = 0; i < completedScenarios.length; i++) {
+    const scenario = completedScenarios[i];
+    const agent = agents[i % agents.length];
+    const createdOn = `${String(5 - Math.floor(i / 2)).padStart(2, '0')}-09-2025`;
+    const createdOnFull = `${createdOn} 08:00`;
     
-    if (policyType === 'vmi_only') {
-      policyRecords = [{ 
-        id: `pol-${id}-vmi`, 
-        kind: 'vmi', 
-        status: completedStatus, 
-        policyAttached: true,
-        shippingMethod: shippingMethods[i % 3],
-        trackingNumber: `TH${100000000 + i * 12345}`,
-      }];
-    } else {
-      policyRecords = [
-        { id: `pol-${id}-vmi`, kind: 'vmi', status: 'policy_delivered', policyAttached: true, shippingMethod: 'e_policy' },
-        { id: `pol-${id}-cmi`, kind: 'cmi', status: 'policy_delivered', policyAttached: true, shippingMethod: 'print_by_fairdee', trackingNumber: `TH${100000000 + i * 12345}` },
-      ];
-    }
+    const policyRecords: PolicyRecord[] = scenario.policyType === 'vmi_only'
+      ? [{ id: `pol-${id}-vmi`, kind: 'vmi', status: scenario.vmiStatus, policyAttached: true, shippingMethod: shippingMethods[i % 3], trackingNumber: `TH${100000000 + i * 12345}` }]
+      : [
+          { id: `pol-${id}-vmi`, kind: 'vmi', status: scenario.vmiStatus, policyAttached: true, shippingMethod: 'e_policy' },
+          { id: `pol-${id}-cmi`, kind: 'cmi', status: scenario.cmiStatus!, policyAttached: true, shippingMethod: 'print_by_fairdee', trackingNumber: `TH${100000000 + i * 12345}` },
+        ];
 
     const leadData: Partial<Lead> = {
       id: String(id),
       leadNumber: `#${10120 - i}`,
-      leadType: i % 3 === 0 ? 'coa' : i % 5 === 0 ? 'renewals' : 'new_leads',
+      leadType: i % 3 === 0 ? 'coa' : 'new_leads',
       paymentType: i % 2 === 0 ? 'full' : 'installment',
       agentId: agent.id,
       agentName: agent.name,
@@ -759,32 +649,30 @@ const generateLeads = (): Lead[] => {
       vehicleDetails: vehiclePlates[(i + 2) % vehiclePlates.length],
       rfStatus: 'completed',
       scStatus: 'completed',
-      saleStatus: i % 2 === 0 ? 'policy_delivered' : 'policy_shipped',
+      saleStatus: scenario.vmiStatus === 'policy_delivered' ? 'policy_delivered' : 'policy_shipped',
       paymentStatus: 'paid',
       policyAttached: true,
       shippingMethod: shippingMethods[i % 3],
       trackingNumber: `TH${100000000 + i * 12345}`,
-      reworkRequired: hasRework,
-      reworkReasonId: hasRework ? '7' : undefined,
-      assignedTo: hasRework ? scStaff[i % scStaff.length] : undefined,
+      reworkRequired: false,
       createdBy: i % 2 === 0 ? 'agent' : 'admin',
       rfAssignee: rfStaff[i % rfStaff.length],
       scAssignee: scStaff[i % scStaff.length],
       deAssignee: deStaff[i % deStaff.length],
-      policyType,
+      policyType: scenario.policyType,
       policyRecords,
     };
 
     leads.push({
       ...leadData,
-      historyLog: generateHistoryLog(leadData, hasRework, createdOnFull),
-      reworkHistory: hasRework ? [{ id: `rh-completed-${i}`, reasonId: '7', reasonLabel: 'Rejected by Insurer', details: 'Post-completion issue', attachments: [], savedBy: deStaff[i % deStaff.length], savedAt: 'Sep 02, 2025, 10:00 AM', previousStatus: 'policy_delivered' }] : [],
+      historyLog: generateHistoryLog(leadData, false, createdOnFull),
+      reworkHistory: [],
     } as Lead);
     id++;
   }
 
-  // CANCELLED (8 leads)
-  for (let i = 0; i < 8; i++) {
+  // CANCELLED (4 leads)
+  for (let i = 0; i < 4; i++) {
     const agent = agents[i % agents.length];
     const createdOn = `${String(10 - i).padStart(2, '0')}-01-2026`;
     const createdOnFull = `${createdOn} 12:00`;
@@ -792,7 +680,7 @@ const generateLeads = (): Lead[] => {
     const leadData: Partial<Lead> = {
       id: String(id),
       leadNumber: `#${10108 - i}`,
-      leadType: i % 3 === 0 ? 'coa' : i % 5 === 0 ? 'renewals' : 'new_leads',
+      leadType: i % 2 === 0 ? 'coa' : 'new_leads',
       paymentType: i % 2 === 0 ? 'full' : 'installment',
       agentId: agent.id,
       agentName: agent.name,
