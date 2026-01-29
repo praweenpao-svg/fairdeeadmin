@@ -176,11 +176,11 @@ const defaultStatusByStage: Record<PipelineStage, string> = {
 
 function CreatedByBadge({ createdBy }: { createdBy: CreatedByType }) {
   const config = {
-    agent: { label: 'Agent', className: 'lead-badge-agent' },
-    admin: { label: 'Admin', className: 'lead-badge-admin' },
+    agent: { label: 'Agent', className: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300' },
+    admin: { label: 'Admin', className: 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300' },
   };
   const { label, className } = config[createdBy];
-  return <span className={cn('lead-badge', className)}>{label}</span>;
+  return <span className={cn('text-[10px] px-1.5 py-0.5 rounded font-medium', className)}>{label}</span>;
 }
 
 // Helper to get staff members by team (based on fixed rosters)
@@ -649,7 +649,9 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                 {showDEColumn && (
                   <th className="data-table-header px-4 py-3 text-left">DE</th>
                 )}
-                <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'สถานะงาน' : 'Status'}</th>
+                {!isPostLeadStage && (
+                  <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'สถานะงาน' : 'Status'}</th>
+                )}
                 <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'ผู้รับผิดชอบ' : 'Owner'}</th>
                 <th className="data-table-header w-10 px-4 py-3"></th>
               </tr>
@@ -714,12 +716,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                           <div className="flex items-center gap-1">
                             <CreatedByBadge createdBy={lead.createdBy} />
                             {lead.policyType && (
-                              <span className={cn(
-                                'text-[10px] px-1.5 py-0.5 rounded font-medium',
-                                lead.policyType === 'vmi_cmi' 
-                                  ? 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300'
-                                  : 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
-                              )}>
+                              <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
                                 {lead.policyType === 'vmi_cmi' ? 'VMI + CMI' : 'VMI'}
                               </span>
                             )}
@@ -808,40 +805,38 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                           </Select>
                         </td>
                       )}
-                      <td className="px-4 py-3">
-                        {hasActiveRework ? (
-                          <InlineReworkActions
-                            lead={lead}
-                            latestEntry={latestReworkEntry}
-                            reworkConfigs={stageReworkConfigs}
-                            onResolve={handleResolveRework}
-                            onReassign={handleReassignRework}
-                          />
-                        ) : hasPolicyRecords ? (
-                          <div className="text-xs text-muted-foreground">
-                            {language === 'th' ? 'ดูรายละเอียดด้านล่าง' : 'See details below'}
-                          </div>
-                        ) : (
-                          <Select 
-                            value={lead.saleStatus || defaultStatusByStage[stage]}
-                            onValueChange={(value) => handleStatusChange(lead, value)}
-                          >
-                            <SelectTrigger className="w-[200px] h-8 text-xs">
-                              <SelectValue placeholder={language === 'th' ? 'เลือกสถานะ' : 'Select status'} />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {(stage === 'to_convert' && lead.leadType 
-                                ? statusOptionsByLeadType[lead.leadType] || statusOptionsByStage[stage]
-                                : statusOptionsByStage[stage]
-                              ).map((statusValue) => (
-                                <SelectItem key={statusValue} value={statusValue}>
-                                  {getStatusLabel(statusValue, language)}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        )}
-                      </td>
+                      {!isPostLeadStage && (
+                        <td className="px-4 py-3">
+                          {hasActiveRework ? (
+                            <InlineReworkActions
+                              lead={lead}
+                              latestEntry={latestReworkEntry}
+                              reworkConfigs={stageReworkConfigs}
+                              onResolve={handleResolveRework}
+                              onReassign={handleReassignRework}
+                            />
+                          ) : (
+                            <Select 
+                              value={lead.saleStatus || defaultStatusByStage[stage]}
+                              onValueChange={(value) => handleStatusChange(lead, value)}
+                            >
+                              <SelectTrigger className="w-[200px] h-8 text-xs">
+                                <SelectValue placeholder={language === 'th' ? 'เลือกสถานะ' : 'Select status'} />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {(stage === 'to_convert' && lead.leadType 
+                                  ? statusOptionsByLeadType[lead.leadType] || statusOptionsByStage[stage]
+                                  : statusOptionsByStage[stage]
+                                ).map((statusValue) => (
+                                  <SelectItem key={statusValue} value={statusValue}>
+                                    {getStatusLabel(statusValue, language)}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          )}
+                        </td>
+                      )}
                       <td className="px-4 py-3">
                         {(() => {
                           const owner = getOwner(lead);
