@@ -198,12 +198,13 @@ export function ExpandablePolicyRows({
       {/* Expanded Policy Records */}
       {isExpanded && (
         <div className="mt-2 space-y-1 rounded-md overflow-hidden">
-          {/* Show stage-relevant policies first */}
+          {/* Always show VMI first, then CMI - consistent order */}
           {policyRecords
             .sort((a, b) => {
-              const aRelevant = stagePolicyIds.has(a.id) ? 0 : 1;
-              const bRelevant = stagePolicyIds.has(b.id) ? 0 : 1;
-              return aRelevant - bRelevant;
+              // VMI always comes first, CMI second
+              if (a.kind === 'vmi' && b.kind === 'cmi') return -1;
+              if (a.kind === 'cmi' && b.kind === 'vmi') return 1;
+              return 0;
             })
             .map((policy) => {
               const isRelevant = stagePolicyIds.has(policy.id);
