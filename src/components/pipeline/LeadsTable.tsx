@@ -176,7 +176,7 @@ const defaultStatusByStage: Record<PipelineStage, string> = {
 
 function CreatedByBadge({ createdBy }: { createdBy: CreatedByType }) {
   const config = {
-    agent: { label: 'Agent', className: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300' },
+    agent: { label: 'Agent', className: 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300' },
     admin: { label: 'Admin', className: 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300' },
   };
   const { label, className } = config[createdBy];
