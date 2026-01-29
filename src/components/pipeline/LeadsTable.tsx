@@ -716,9 +716,16 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                           <div className="flex items-center gap-1">
                             <CreatedByBadge createdBy={lead.createdBy} />
                             {lead.policyType && (
-                              <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
-                                {lead.policyType === 'vmi_cmi' ? 'VMI + CMI' : 'VMI'}
-                              </span>
+                              <>
+                                <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                                  {language === 'th' ? 'ภาคสมัครใจ' : 'VMI'}
+                                </span>
+                                {lead.policyType === 'vmi_cmi' && (
+                                  <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300">
+                                    {language === 'th' ? 'ภาคบังคับ' : 'CMI'}
+                                  </span>
+                                )}
+                              </>
                             )}
                           </div>
                         </div>
