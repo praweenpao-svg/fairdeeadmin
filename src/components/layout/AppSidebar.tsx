@@ -51,7 +51,7 @@ export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
               <span className="text-primary-foreground font-bold text-sm">FD</span>
             </div>
             <div>
-              <h1 className="font-semibold text-sm">Fairdee Admin</h1>
+              <h1 className="font-semibold text-sm">Admin</h1>
               <p className="text-xs text-sidebar-muted">v2.0</p>
             </div>
           </div>
@@ -67,16 +67,6 @@ export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
           )}
         </button>
       </div>
-
-      {/* Search */}
-      {!collapsed && (
-        <div className="p-3">
-          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-sidebar-accent text-sidebar-muted text-sm">
-            <span className="text-xs">🔍</span>
-            <span>{language === 'th' ? 'ค้นหา...' : 'Policies, affiliates, custom...'}</span>
-          </div>
-        </div>
-      )}
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto scrollbar-thin py-2">
