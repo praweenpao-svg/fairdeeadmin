@@ -3,6 +3,7 @@ import {
   ExternalLink, 
   MoreVertical,
   History,
+  ChevronRight,
 } from 'lucide-react';
 import { Lead, PipelineStage, LeadType, ReworkConfig, CreatedByType, ReworkAttachment, ReworkHistoryEntry, HistoryLogEntry } from '@/types/pipeline';
 import { cn } from '@/lib/utils';
@@ -623,11 +624,10 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-8 w-8 p-0"
-                        onClick={() => handleOpenHistoryLog(lead)}
-                        title="View History Log"
+                        className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+                        title={language === 'th' ? 'ดูรายละเอียดเพิ่มเติม' : 'View more details'}
                       >
-                        <History className="w-4 h-4" />
+                        <ChevronRight className="w-4 h-4" />
                       </Button>
                     </td>
                     <td className="px-4 py-3">
@@ -771,6 +771,10 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem>
                             {language === 'th' ? 'ดูรายละเอียด' : 'View Details'}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleOpenHistoryLog(lead)}>
+                            <History className="w-4 h-4 mr-2" />
+                            {language === 'th' ? 'ประวัติการทำงาน' : 'History Log'}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
