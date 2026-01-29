@@ -426,6 +426,7 @@ const generateLeads = (): Lead[] => {
       createdBy: i % 2 === 0 ? 'agent' : 'admin',
       rfAssignee: rfStaff[i % rfStaff.length],
       scAssignee: scStaff[i % scStaff.length],
+      deAssignee: deStaff[i % deStaff.length], // Assign DE for Owner column
       policyType: scenario.policyType,
       policyRecords,
     };
