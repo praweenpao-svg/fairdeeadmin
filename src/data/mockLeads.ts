@@ -1,4 +1,4 @@
-import { Lead, ReworkConfig, HistoryLogEntry } from '@/types/pipeline';
+import { Lead, ReworkConfig, HistoryLogEntry, PolicyType, PolicyRecord, PolicyStatus } from '@/types/pipeline';
 
 const agents = [
   { id: 'FD-3460', name: 'Akshay Bazad' },
@@ -388,13 +388,22 @@ const generateLeads = (): Lead[] => {
     id++;
   }
 
-  // TO PAY (15 leads)
+  // TO PAY (15 leads) - with policyType and policyRecords
   for (let i = 0; i < 15; i++) {
     const agent = agents[i % agents.length];
     const hasRework = i >= 13;
     const hasSC = i % 3 !== 0;
     const createdOn = `${String(7 - Math.floor(i / 3)).padStart(2, '0')}-01-2026`;
     const createdOnFull = `${createdOn} 09:00`;
+    
+    // Alternate between vmi_only and vmi_cmi
+    const policyType: PolicyType = i % 3 === 0 ? 'vmi_cmi' : 'vmi_only';
+    const policyRecords: PolicyRecord[] = policyType === 'vmi_only' 
+      ? [{ id: `pol-${id}-vmi`, kind: 'vmi', status: 'pending_payment', policyAttached: false }]
+      : [
+          { id: `pol-${id}-vmi`, kind: 'vmi', status: 'pending_payment', policyAttached: false },
+          { id: `pol-${id}-cmi`, kind: 'cmi', status: 'pending_payment', policyAttached: false },
+        ];
 
     const leadData: Partial<Lead> = {
       id: String(id),
@@ -418,6 +427,8 @@ const generateLeads = (): Lead[] => {
       createdBy: i % 2 === 0 ? 'agent' : 'admin',
       rfAssignee: rfStaff[i % rfStaff.length],
       scAssignee: hasSC ? scStaff[i % scStaff.length] : undefined,
+      policyType,
+      policyRecords,
     };
 
     leads.push({
@@ -428,13 +439,22 @@ const generateLeads = (): Lead[] => {
     id++;
   }
 
-  // TO REPORT (15 leads)
+  // TO REPORT (15 leads) - with policyType and policyRecords
   for (let i = 0; i < 15; i++) {
     const agent = agents[i % agents.length];
     const hasRework = i >= 13;
     const hasSC = i % 4 !== 0;
     const createdOn = `${String(23 - i).padStart(2, '0')}-09-2025`;
     const createdOnFull = `${createdOn} 10:00`;
+
+    // Alternate between vmi_only and vmi_cmi
+    const policyType: PolicyType = i % 4 === 0 ? 'vmi_cmi' : 'vmi_only';
+    const policyRecords: PolicyRecord[] = policyType === 'vmi_only' 
+      ? [{ id: `pol-${id}-vmi`, kind: 'vmi', status: 'pending_review', policyAttached: false }]
+      : [
+          { id: `pol-${id}-vmi`, kind: 'vmi', status: 'pending_review', policyAttached: false },
+          { id: `pol-${id}-cmi`, kind: 'cmi', status: 'pending_review', policyAttached: false },
+        ];
 
     const leadData: Partial<Lead> = {
       id: String(id),
@@ -458,6 +478,8 @@ const generateLeads = (): Lead[] => {
       rfAssignee: rfStaff[i % rfStaff.length],
       scAssignee: hasSC ? scStaff[i % scStaff.length] : undefined,
       deAssignee: deStaff[i % deStaff.length],
+      policyType,
+      policyRecords,
     };
 
     leads.push({
@@ -468,12 +490,34 @@ const generateLeads = (): Lead[] => {
     id++;
   }
 
-  // TO ISSUE (12 leads)
+  // TO ISSUE (12 leads) - with policyType and policyRecords (some with split statuses)
   for (let i = 0; i < 12; i++) {
     const agent = agents[i % agents.length];
     const hasRework = i >= 10;
     const createdOn = `${String(18 - i).padStart(2, '0')}-09-2025`;
     const createdOnFull = `${createdOn} 11:00`;
+
+    // Mix of vmi_only and vmi_cmi with varying statuses
+    const policyType: PolicyType = i % 3 === 0 ? 'vmi_cmi' : 'vmi_only';
+    let policyRecords: PolicyRecord[];
+    
+    if (policyType === 'vmi_only') {
+      policyRecords = [{ id: `pol-${id}-vmi`, kind: 'vmi', status: 'pending_issuance', policyAttached: false }];
+    } else {
+      // For vmi_cmi, show some with different statuses to demonstrate split appearance
+      if (i === 0) {
+        // VMI in To Issue, CMI already issued (would show in To Deliver)
+        policyRecords = [
+          { id: `pol-${id}-vmi`, kind: 'vmi', status: 'pending_issuance', policyAttached: false },
+          { id: `pol-${id}-cmi`, kind: 'cmi', status: 'policy_issued', policyAttached: true },
+        ];
+      } else {
+        policyRecords = [
+          { id: `pol-${id}-vmi`, kind: 'vmi', status: 'pending_issuance', policyAttached: false },
+          { id: `pol-${id}-cmi`, kind: 'cmi', status: 'pending_issuance', policyAttached: false },
+        ];
+      }
+    }
 
     const leadData: Partial<Lead> = {
       id: String(id),
@@ -497,6 +541,8 @@ const generateLeads = (): Lead[] => {
       rfAssignee: rfStaff[i % rfStaff.length],
       scAssignee: scStaff[i % scStaff.length],
       deAssignee: deStaff[i % deStaff.length],
+      policyType,
+      policyRecords,
     };
 
     leads.push({
@@ -507,13 +553,41 @@ const generateLeads = (): Lead[] => {
     id++;
   }
 
-  // TO DELIVER (12 leads)
+  // TO DELIVER (12 leads) - with policyType and policyRecords (some with split statuses)
   for (let i = 0; i < 12; i++) {
     const agent = agents[i % agents.length];
     const hasRework = i >= 10;
     const shippingMethods: Array<'print_by_fairdee' | 'e_policy' | 'print_by_myself'> = ['print_by_fairdee', 'e_policy', 'print_by_myself'];
     const createdOn = `${String(12 - Math.floor(i / 2)).padStart(2, '0')}-09-2025`;
     const createdOnFull = `${createdOn} 14:00`;
+
+    // Mix of vmi_only and vmi_cmi with varying statuses
+    const policyType: PolicyType = i % 3 === 0 ? 'vmi_cmi' : 'vmi_only';
+    let policyRecords: PolicyRecord[];
+    
+    if (policyType === 'vmi_only') {
+      policyRecords = [{ 
+        id: `pol-${id}-vmi`, 
+        kind: 'vmi', 
+        status: 'policy_issued', 
+        policyAttached: true,
+        shippingMethod: shippingMethods[i % 3],
+      }];
+    } else {
+      // For vmi_cmi, show different statuses
+      if (i === 0) {
+        // VMI already delivered, CMI still pending delivery
+        policyRecords = [
+          { id: `pol-${id}-vmi`, kind: 'vmi', status: 'policy_delivered', policyAttached: true, shippingMethod: 'e_policy' },
+          { id: `pol-${id}-cmi`, kind: 'cmi', status: 'policy_issued', policyAttached: true, shippingMethod: 'print_by_fairdee' },
+        ];
+      } else {
+        policyRecords = [
+          { id: `pol-${id}-vmi`, kind: 'vmi', status: 'policy_issued', policyAttached: true, shippingMethod: shippingMethods[i % 3] },
+          { id: `pol-${id}-cmi`, kind: 'cmi', status: 'policy_issued', policyAttached: true, shippingMethod: shippingMethods[(i + 1) % 3] },
+        ];
+      }
+    }
 
     const leadData: Partial<Lead> = {
       id: String(id),
@@ -538,6 +612,8 @@ const generateLeads = (): Lead[] => {
       rfAssignee: rfStaff[i % rfStaff.length],
       scAssignee: scStaff[i % scStaff.length],
       deAssignee: deStaff[i % deStaff.length],
+      policyType,
+      policyRecords,
     };
 
     leads.push({
@@ -548,13 +624,34 @@ const generateLeads = (): Lead[] => {
     id++;
   }
 
-  // COMPLETED (12 leads)
+  // COMPLETED (12 leads) - with policyType and policyRecords
   for (let i = 0; i < 12; i++) {
     const agent = agents[i % agents.length];
     const hasRework = i >= 10;
     const shippingMethods: Array<'print_by_fairdee' | 'e_policy' | 'print_by_myself'> = ['print_by_fairdee', 'e_policy', 'print_by_myself'];
     const createdOn = `${String(5 - Math.floor(i / 3)).padStart(2, '0')}-09-2025`;
     const createdOnFull = `${createdOn} 08:00`;
+
+    // Mix of vmi_only and vmi_cmi
+    const policyType: PolicyType = i % 4 === 0 ? 'vmi_cmi' : 'vmi_only';
+    const completedStatus: PolicyStatus = i % 2 === 0 ? 'policy_delivered' : 'policy_shipped';
+    let policyRecords: PolicyRecord[];
+    
+    if (policyType === 'vmi_only') {
+      policyRecords = [{ 
+        id: `pol-${id}-vmi`, 
+        kind: 'vmi', 
+        status: completedStatus, 
+        policyAttached: true,
+        shippingMethod: shippingMethods[i % 3],
+        trackingNumber: `TH${100000000 + i * 12345}`,
+      }];
+    } else {
+      policyRecords = [
+        { id: `pol-${id}-vmi`, kind: 'vmi', status: 'policy_delivered', policyAttached: true, shippingMethod: 'e_policy' },
+        { id: `pol-${id}-cmi`, kind: 'cmi', status: 'policy_delivered', policyAttached: true, shippingMethod: 'print_by_fairdee', trackingNumber: `TH${100000000 + i * 12345}` },
+      ];
+    }
 
     const leadData: Partial<Lead> = {
       id: String(id),
@@ -580,6 +677,8 @@ const generateLeads = (): Lead[] => {
       rfAssignee: rfStaff[i % rfStaff.length],
       scAssignee: scStaff[i % scStaff.length],
       deAssignee: deStaff[i % deStaff.length],
+      policyType,
+      policyRecords,
     };
 
     leads.push({

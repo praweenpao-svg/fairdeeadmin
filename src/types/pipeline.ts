@@ -28,6 +28,32 @@ export type SaleStatus =
 
 export type ShippingMethod = 'e_policy' | 'print_by_myself' | 'print_by_fairdee';
 
+// Policy type for post-lead journey (VMI only vs VMI + CMI)
+export type PolicyType = 'vmi_only' | 'vmi_cmi';
+
+// Individual policy record within a sale (VMI or CMI)
+export type PolicyKind = 'vmi' | 'cmi';
+
+// Status specific to each policy record in post-lead stages
+export type PolicyStatus = 
+  | 'pending_payment'
+  | 'pending_review'
+  | 'pending_issuance'
+  | 'policy_issued'
+  | 'policy_shipped'
+  | 'policy_delivered'
+  | 'policy_cancelled';
+
+export interface PolicyRecord {
+  id: string;
+  kind: PolicyKind;
+  status: PolicyStatus;
+  policyAttached: boolean;
+  shippingMethod?: ShippingMethod;
+  trackingNumber?: string;
+  updatedOn?: string;
+}
+
 export type CreatedByType = 'agent' | 'admin';
 
 // History Log Action Types
@@ -121,6 +147,9 @@ export interface Lead {
   rfAssignee?: string;
   scAssignee?: string;
   deAssignee?: string;
+  // Policy type and records for post-lead journey
+  policyType?: PolicyType;
+  policyRecords?: PolicyRecord[];
 }
 
 export type AssignmentType = 'round_robin' | 'rf_sc' | 'none';

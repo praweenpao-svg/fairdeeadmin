@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { 
   ExternalLink, 
   MoreVertical,
   History,
   ChevronRight,
+  ChevronDown,
   Eye,
 } from 'lucide-react';
-import { Lead, PipelineStage, LeadType, ReworkConfig, CreatedByType, ReworkAttachment, ReworkHistoryEntry, HistoryLogEntry } from '@/types/pipeline';
+import { Lead, PipelineStage, LeadType, ReworkConfig, CreatedByType, ReworkAttachment, ReworkHistoryEntry, HistoryLogEntry, PolicyStatus, PolicyRecord } from '@/types/pipeline';
 import { cn } from '@/lib/utils';
 import { useLanguageStore } from '@/stores/languageStore';
 import {
@@ -28,6 +29,7 @@ import { mockStaffMembers } from '@/data/mockStaff';
 import { ReworkDialog } from './ReworkDialog';
 import { HistoryLogDialog } from './HistoryLogDialog';
 import { InlineReworkActions } from './InlineReworkActions';
+import { ExpandablePolicyRows } from './PolicyRecordRow';
 
 interface LeadsTableProps {
   leads: Lead[];
@@ -248,12 +250,63 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+
+  // Check if current stage is a post-lead stage (To Pay onwards)
+  const isPostLeadStage = ['to_pay', 'to_report', 'to_issue', 'to_deliver', 'completed', 'cancelled'].includes(stage);
 
   // DE column is shown in all stages
   const showDEColumn = true;
 
   // Filter rework configs by current stage
   const stageReworkConfigs = reworkConfigs.filter(config => config.stages.includes(stage));
+
+  // Toggle expanded state for a row
+  const toggleRowExpanded = (leadId: string) => {
+    setExpandedRows(prev => {
+      const next = new Set(prev);
+      if (next.has(leadId)) {
+        next.delete(leadId);
+      } else {
+        next.add(leadId);
+      }
+      return next;
+    });
+  };
+
+  // Handle policy status change
+  const handlePolicyStatusChange = (lead: Lead, policyId: string, newStatus: PolicyStatus) => {
+    if (!lead.policyRecords) return;
+    
+    const updatedRecords = lead.policyRecords.map(record => 
+      record.id === policyId ? { ...record, status: newStatus } : record
+    );
+
+    const timestamp = new Date().toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+    // Create history log entry for policy status change
+    const policy = lead.policyRecords.find(r => r.id === policyId);
+    const historyLogEntry: HistoryLogEntry = {
+      id: crypto.randomUUID(),
+      action: 'status_changed',
+      triggeredBy: 'Akshay Bazad',
+      triggeredAt: timestamp,
+      fromStatus: policy?.status,
+      toStatus: newStatus,
+      comment: `${policy?.kind.toUpperCase()} policy status updated`,
+    };
+
+    onLeadUpdate?.(lead.id, {
+      policyRecords: updatedRecords,
+      historyLog: [...(lead.historyLog || []), historyLogEntry],
+    });
+  };
 
   const handleStatusChange = (lead: Lead, newStatus: string) => {
     if (newStatus === 'rework_required') {
@@ -612,96 +665,105 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                 // Get the latest unresolved rework entry (entries are appended, so search from end)
                 const latestReworkEntry = [...lead.reworkHistory].reverse().find(e => !e.resolved);
                 const hasActiveRework = lead.reworkRequired && latestReworkEntry && !latestReworkEntry.resolved;
+                const isExpanded = expandedRows.has(lead.id);
+                const hasPolicyRecords = isPostLeadStage && lead.policyRecords && lead.policyRecords.length > 0;
                 
                 return (
-                  <tr 
-                    key={lead.id} 
-                    className={cn(
-                      'data-table-row',
-                      lead.reworkRequired && 'bg-warning/5'
-                    )}
-                  >
-                    <td className="px-4 py-3">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
-                        title={language === 'th' ? 'ดูรายละเอียดเพิ่มเติม' : 'View more details'}
-                      >
-                        <ChevronRight className="w-4 h-4" />
-                      </Button>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex flex-col gap-1">
-                        <span className="font-medium text-sm">{lead.leadNumber}</span>
-                        <CreatedByBadge createdBy={lead.createdBy} />
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex flex-col">
-                        <a
-                          href="#"
-                          className="text-primary hover:underline flex items-center gap-1 text-sm font-medium"
+                  <React.Fragment key={lead.id}>
+                    <tr 
+                      className={cn(
+                        'data-table-row',
+                        lead.reworkRequired && 'bg-warning/5'
+                      )}
+                    >
+                      <td className="px-4 py-3">
+                        {hasPolicyRecords ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+                            title={language === 'th' ? (isExpanded ? 'ซ่อนกรมธรรม์' : 'ดูกรมธรรม์') : (isExpanded ? 'Hide policies' : 'View policies')}
+                            onClick={() => toggleRowExpanded(lead.id)}
+                          >
+                            {isExpanded ? (
+                              <ChevronDown className="w-4 h-4" />
+                            ) : (
+                              <ChevronRight className="w-4 h-4" />
+                            )}
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+                            title={language === 'th' ? 'ดูรายละเอียดเพิ่มเติม' : 'View more details'}
+                          >
+                            <ChevronRight className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-col gap-1">
+                          <span className="font-medium text-sm">{lead.leadNumber}</span>
+                          <div className="flex items-center gap-1">
+                            <CreatedByBadge createdBy={lead.createdBy} />
+                            {lead.policyType && (
+                              <span className={cn(
+                                'text-[10px] px-1.5 py-0.5 rounded font-medium',
+                                lead.policyType === 'vmi_cmi' 
+                                  ? 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300'
+                                  : 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
+                              )}>
+                                {lead.policyType === 'vmi_cmi' ? 'VMI + CMI' : 'VMI'}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-col">
+                          <a
+                            href="#"
+                            className="text-primary hover:underline flex items-center gap-1 text-sm font-medium"
+                          >
+                            {lead.agentId}
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                          <span className="text-xs text-muted-foreground">{lead.agentName}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-sm">{lead.createdOn}</td>
+                      <td className="px-4 py-3 text-sm">{lead.updatedOn}</td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium">{lead.vehicleDetails || '-'}</span>
+                          <span className="text-xs text-muted-foreground">N/A</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <Select 
+                          value={lead.rfAssignee || '__none__'}
+                          onValueChange={(value) => onLeadUpdate?.(lead.id, { rfAssignee: value === '__none__' ? undefined : value })}
                         >
-                          {lead.agentId}
-                          <ExternalLink className="w-3 h-3" />
-                        </a>
-                        <span className="text-xs text-muted-foreground">{lead.agentName}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-sm">{lead.createdOn}</td>
-                    <td className="px-4 py-3 text-sm">{lead.updatedOn}</td>
-                    <td className="px-4 py-3">
-                      <div className="flex flex-col">
-                        <span className="text-sm font-medium">{lead.vehicleDetails || '-'}</span>
-                        <span className="text-xs text-muted-foreground">N/A</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <Select 
-                        value={lead.rfAssignee || '__none__'}
-                        onValueChange={(value) => onLeadUpdate?.(lead.id, { rfAssignee: value === '__none__' ? undefined : value })}
-                      >
-                        <SelectTrigger className="w-[140px] h-8 text-xs">
-                          <SelectValue placeholder="Select RF" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="__none__" className="text-muted-foreground">
-                            {language === 'th' ? 'ยังไม่มอบหมาย' : 'Unassigned'}
-                          </SelectItem>
-                          {getRFStaff().map((staff) => (
-                            <SelectItem key={staff.id} value={staff.name}>
-                              {staff.name}
+                          <SelectTrigger className="w-[140px] h-8 text-xs">
+                            <SelectValue placeholder="Select RF" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="__none__" className="text-muted-foreground">
+                              {language === 'th' ? 'ยังไม่มอบหมาย' : 'Unassigned'}
                             </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </td>
-                    <td className="px-4 py-3">
-                      <Select
-                        value={lead.scAssignee || '__none__'}
-                        onValueChange={(value) => onLeadUpdate?.(lead.id, { scAssignee: value === '__none__' ? undefined : value })}
-                      >
-                        <SelectTrigger className="w-[140px] h-8 text-xs">
-                          <SelectValue placeholder={language === 'th' ? 'ยังไม่มอบหมาย' : 'Unassigned'} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="__none__" className="text-muted-foreground">
-                            {language === 'th' ? 'ยังไม่มอบหมาย' : 'Unassigned'}
-                          </SelectItem>
-                          {getSCStaff().map((staff) => (
-                            <SelectItem key={staff.id} value={staff.name}>
-                              {staff.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </td>
-                    {showDEColumn && (
+                            {getRFStaff().map((staff) => (
+                              <SelectItem key={staff.id} value={staff.name}>
+                                {staff.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </td>
                       <td className="px-4 py-3">
                         <Select
-                          value={lead.deAssignee || '__none__'}
-                          onValueChange={(value) => onLeadUpdate?.(lead.id, { deAssignee: value === '__none__' ? undefined : value })}
+                          value={lead.scAssignee || '__none__'}
+                          onValueChange={(value) => onLeadUpdate?.(lead.id, { scAssignee: value === '__none__' ? undefined : value })}
                         >
                           <SelectTrigger className="w-[140px] h-8 text-xs">
                             <SelectValue placeholder={language === 'th' ? 'ยังไม่มอบหมาย' : 'Unassigned'} />
@@ -710,7 +772,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                             <SelectItem value="__none__" className="text-muted-foreground">
                               {language === 'th' ? 'ยังไม่มอบหมาย' : 'Unassigned'}
                             </SelectItem>
-                            {getDEStaff().map((staff) => (
+                            {getSCStaff().map((staff) => (
                               <SelectItem key={staff.id} value={staff.name}>
                                 {staff.name}
                               </SelectItem>
@@ -718,70 +780,111 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                           </SelectContent>
                         </Select>
                       </td>
-                    )}
-                    <td className="px-4 py-3">
-                      {hasActiveRework ? (
-                        <InlineReworkActions
-                          lead={lead}
-                          latestEntry={latestReworkEntry}
-                          reworkConfigs={stageReworkConfigs}
-                          onResolve={handleResolveRework}
-                          onReassign={handleReassignRework}
-                        />
-                      ) : (
-                        <Select 
-                          value={lead.saleStatus || defaultStatusByStage[stage]}
-                          onValueChange={(value) => handleStatusChange(lead, value)}
-                        >
-                          <SelectTrigger className="w-[200px] h-8 text-xs">
-                            <SelectValue placeholder={language === 'th' ? 'เลือกสถานะ' : 'Select status'} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {(stage === 'to_convert' && lead.leadType 
-                              ? statusOptionsByLeadType[lead.leadType] || statusOptionsByStage[stage]
-                              : statusOptionsByStage[stage]
-                            ).map((statusValue) => (
-                              <SelectItem key={statusValue} value={statusValue}>
-                                {getStatusLabel(statusValue, language)}
+                      {showDEColumn && (
+                        <td className="px-4 py-3">
+                          <Select
+                            value={lead.deAssignee || '__none__'}
+                            onValueChange={(value) => onLeadUpdate?.(lead.id, { deAssignee: value === '__none__' ? undefined : value })}
+                          >
+                            <SelectTrigger className="w-[140px] h-8 text-xs">
+                              <SelectValue placeholder={language === 'th' ? 'ยังไม่มอบหมาย' : 'Unassigned'} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="__none__" className="text-muted-foreground">
+                                {language === 'th' ? 'ยังไม่มอบหมาย' : 'Unassigned'}
                               </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                              {getDEStaff().map((staff) => (
+                                <SelectItem key={staff.id} value={staff.name}>
+                                  {staff.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </td>
                       )}
-                    </td>
-                    <td className="px-4 py-3">
-                      {(() => {
-                        const owner = getOwner(lead);
-                        if (owner) {
-                          return (
-                            <span className="text-sm px-2 py-1 bg-muted rounded">
-                              {owner}
-                            </span>
-                          );
-                        }
-                        return <span className="text-xs text-muted-foreground">-</span>;
-                      })()}
-                    </td>
-                    <td className="px-4 py-3">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                            <MoreVertical className="w-4 h-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
-                            <Eye className="w-4 h-4 mr-2" />
-                            {language === 'th' ? 'ดูรายละเอียด' : 'View Details'}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleOpenHistoryLog(lead)}>
-                            <History className="w-4 h-4 mr-2" />
-                            {language === 'th' ? 'ประวัติการทำงาน' : 'History Log'}
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </td>
-                  </tr>
+                      <td className="px-4 py-3">
+                        {hasActiveRework ? (
+                          <InlineReworkActions
+                            lead={lead}
+                            latestEntry={latestReworkEntry}
+                            reworkConfigs={stageReworkConfigs}
+                            onResolve={handleResolveRework}
+                            onReassign={handleReassignRework}
+                          />
+                        ) : hasPolicyRecords ? (
+                          <div className="text-xs text-muted-foreground">
+                            {language === 'th' ? 'ดูรายละเอียดด้านล่าง' : 'See details below'}
+                          </div>
+                        ) : (
+                          <Select 
+                            value={lead.saleStatus || defaultStatusByStage[stage]}
+                            onValueChange={(value) => handleStatusChange(lead, value)}
+                          >
+                            <SelectTrigger className="w-[200px] h-8 text-xs">
+                              <SelectValue placeholder={language === 'th' ? 'เลือกสถานะ' : 'Select status'} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {(stage === 'to_convert' && lead.leadType 
+                                ? statusOptionsByLeadType[lead.leadType] || statusOptionsByStage[stage]
+                                : statusOptionsByStage[stage]
+                              ).map((statusValue) => (
+                                <SelectItem key={statusValue} value={statusValue}>
+                                  {getStatusLabel(statusValue, language)}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        {(() => {
+                          const owner = getOwner(lead);
+                          if (owner) {
+                            return (
+                              <span className="text-sm px-2 py-1 bg-muted rounded">
+                                {owner}
+                              </span>
+                            );
+                          }
+                          return <span className="text-xs text-muted-foreground">-</span>;
+                        })()}
+                      </td>
+                      <td className="px-4 py-3">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <MoreVertical className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem>
+                              <Eye className="w-4 h-4 mr-2" />
+                              {language === 'th' ? 'ดูรายละเอียด' : 'View Details'}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleOpenHistoryLog(lead)}>
+                              <History className="w-4 h-4 mr-2" />
+                              {language === 'th' ? 'ประวัติการทำงาน' : 'History Log'}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </td>
+                    </tr>
+                    {/* Expanded Policy Records Row */}
+                    {hasPolicyRecords && isExpanded && (
+                      <tr key={`${lead.id}-policies`} className="bg-muted/20">
+                        <td colSpan={showDEColumn ? 12 : 11} className="px-4 py-3">
+                          <div className="pl-8">
+                            <ExpandablePolicyRows
+                              policyRecords={lead.policyRecords!}
+                              isExpanded={true}
+                              onToggle={() => {}}
+                              onPolicyStatusChange={(policyId, newStatus) => handlePolicyStatusChange(lead, policyId, newStatus)}
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
                 );
               })
               )}
