@@ -141,7 +141,7 @@ const Index = () => {
             />
           </div>
           
-          {/* My Cases Toggle */}
+          {/* My Cases Toggle - Hidden for now, to be brought back later
           <button
             onClick={() => setMyCasesOnly(!myCasesOnly)}
             className={cn(
@@ -153,6 +153,7 @@ const Index = () => {
           >
             My Cases
           </button>
+          */}
           
           <DateRangeFilter
             dateRange={dateRange}
