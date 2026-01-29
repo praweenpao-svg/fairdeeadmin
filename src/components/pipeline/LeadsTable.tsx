@@ -36,14 +36,20 @@ interface LeadsTableProps {
 
 // Status translations
 const statusTranslations: Record<string, { en: string; th: string }> = {
-  // Pre-lead statuses (to_convert)
+  // Pre-lead statuses (new_leads)
   pending: { en: 'Pending', th: 'รอดำเนินการ' },
   docs_missing: { en: 'Docs Missing', th: 'ขอเอกสารเพิ่มเติม' },
   waiting_for_insurer: { en: 'Waiting for Insurer', th: 'รอเบี้ยจากบริษัทประกัน' },
   partially_added: { en: 'Partially Added', th: 'มีเบี้ยบางส่วนแล้ว' },
   completed: { en: 'Completed', th: 'เสร็จแล้ว' },
-  quotation_shared: { en: 'Quotation Shared', th: 'ส่งเบี้ยแล้ว' },
-  invalid: { en: 'Invalid', th: 'ปฎิเสธโดยแอดมิน' },
+  quotation_shared: { en: 'Quotation Shared', th: 'ส่งเบี้ยให้ตัวแทนแล้ว' },
+  invalid: { en: 'Invalid', th: 'ปฎิเสธโดย Admin' },
+  // Pre-lead statuses (renewals only)
+  price_pending: { en: 'Price Pending', th: 'ยังไม่ทราบเบี้ยต่ออายุ' },
+  revision_pending: { en: 'Revision Pending', th: 'กำลังต่อรองกับบริษัทประกัน' },
+  renewal_rejected: { en: 'Renewal Rejected', th: 'ปฎิเสธการต่ออายุ' },
+  price_ready: { en: 'Price Ready', th: 'ได้รับเบี้ยต่ออายุแล้ว' },
+  revision_required: { en: 'Revision Required', th: 'กำลังต่อรองกับบริษัทประกัน' },
   // Post-lead statuses
   pending_payment: { en: 'Pending', th: 'รอดำเนินการ' },
   pending_review: { en: 'Pending Review', th: 'รอตรวจเอกสาร' },
@@ -63,6 +69,34 @@ function getStatusLabel(value: string, language: 'en' | 'th'): string {
   return statusTranslations[value]?.[language] || value;
 }
 
+// Status options by lead sub-type for to_convert stage
+const statusOptionsByLeadType: Record<string, string[]> = {
+  new_leads: [
+    'pending',
+    'docs_missing',
+    'waiting_for_insurer',
+    'partially_added',
+    'completed',
+    'quotation_shared',
+    'invalid',
+  ],
+  coa: [
+    'pending',
+    'docs_missing',
+    'waiting_for_insurer',
+    'completed',
+    'quotation_shared',
+    'invalid',
+  ],
+  renewals: [
+    'price_pending',
+    'revision_pending',
+    'renewal_rejected',
+    'price_ready',
+    'revision_required',
+  ],
+};
+
 const statusOptionsByStage: Record<PipelineStage, string[]> = {
   all: [
     'pending',
@@ -71,6 +105,11 @@ const statusOptionsByStage: Record<PipelineStage, string[]> = {
     'completed',
     'quotation_shared',
     'invalid',
+    'price_pending',
+    'revision_pending',
+    'renewal_rejected',
+    'price_ready',
+    'revision_required',
     'pending_payment',
     'pending_review',
     'under_review',
@@ -697,7 +736,10 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                             <SelectValue placeholder={language === 'th' ? 'เลือกสถานะ' : 'Select status'} />
                           </SelectTrigger>
                           <SelectContent>
-                            {statusOptionsByStage[stage].map((statusValue) => (
+                            {(stage === 'to_convert' && lead.leadType 
+                              ? statusOptionsByLeadType[lead.leadType] || statusOptionsByStage[stage]
+                              : statusOptionsByStage[stage]
+                            ).map((statusValue) => (
                               <SelectItem key={statusValue} value={statusValue}>
                                 {getStatusLabel(statusValue, language)}
                               </SelectItem>
