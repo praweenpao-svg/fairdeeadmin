@@ -25,12 +25,12 @@ export const useLanguageStore = create<LanguageState>()(
 // Stage translations
 export const stageTranslations = {
   all: {
-    en: 'Leads',
-    th: 'Leads',
+    en: 'All',
+    th: 'All',
   },
   to_convert: {
-    en: 'To Convert',
-    th: 'To Convert',
+    en: 'Leads',
+    th: 'Leads',
   },
   to_pay: {
     en: 'To Pay Premium',
