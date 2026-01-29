@@ -6,7 +6,7 @@ import { mockLeads, mockReworkConfigs, CURRENT_USER } from '@/data/mockLeads';
 import { PipelineTabs, getLeadsForStage, getLeadsOwnedByUser } from '@/components/pipeline/PipelineTabs';
 import { LeadsTable } from '@/components/pipeline/LeadsTable';
 import { DateRangeFilter } from '@/components/pipeline/DateRangeFilter';
-import { AllFiltersPanel, FilterState, defaultFilterState, SortConfig } from '@/components/pipeline/AllFiltersPanel';
+import { AllFiltersPanel, FilterState, defaultFilterState } from '@/components/pipeline/AllFiltersPanel';
 import { OtherStagesFilterPanel, OtherStagesFilterState, defaultOtherStagesFilterState } from '@/components/pipeline/OtherStagesFilterPanel';
 import { FilterChips } from '@/components/pipeline/FilterChips';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
@@ -22,7 +22,6 @@ const Index = () => {
   const [reworkConfigs, setReworkConfigs] = useState<ReworkConfig[]>(mockReworkConfigs);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [myCasesOnly, setMyCasesOnly] = useState(true);
-  const [sortConfig, setSortConfig] = useState<SortConfig>({ field: 'createdOn', direction: 'desc' });
   
   // Filters for To Pay stage and All/To Convert (shared filter state + UI)
   const [toPayFilters, setToPayFilters] = useState<FilterState>(defaultFilterState);
@@ -184,8 +183,6 @@ const Index = () => {
           stage={activeStage}
           reworkConfigs={reworkConfigs}
           onLeadUpdate={handleLeadUpdate}
-          sortConfig={sortConfig}
-          onSortChange={setSortConfig}
         />
       </div>
     </>
