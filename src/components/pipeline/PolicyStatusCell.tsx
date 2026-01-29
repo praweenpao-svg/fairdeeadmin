@@ -89,8 +89,9 @@ export function PolicyStatusCell({
     );
   }
 
-  // If policy is in rework_required state, show rework actions
-  if (policy.status === 'rework_required' && isEditable && onReworkResolve && onReworkReassign) {
+  // If policy is in rework_required state, ALWAYS show rework actions (regardless of isEditable)
+  // This allows resolve/reassign from any stage
+  if (policy.status === 'rework_required' && onReworkResolve && onReworkReassign) {
     return (
       <PolicyReworkActions
         policy={policy}
