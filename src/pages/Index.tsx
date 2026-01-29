@@ -10,6 +10,7 @@ import { AllFiltersPanel, FilterState, defaultFilterState, SortConfig } from '@/
 import { OtherStagesFilterPanel, OtherStagesFilterState, defaultOtherStagesFilterState } from '@/components/pipeline/OtherStagesFilterPanel';
 import { FilterChips } from '@/components/pipeline/FilterChips';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
+import { LanguageToggle } from '@/components/LanguageToggle';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { applyAllFilters } from '@/utils/leadFilters';
@@ -107,7 +108,10 @@ const Index = () => {
             <Home className="w-4 h-4" />
             <span className="text-sm">Home</span>
           </div>
-          <NotificationBell leads={leads} currentUser={CURRENT_USER} />
+          <div className="flex items-center gap-3">
+            <LanguageToggle />
+            <NotificationBell leads={leads} currentUser={CURRENT_USER} />
+          </div>
         </div>
 
         {/* Pipeline Tabs */}
