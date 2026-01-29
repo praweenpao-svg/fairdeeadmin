@@ -42,7 +42,23 @@ export type PolicyStatus =
   | 'policy_issued'
   | 'policy_shipped'
   | 'policy_delivered'
-  | 'policy_cancelled';
+  | 'policy_cancelled'
+  | 'rework_required';
+
+// Rework entry for policy-level rework
+export interface PolicyReworkEntry {
+  id: string;
+  reasonId: string;
+  reasonLabel: string;
+  details: string;
+  attachments: ReworkAttachment[];
+  savedBy: string;
+  savedAt: string;
+  resolved?: boolean;
+  resolvedAt?: string;
+  resolvedBy?: string;
+  previousStatus: PolicyStatus; // Status before rework was triggered
+}
 
 export interface PolicyRecord {
   id: string;
@@ -52,6 +68,9 @@ export interface PolicyRecord {
   shippingMethod?: ShippingMethod;
   trackingNumber?: string;
   updatedOn?: string;
+  // Policy-level rework
+  reworkRequired?: boolean;
+  reworkHistory?: PolicyReworkEntry[];
 }
 
 export type CreatedByType = 'agent' | 'admin';

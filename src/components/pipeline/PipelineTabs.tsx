@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { PipelineStage, Lead, PolicyStatus } from '@/types/pipeline';
+import { PipelineStage, Lead, PolicyStatus, PolicyRecord } from '@/types/pipeline';
 import { CURRENT_USER } from '@/data/mockLeads';
 import { useLanguageStore, stageTranslations, StageKey } from '@/stores/languageStore';
 import { 
@@ -65,8 +65,8 @@ const stageConfig = [
   },
 ];
 
-// Map policy statuses to pipeline stages
-const policyStatusToStage: Record<PolicyStatus, PipelineStage> = {
+// Map policy statuses to pipeline stages (rework_required is special - uses previousStatus)
+const policyStatusToStage: Record<PolicyStatus, PipelineStage | null> = {
   pending_payment: 'to_pay',
   pending_review: 'to_report',
   pending_issuance: 'to_issue',
@@ -74,20 +74,33 @@ const policyStatusToStage: Record<PolicyStatus, PipelineStage> = {
   policy_shipped: 'completed',
   policy_delivered: 'completed',
   policy_cancelled: 'cancelled',
+  rework_required: null, // Special case - stage determined by previousStatus in rework history
 };
+
+// Get the effective stage for a policy (considering rework)
+function getPolicyStage(policy: PolicyRecord): PipelineStage | null {
+  if (policy.status === 'rework_required' && policy.reworkHistory && policy.reworkHistory.length > 0) {
+    // Find the latest rework entry to get previousStatus
+    const latestRework = policy.reworkHistory[policy.reworkHistory.length - 1];
+    if (latestRework && !latestRework.resolved) {
+      return policyStatusToStage[latestRework.previousStatus];
+    }
+  }
+  return policyStatusToStage[policy.status];
+}
 
 // Check if a lead has any policy in a specific stage
 function hasAnyPolicyInStage(lead: Lead, stage: PipelineStage): boolean {
   if (!lead.policyRecords || lead.policyRecords.length === 0) {
     return false;
   }
-  return lead.policyRecords.some(policy => policyStatusToStage[policy.status] === stage);
+  return lead.policyRecords.some(policy => getPolicyStage(policy) === stage);
 }
 
 // Get policy records that belong to a specific stage
-export function getPoliciesForStage(lead: Lead, stage: PipelineStage) {
+export function getPoliciesForStage(lead: Lead, stage: PipelineStage): PolicyRecord[] {
   if (!lead.policyRecords) return [];
-  return lead.policyRecords.filter(policy => policyStatusToStage[policy.status] === stage);
+  return lead.policyRecords.filter(policy => getPolicyStage(policy) === stage);
 }
 
 export function getLeadsForStage(leads: Lead[], stage: PipelineStage): Lead[] {

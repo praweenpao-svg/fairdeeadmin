@@ -27,6 +27,7 @@ const policyStatusTranslations: Record<PolicyStatus, { en: string; th: string }>
   policy_shipped: { en: 'Policy Shipped', th: 'กรมธรรม์ถูกจัดส่ง' },
   policy_delivered: { en: 'Policy Delivered', th: 'กรมธรรม์จัดส่งสำเร็จ' },
   policy_cancelled: { en: 'Policy Cancelled', th: 'กรมธรรม์ยกเลิก' },
+  rework_required: { en: 'Rework Required', th: 'งานติดปัญหา' },
 };
 
 // Policy kind translations
