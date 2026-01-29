@@ -699,7 +699,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem>
-                            {language === 'th' ? 'รายละเอียด' : 'View Details'}
+                            {language === 'th' ? 'ดูรายละเอียด' : 'View Details'}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
