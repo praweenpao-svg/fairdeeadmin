@@ -832,10 +832,10 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                 {isPostLeadStage && (
                   <>
                     <th className="data-table-header px-4 py-3 text-left">
-                      {language === 'th' ? 'สถานะ (ภาคสมัครใจ)' : 'VMI Status'}
+                      {language === 'th' ? 'สถานะงาน (ภาคสมัครใจ)' : 'VMI Status'}
                     </th>
                     <th className="data-table-header px-4 py-3 text-left">
-                      {language === 'th' ? 'สถานะ (ภาคบังคับ)' : 'CMI Status'}
+                      {language === 'th' ? 'สถานะงาน (ภาคบังคับ)' : 'CMI Status'}
                     </th>
                   </>
                 )}
