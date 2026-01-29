@@ -333,8 +333,10 @@ const generateLeads = (): Lead[] => {
   };
 
   // TO CONVERT (10 leads) - unconverted leads with unpaid + conversion statuses
-  // Statuses for new_leads/coa
-  const conversionStatuses = ['pending', 'docs_missing', 'waiting_for_insurer', 'partially_added', 'completed', 'quotation_shared', 'invalid'];
+  // Statuses for new_leads
+  const newLeadsStatuses = ['pending', 'docs_missing', 'waiting_for_insurer', 'partially_added', 'completed', 'quotation_shared'];
+  // Statuses for COA (no 'partially_added')
+  const coaStatuses = ['pending', 'docs_missing', 'waiting_for_insurer', 'completed', 'quotation_shared'];
   // Statuses for renewals
   const renewalStatuses = ['price_pending', 'revision_pending', 'renewal_rejected', 'price_ready'];
 
@@ -347,10 +349,15 @@ const generateLeads = (): Lead[] => {
     // Determine lead type: COA every 3rd, Renewals every 5th, otherwise New Leads
     const leadType = i % 3 === 0 ? 'coa' : i % 5 === 0 ? 'renewals' : 'new_leads';
     
-    // Use renewal-specific statuses for renewals, conversion statuses for others
-    const saleStatus = leadType === 'renewals' 
-      ? renewalStatuses[i % renewalStatuses.length] as Lead['saleStatus']
-      : conversionStatuses[i % conversionStatuses.length] as Lead['saleStatus'];
+    // Use appropriate statuses based on lead type
+    let saleStatus: Lead['saleStatus'];
+    if (leadType === 'renewals') {
+      saleStatus = renewalStatuses[i % renewalStatuses.length] as Lead['saleStatus'];
+    } else if (leadType === 'coa') {
+      saleStatus = coaStatuses[i % coaStatuses.length] as Lead['saleStatus'];
+    } else {
+      saleStatus = newLeadsStatuses[i % newLeadsStatuses.length] as Lead['saleStatus'];
+    }
 
     const leadData: Partial<Lead> = {
       id: String(id),
