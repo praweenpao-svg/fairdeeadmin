@@ -109,12 +109,9 @@ export function PolicyRecordRow({ policy, isStageRelevant = true, isEditable = t
             </SelectContent>
           </Select>
         ) : (
-          <Badge 
-            variant="secondary" 
-            className={cn('text-xs font-medium cursor-not-allowed', getStatusBadgeColor(policy.status))}
-          >
+          <div className="w-[180px] h-8 text-xs flex items-center px-3 rounded-md border border-input bg-muted/50 text-muted-foreground cursor-not-allowed">
             {policyStatusTranslations[policy.status][language]}
-          </Badge>
+          </div>
         )}
       </div>
 
