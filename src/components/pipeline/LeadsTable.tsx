@@ -515,7 +515,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
             <thead>
               <tr className="border-b border-border">
                 <th className="data-table-header w-10 px-4 py-3"></th>
-                <th className="data-table-header px-4 py-3 text-left">Leads</th>
+                <th className="data-table-header px-4 py-3 text-left">ID</th>
                 <th className="data-table-header px-4 py-3 text-left">Agent</th>
                 <th className="data-table-header px-4 py-3 text-left">Created On</th>
                 <th className="data-table-header px-4 py-3 text-left">Updated On</th>
