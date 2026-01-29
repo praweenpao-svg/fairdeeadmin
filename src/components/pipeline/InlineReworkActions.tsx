@@ -16,6 +16,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { ReworkConfig, ReworkAttachment, ReworkHistoryEntry, Lead } from '@/types/pipeline';
+import { useLanguageStore } from '@/stores/languageStore';
 
 interface InlineReworkActionsProps {
   lead: Lead;
@@ -32,6 +33,7 @@ export function InlineReworkActions({
   onResolve,
   onReassign,
 }: InlineReworkActionsProps) {
+  const { language } = useLanguageStore();
   const [mainPopoverOpen, setMainPopoverOpen] = useState(false);
   const [showReassignForm, setShowReassignForm] = useState(false);
   const [selectedNewReasonId, setSelectedNewReasonId] = useState<string>('');
@@ -105,7 +107,7 @@ export function InlineReworkActions({
           className="w-[200px] h-8 text-xs border border-warning text-warning rounded-md px-3 flex items-center gap-2 cursor-pointer hover:bg-warning/10 transition-colors"
         >
           <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
-          <span className="truncate">Rework Required</span>
+          <span className="truncate">{language === 'th' ? 'งานติดปัญหา' : 'Rework Required'}</span>
         </div>
       </PopoverTrigger>
       <PopoverContent className="w-80" align="start">
@@ -113,14 +115,23 @@ export function InlineReworkActions({
           <div className="space-y-4">
             {/* Latest Reason Display */}
             <div className="space-y-2">
-              <div className="text-xs font-medium text-muted-foreground">Latest Rework Reason</div>
+              <div className="text-xs font-medium text-muted-foreground">
+                {language === 'th' ? 'เหตุผลล่าสุด' : 'Latest Rework Reason'}
+              </div>
               <div className="p-3 bg-warning/10 border border-warning/20 rounded-md">
-                <p className="text-sm font-medium text-warning">{latestEntry.reasonLabel}</p>
+                <p className="text-sm font-medium text-warning">
+                  {(() => {
+                    const config = reworkConfigs.find(c => c.id === latestEntry.reasonId);
+                    return language === 'th' 
+                      ? (config?.descriptionTh || latestEntry.reasonLabel)
+                      : (config?.descriptionEn || latestEntry.reasonLabel);
+                  })()}
+                </p>
                 {latestEntry.details && (
                   <p className="text-xs text-muted-foreground mt-1">{latestEntry.details}</p>
                 )}
                 <div className="text-xs text-muted-foreground mt-2">
-                  <span>By {latestEntry.savedBy}</span>
+                  <span>{language === 'th' ? 'โดย' : 'By'} {latestEntry.savedBy}</span>
                   <span className="mx-1">•</span>
                   <span>{latestEntry.savedAt}</span>
                 </div>
@@ -135,7 +146,7 @@ export function InlineReworkActions({
                 onClick={handleResolve}
               >
                 <CheckCircle className="w-3.5 h-3.5 mr-1.5" />
-                Resolve
+                {language === 'th' ? 'แก้ไขแล้ว' : 'Resolve'}
               </Button>
               <Button
                 size="sm"
@@ -144,36 +155,38 @@ export function InlineReworkActions({
                 onClick={() => setShowReassignForm(true)}
               >
                 <ArrowRightLeft className="w-3.5 h-3.5 mr-1.5" />
-                Reassign
+                {language === 'th' ? 'มอบหมายใหม่' : 'Reassign'}
               </Button>
             </div>
           </div>
         ) : (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <div className="text-sm font-medium">Reassign rework</div>
+              <div className="text-sm font-medium">
+                {language === 'th' ? 'มอบหมายงานใหม่' : 'Reassign rework'}
+              </div>
               <Button
                 variant="ghost"
                 size="sm"
                 className="h-6 text-xs"
                 onClick={() => setShowReassignForm(false)}
               >
-                Back
+                {language === 'th' ? 'กลับ' : 'Back'}
               </Button>
             </div>
             
             <div className="space-y-2">
-              <Label className="text-xs">Select new reason</Label>
+              <Label className="text-xs">{language === 'th' ? 'เลือกเหตุผลใหม่' : 'Select new reason'}</Label>
               <Select value={selectedNewReasonId} onValueChange={setSelectedNewReasonId}>
                 <SelectTrigger className="w-full text-xs">
-                  <SelectValue placeholder="Select reason" />
+                  <SelectValue placeholder={language === 'th' ? 'เลือกเหตุผล' : 'Select reason'} />
                 </SelectTrigger>
                 <SelectContent>
                   {reworkConfigs
                     .filter((config) => config.id !== latestEntry.reasonId)
                     .map((config) => (
                       <SelectItem key={config.id} value={config.id}>
-                        {config.descriptionEn}
+                        {language === 'th' ? config.descriptionTh : config.descriptionEn}
                       </SelectItem>
                     ))}
                 </SelectContent>
@@ -181,9 +194,9 @@ export function InlineReworkActions({
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs">Details (optional)</Label>
+              <Label className="text-xs">{language === 'th' ? 'รายละเอียด (ไม่บังคับ)' : 'Details (optional)'}</Label>
               <Textarea
-                placeholder="Enter detailed reason..."
+                placeholder={language === 'th' ? 'ใส่รายละเอียดเพิ่มเติม...' : 'Enter detailed reason...'}
                 value={reassignDetails}
                 onChange={(e) => setReassignDetails(e.target.value)}
                 className="min-h-[60px] resize-none text-xs"
@@ -191,7 +204,7 @@ export function InlineReworkActions({
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs">Attachments</Label>
+              <Label className="text-xs">{language === 'th' ? 'ไฟล์แนบ' : 'Attachments'}</Label>
               <div className="flex flex-wrap gap-1.5">
                 {reassignAttachments.map((attachment) => (
                   <div
@@ -230,13 +243,13 @@ export function InlineReworkActions({
                 className="h-7 text-xs"
               >
                 <Upload className="w-3 h-3 mr-1.5" />
-                Attach files
+                {language === 'th' ? 'แนบไฟล์' : 'Attach files'}
               </Button>
             </div>
 
             <div className="flex justify-end gap-2 pt-2 border-t">
               <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={resetAndClose}>
-                Cancel
+                {language === 'th' ? 'ยกเลิก' : 'Cancel'}
               </Button>
               <Button
                 size="sm"
@@ -244,7 +257,7 @@ export function InlineReworkActions({
                 onClick={handleReassignConfirm}
                 disabled={!selectedNewReasonId}
               >
-                Reassign
+                {language === 'th' ? 'มอบหมายใหม่' : 'Reassign'}
               </Button>
             </div>
           </div>

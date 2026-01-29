@@ -296,7 +296,7 @@ const generateLeads = (): Lead[] => {
       vehicleDetails: vehiclePlates[(i + 5) % vehiclePlates.length],
       rfStatus: 'transferred',
       scStatus: 'claimed',
-      saleStatus: i % 3 === 0 ? 'pending_review' : i % 3 === 1 ? 'under_review' : 'de_in_progress',
+      saleStatus: 'pending_review',
       paymentStatus: 'paid',
       policyAttached: false,
       reworkRequired: hasRework,

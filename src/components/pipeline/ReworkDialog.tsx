@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ReworkAttachment, ReworkConfig } from '@/types/pipeline';
+import { useLanguageStore } from '@/stores/languageStore';
 
 interface ReworkDialogProps {
   open: boolean;
@@ -28,6 +29,7 @@ interface ReworkDialogProps {
 }
 
 export function ReworkDialog({ open, onOpenChange, reworkConfigs, onConfirm }: ReworkDialogProps) {
+  const { language } = useLanguageStore();
   const [selectedReasonId, setSelectedReasonId] = useState<string>('');
   const [details, setDetails] = useState('');
   const [attachments, setAttachments] = useState<ReworkAttachment[]>([]);
@@ -80,23 +82,23 @@ export function ReworkDialog({ open, onOpenChange, reworkConfigs, onConfirm }: R
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Rework Details</DialogTitle>
+          <DialogTitle>{language === 'th' ? 'รายละเอียดงานติดปัญหา' : 'Rework Details'}</DialogTitle>
           <DialogDescription>
-            Select a rework reason and provide additional details.
+            {language === 'th' ? 'เลือกเหตุผลและระบุรายละเอียดเพิ่มเติม' : 'Select a rework reason and provide additional details.'}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label>Rework Reason</Label>
+            <Label>{language === 'th' ? 'เหตุผล' : 'Rework Reason'}</Label>
             <Select value={selectedReasonId} onValueChange={setSelectedReasonId}>
               <SelectTrigger>
-                <SelectValue placeholder="Select rework reason" />
+                <SelectValue placeholder={language === 'th' ? 'เลือกเหตุผล' : 'Select rework reason'} />
               </SelectTrigger>
               <SelectContent>
                 {reworkConfigs.map((config) => (
                   <SelectItem key={config.id} value={config.id}>
-                    {config.descriptionEn}
+                    {language === 'th' ? config.descriptionTh : config.descriptionEn}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -104,10 +106,10 @@ export function ReworkDialog({ open, onOpenChange, reworkConfigs, onConfirm }: R
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="details">Rework reason details</Label>
+            <Label htmlFor="details">{language === 'th' ? 'รายละเอียดเพิ่มเติม' : 'Rework reason details'}</Label>
             <Textarea
               id="details"
-              placeholder="Enter detailed reason for rework..."
+              placeholder={language === 'th' ? 'ใส่รายละเอียดเพิ่มเติม...' : 'Enter detailed reason for rework...'}
               value={details}
               onChange={(e) => setDetails(e.target.value)}
               className="min-h-[120px] resize-none"
@@ -115,7 +117,7 @@ export function ReworkDialog({ open, onOpenChange, reworkConfigs, onConfirm }: R
           </div>
 
           <div className="space-y-2">
-            <Label>Attachments</Label>
+            <Label>{language === 'th' ? 'ไฟล์แนบ' : 'Attachments'}</Label>
             <div className="flex flex-wrap gap-2">
               {attachments.map((attachment) => (
                 <div
@@ -154,17 +156,17 @@ export function ReworkDialog({ open, onOpenChange, reworkConfigs, onConfirm }: R
               className="mt-2"
             >
               <Upload className="w-4 h-4 mr-2" />
-              Attach files (PNG, JPG, PDF)
+              {language === 'th' ? 'แนบไฟล์ (PNG, JPG, PDF)' : 'Attach files (PNG, JPG, PDF)'}
             </Button>
           </div>
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={handleCancel}>
-            Cancel
+            {language === 'th' ? 'ยกเลิก' : 'Cancel'}
           </Button>
           <Button onClick={handleConfirm} disabled={!selectedReasonId}>
-            Confirm
+            {language === 'th' ? 'ยืนยัน' : 'Confirm'}
           </Button>
         </DialogFooter>
       </DialogContent>
