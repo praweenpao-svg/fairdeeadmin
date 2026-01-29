@@ -34,73 +34,73 @@ interface HistoryLogDialogProps {
 
 // Action type configuration for display
 const actionConfig: Record<HistoryActionType, { 
-  label: string; 
+  label: { en: string; th: string }; 
   icon: typeof Clock; 
   color: string;
   bgColor: string;
 }> = {
   lead_created: { 
-    label: 'Lead Created', 
+    label: { en: 'Lead Created', th: 'สร้างงานใหม่' }, 
     icon: CirclePlus, 
     color: 'text-green-600',
     bgColor: 'bg-green-100 dark:bg-green-900/30',
   },
   status_changed: { 
-    label: 'Status Changed', 
+    label: { en: 'Status Changed', th: 'เปลี่ยนสถานะ' }, 
     icon: RefreshCw, 
     color: 'text-blue-600',
     bgColor: 'bg-blue-100 dark:bg-blue-900/30',
   },
   rework_created: { 
-    label: 'Rework Created', 
+    label: { en: 'Rework Created', th: 'สร้างงานติดปัญหา' }, 
     icon: RefreshCw, 
     color: 'text-orange-600',
     bgColor: 'bg-orange-100 dark:bg-orange-900/30',
   },
   rework_resolved: { 
-    label: 'Rework Resolved', 
+    label: { en: 'Rework Resolved', th: 'แก้ไขงานติดปัญหาแล้ว' }, 
     icon: CheckCircle, 
     color: 'text-green-600',
     bgColor: 'bg-green-100 dark:bg-green-900/30',
   },
   rework_reassigned: { 
-    label: 'Rework Reassigned', 
+    label: { en: 'Rework Reassigned', th: 'มอบหมายงานติดปัญหาใหม่' }, 
     icon: RefreshCw, 
     color: 'text-purple-600',
     bgColor: 'bg-purple-100 dark:bg-purple-900/30',
   },
   assignee_changed: { 
-    label: 'Assignee Changed', 
+    label: { en: 'Assignee Changed', th: 'เปลี่ยนผู้รับผิดชอบ' }, 
     icon: UserPlus, 
     color: 'text-indigo-600',
     bgColor: 'bg-indigo-100 dark:bg-indigo-900/30',
   },
   payment_status_changed: { 
-    label: 'Payment Updated', 
+    label: { en: 'Payment Updated', th: 'อัพเดทการชำระเงิน' }, 
     icon: CreditCard, 
     color: 'text-emerald-600',
     bgColor: 'bg-emerald-100 dark:bg-emerald-900/30',
   },
   rf_status_changed: { 
-    label: 'RF Status Changed', 
+    label: { en: 'RF Status Changed', th: 'เปลี่ยนสถานะ RF' }, 
     icon: RefreshCw, 
     color: 'text-cyan-600',
     bgColor: 'bg-cyan-100 dark:bg-cyan-900/30',
   },
   sc_status_changed: { 
-    label: 'SC Status Changed', 
+    label: { en: 'SC Status Changed', th: 'เปลี่ยนสถานะ SC' }, 
     icon: RefreshCw, 
     color: 'text-teal-600',
     bgColor: 'bg-teal-100 dark:bg-teal-900/30',
   },
   policy_attached: { 
-    label: 'Policy Attached', 
+    label: { en: 'Policy Attached', th: 'แนบกรมธรรม์' }, 
     icon: FileCheck, 
     color: 'text-blue-600',
     bgColor: 'bg-blue-100 dark:bg-blue-900/30',
   },
   shipping_updated: { 
-    label: 'Shipping Updated', 
+    label: { en: 'Shipping Updated', th: 'อัพเดทการจัดส่ง' }, 
     icon: Truck, 
     color: 'text-amber-600',
     bgColor: 'bg-amber-100 dark:bg-amber-900/30',
@@ -115,21 +115,21 @@ function formatStatusLabel(status: string): string {
 }
 
 // Format assignee type label
-function formatAssigneeType(type: string): string {
-  const labels: Record<string, string> = {
-    rf: 'RF Assignee',
-    sc: 'SC Assignee',
-    de: 'DE Assignee',
-    owner: 'Owner',
+function formatAssigneeType(type: string, language: 'en' | 'th'): string {
+  const labels: Record<string, { en: string; th: string }> = {
+    rf: { en: 'RF Assignee', th: 'ผู้รับผิดชอบ RF' },
+    sc: { en: 'SC Assignee', th: 'ผู้รับผิดชอบ SC' },
+    de: { en: 'DE Assignee', th: 'ผู้รับผิดชอบ DE' },
+    owner: { en: 'Owner', th: 'เจ้าของงาน' },
   };
-  return labels[type] || type.toUpperCase();
+  return labels[type]?.[language] || type.toUpperCase();
 }
 
-// Render description based on action type
-function getActionDescription(entry: HistoryLogEntry): React.ReactNode {
+// Action description component with language support
+function ActionDescription({ entry, language }: { entry: HistoryLogEntry; language: 'en' | 'th' }) {
   switch (entry.action) {
     case 'lead_created':
-      return <span className="text-muted-foreground">Lead was created</span>;
+      return <span className="text-muted-foreground">{language === 'th' ? 'สร้างงานใหม่' : 'Lead was created'}</span>;
     
     case 'status_changed':
       return (
@@ -148,7 +148,7 @@ function getActionDescription(entry: HistoryLogEntry): React.ReactNode {
       return (
         <div className="flex flex-col gap-1">
           <span className="text-xs font-medium text-orange-600 dark:text-orange-400">
-            Reason: {entry.reworkReasonLabel}
+            {language === 'th' ? 'เหตุผล:' : 'Reason:'} {entry.reworkReasonLabel}
           </span>
         </div>
       );
@@ -158,7 +158,7 @@ function getActionDescription(entry: HistoryLogEntry): React.ReactNode {
         <div className="flex items-center gap-2">
           <CheckCircle className="w-3.5 h-3.5 text-green-600" />
           <span className="text-xs text-green-600 dark:text-green-400">
-            Resolved: {entry.reworkReasonLabel}
+            {language === 'th' ? 'แก้ไขแล้ว:' : 'Resolved:'} {entry.reworkReasonLabel}
           </span>
         </div>
       );
@@ -167,11 +167,11 @@ function getActionDescription(entry: HistoryLogEntry): React.ReactNode {
       return (
         <div className="flex flex-col gap-1">
           <span className="text-xs text-purple-600 dark:text-purple-400">
-            New Reason: {entry.reworkReasonLabel}
+            {language === 'th' ? 'เหตุผลใหม่:' : 'New Reason:'} {entry.reworkReasonLabel}
           </span>
           {entry.toAssignee && (
             <span className="text-xs text-muted-foreground">
-              Assigned to: {entry.toAssignee}
+              {language === 'th' ? 'มอบหมายให้:' : 'Assigned to:'} {entry.toAssignee}
             </span>
           )}
         </div>
@@ -181,14 +181,14 @@ function getActionDescription(entry: HistoryLogEntry): React.ReactNode {
       return (
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-xs text-muted-foreground">
-            {formatAssigneeType(entry.assigneeType || '')}:
+            {formatAssigneeType(entry.assigneeType || '', language)}:
           </span>
           <span className="text-xs px-2 py-0.5 rounded bg-muted">
-            {entry.fromAssignee || 'Unassigned'}
+            {entry.fromAssignee || (language === 'th' ? 'ยังไม่มอบหมาย' : 'Unassigned')}
           </span>
           <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
           <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary font-medium">
-            {entry.toAssignee || 'Unassigned'}
+            {entry.toAssignee || (language === 'th' ? 'ยังไม่มอบหมาย' : 'Unassigned')}
           </span>
         </div>
       );
@@ -221,12 +221,12 @@ function getActionDescription(entry: HistoryLogEntry): React.ReactNode {
       );
     
     case 'policy_attached':
-      return <span className="text-muted-foreground">Policy document was attached</span>;
+      return <span className="text-muted-foreground">{language === 'th' ? 'แนบกรมธรรม์แล้ว' : 'Policy document was attached'}</span>;
     
     case 'shipping_updated':
       return (
         <span className="text-muted-foreground">
-          Shipping updated: {formatStatusLabel(entry.toStatus || '')}
+          {language === 'th' ? 'อัพเดทการจัดส่ง:' : 'Shipping updated:'} {formatStatusLabel(entry.toStatus || '')}
         </span>
       );
     
@@ -267,6 +267,8 @@ export function HistoryLogDialog({
   leadNumber, 
   historyLog,
 }: HistoryLogDialogProps) {
+  const { language } = useLanguageStore();
+
   // Sort entries by date (newest first)
   const sortedLog = [...historyLog].sort((a, b) => {
     // Try to parse dates for proper sorting
@@ -280,12 +282,14 @@ export function HistoryLogDialog({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <History className="w-5 h-5" />
-              History Log
+              {language === 'th' ? 'ประวัติการทำงาน' : 'History Log'}
             </DialogTitle>
-            <DialogDescription>Lead {leadNumber}</DialogDescription>
+            <DialogDescription>
+              {language === 'th' ? 'งาน' : 'Lead'} {leadNumber}
+            </DialogDescription>
           </DialogHeader>
           <div className="py-8 text-center text-muted-foreground">
-            No history log for this lead
+            {language === 'th' ? 'ไม่มีประวัติสำหรับงานนี้' : 'No history log for this lead'}
           </div>
         </DialogContent>
       </Dialog>
@@ -298,10 +302,10 @@ export function HistoryLogDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <History className="w-5 h-5" />
-            History Log
+            {language === 'th' ? 'ประวัติการทำงาน' : 'History Log'}
           </DialogTitle>
           <DialogDescription>
-            Lead {leadNumber} — {historyLog.length} {historyLog.length === 1 ? 'event' : 'events'}
+            {language === 'th' ? 'งาน' : 'Lead'} {leadNumber} — {historyLog.length} {historyLog.length === 1 ? (language === 'th' ? 'รายการ' : 'event') : (language === 'th' ? 'รายการ' : 'events')}
           </DialogDescription>
         </DialogHeader>
 
@@ -342,7 +346,7 @@ export function HistoryLogDialog({
                           config.bgColor,
                           config.color
                         )}>
-                          {config.label}
+                          {config.label[language]}
                         </span>
                         <div className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
                           <Clock className="w-3 h-3" />
@@ -358,7 +362,7 @@ export function HistoryLogDialog({
 
                       {/* Action description */}
                       <div className="text-sm">
-                        {getActionDescription(entry)}
+                        <ActionDescription entry={entry} language={language} />
                       </div>
 
                       {/* Comment */}
