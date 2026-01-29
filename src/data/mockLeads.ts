@@ -663,11 +663,28 @@ const generateLeads = (): Lead[] => {
     id++;
   }
 
-  // CANCELLED (4 leads)
-  for (let i = 0; i < 4; i++) {
+  // CANCELLED: 6 leads with VMI/CMI policy records
+  const cancelledScenarios: Array<{ policyType: PolicyType; vmiStatus: PolicyStatus; cmiStatus?: PolicyStatus }> = [
+    { policyType: 'vmi_only', vmiStatus: 'policy_cancelled' },
+    { policyType: 'vmi_only', vmiStatus: 'policy_cancelled' },
+    { policyType: 'vmi_cmi', vmiStatus: 'policy_cancelled', cmiStatus: 'policy_cancelled' }, // Both cancelled
+    { policyType: 'vmi_cmi', vmiStatus: 'policy_cancelled', cmiStatus: 'policy_cancelled' }, // Both cancelled
+    { policyType: 'vmi_cmi', vmiStatus: 'policy_cancelled', cmiStatus: 'policy_delivered' }, // VMI cancelled, CMI delivered
+    { policyType: 'vmi_only', vmiStatus: 'policy_cancelled' },
+  ];
+
+  for (let i = 0; i < cancelledScenarios.length; i++) {
+    const scenario = cancelledScenarios[i];
     const agent = agents[i % agents.length];
     const createdOn = `${String(10 - i).padStart(2, '0')}-01-2026`;
     const createdOnFull = `${createdOn} 12:00`;
+    
+    const policyRecords: PolicyRecord[] = scenario.policyType === 'vmi_only'
+      ? [{ id: `pol-${id}-vmi`, kind: 'vmi', status: scenario.vmiStatus, policyAttached: false }]
+      : [
+          { id: `pol-${id}-vmi`, kind: 'vmi', status: scenario.vmiStatus, policyAttached: false },
+          { id: `pol-${id}-cmi`, kind: 'cmi', status: scenario.cmiStatus!, policyAttached: scenario.cmiStatus === 'policy_delivered' },
+        ];
 
     const leadData: Partial<Lead> = {
       id: String(id),
@@ -689,6 +706,8 @@ const generateLeads = (): Lead[] => {
       rfAssignee: rfStaff[i % rfStaff.length],
       scAssignee: scStaff[i % scStaff.length],
       deAssignee: deStaff[i % deStaff.length],
+      policyType: scenario.policyType,
+      policyRecords,
     };
 
     leads.push({
