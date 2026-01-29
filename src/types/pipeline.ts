@@ -19,7 +19,12 @@ export type SaleStatus =
   | 'policy_issued'
   | 'policy_shipped'
   | 'policy_delivered'
-  | 'policy_cancelled';
+  | 'policy_cancelled'
+  // Renewal-specific statuses
+  | 'price_pending'
+  | 'revision_pending'
+  | 'renewal_rejected'
+  | 'price_ready';
 
 export type ShippingMethod = 'e_policy' | 'print_by_myself' | 'print_by_fairdee';
 
