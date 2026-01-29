@@ -188,17 +188,29 @@ const generateLeads = (): Lead[] => {
   };
 
   // TO CONVERT (10 leads) - unconverted leads with unpaid + conversion statuses
+  // Statuses for new_leads/coa
+  const conversionStatuses = ['pending', 'docs_missing', 'waiting_for_insurer', 'partially_added', 'completed', 'quotation_shared', 'invalid'];
+  // Statuses for renewals
+  const renewalStatuses = ['price_pending', 'revision_pending', 'renewal_rejected', 'price_ready'];
+
   for (let i = 0; i < 10; i++) {
     const agent = agents[i % agents.length];
     const hasSC = i % 3 !== 0;
     const createdOn = `${String(15 - i).padStart(2, '0')}-01-2026`;
     const createdOnFull = `${createdOn} 09:00`;
-    const conversionStatuses = ['pending', 'waiting_for_insurer', 'partially_added', 'completed', 'quotation_shared', 'invalid'];
+    
+    // Determine lead type: COA every 3rd, Renewals every 5th, otherwise New Leads
+    const leadType = i % 3 === 0 ? 'coa' : i % 5 === 0 ? 'renewals' : 'new_leads';
+    
+    // Use renewal-specific statuses for renewals, conversion statuses for others
+    const saleStatus = leadType === 'renewals' 
+      ? renewalStatuses[i % renewalStatuses.length] as Lead['saleStatus']
+      : conversionStatuses[i % conversionStatuses.length] as Lead['saleStatus'];
 
     const leadData: Partial<Lead> = {
       id: String(id),
       leadNumber: `#${10170 - i}`,
-      leadType: i % 3 === 0 ? 'coa' : i % 5 === 0 ? 'renewals' : 'new_leads',
+      leadType,
       paymentType: i % 2 === 0 ? 'full' : 'installment',
       agentId: agent.id,
       agentName: agent.name,
@@ -207,8 +219,7 @@ const generateLeads = (): Lead[] => {
       vehicleDetails: vehiclePlates[i % vehiclePlates.length],
       rfStatus: i < 2 ? 'pending' : 'transferred',
       scStatus: hasSC ? 'claimed' : 'pending',
-      // To Convert: unpaid + conversion status
-      saleStatus: conversionStatuses[i % conversionStatuses.length] as Lead['saleStatus'],
+      saleStatus,
       paymentStatus: 'unpaid',
       policyAttached: false,
       reworkRequired: false,
