@@ -34,59 +34,88 @@ interface LeadsTableProps {
   onLeadUpdate?: (leadId: string, updates: Partial<Lead>) => void;
 }
 
-const statusOptionsByStage: Record<PipelineStage, { value: string; label: string }[]> = {
+// Status translations
+const statusTranslations: Record<string, { en: string; th: string }> = {
+  // Pre-lead statuses (to_convert)
+  pending: { en: 'Pending', th: 'รอดำเนินการ' },
+  docs_missing: { en: 'Docs Missing', th: 'ขอเอกสารเพิ่มเติม' },
+  waiting_for_insurer: { en: 'Waiting for Insurer', th: 'รอเบี้ยจากบริษัทประกัน' },
+  partially_added: { en: 'Partially Added', th: 'มีเบี้ยบางส่วนแล้ว' },
+  completed: { en: 'Completed', th: 'เสร็จแล้ว' },
+  quotation_shared: { en: 'Quotation Shared', th: 'ส่งเบี้ยแล้ว' },
+  invalid: { en: 'Invalid', th: 'ปฎิเสธโดยแอดมิน' },
+  // Post-lead statuses
+  pending_payment: { en: 'Pending', th: 'รอดำเนินการ' },
+  pending_review: { en: 'Pending Review', th: 'รอตรวจเอกสาร' },
+  under_review: { en: 'Under Review', th: 'กำลังตรวจเอกสาร' },
+  de_in_progress: { en: 'DE in Progress', th: 'DE กำลังดำเนินการ' },
+  ready_for_de: { en: 'Ready for DE', th: 'พร้อมส่ง DE' },
+  pending_issuance: { en: 'Pending Issuance', th: 'รอออกกรมธรรม์' },
+  policy_issued: { en: 'Policy Uploaded', th: 'กรมธรรม์ออกแล้ว' },
+  policy_shipped: { en: 'Policy Shipped', th: 'กรมธรรม์ถูกจัดส่ง' },
+  policy_delivered: { en: 'Policy Delivered', th: 'กรมธรรม์จัดส่งสำเร็จ' },
+  policy_cancelled: { en: 'Policy Cancelled', th: 'กรมธรรม์ยกเลิก' },
+  rework_required: { en: 'Rework Required', th: 'งานติดปัญหา' },
+};
+
+// Helper to get translated status label
+function getStatusLabel(value: string, language: 'en' | 'th'): string {
+  return statusTranslations[value]?.[language] || value;
+}
+
+const statusOptionsByStage: Record<PipelineStage, string[]> = {
   all: [
-    { value: 'pending', label: 'Pending' },
-    { value: 'waiting_for_insurer', label: 'Waiting for Insurer' },
-    { value: 'partially_added', label: 'Partially Added' },
-    { value: 'completed', label: 'Completed' },
-    { value: 'quotation_shared', label: 'Quotation Shared' },
-    { value: 'invalid', label: 'Invalid' },
-    { value: 'pending_payment', label: 'Pending' },
-    { value: 'pending_review', label: 'Pending Review' },
-    { value: 'under_review', label: 'Under Review' },
-    { value: 'de_in_progress', label: 'DE in Progress' },
-    { value: 'pending_issuance', label: 'Pending Issuance' },
-    { value: 'policy_issued', label: 'Policy Issued' },
-    { value: 'policy_shipped', label: 'Policy Shipped' },
-    { value: 'policy_delivered', label: 'Policy Delivered' },
-    { value: 'policy_cancelled', label: 'Policy Cancelled' },
+    'pending',
+    'waiting_for_insurer',
+    'partially_added',
+    'completed',
+    'quotation_shared',
+    'invalid',
+    'pending_payment',
+    'pending_review',
+    'under_review',
+    'de_in_progress',
+    'pending_issuance',
+    'policy_issued',
+    'policy_shipped',
+    'policy_delivered',
+    'policy_cancelled',
   ],
   to_convert: [
-    { value: 'pending', label: 'Pending' },
-    { value: 'docs_missing', label: 'Docs Missing' },
-    { value: 'waiting_for_insurer', label: 'Waiting for Insurer' },
-    { value: 'partially_added', label: 'Partially Added' },
-    { value: 'completed', label: 'Completed' },
-    { value: 'quotation_shared', label: 'Quotation Shared' },
-    { value: 'invalid', label: 'Invalid' },
+    'pending',
+    'docs_missing',
+    'waiting_for_insurer',
+    'partially_added',
+    'completed',
+    'quotation_shared',
+    'invalid',
   ],
   to_pay: [
-    { value: 'pending_payment', label: 'Pending' },
-    { value: 'rework_required', label: 'Rework Required' },
+    'pending_payment',
+    'rework_required',
   ],
   to_report: [
-    { value: 'pending_review', label: 'Pending Review' },
-    { value: 'under_review', label: 'Under Review' },
-    { value: 'de_in_progress', label: 'DE in Progress' },
-    { value: 'rework_required', label: 'Rework Required' },
+    'pending_review',
+    'under_review',
+    'de_in_progress',
+    'rework_required',
   ],
   to_issue: [
-    { value: 'pending_issuance', label: 'Pending Issuance' },
-    { value: 'rework_required', label: 'Rework Required' },
+    'pending_issuance',
+    'rework_required',
   ],
   to_deliver: [
-    { value: 'policy_issued', label: 'Policy Issued' },
-    { value: 'rework_required', label: 'Rework Required' },
+    'policy_issued',
+    'rework_required',
   ],
   completed: [
-    { value: 'policy_issued', label: 'Policy Issued' },
-    { value: 'policy_shipped', label: 'Policy Shipped' },
-    { value: 'policy_delivered', label: 'Policy Delivered' },
-    { value: 'rework_required', label: 'Rework Required' },
+    'policy_issued',
+    'policy_shipped',
+    'policy_delivered',
+    'rework_required',
   ],
   cancelled: [
-    { value: 'policy_cancelled', label: 'Policy Cancelled' },
+    'policy_cancelled',
   ],
 };
 
@@ -665,12 +694,12 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                           onValueChange={(value) => handleStatusChange(lead, value)}
                         >
                           <SelectTrigger className="w-[200px] h-8 text-xs">
-                            <SelectValue placeholder="Select status" />
+                            <SelectValue placeholder={language === 'th' ? 'เลือกสถานะ' : 'Select status'} />
                           </SelectTrigger>
                           <SelectContent>
-                            {statusOptionsByStage[stage].map((option) => (
-                              <SelectItem key={option.value} value={option.value}>
-                                {option.label}
+                            {statusOptionsByStage[stage].map((statusValue) => (
+                              <SelectItem key={statusValue} value={statusValue}>
+                                {getStatusLabel(statusValue, language)}
                               </SelectItem>
                             ))}
                           </SelectContent>
