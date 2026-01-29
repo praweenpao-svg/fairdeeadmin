@@ -831,8 +831,12 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                 )}
                 {isPostLeadStage && (
                   <>
-                    <th className="data-table-header px-4 py-3 text-left">VMI</th>
-                    <th className="data-table-header px-4 py-3 text-left">CMI</th>
+                    <th className="data-table-header px-4 py-3 text-left">
+                      {language === 'th' ? 'สถานะ (ภาคสมัครใจ)' : 'VMI Status'}
+                    </th>
+                    <th className="data-table-header px-4 py-3 text-left">
+                      {language === 'th' ? 'สถานะ (ภาคบังคับ)' : 'CMI Status'}
+                    </th>
                   </>
                 )}
                 <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'ผู้รับผิดชอบ' : 'Owner'}</th>
