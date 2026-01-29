@@ -80,7 +80,7 @@ export function PolicyRecordRow({ policy, isStageRelevant = true, isEditable = t
       'flex items-center gap-4 py-2 px-4 border-l-2',
       isStageRelevant 
         ? 'bg-muted/30 border-primary/50' 
-        : 'bg-muted/10 border-muted-foreground/20 opacity-60'
+        : 'bg-muted/10 border-muted-foreground/20'
     )}>
       {/* Policy Kind Badge */}
       <Badge 
