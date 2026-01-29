@@ -596,7 +596,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                   <th className="data-table-header px-4 py-3 text-left">DE</th>
                 )}
                 <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'สถานะงาน' : 'Status'}</th>
-                <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'เจ้าของงาน' : 'Owner'}</th>
+                <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'ผู้รับผิดชอบ' : 'Owner'}</th>
                 <th className="data-table-header w-10 px-4 py-3"></th>
               </tr>
             </thead>

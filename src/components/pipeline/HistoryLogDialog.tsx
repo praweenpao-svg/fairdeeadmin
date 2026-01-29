@@ -107,11 +107,70 @@ const actionConfig: Record<HistoryActionType, {
   },
 };
 
-// Format status label for display
-function formatStatusLabel(status: string): string {
+// Status translations for history log
+const statusTranslations: Record<string, { en: string; th: string }> = {
+  pending: { en: 'Pending', th: 'รอดำเนินการ' },
+  docs_missing: { en: 'Docs Missing', th: 'ขอเอกสารเพิ่มเติม' },
+  waiting_for_insurer: { en: 'Waiting for Insurer', th: 'รอเบี้ยจากบริษัทประกัน' },
+  partially_added: { en: 'Partially Added', th: 'มีเบี้ยบางส่วนแล้ว' },
+  completed: { en: 'Completed', th: 'เสร็จแล้ว' },
+  quotation_shared: { en: 'Quotation Shared', th: 'ส่งเบี้ยให้ตัวแทนแล้ว' },
+  invalid: { en: 'Invalid', th: 'ปฎิเสธโดย Admin' },
+  price_pending: { en: 'Price Pending', th: 'ยังไม่ทราบเบี้ยต่ออายุ' },
+  revision_pending: { en: 'Revision Pending', th: 'กำลังต่อรองกับบริษัทประกัน' },
+  renewal_rejected: { en: 'Renewal Rejected', th: 'ปฎิเสธการต่ออายุ' },
+  price_ready: { en: 'Price Ready', th: 'ได้รับเบี้ยต่ออายุแล้ว' },
+  pending_payment: { en: 'Pending', th: 'รอชำระเงิน' },
+  pending_review: { en: 'Pending Review', th: 'รอตรวจเอกสาร' },
+  under_review: { en: 'Under Review', th: 'กำลังตรวจเอกสาร' },
+  de_in_progress: { en: 'DE in Progress', th: 'DE กำลังดำเนินการ' },
+  ready_for_de: { en: 'Ready for DE', th: 'พร้อมส่ง DE' },
+  pending_issuance: { en: 'Pending Issuance', th: 'รอออกกรมธรรม์' },
+  policy_issued: { en: 'Policy Issued', th: 'กรมธรรม์ออกแล้ว' },
+  policy_shipped: { en: 'Policy Shipped', th: 'กรมธรรม์ถูกจัดส่ง' },
+  policy_delivered: { en: 'Policy Delivered', th: 'กรมธรรม์จัดส่งสำเร็จ' },
+  policy_cancelled: { en: 'Policy Cancelled', th: 'กรมธรรม์ยกเลิก' },
+  unpaid: { en: 'Unpaid', th: 'ยังไม่ชำระ' },
+  paid: { en: 'Paid', th: 'ชำระแล้ว' },
+  partial: { en: 'Partial', th: 'ชำระบางส่วน' },
+  transferred: { en: 'Transferred', th: 'โอนแล้ว' },
+  claimed: { en: 'Claimed', th: 'รับงานแล้ว' },
+};
+
+// Format status label for display with language support
+function formatStatusLabel(status: string, language: 'en' | 'th'): string {
+  const translation = statusTranslations[status];
+  if (translation) {
+    return translation[language];
+  }
+  // Fallback: format the status key
   return status
     .replace(/_/g, ' ')
     .replace(/\b\w/g, l => l.toUpperCase());
+}
+
+// Rework reason translations
+const reworkReasonTranslations: Record<string, { en: string; th: string }> = {
+  '1': { en: 'Missing Documents', th: 'เอกสารไม่ครบ' },
+  '2': { en: 'Pending Confirmation', th: 'รอยืนยันข้อมูล' },
+  '3': { en: 'Pending Verification', th: 'รอตรวจสอบ' },
+  '4': { en: 'Pending Initial Payment', th: 'รองวดแรก' },
+  '5': { en: 'Pre-submission: Return to AST', th: 'ตีกลับก่อนแจ้งงาน' },
+  '6': { en: 'Reverted by Insurer', th: 'บ.ประกันตีกลับ' },
+  '7': { en: 'Rejected by Insurer', th: 'บ.ประกันปฎิเสธ' },
+  '8': { en: 'Pending Re-submission', th: 'รอแจ้งงานอีกครั้ง' },
+  '9': { en: 'Return to OPS', th: 'ตีกลับให้ OPS' },
+  '10': { en: 'Submitted to Insurer: Under Review', th: 'แจ้งประกันแล้ว รอพิจารณา' },
+  '11': { en: 'Pending Cancellation: Awaiting Documents', th: 'รอแจ้งประกันยกเลิก รอเอกสาร' },
+  '12': { en: 'Pending Cancellation: Documents Complete', th: 'รอแจ้งประกันยกเลิก เอกสารครบ' },
+};
+
+// Get translated rework reason
+function getReworkReasonLabel(reasonId: string | undefined, fallbackLabel: string | undefined, language: 'en' | 'th'): string {
+  if (reasonId && reworkReasonTranslations[reasonId]) {
+    return reworkReasonTranslations[reasonId][language];
+  }
+  return fallbackLabel || 'Unknown';
 }
 
 // Format assignee type label
@@ -120,7 +179,7 @@ function formatAssigneeType(type: string, language: 'en' | 'th'): string {
     rf: { en: 'RF Assignee', th: 'ผู้รับผิดชอบ RF' },
     sc: { en: 'SC Assignee', th: 'ผู้รับผิดชอบ SC' },
     de: { en: 'DE Assignee', th: 'ผู้รับผิดชอบ DE' },
-    owner: { en: 'Owner', th: 'เจ้าของงาน' },
+    owner: { en: 'Owner', th: 'ผู้รับผิดชอบ' },
   };
   return labels[type]?.[language] || type.toUpperCase();
 }
@@ -135,11 +194,11 @@ function ActionDescription({ entry, language }: { entry: HistoryLogEntry; langua
       return (
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-xs px-2 py-0.5 rounded bg-muted">
-            {formatStatusLabel(entry.fromStatus || 'Unknown')}
+            {formatStatusLabel(entry.fromStatus || 'Unknown', language)}
           </span>
           <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
           <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary font-medium">
-            {formatStatusLabel(entry.toStatus || 'Unknown')}
+            {formatStatusLabel(entry.toStatus || 'Unknown', language)}
           </span>
         </div>
       );
@@ -148,7 +207,7 @@ function ActionDescription({ entry, language }: { entry: HistoryLogEntry; langua
       return (
         <div className="flex flex-col gap-1">
           <span className="text-xs font-medium text-orange-600 dark:text-orange-400">
-            {language === 'th' ? 'เหตุผล:' : 'Reason:'} {entry.reworkReasonLabel}
+            {language === 'th' ? 'เหตุผล:' : 'Reason:'} {getReworkReasonLabel(entry.reworkReasonId, entry.reworkReasonLabel, language)}
           </span>
         </div>
       );
@@ -158,7 +217,7 @@ function ActionDescription({ entry, language }: { entry: HistoryLogEntry; langua
         <div className="flex items-center gap-2">
           <CheckCircle className="w-3.5 h-3.5 text-green-600" />
           <span className="text-xs text-green-600 dark:text-green-400">
-            {language === 'th' ? 'แก้ไขแล้ว:' : 'Resolved:'} {entry.reworkReasonLabel}
+            {language === 'th' ? 'แก้ไขแล้ว:' : 'Resolved:'} {getReworkReasonLabel(entry.reworkReasonId, entry.reworkReasonLabel, language)}
           </span>
         </div>
       );
@@ -167,7 +226,7 @@ function ActionDescription({ entry, language }: { entry: HistoryLogEntry; langua
       return (
         <div className="flex flex-col gap-1">
           <span className="text-xs text-purple-600 dark:text-purple-400">
-            {language === 'th' ? 'เหตุผลใหม่:' : 'New Reason:'} {entry.reworkReasonLabel}
+            {language === 'th' ? 'เหตุผลใหม่:' : 'New Reason:'} {getReworkReasonLabel(entry.reworkReasonId, entry.reworkReasonLabel, language)}
           </span>
           {entry.toAssignee && (
             <span className="text-xs text-muted-foreground">
@@ -197,11 +256,11 @@ function ActionDescription({ entry, language }: { entry: HistoryLogEntry; langua
       return (
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-xs px-2 py-0.5 rounded bg-muted">
-            {formatStatusLabel(entry.fromStatus || 'Unknown')}
+            {formatStatusLabel(entry.fromStatus || 'Unknown', language)}
           </span>
           <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
           <span className="text-xs px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-medium">
-            {formatStatusLabel(entry.toStatus || 'Unknown')}
+            {formatStatusLabel(entry.toStatus || 'Unknown', language)}
           </span>
         </div>
       );
@@ -211,11 +270,11 @@ function ActionDescription({ entry, language }: { entry: HistoryLogEntry; langua
       return (
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-xs px-2 py-0.5 rounded bg-muted">
-            {formatStatusLabel(entry.fromStatus || 'Unknown')}
+            {formatStatusLabel(entry.fromStatus || 'Unknown', language)}
           </span>
           <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
           <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary font-medium">
-            {formatStatusLabel(entry.toStatus || 'Unknown')}
+            {formatStatusLabel(entry.toStatus || 'Unknown', language)}
           </span>
         </div>
       );
@@ -226,7 +285,7 @@ function ActionDescription({ entry, language }: { entry: HistoryLogEntry; langua
     case 'shipping_updated':
       return (
         <span className="text-muted-foreground">
-          {language === 'th' ? 'อัพเดทการจัดส่ง:' : 'Shipping updated:'} {formatStatusLabel(entry.toStatus || '')}
+          {language === 'th' ? 'อัพเดทการจัดส่ง:' : 'Shipping updated:'} {formatStatusLabel(entry.toStatus || '', language)}
         </span>
       );
     
@@ -356,7 +415,7 @@ export function HistoryLogDialog({
                       {/* Triggered by */}
                       <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                         <User className="w-3 h-3" />
-                        <span>{entry.triggeredBy}</span>
+                        <span>{language === 'th' ? 'โดย' : 'By'} {entry.triggeredBy}</span>
                       </div>
 
                       {/* Action description */}
