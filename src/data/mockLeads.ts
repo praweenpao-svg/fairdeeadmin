@@ -388,7 +388,7 @@ const generateLeads = (): Lead[] => {
     id++;
   }
 
-  // TO PAY (15 leads) - with policyType and policyRecords
+  // TO PAY (15 leads) - with policyType and policyRecords (some with split statuses)
   for (let i = 0; i < 15; i++) {
     const agent = agents[i % agents.length];
     const hasRework = i >= 13;
@@ -396,14 +396,46 @@ const generateLeads = (): Lead[] => {
     const createdOn = `${String(7 - Math.floor(i / 3)).padStart(2, '0')}-01-2026`;
     const createdOnFull = `${createdOn} 09:00`;
     
-    // Alternate between vmi_only and vmi_cmi
+    // Alternate between vmi_only and vmi_cmi with varying statuses
     const policyType: PolicyType = i % 3 === 0 ? 'vmi_cmi' : 'vmi_only';
-    const policyRecords: PolicyRecord[] = policyType === 'vmi_only' 
-      ? [{ id: `pol-${id}-vmi`, kind: 'vmi', status: 'pending_payment', policyAttached: false }]
-      : [
+    let policyRecords: PolicyRecord[];
+    
+    if (policyType === 'vmi_only') {
+      policyRecords = [{ id: `pol-${id}-vmi`, kind: 'vmi', status: 'pending_payment', policyAttached: false }];
+    } else {
+      // For vmi_cmi, create split statuses so sale appears in multiple tabs
+      if (i === 0) {
+        // VMI pending payment, CMI already in review (shows in To Pay + To Report)
+        policyRecords = [
+          { id: `pol-${id}-vmi`, kind: 'vmi', status: 'pending_payment', policyAttached: false },
+          { id: `pol-${id}-cmi`, kind: 'cmi', status: 'pending_review', policyAttached: false },
+        ];
+      } else if (i === 3) {
+        // VMI pending payment, CMI pending issuance (shows in To Pay + To Issue)
+        policyRecords = [
+          { id: `pol-${id}-vmi`, kind: 'vmi', status: 'pending_payment', policyAttached: false },
+          { id: `pol-${id}-cmi`, kind: 'cmi', status: 'pending_issuance', policyAttached: false },
+        ];
+      } else if (i === 6) {
+        // VMI pending payment, CMI already issued (shows in To Pay + To Deliver)
+        policyRecords = [
+          { id: `pol-${id}-vmi`, kind: 'vmi', status: 'pending_payment', policyAttached: false },
+          { id: `pol-${id}-cmi`, kind: 'cmi', status: 'policy_issued', policyAttached: true },
+        ];
+      } else if (i === 9) {
+        // VMI pending payment, CMI delivered (shows in To Pay + Completed)
+        policyRecords = [
+          { id: `pol-${id}-vmi`, kind: 'vmi', status: 'pending_payment', policyAttached: false },
+          { id: `pol-${id}-cmi`, kind: 'cmi', status: 'policy_delivered', policyAttached: true },
+        ];
+      } else {
+        // Both pending payment
+        policyRecords = [
           { id: `pol-${id}-vmi`, kind: 'vmi', status: 'pending_payment', policyAttached: false },
           { id: `pol-${id}-cmi`, kind: 'cmi', status: 'pending_payment', policyAttached: false },
         ];
+      }
+    }
 
     const leadData: Partial<Lead> = {
       id: String(id),
@@ -447,14 +479,40 @@ const generateLeads = (): Lead[] => {
     const createdOn = `${String(23 - i).padStart(2, '0')}-09-2025`;
     const createdOnFull = `${createdOn} 10:00`;
 
-    // Alternate between vmi_only and vmi_cmi
+    // Alternate between vmi_only and vmi_cmi with varying statuses
     const policyType: PolicyType = i % 4 === 0 ? 'vmi_cmi' : 'vmi_only';
-    const policyRecords: PolicyRecord[] = policyType === 'vmi_only' 
-      ? [{ id: `pol-${id}-vmi`, kind: 'vmi', status: 'pending_review', policyAttached: false }]
-      : [
+    let policyRecords: PolicyRecord[];
+    
+    if (policyType === 'vmi_only') {
+      policyRecords = [{ id: `pol-${id}-vmi`, kind: 'vmi', status: 'pending_review', policyAttached: false }];
+    } else {
+      // For vmi_cmi, create split statuses
+      if (i === 0) {
+        // VMI in review, CMI pending issuance (shows in To Report + To Issue)
+        policyRecords = [
+          { id: `pol-${id}-vmi`, kind: 'vmi', status: 'pending_review', policyAttached: false },
+          { id: `pol-${id}-cmi`, kind: 'cmi', status: 'pending_issuance', policyAttached: false },
+        ];
+      } else if (i === 4) {
+        // VMI in review, CMI already issued (shows in To Report + To Deliver)
+        policyRecords = [
+          { id: `pol-${id}-vmi`, kind: 'vmi', status: 'pending_review', policyAttached: false },
+          { id: `pol-${id}-cmi`, kind: 'cmi', status: 'policy_issued', policyAttached: true },
+        ];
+      } else if (i === 8) {
+        // VMI in review, CMI delivered (shows in To Report + Completed)
+        policyRecords = [
+          { id: `pol-${id}-vmi`, kind: 'vmi', status: 'pending_review', policyAttached: false },
+          { id: `pol-${id}-cmi`, kind: 'cmi', status: 'policy_delivered', policyAttached: true },
+        ];
+      } else {
+        // Both pending review
+        policyRecords = [
           { id: `pol-${id}-vmi`, kind: 'vmi', status: 'pending_review', policyAttached: false },
           { id: `pol-${id}-cmi`, kind: 'cmi', status: 'pending_review', policyAttached: false },
         ];
+      }
+    }
 
     const leadData: Partial<Lead> = {
       id: String(id),
@@ -506,10 +564,28 @@ const generateLeads = (): Lead[] => {
     } else {
       // For vmi_cmi, show some with different statuses to demonstrate split appearance
       if (i === 0) {
-        // VMI in To Issue, CMI already issued (would show in To Deliver)
+        // VMI in To Issue, CMI already issued (shows in To Issue + To Deliver)
         policyRecords = [
           { id: `pol-${id}-vmi`, kind: 'vmi', status: 'pending_issuance', policyAttached: false },
           { id: `pol-${id}-cmi`, kind: 'cmi', status: 'policy_issued', policyAttached: true },
+        ];
+      } else if (i === 3) {
+        // VMI in To Issue, CMI already delivered (shows in To Issue + Completed)
+        policyRecords = [
+          { id: `pol-${id}-vmi`, kind: 'vmi', status: 'pending_issuance', policyAttached: false },
+          { id: `pol-${id}-cmi`, kind: 'cmi', status: 'policy_delivered', policyAttached: true },
+        ];
+      } else if (i === 6) {
+        // VMI in To Issue, CMI pending review (shows in To Issue + To Report)
+        policyRecords = [
+          { id: `pol-${id}-vmi`, kind: 'vmi', status: 'pending_issuance', policyAttached: false },
+          { id: `pol-${id}-cmi`, kind: 'cmi', status: 'pending_review', policyAttached: false },
+        ];
+      } else if (i === 9) {
+        // VMI in To Issue, CMI pending payment (shows in To Issue + To Pay)
+        policyRecords = [
+          { id: `pol-${id}-vmi`, kind: 'vmi', status: 'pending_issuance', policyAttached: false },
+          { id: `pol-${id}-cmi`, kind: 'cmi', status: 'pending_payment', policyAttached: false },
         ];
       } else {
         policyRecords = [
@@ -576,10 +652,28 @@ const generateLeads = (): Lead[] => {
     } else {
       // For vmi_cmi, show different statuses
       if (i === 0) {
-        // VMI already delivered, CMI still pending delivery
+        // VMI to deliver, CMI already delivered (shows in To Deliver + Completed)
         policyRecords = [
-          { id: `pol-${id}-vmi`, kind: 'vmi', status: 'policy_delivered', policyAttached: true, shippingMethod: 'e_policy' },
-          { id: `pol-${id}-cmi`, kind: 'cmi', status: 'policy_issued', policyAttached: true, shippingMethod: 'print_by_fairdee' },
+          { id: `pol-${id}-vmi`, kind: 'vmi', status: 'policy_issued', policyAttached: true, shippingMethod: 'print_by_fairdee' },
+          { id: `pol-${id}-cmi`, kind: 'cmi', status: 'policy_delivered', policyAttached: true, shippingMethod: 'e_policy' },
+        ];
+      } else if (i === 3) {
+        // VMI to deliver, CMI pending issuance (shows in To Deliver + To Issue)
+        policyRecords = [
+          { id: `pol-${id}-vmi`, kind: 'vmi', status: 'policy_issued', policyAttached: true, shippingMethod: 'print_by_fairdee' },
+          { id: `pol-${id}-cmi`, kind: 'cmi', status: 'pending_issuance', policyAttached: false },
+        ];
+      } else if (i === 6) {
+        // VMI to deliver, CMI pending review (shows in To Deliver + To Report)
+        policyRecords = [
+          { id: `pol-${id}-vmi`, kind: 'vmi', status: 'policy_issued', policyAttached: true, shippingMethod: 'e_policy' },
+          { id: `pol-${id}-cmi`, kind: 'cmi', status: 'pending_review', policyAttached: false },
+        ];
+      } else if (i === 9) {
+        // VMI to deliver, CMI pending payment (shows in To Deliver + To Pay)
+        policyRecords = [
+          { id: `pol-${id}-vmi`, kind: 'vmi', status: 'policy_issued', policyAttached: true, shippingMethod: 'print_by_myself' },
+          { id: `pol-${id}-cmi`, kind: 'cmi', status: 'pending_payment', policyAttached: false },
         ];
       } else {
         policyRecords = [
