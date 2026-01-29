@@ -16,7 +16,7 @@ import { cn } from '@/lib/utils';
 import { applyAllFilters } from '@/utils/leadFilters';
 
 const Index = () => {
-  const [activeStage, setActiveStage] = useState<PipelineStage>('all');
+  const [activeStage, setActiveStage] = useState<PipelineStage>('to_convert');
   const [searchQuery, setSearchQuery] = useState('');
   const [leads, setLeads] = useState<Lead[]>(mockLeads);
   const [reworkConfigs, setReworkConfigs] = useState<ReworkConfig[]>(mockReworkConfigs);
