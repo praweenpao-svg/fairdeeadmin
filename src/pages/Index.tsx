@@ -131,6 +131,7 @@ const Index = () => {
       <div className="p-6">
         {/* Filters Row */}
         <div className="flex flex-wrap items-center gap-3 mb-6">
+          {/* Search - Hidden for now, to be brought back later
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
@@ -140,6 +141,7 @@ const Index = () => {
               className="pl-9 w-[200px]"
             />
           </div>
+          */}
           
           {/* My Cases Toggle - Hidden for now, to be brought back later
           <button
@@ -155,11 +157,14 @@ const Index = () => {
           </button>
           */}
           
+          {/* DateRangeFilter - Hidden for now, to be brought back later
           <DateRangeFilter
             dateRange={dateRange}
             onDateRangeChange={setDateRange}
           />
+          */}
           
+          {/* All Filters Panel - Hidden for now, to be brought back later
           {useAllFiltersPanel ? (
             <AllFiltersPanel
               stage={activeStage}
@@ -174,8 +179,9 @@ const Index = () => {
               onClear={handleClearOtherStagesFilters}
             />
           )}
+          */}
 
-          {/* Filter Chips - for All and To Pay stages */}
+          {/* Filter Chips - Hidden for now, to be brought back later
           {useAllFiltersPanel && (
             <FilterChips
               dateRange={dateRange}
@@ -184,6 +190,7 @@ const Index = () => {
               onRemoveFilter={handleRemoveToPayFilter}
             />
           )}
+          */}
           
           {/* Lead Sub-tabs for Leads stage - right aligned */}
           {activeStage === 'to_convert' && (

@@ -4,18 +4,37 @@ import {
   Clock,
   PanelLeftClose,
   PanelLeft,
-  Globe,
   Settings2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useLanguageStore } from '@/stores/languageStore';
 
 interface AppSidebarProps {
   collapsed: boolean;
   onToggle: () => void;
 }
 
+const navItems = [
+  { 
+    to: '/', 
+    icon: Car, 
+    label: { en: 'Motor Policy', th: 'กรมธรรม์รถยนต์' }
+  },
+  { 
+    to: '/staff-timing', 
+    icon: Clock, 
+    label: { en: 'Staff Timing', th: 'เวลาทำงานพนักงาน' }
+  },
+  { 
+    to: '/rework-console', 
+    icon: Settings2, 
+    label: { en: 'Rework Console', th: 'จัดการ Rework' }
+  },
+];
+
 export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
   const location = useLocation();
+  const { language } = useLanguageStore();
 
   return (
     <aside
@@ -54,57 +73,30 @@ export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
         <div className="p-3">
           <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-sidebar-accent text-sidebar-muted text-sm">
             <span className="text-xs">🔍</span>
-            <span>Policies, affiliates, custom...</span>
+            <span>{language === 'th' ? 'ค้นหา...' : 'Policies, affiliates, custom...'}</span>
           </div>
         </div>
       )}
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto scrollbar-thin py-2">
-        <NavLink
-          to="/"
-          className={({ isActive }) =>
-            cn(
-              'flex items-center gap-3 px-4 py-2.5 text-sm transition-colors',
-              isActive
-                ? 'text-sidebar-foreground bg-sidebar-accent'
-                : 'text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-accent/50'
-            )
-          }
-        >
-          <Car className="w-5 h-5 flex-shrink-0" />
-          {!collapsed && <span>Motor Policy</span>}
-        </NavLink>
-
-        <NavLink
-          to="/staff-timing"
-          className={({ isActive }) =>
-            cn(
-              'flex items-center gap-3 px-4 py-2.5 text-sm transition-colors',
-              isActive
-                ? 'text-sidebar-foreground bg-sidebar-accent'
-                : 'text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-accent/50'
-            )
-          }
-        >
-          <Clock className="w-5 h-5 flex-shrink-0" />
-          {!collapsed && <span>Staff Timing</span>}
-        </NavLink>
-
-        <NavLink
-          to="/rework-console"
-          className={({ isActive }) =>
-            cn(
-              'flex items-center gap-3 px-4 py-2.5 text-sm transition-colors',
-              isActive
-                ? 'text-sidebar-foreground bg-sidebar-accent'
-                : 'text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-accent/50'
-            )
-          }
-        >
-          <Settings2 className="w-5 h-5 flex-shrink-0" />
-          {!collapsed && <span>Rework Console</span>}
-        </NavLink>
+        {navItems.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            className={({ isActive }) =>
+              cn(
+                'flex items-center gap-3 px-4 py-2.5 text-sm transition-colors',
+                isActive
+                  ? 'text-sidebar-foreground bg-sidebar-accent'
+                  : 'text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-accent/50'
+              )
+            }
+          >
+            <item.icon className="w-5 h-5 flex-shrink-0" />
+            {!collapsed && <span>{item.label[language]}</span>}
+          </NavLink>
+        ))}
       </nav>
 
       {/* Footer */}
@@ -120,12 +112,6 @@ export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
             </div>
           )}
         </div>
-        {!collapsed && (
-          <div className="flex items-center gap-2 mt-3 text-sidebar-muted">
-            <Globe className="w-4 h-4" />
-            <span className="text-xs">English</span>
-          </div>
-        )}
       </div>
     </aside>
   );
