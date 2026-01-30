@@ -105,7 +105,7 @@ export function PolicyReworkActions({
     }}>
       <PopoverTrigger asChild>
         <div 
-          className="w-[160px] h-8 text-xs border border-warning text-warning rounded-md px-3 flex items-center gap-2 cursor-pointer bg-warning/15 hover:bg-warning/30 transition-colors"
+          className="w-[160px] h-8 text-xs border border-warning text-warning rounded-md px-3 flex items-center gap-2 cursor-pointer bg-warning/10"
         >
           <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
           <span className="truncate">{language === 'th' ? 'งานติดปัญหา' : 'Rework Required'}</span>
