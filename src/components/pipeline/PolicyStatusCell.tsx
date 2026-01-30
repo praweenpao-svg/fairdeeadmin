@@ -8,6 +8,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { PolicyReworkActions } from './PolicyReworkActions';
+import { policyStatusColors, getStatusStyles } from '@/utils/statusColors';
 
 interface PolicyStatusCellProps {
   policy: PolicyRecord | undefined;
@@ -105,6 +106,10 @@ export function PolicyStatusCell({
   // Get status options for the current stage
   const statusOptions = policyStatusOptionsByStage[stage] || [];
 
+  // Get color styles for the status
+  const statusStyles = getStatusStyles(policy.status, policyStatusColors);
+  const disabledStatusStyles = getStatusStyles(policy.status, policyStatusColors, true);
+
   // Editable - show dropdown
   if (isEditable && statusOptions.length > 0) {
     return (
@@ -112,7 +117,10 @@ export function PolicyStatusCell({
         value={policy.status}
         onValueChange={(value) => onStatusChange?.(policy.id, value as PolicyStatus)}
       >
-        <SelectTrigger className="w-[160px] h-8 text-xs">
+        <SelectTrigger 
+          className="w-[160px] h-8 text-xs"
+          style={statusStyles}
+        >
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -126,9 +134,13 @@ export function PolicyStatusCell({
     );
   }
 
-  // Not editable - show greyed out box
+  // Not editable - show greyed out box with status color (reduced opacity)
+  const hasCustomColor = disabledStatusStyles.backgroundColor;
   return (
-    <div className="w-[160px] h-8 text-xs flex items-center px-3 rounded-md border border-input bg-muted/50 text-muted-foreground cursor-not-allowed">
+    <div 
+      className="w-[160px] h-8 text-xs flex items-center px-3 rounded-md border cursor-not-allowed"
+      style={hasCustomColor ? disabledStatusStyles : { backgroundColor: 'hsl(var(--muted) / 0.5)', borderColor: 'hsl(var(--input))', color: 'hsl(var(--muted-foreground))' }}
+    >
       {policyStatusTranslations[policy.status]?.[language] || policy.status}
     </div>
   );

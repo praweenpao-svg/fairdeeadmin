@@ -15,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { leadStatusColors, getStatusStyles } from '@/utils/statusColors';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -987,11 +988,14 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                               onReassign={handleReassignRework}
                             />
                           ) : (
-                            <Select 
+                          <Select 
                               value={lead.saleStatus || defaultStatusByStage[stage]}
                               onValueChange={(value) => handleStatusChange(lead, value)}
                             >
-                              <SelectTrigger className="w-[200px] h-8 text-xs">
+                              <SelectTrigger 
+                                className="w-[200px] h-8 text-xs"
+                                style={getStatusStyles(lead.saleStatus || defaultStatusByStage[stage], leadStatusColors)}
+                              >
                                 <SelectValue placeholder={language === 'th' ? 'เลือกสถานะ' : 'Select status'} />
                               </SelectTrigger>
                               <SelectContent>
