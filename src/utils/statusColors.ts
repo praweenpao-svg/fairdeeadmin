@@ -31,7 +31,7 @@ export const policyStatusColors: Record<string, StatusColorConfig> = {
   policy_shipped: { bg: '#E6F8F0' },
   policy_delivered: { bg: '#E6F8F0' },
   policy_cancelled: { bg: '#FFF5F5' },
-  rework_required: { bg: '#FFFEF2' },
+  rework_required: { bg: '#FDE68A' }, // Stronger amber - like hover state
 };
 
 // Get inline styles for a status
