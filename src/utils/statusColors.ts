@@ -42,7 +42,7 @@ export function getStatusStyles(status: string, colors: Record<string, StatusCol
     return {}; // Return empty for default styling
   }
   
-  const opacity = disabled ? 0.35 : 1;
+  const opacity = disabled ? 0.65 : 1;
   
   return {
     backgroundColor: config.bg,
