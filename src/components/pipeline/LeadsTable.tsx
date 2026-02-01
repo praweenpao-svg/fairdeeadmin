@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { 
   ExternalLink, 
   MoreVertical,
   History,
   Eye,
+  ChevronRight,
+  ChevronDown,
 } from 'lucide-react';
 import { Lead, PipelineStage, LeadType, ReworkConfig, CreatedByType, ReworkAttachment, ReworkHistoryEntry, HistoryLogEntry, PolicyStatus, PolicyReworkEntry } from '@/types/pipeline';
 import { cn } from '@/lib/utils';
@@ -251,6 +253,20 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
   const [selectedPolicyId, setSelectedPolicyId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [expandedLeads, setExpandedLeads] = useState<Set<string>>(new Set());
+
+  // Toggle expanded state for a lead
+  const toggleLeadExpanded = (leadId: string) => {
+    setExpandedLeads(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(leadId)) {
+        newSet.delete(leadId);
+      } else {
+        newSet.add(leadId);
+      }
+      return newSet;
+    });
+  };
 
   // Check if current stage is a post-lead stage (To Pay onwards)
   const isPostLeadStage = ['to_pay', 'to_report', 'to_issue', 'to_deliver', 'completed', 'cancelled'].includes(stage);
@@ -831,14 +847,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                   <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'สถานะงาน' : 'Status'}</th>
                 )}
                 {isPostLeadStage && (
-                  <>
-                    <th className="data-table-header px-4 py-3 text-left">
-                      {language === 'th' ? 'สถานะงาน (ภาคสมัครใจ)' : 'VMI Status'}
-                    </th>
-                    <th className="data-table-header px-4 py-3 text-left">
-                      {language === 'th' ? 'สถานะงาน (ภาคบังคับ)' : 'CMI Status'}
-                    </th>
-                  </>
+                  <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'สถานะงาน' : 'Status'}</th>
                 )}
                 <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'ผู้รับผิดชอบ' : 'Owner'}</th>
                 <th className="data-table-header w-10 px-4 py-3"></th>
@@ -847,7 +856,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
             <tbody>
               {sortedLeads.length === 0 ? (
                 <tr>
-                  <td colSpan={isPostLeadStage ? (showDEColumn ? 12 : 11) : (showDEColumn ? 11 : 10)} className="px-4 py-12 text-center text-muted-foreground">
+                  <td colSpan={showDEColumn ? 11 : 10} className="px-4 py-12 text-center text-muted-foreground">
                     No leads found for this stage
                   </td>
                 </tr>
@@ -866,32 +875,51 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                 // Check if each policy is editable (in current stage)
                 const isVmiEditable = vmiPolicy ? stagePolicies.some(p => p.id === vmiPolicy.id) : false;
                 const isCmiEditable = cmiPolicy ? stagePolicies.some(p => p.id === cmiPolicy.id) : false;
+                const isExpanded = expandedLeads.has(lead.id);
+                const hasPolicies = allPolicies.length > 0;
                 
                 return (
-                  <tr 
-                    key={lead.id}
-                    className={cn(
-                      'data-table-row',
-                      lead.reworkRequired && 'bg-warning/5'
-                    )}
-                  >
+                  <React.Fragment key={lead.id}>
+                    <tr 
+                      className={cn(
+                        'data-table-row',
+                        lead.reworkRequired && 'bg-warning/5'
+                      )}
+                    >
                       <td className="px-4 py-3">
-                        <div className="flex flex-col gap-1">
-                          <span className="font-medium text-sm">{lead.leadNumber}</span>
-                          <div className="flex items-center gap-1">
-                            <CreatedByBadge createdBy={lead.createdBy} />
-                            {lead.policyType && (
-                              <>
-                                <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
-                                  VMI
-                                </span>
-                                {lead.policyType === 'vmi_cmi' && (
-                                  <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300">
-                                    CMI
+                        <div className="flex items-start gap-2">
+                          {/* Expand/Collapse chevron for post-lead stages */}
+                          {isPostLeadStage && hasPolicies ? (
+                            <button 
+                              onClick={() => toggleLeadExpanded(lead.id)}
+                              className="mt-0.5 p-0.5 hover:bg-muted rounded transition-colors"
+                            >
+                              {isExpanded ? (
+                                <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                              ) : (
+                                <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                              )}
+                            </button>
+                          ) : (
+                            <div className="w-5" /> 
+                          )}
+                          <div className="flex flex-col gap-1">
+                            <span className="font-medium text-sm">{lead.leadNumber}</span>
+                            <div className="flex items-center gap-1">
+                              <CreatedByBadge createdBy={lead.createdBy} />
+                              {lead.policyType && (
+                                <>
+                                  <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                                    VMI
                                   </span>
-                                )}
-                              </>
-                            )}
+                                  {lead.policyType === 'vmi_cmi' && (
+                                    <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300">
+                                      CMI
+                                    </span>
+                                  )}
+                                </>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </td>
@@ -1013,30 +1041,22 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                         </td>
                       )}
                       {isPostLeadStage && (
-                        <>
-                          <td className="px-4 py-3">
-                            <PolicyStatusCell
-                              policy={vmiPolicy}
-                              stage={stage}
-                              isEditable={isVmiEditable}
-                              reworkConfigs={stageReworkConfigs}
-                              onStatusChange={(policyId, newStatus) => handlePolicyStatusChange(lead, policyId, newStatus)}
-                              onReworkResolve={(policyId) => handlePolicyReworkResolve(lead, policyId)}
-                              onReworkReassign={(policyId, reasonId, details, attachments) => handlePolicyReworkReassign(lead, policyId, reasonId, details, attachments)}
-                            />
-                          </td>
-                          <td className="px-4 py-3">
-                            <PolicyStatusCell
-                              policy={cmiPolicy}
-                              stage={stage}
-                              isEditable={isCmiEditable}
-                              reworkConfigs={stageReworkConfigs}
-                              onStatusChange={(policyId, newStatus) => handlePolicyStatusChange(lead, policyId, newStatus)}
-                              onReworkResolve={(policyId) => handlePolicyReworkResolve(lead, policyId)}
-                              onReworkReassign={(policyId, reasonId, details, attachments) => handlePolicyReworkReassign(lead, policyId, reasonId, details, attachments)}
-                            />
-                          </td>
-                        </>
+                        <td className="px-4 py-3">
+                          <button
+                            onClick={() => toggleLeadExpanded(lead.id)}
+                            className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
+                          >
+                            {allPolicies.length === 1 
+                              ? (language === 'th' ? '1 กรมธรรม์' : '1 Policy')
+                              : (language === 'th' ? `${allPolicies.length} กรมธรรม์` : `${allPolicies.length} Policies`)
+                            }
+                            {isExpanded ? (
+                              <ChevronDown className="w-3 h-3" />
+                            ) : (
+                              <ChevronRight className="w-3 h-3" />
+                            )}
+                          </button>
+                        </td>
                       )}
                       <td className="px-4 py-3">
                         {(() => {
@@ -1071,7 +1091,61 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                         </DropdownMenu>
                       </td>
                     </tr>
-                  );
+                    
+                    {/* Expanded Policy Rows */}
+                    {isPostLeadStage && isExpanded && allPolicies.length > 0 && (
+                      [...allPolicies]
+                        .sort((a, b) => {
+                          // VMI always comes first
+                          if (a.kind === 'vmi' && b.kind === 'cmi') return -1;
+                          if (a.kind === 'cmi' && b.kind === 'vmi') return 1;
+                          return 0;
+                        })
+                        .map((policy) => {
+                          const isEditable = stagePolicies.some(p => p.id === policy.id);
+                          const policyKindLabel = policy.kind === 'vmi' 
+                            ? (language === 'th' ? 'ภาคสมัครใจ' : 'VMI')
+                            : (language === 'th' ? 'ภาคบังคับ' : 'CMI');
+                          const policyKindColor = policy.kind === 'vmi'
+                            ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
+                            : 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300';
+                          
+                          return (
+                            <tr 
+                              key={policy.id}
+                              className={cn(
+                                'bg-muted/30 border-l-2',
+                                isEditable ? 'border-primary/50' : 'border-muted-foreground/20'
+                              )}
+                            >
+                              <td className="px-4 py-2 pl-12">
+                                <span className={cn('text-[10px] px-1.5 py-0.5 rounded font-medium', policyKindColor)}>
+                                  {policyKindLabel}
+                                </span>
+                              </td>
+                              <td colSpan={showDEColumn ? 7 : 6} className="px-4 py-2">
+                                {/* Empty cells for alignment */}
+                              </td>
+                              <td className="px-4 py-2">
+                                <PolicyStatusCell
+                                  policy={policy}
+                                  stage={stage}
+                                  isEditable={isEditable}
+                                  reworkConfigs={stageReworkConfigs}
+                                  onStatusChange={(policyId, newStatus) => handlePolicyStatusChange(lead, policyId, newStatus)}
+                                  onReworkResolve={(policyId) => handlePolicyReworkResolve(lead, policyId)}
+                                  onReworkReassign={(policyId, reasonId, details, attachments) => handlePolicyReworkReassign(lead, policyId, reasonId, details, attachments)}
+                                />
+                              </td>
+                              <td colSpan={2} className="px-4 py-2">
+                                {/* Empty cells for Owner and Actions */}
+                              </td>
+                            </tr>
+                          );
+                        })
+                    )}
+                  </React.Fragment>
+                );
               })
               )}
             </tbody>
