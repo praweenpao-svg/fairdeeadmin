@@ -1144,13 +1144,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                   return (
                                     <div 
                                       key={policy.id}
-                                      className={cn(
-                                        'grid grid-cols-6 gap-4 px-4 py-3 items-center transition-colors',
-                                        isEditable 
-                                          ? 'bg-primary/5 hover:bg-primary/10' 
-                                          : 'bg-muted/20 hover:bg-muted/30',
-                                        idx === 0 && 'rounded-t-none'
-                                      )}
+                                      className="grid grid-cols-6 gap-4 px-4 py-3 items-center transition-colors bg-card hover:bg-muted/30"
                                     >
                                       {/* Policy Kind Badge */}
                                       <div>
