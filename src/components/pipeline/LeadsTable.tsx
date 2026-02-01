@@ -28,7 +28,7 @@ import { mockStaffMembers } from '@/data/mockStaff';
 import { ReworkDialog } from './ReworkDialog';
 import { HistoryLogDialog } from './HistoryLogDialog';
 import { InlineReworkActions } from './InlineReworkActions';
-import { ExpandablePolicyRows } from './PolicyRecordRow';
+import { PolicyStatusCell } from './PolicyStatusCell';
 import { getPoliciesForStage } from './PipelineTabs';
 
 interface LeadsTableProps {
@@ -827,7 +827,19 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                 {showDEColumn && (
                   <th className="data-table-header px-4 py-3 text-left">DE</th>
                 )}
-                <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'สถานะงาน' : 'Status'}</th>
+                {!isPostLeadStage && (
+                  <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'สถานะงาน' : 'Status'}</th>
+                )}
+                {isPostLeadStage && (
+                  <>
+                    <th className="data-table-header px-4 py-3 text-left">
+                      {language === 'th' ? 'สถานะงาน (ภาคสมัครใจ)' : 'VMI Status'}
+                    </th>
+                    <th className="data-table-header px-4 py-3 text-left">
+                      {language === 'th' ? 'สถานะงาน (ภาคบังคับ)' : 'CMI Status'}
+                    </th>
+                  </>
+                )}
                 <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'ผู้รับผิดชอบ' : 'Owner'}</th>
                 <th className="data-table-header w-10 px-4 py-3"></th>
               </tr>
@@ -835,7 +847,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
             <tbody>
               {sortedLeads.length === 0 ? (
                 <tr>
-                  <td colSpan={showDEColumn ? 11 : 10} className="px-4 py-12 text-center text-muted-foreground">
+                  <td colSpan={isPostLeadStage ? (showDEColumn ? 12 : 11) : (showDEColumn ? 11 : 10)} className="px-4 py-12 text-center text-muted-foreground">
                     No leads found for this stage
                   </td>
                 </tr>
@@ -847,6 +859,13 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                 
                 // Get only the policy records relevant to this stage
                 const stagePolicies = isPostLeadStage ? getPoliciesForStage(lead, stage) : [];
+                // Get VMI and CMI policies
+                const allPolicies = lead.policyRecords || [];
+                const vmiPolicy = allPolicies.find(p => p.kind === 'vmi');
+                const cmiPolicy = allPolicies.find(p => p.kind === 'cmi');
+                // Check if each policy is editable (in current stage)
+                const isVmiEditable = vmiPolicy ? stagePolicies.some(p => p.id === vmiPolicy.id) : false;
+                const isCmiEditable = cmiPolicy ? stagePolicies.some(p => p.id === cmiPolicy.id) : false;
                 
                 return (
                   <tr 
@@ -958,7 +977,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                           </Select>
                         </td>
                       )}
-                      {!isPostLeadStage ? (
+                      {!isPostLeadStage && (
                         <td className="px-4 py-3">
                           {hasActiveRework ? (
                             <InlineReworkActions
@@ -992,18 +1011,32 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                             </Select>
                           )}
                         </td>
-                      ) : (
-                        <td className="px-4 py-3">
-                          <ExpandablePolicyRows
-                            policyRecords={lead.policyRecords || []}
-                            stagePolicies={stagePolicies}
-                            stage={stage}
-                            reworkConfigs={stageReworkConfigs}
-                            onPolicyStatusChange={(policyId, newStatus) => handlePolicyStatusChange(lead, policyId, newStatus)}
-                            onPolicyReworkResolve={(policyId) => handlePolicyReworkResolve(lead, policyId)}
-                            onPolicyReworkReassign={(policyId, reasonId, details, attachments) => handlePolicyReworkReassign(lead, policyId, reasonId, details, attachments)}
-                          />
-                        </td>
+                      )}
+                      {isPostLeadStage && (
+                        <>
+                          <td className="px-4 py-3">
+                            <PolicyStatusCell
+                              policy={vmiPolicy}
+                              stage={stage}
+                              isEditable={isVmiEditable}
+                              reworkConfigs={stageReworkConfigs}
+                              onStatusChange={(policyId, newStatus) => handlePolicyStatusChange(lead, policyId, newStatus)}
+                              onReworkResolve={(policyId) => handlePolicyReworkResolve(lead, policyId)}
+                              onReworkReassign={(policyId, reasonId, details, attachments) => handlePolicyReworkReassign(lead, policyId, reasonId, details, attachments)}
+                            />
+                          </td>
+                          <td className="px-4 py-3">
+                            <PolicyStatusCell
+                              policy={cmiPolicy}
+                              stage={stage}
+                              isEditable={isCmiEditable}
+                              reworkConfigs={stageReworkConfigs}
+                              onStatusChange={(policyId, newStatus) => handlePolicyStatusChange(lead, policyId, newStatus)}
+                              onReworkResolve={(policyId) => handlePolicyReworkResolve(lead, policyId)}
+                              onReworkReassign={(policyId, reasonId, details, attachments) => handlePolicyReworkReassign(lead, policyId, reasonId, details, attachments)}
+                            />
+                          </td>
+                        </>
                       )}
                       <td className="px-4 py-3">
                         {(() => {
