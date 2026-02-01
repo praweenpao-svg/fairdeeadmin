@@ -846,9 +846,6 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                 {!isPostLeadStage && (
                   <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'สถานะงาน' : 'Status'}</th>
                 )}
-                {isPostLeadStage && (
-                  <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'สถานะงาน' : 'Status'}</th>
-                )}
                 <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'ผู้รับผิดชอบ' : 'Owner'}</th>
                 <th className="data-table-header w-10 px-4 py-3"></th>
               </tr>
@@ -856,7 +853,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
             <tbody>
               {sortedLeads.length === 0 ? (
                 <tr>
-                  <td colSpan={showDEColumn ? 11 : 10} className="px-4 py-12 text-center text-muted-foreground">
+                  <td colSpan={isPostLeadStage ? (showDEColumn ? 10 : 9) : (showDEColumn ? 11 : 10)} className="px-4 py-12 text-center text-muted-foreground">
                     No leads found for this stage
                   </td>
                 </tr>
@@ -1040,24 +1037,6 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                           )}
                         </td>
                       )}
-                      {isPostLeadStage && (
-                        <td className="px-4 py-3">
-                          <button
-                            onClick={() => toggleLeadExpanded(lead.id)}
-                            className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
-                          >
-                            {allPolicies.length === 1 
-                              ? (language === 'th' ? '1 กรมธรรม์' : '1 Policy')
-                              : (language === 'th' ? `${allPolicies.length} กรมธรรม์` : `${allPolicies.length} Policies`)
-                            }
-                            {isExpanded ? (
-                              <ChevronDown className="w-3 h-3" />
-                            ) : (
-                              <ChevronRight className="w-3 h-3" />
-                            )}
-                          </button>
-                        </td>
-                      )}
                       <td className="px-4 py-3">
                         {(() => {
                           const owner = getOwner(lead);
@@ -1123,7 +1102,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                   {policyKindLabel}
                                 </span>
                               </td>
-                              <td colSpan={showDEColumn ? 7 : 6} className="px-4 py-2">
+                              <td colSpan={showDEColumn ? 6 : 5} className="px-4 py-2">
                                 {/* Empty cells for alignment */}
                               </td>
                               <td className="px-4 py-2">
