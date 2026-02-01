@@ -1089,6 +1089,36 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                             ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
                             : 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300';
                           
+                          // Format dates
+                          const formatDate = (dateStr?: string) => {
+                            if (!dateStr) return '-';
+                            const date = new Date(dateStr);
+                            return date.toLocaleString(language === 'th' ? 'th-TH' : 'en-US', {
+                              day: '2-digit',
+                              month: '2-digit',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            });
+                          };
+                          
+                          const formatDateOnly = (dateStr?: string) => {
+                            if (!dateStr) return '-';
+                            const date = new Date(dateStr);
+                            const day = String(date.getDate()).padStart(2, '0');
+                            const month = String(date.getMonth() + 1).padStart(2, '0');
+                            const year = date.getFullYear();
+                            return `${day}/${month}/${year}`;
+                          };
+                          
+                          const getPrintingPreferenceLabel = (method?: string) => {
+                            if (!method) return '-';
+                            if (method === 'e_policy') return 'E-Policy';
+                            if (method === 'print_by_myself') return language === 'th' ? 'พิมพ์เอง' : 'Print by Myself';
+                            if (method === 'print_by_fairdee') return language === 'th' ? 'พิมพ์โดย FairDee' : 'Print by FairDee';
+                            return '-';
+                          };
+                          
                           return (
                             <tr 
                               key={policy.id}
@@ -1097,14 +1127,33 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                 isEditable ? 'border-primary/50' : 'border-muted-foreground/20'
                               )}
                             >
+                              {/* Policy Kind */}
                               <td className="px-4 py-2 pl-12">
                                 <span className={cn('text-[10px] px-1.5 py-0.5 rounded font-medium', policyKindColor)}>
                                   {policyKindLabel}
                                 </span>
                               </td>
-                              <td colSpan={showDEColumn ? 6 : 5} className="px-4 py-2">
-                                {/* Empty cells for alignment */}
+                              {/* Updated On */}
+                              <td className="px-4 py-2 text-xs text-muted-foreground">
+                                {formatDate(policy.updatedOn)}
                               </td>
+                              {/* Policy Uploaded On */}
+                              <td className="px-4 py-2 text-xs text-muted-foreground">
+                                {formatDate(policy.policyUploadedOn)}
+                              </td>
+                              {/* Printing Preference */}
+                              <td className="px-4 py-2 text-xs">
+                                <span className={cn(
+                                  policy.shippingMethod === 'print_by_fairdee' && 'text-primary font-medium'
+                                )}>
+                                  {getPrintingPreferenceLabel(policy.shippingMethod)}
+                                </span>
+                              </td>
+                              {/* Policy Start Date */}
+                              <td className="px-4 py-2 text-xs text-muted-foreground">
+                                {formatDateOnly(policy.policyStartDate)}
+                              </td>
+                              {/* Status */}
                               <td className="px-4 py-2">
                                 <PolicyStatusCell
                                   policy={policy}
@@ -1116,8 +1165,9 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                   onReworkReassign={(policyId, reasonId, details, attachments) => handlePolicyReworkReassign(lead, policyId, reasonId, details, attachments)}
                                 />
                               </td>
-                              <td colSpan={2} className="px-4 py-2">
-                                {/* Empty cells for Owner and Actions */}
+                              {/* Empty remaining columns */}
+                              <td colSpan={showDEColumn ? 4 : 3} className="px-4 py-2">
+                                {/* Empty cells for RF, SC, DE, Owner, Actions */}
                               </td>
                             </tr>
                           );

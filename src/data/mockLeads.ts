@@ -399,12 +399,13 @@ const generateLeads = (): Lead[] => {
     const agent = agents[i % agents.length];
     const createdOn = `${String(7 - Math.floor(i / 2)).padStart(2, '0')}-01-2026`;
     const createdOnFull = `${createdOn} 09:00`;
+    const policyStartDate = `${String(15 + i).padStart(2, '0')}-02-2026`;
     
     const policyRecords: PolicyRecord[] = scenario.policyType === 'vmi_only'
-      ? [{ id: `pol-${id}-vmi`, kind: 'vmi', status: scenario.vmiStatus, policyAttached: false }]
+      ? [{ id: `pol-${id}-vmi`, kind: 'vmi', status: scenario.vmiStatus, policyAttached: false, updatedOn: createdOnFull, policyStartDate }]
       : [
-          { id: `pol-${id}-vmi`, kind: 'vmi', status: scenario.vmiStatus, policyAttached: false },
-          { id: `pol-${id}-cmi`, kind: 'cmi', status: scenario.cmiStatus!, policyAttached: scenario.cmiStatus === 'policy_issued' || scenario.cmiStatus === 'policy_delivered' },
+          { id: `pol-${id}-vmi`, kind: 'vmi', status: scenario.vmiStatus, policyAttached: false, updatedOn: createdOnFull, policyStartDate },
+          { id: `pol-${id}-cmi`, kind: 'cmi', status: scenario.cmiStatus!, policyAttached: scenario.cmiStatus === 'policy_issued' || scenario.cmiStatus === 'policy_delivered', updatedOn: createdOnFull, policyStartDate },
         ];
 
     const leadData: Partial<Lead> = {
@@ -454,12 +455,13 @@ const generateLeads = (): Lead[] => {
     const agent = agents[i % agents.length];
     const createdOn = `${String(23 - i).padStart(2, '0')}-09-2025`;
     const createdOnFull = `${createdOn} 10:00`;
+    const policyStartDate = `${String(1 + i).padStart(2, '0')}-10-2025`;
     
     const policyRecords: PolicyRecord[] = scenario.policyType === 'vmi_only'
-      ? [{ id: `pol-${id}-vmi`, kind: 'vmi', status: scenario.vmiStatus, policyAttached: false }]
+      ? [{ id: `pol-${id}-vmi`, kind: 'vmi', status: scenario.vmiStatus, policyAttached: false, updatedOn: createdOnFull, policyStartDate }]
       : [
-          { id: `pol-${id}-vmi`, kind: 'vmi', status: scenario.vmiStatus, policyAttached: false },
-          { id: `pol-${id}-cmi`, kind: 'cmi', status: scenario.cmiStatus!, policyAttached: scenario.cmiStatus === 'policy_issued' || scenario.cmiStatus === 'policy_delivered' },
+          { id: `pol-${id}-vmi`, kind: 'vmi', status: scenario.vmiStatus, policyAttached: false, updatedOn: createdOnFull, policyStartDate },
+          { id: `pol-${id}-cmi`, kind: 'cmi', status: scenario.cmiStatus!, policyAttached: scenario.cmiStatus === 'policy_issued' || scenario.cmiStatus === 'policy_delivered', updatedOn: createdOnFull, policyStartDate },
         ];
 
     const leadData: Partial<Lead> = {
@@ -509,12 +511,13 @@ const generateLeads = (): Lead[] => {
     const agent = agents[i % agents.length];
     const createdOn = `${String(18 - i).padStart(2, '0')}-09-2025`;
     const createdOnFull = `${createdOn} 11:00`;
+    const policyStartDate = `${String(25 - i).padStart(2, '0')}-09-2025`;
     
     const policyRecords: PolicyRecord[] = scenario.policyType === 'vmi_only'
-      ? [{ id: `pol-${id}-vmi`, kind: 'vmi', status: scenario.vmiStatus, policyAttached: false }]
+      ? [{ id: `pol-${id}-vmi`, kind: 'vmi', status: scenario.vmiStatus, policyAttached: false, updatedOn: createdOnFull, policyStartDate }]
       : [
-          { id: `pol-${id}-vmi`, kind: 'vmi', status: scenario.vmiStatus, policyAttached: false },
-          { id: `pol-${id}-cmi`, kind: 'cmi', status: scenario.cmiStatus!, policyAttached: scenario.cmiStatus === 'policy_issued' || scenario.cmiStatus === 'policy_delivered' },
+          { id: `pol-${id}-vmi`, kind: 'vmi', status: scenario.vmiStatus, policyAttached: false, updatedOn: createdOnFull, policyStartDate },
+          { id: `pol-${id}-cmi`, kind: 'cmi', status: scenario.cmiStatus!, policyAttached: scenario.cmiStatus === 'policy_issued' || scenario.cmiStatus === 'policy_delivered', updatedOn: createdOnFull, policyStartDate },
         ];
 
     const leadData: Partial<Lead> = {
@@ -565,12 +568,14 @@ const generateLeads = (): Lead[] => {
     const agent = agents[i % agents.length];
     const createdOn = `${String(12 - i).padStart(2, '0')}-09-2025`;
     const createdOnFull = `${createdOn} 14:00`;
+    const policyStartDate = `${String(20 - i).padStart(2, '0')}-09-2025`;
+    const policyUploadedOn = `${String(14 - i).padStart(2, '0')}-09-2025 16:30`;
     
     const policyRecords: PolicyRecord[] = scenario.policyType === 'vmi_only'
-      ? [{ id: `pol-${id}-vmi`, kind: 'vmi', status: scenario.vmiStatus, policyAttached: true, shippingMethod: shippingMethods[i % 3] }]
+      ? [{ id: `pol-${id}-vmi`, kind: 'vmi', status: scenario.vmiStatus, policyAttached: true, shippingMethod: shippingMethods[i % 3], updatedOn: createdOnFull, policyUploadedOn, policyStartDate }]
       : [
-          { id: `pol-${id}-vmi`, kind: 'vmi', status: scenario.vmiStatus, policyAttached: true, shippingMethod: shippingMethods[i % 3] },
-          { id: `pol-${id}-cmi`, kind: 'cmi', status: scenario.cmiStatus!, policyAttached: scenario.cmiStatus === 'policy_issued' || scenario.cmiStatus === 'policy_delivered', shippingMethod: scenario.cmiStatus === 'policy_issued' || scenario.cmiStatus === 'policy_delivered' ? shippingMethods[(i + 1) % 3] : undefined },
+          { id: `pol-${id}-vmi`, kind: 'vmi', status: scenario.vmiStatus, policyAttached: true, shippingMethod: shippingMethods[i % 3], updatedOn: createdOnFull, policyUploadedOn, policyStartDate },
+          { id: `pol-${id}-cmi`, kind: 'cmi', status: scenario.cmiStatus!, policyAttached: scenario.cmiStatus === 'policy_issued' || scenario.cmiStatus === 'policy_delivered', shippingMethod: scenario.cmiStatus === 'policy_issued' || scenario.cmiStatus === 'policy_delivered' ? shippingMethods[(i + 1) % 3] : undefined, updatedOn: createdOnFull, policyUploadedOn: scenario.cmiStatus === 'policy_issued' || scenario.cmiStatus === 'policy_delivered' ? policyUploadedOn : undefined, policyStartDate },
         ];
 
     const leadData: Partial<Lead> = {
@@ -621,12 +626,14 @@ const generateLeads = (): Lead[] => {
     const agent = agents[i % agents.length];
     const createdOn = `${String(5 - Math.floor(i / 2)).padStart(2, '0')}-09-2025`;
     const createdOnFull = `${createdOn} 08:00`;
+    const policyStartDate = `${String(10 - i).padStart(2, '0')}-09-2025`;
+    const policyUploadedOn = `${String(7 - Math.floor(i / 2)).padStart(2, '0')}-09-2025 10:00`;
     
     const policyRecords: PolicyRecord[] = scenario.policyType === 'vmi_only'
-      ? [{ id: `pol-${id}-vmi`, kind: 'vmi', status: scenario.vmiStatus, policyAttached: true, shippingMethod: shippingMethods[i % 3], trackingNumber: `TH${100000000 + i * 12345}` }]
+      ? [{ id: `pol-${id}-vmi`, kind: 'vmi', status: scenario.vmiStatus, policyAttached: true, shippingMethod: shippingMethods[i % 3], trackingNumber: `TH${100000000 + i * 12345}`, updatedOn: createdOnFull, policyUploadedOn, policyStartDate }]
       : [
-          { id: `pol-${id}-vmi`, kind: 'vmi', status: scenario.vmiStatus, policyAttached: true, shippingMethod: 'e_policy' },
-          { id: `pol-${id}-cmi`, kind: 'cmi', status: scenario.cmiStatus!, policyAttached: true, shippingMethod: 'print_by_fairdee', trackingNumber: `TH${100000000 + i * 12345}` },
+          { id: `pol-${id}-vmi`, kind: 'vmi', status: scenario.vmiStatus, policyAttached: true, shippingMethod: 'e_policy', updatedOn: createdOnFull, policyUploadedOn, policyStartDate },
+          { id: `pol-${id}-cmi`, kind: 'cmi', status: scenario.cmiStatus!, policyAttached: true, shippingMethod: 'print_by_fairdee', trackingNumber: `TH${100000000 + i * 12345}`, updatedOn: createdOnFull, policyUploadedOn, policyStartDate },
         ];
 
     const leadData: Partial<Lead> = {

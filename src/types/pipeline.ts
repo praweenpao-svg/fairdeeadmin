@@ -68,6 +68,8 @@ export interface PolicyRecord {
   shippingMethod?: ShippingMethod;
   trackingNumber?: string;
   updatedOn?: string;
+  policyUploadedOn?: string;
+  policyStartDate?: string;
   // Policy-level rework
   reworkRequired?: boolean;
   reworkHistory?: PolicyReworkEntry[];
