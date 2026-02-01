@@ -1073,7 +1073,32 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                     
                     {/* Expanded Policy Rows */}
                     {isPostLeadStage && isExpanded && allPolicies.length > 0 && (
-                      [...allPolicies]
+                      <>
+                        {/* Policy Sub-Row Header */}
+                        <tr className="bg-muted/50 border-l-2 border-primary/30">
+                          <td className="px-4 py-1.5 pl-12 text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+                            {language === 'th' ? 'ประเภท' : 'Type'}
+                          </td>
+                          <td className="px-4 py-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+                            {language === 'th' ? 'อัปเดตล่าสุด' : 'Updated On'}
+                          </td>
+                          <td className="px-4 py-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+                            {language === 'th' ? 'อัปโหลดกรมธรรม์' : 'Policy Uploaded'}
+                          </td>
+                          <td className="px-4 py-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+                            {language === 'th' ? 'รูปแบบการพิมพ์' : 'Printing Pref.'}
+                          </td>
+                          <td className="px-4 py-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+                            {language === 'th' ? 'วันเริ่มคุ้มครอง' : 'Start Date'}
+                          </td>
+                          <td className="px-4 py-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+                            {language === 'th' ? 'สถานะ' : 'Status'}
+                          </td>
+                          <td colSpan={showDEColumn ? 4 : 3} className="px-4 py-1.5">
+                            {/* Empty for remaining columns */}
+                          </td>
+                        </tr>
+                        {[...allPolicies]
                         .sort((a, b) => {
                           // VMI always comes first
                           if (a.kind === 'vmi' && b.kind === 'cmi') return -1;
@@ -1171,7 +1196,8 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                               </td>
                             </tr>
                           );
-                        })
+                        })}
+                      </>
                     )}
                   </React.Fragment>
                 );
