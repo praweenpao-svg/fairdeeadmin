@@ -1073,131 +1073,149 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                     
                     {/* Expanded Policy Rows */}
                     {isPostLeadStage && isExpanded && allPolicies.length > 0 && (
-                      <>
-                        {/* Policy Sub-Row Header */}
-                        <tr className="bg-muted/50 border-l-2 border-primary/30">
-                          <td className="px-4 py-1.5 pl-12 text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
-                            {language === 'th' ? 'ประเภท' : 'Type'}
-                          </td>
-                          <td className="px-4 py-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
-                            {language === 'th' ? 'อัปเดตล่าสุด' : 'Updated On'}
-                          </td>
-                          <td className="px-4 py-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
-                            {language === 'th' ? 'อัปโหลดกรมธรรม์' : 'Policy Uploaded'}
-                          </td>
-                          <td className="px-4 py-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
-                            {language === 'th' ? 'รูปแบบการพิมพ์' : 'Printing Pref.'}
-                          </td>
-                          <td className="px-4 py-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
-                            {language === 'th' ? 'วันเริ่มคุ้มครอง' : 'Start Date'}
-                          </td>
-                          <td className="px-4 py-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
-                            {language === 'th' ? 'สถานะ' : 'Status'}
-                          </td>
-                          <td colSpan={showDEColumn ? 4 : 3} className="px-4 py-1.5">
-                            {/* Empty for remaining columns */}
-                          </td>
-                        </tr>
-                        {[...allPolicies]
-                        .sort((a, b) => {
-                          // VMI always comes first
-                          if (a.kind === 'vmi' && b.kind === 'cmi') return -1;
-                          if (a.kind === 'cmi' && b.kind === 'vmi') return 1;
-                          return 0;
-                        })
-                        .map((policy) => {
-                          const isEditable = stagePolicies.some(p => p.id === policy.id);
-                          const policyKindLabel = policy.kind === 'vmi' 
-                            ? (language === 'th' ? 'ภาคสมัครใจ' : 'VMI')
-                            : (language === 'th' ? 'ภาคบังคับ' : 'CMI');
-                          const policyKindColor = policy.kind === 'vmi'
-                            ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
-                            : 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300';
-                          
-                          // Format dates
-                          const formatDate = (dateStr?: string) => {
-                            if (!dateStr) return '-';
-                            const date = new Date(dateStr);
-                            return date.toLocaleString(language === 'th' ? 'th-TH' : 'en-US', {
-                              day: '2-digit',
-                              month: '2-digit',
-                              year: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            });
-                          };
-                          
-                          const formatDateOnly = (dateStr?: string) => {
-                            if (!dateStr) return '-';
-                            const date = new Date(dateStr);
-                            const day = String(date.getDate()).padStart(2, '0');
-                            const month = String(date.getMonth() + 1).padStart(2, '0');
-                            const year = date.getFullYear();
-                            return `${day}/${month}/${year}`;
-                          };
-                          
-                          const getPrintingPreferenceLabel = (method?: string) => {
-                            if (!method) return '-';
-                            if (method === 'e_policy') return 'E-Policy';
-                            if (method === 'print_by_myself') return language === 'th' ? 'พิมพ์เอง' : 'Print by Myself';
-                            if (method === 'print_by_fairdee') return language === 'th' ? 'พิมพ์โดย FairDee' : 'Print by FairDee';
-                            return '-';
-                          };
-                          
-                          return (
-                            <tr 
-                              key={policy.id}
-                              className={cn(
-                                'bg-muted/30 border-l-2',
-                                isEditable ? 'border-primary/50' : 'border-muted-foreground/20'
-                              )}
-                            >
-                              {/* Policy Kind */}
-                              <td className="px-4 py-2 pl-12">
-                                <span className={cn('text-[10px] px-1.5 py-0.5 rounded font-medium', policyKindColor)}>
-                                  {policyKindLabel}
-                                </span>
-                              </td>
-                              {/* Updated On */}
-                              <td className="px-4 py-2 text-xs text-muted-foreground">
-                                {formatDate(policy.updatedOn)}
-                              </td>
-                              {/* Policy Uploaded On */}
-                              <td className="px-4 py-2 text-xs text-muted-foreground">
-                                {formatDate(policy.policyUploadedOn)}
-                              </td>
-                              {/* Printing Preference */}
-                              <td className="px-4 py-2 text-xs">
-                                <span className={cn(
-                                  policy.shippingMethod === 'print_by_fairdee' && 'text-primary font-medium'
-                                )}>
-                                  {getPrintingPreferenceLabel(policy.shippingMethod)}
-                                </span>
-                              </td>
-                              {/* Policy Start Date */}
-                              <td className="px-4 py-2 text-xs text-muted-foreground">
-                                {formatDateOnly(policy.policyStartDate)}
-                              </td>
-                              {/* Status */}
-                              <td className="px-4 py-2">
-                                <PolicyStatusCell
-                                  policy={policy}
-                                  stage={stage}
-                                  isEditable={isEditable}
-                                  reworkConfigs={stageReworkConfigs}
-                                  onStatusChange={(policyId, newStatus) => handlePolicyStatusChange(lead, policyId, newStatus)}
-                                  onReworkResolve={(policyId) => handlePolicyReworkResolve(lead, policyId)}
-                                  onReworkReassign={(policyId, reasonId, details, attachments) => handlePolicyReworkReassign(lead, policyId, reasonId, details, attachments)}
-                                />
-                              </td>
-                              {/* Empty remaining columns */}
-                              <td colSpan={showDEColumn ? 4 : 3} className="px-4 py-2">
-                                {/* Empty cells for RF, SC, DE, Owner, Actions */}
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </>
+                      <tr>
+                        <td colSpan={showDEColumn ? 10 : 9} className="p-0">
+                          <div className="mx-4 my-2 rounded-lg border border-border overflow-hidden bg-card shadow-sm">
+                            {/* Policy Sub-Table Header */}
+                            <div className="grid grid-cols-6 gap-4 px-4 py-2.5 bg-muted/60 border-b border-border">
+                              <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                                {language === 'th' ? 'ประเภท' : 'Type'}
+                              </div>
+                              <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                                {language === 'th' ? 'อัปเดตล่าสุด' : 'Updated On'}
+                              </div>
+                              <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                                {language === 'th' ? 'อัปโหลดกรมธรรม์' : 'Policy Uploaded'}
+                              </div>
+                              <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                                {language === 'th' ? 'รูปแบบการพิมพ์' : 'Printing Pref.'}
+                              </div>
+                              <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                                {language === 'th' ? 'วันเริ่มคุ้มครอง' : 'Start Date'}
+                              </div>
+                              <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                                {language === 'th' ? 'สถานะ' : 'Status'}
+                              </div>
+                            </div>
+                            
+                            {/* Policy Rows */}
+                            <div className="divide-y divide-border">
+                              {[...allPolicies]
+                                .sort((a, b) => {
+                                  if (a.kind === 'vmi' && b.kind === 'cmi') return -1;
+                                  if (a.kind === 'cmi' && b.kind === 'vmi') return 1;
+                                  return 0;
+                                })
+                                .map((policy, idx) => {
+                                  const isEditable = stagePolicies.some(p => p.id === policy.id);
+                                  const policyKindLabel = policy.kind === 'vmi' 
+                                    ? (language === 'th' ? 'ภาคสมัครใจ' : 'VMI')
+                                    : (language === 'th' ? 'ภาคบังคับ' : 'CMI');
+                                  
+                                  const formatDate = (dateStr?: string) => {
+                                    if (!dateStr) return '-';
+                                    const date = new Date(dateStr);
+                                    return date.toLocaleString(language === 'th' ? 'th-TH' : 'en-US', {
+                                      day: '2-digit',
+                                      month: '2-digit',
+                                      year: 'numeric',
+                                      hour: '2-digit',
+                                      minute: '2-digit',
+                                    });
+                                  };
+                                  
+                                  const formatDateOnly = (dateStr?: string) => {
+                                    if (!dateStr) return '-';
+                                    const date = new Date(dateStr);
+                                    const day = String(date.getDate()).padStart(2, '0');
+                                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                                    const year = date.getFullYear();
+                                    return `${day}/${month}/${year}`;
+                                  };
+                                  
+                                  const getPrintingPreferenceLabel = (method?: string) => {
+                                    if (!method) return '-';
+                                    if (method === 'e_policy') return 'E-Policy';
+                                    if (method === 'print_by_myself') return language === 'th' ? 'พิมพ์เอง' : 'Print by Myself';
+                                    if (method === 'print_by_fairdee') return language === 'th' ? 'พิมพ์โดย FairDee' : 'Print by FairDee';
+                                    return '-';
+                                  };
+                                  
+                                  return (
+                                    <div 
+                                      key={policy.id}
+                                      className={cn(
+                                        'grid grid-cols-6 gap-4 px-4 py-3 items-center transition-colors',
+                                        isEditable 
+                                          ? 'bg-primary/5 hover:bg-primary/10' 
+                                          : 'bg-muted/20 hover:bg-muted/30',
+                                        idx === 0 && 'rounded-t-none'
+                                      )}
+                                    >
+                                      {/* Policy Kind Badge */}
+                                      <div>
+                                        <span className={cn(
+                                          'inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold',
+                                          policy.kind === 'vmi'
+                                            ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300'
+                                            : 'bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300'
+                                        )}>
+                                          {policyKindLabel}
+                                        </span>
+                                      </div>
+                                      
+                                      {/* Updated On */}
+                                      <div className="text-xs text-muted-foreground">
+                                        {formatDate(policy.updatedOn)}
+                                      </div>
+                                      
+                                      {/* Policy Uploaded On */}
+                                      <div className="text-xs text-muted-foreground">
+                                        {policy.policyUploadedOn ? (
+                                          <span className="text-success">{formatDate(policy.policyUploadedOn)}</span>
+                                        ) : (
+                                          <span className="text-muted-foreground/50">-</span>
+                                        )}
+                                      </div>
+                                      
+                                      {/* Printing Preference */}
+                                      <div>
+                                        <span className={cn(
+                                          'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium',
+                                          policy.shippingMethod === 'print_by_fairdee' 
+                                            ? 'bg-primary/15 text-primary' 
+                                            : policy.shippingMethod === 'e_policy'
+                                            ? 'bg-info/15 text-info'
+                                            : 'bg-muted text-muted-foreground'
+                                        )}>
+                                          {getPrintingPreferenceLabel(policy.shippingMethod)}
+                                        </span>
+                                      </div>
+                                      
+                                      {/* Policy Start Date */}
+                                      <div className="text-xs text-foreground font-medium">
+                                        {formatDateOnly(policy.policyStartDate)}
+                                      </div>
+                                      
+                                      {/* Status */}
+                                      <div>
+                                        <PolicyStatusCell
+                                          policy={policy}
+                                          stage={stage}
+                                          isEditable={isEditable}
+                                          reworkConfigs={stageReworkConfigs}
+                                          onStatusChange={(policyId, newStatus) => handlePolicyStatusChange(lead, policyId, newStatus)}
+                                          onReworkResolve={(policyId) => handlePolicyReworkResolve(lead, policyId)}
+                                          onReworkReassign={(policyId, reasonId, details, attachments) => handlePolicyReworkReassign(lead, policyId, reasonId, details, attachments)}
+                                        />
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
                     )}
                   </React.Fragment>
                 );
