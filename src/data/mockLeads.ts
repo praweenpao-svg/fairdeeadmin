@@ -1,4 +1,4 @@
-import { Lead, ReworkConfig, HistoryLogEntry, PolicyType, PolicyRecord, PolicyStatus } from '@/types/pipeline';
+import { Lead, ReworkConfig, HistoryLogEntry, PolicyType, PolicyRecord, PolicyStatus, InsurerQuote, PriceListStatus, ETAStatus } from '@/types/pipeline';
 
 const agents = [
   { id: 'FD-3460', name: 'Akshay Bazad' },
@@ -16,6 +16,58 @@ const deStaff = ['Oscar', 'Paula', 'Quinn', 'Pao'];
 // Current user constant
 export const CURRENT_USER = 'Pao';
 const vehiclePlates = ['2มว7814', '2ศย8965', 'KL4521', 'PQ8823', 'AB1234', 'CD5678', 'EF9012', 'GH3456', 'IJ7890', 'MN6789', 'OP1234', 'QR5678'];
+
+// Insurer names for mock data
+const insurerNames = [
+  'Viriyah Insurance',
+  'AXA Insurance',
+  'LMG Insurance',
+  'Bangkok Insurance',
+  'Dhipaya Insurance',
+  'Muang Thai Insurance',
+  'Thai Sri Insurance',
+  'Tokio Marine',
+];
+
+const insuranceClasses = ['type_1_insurance', 'type_2_insurance', 'type_3_insurance', 'type_2+_insurance'];
+const garageTypes: Array<'Dealer' | 'Garage' | 'Any'> = ['Dealer', 'Garage', 'Any'];
+const priceListStatuses: PriceListStatus[] = ['pending', 'price_list_added', 'rejected_by_insurer', 'email_sent'];
+
+// Helper to generate insurer quotes for a lead
+function generateInsurerQuotes(leadId: string, numQuotes: number = 3): InsurerQuote[] {
+  const quotes: InsurerQuote[] = [];
+  const usedInsurers = new Set<string>();
+
+  for (let i = 0; i < numQuotes; i++) {
+    // Get a unique insurer
+    let insurer = insurerNames[i % insurerNames.length];
+    while (usedInsurers.has(insurer) && usedInsurers.size < insurerNames.length) {
+      insurer = insurerNames[(insurerNames.indexOf(insurer) + 1) % insurerNames.length];
+    }
+    usedInsurers.add(insurer);
+
+    const status = priceListStatuses[i % priceListStatuses.length];
+    const hasEmailSent = status === 'email_sent' || Math.random() > 0.6;
+    const isBreached = i === 0 && Math.random() > 0.5; // First quote has 50% chance of being breached
+    
+    quotes.push({
+      id: `quote-${leadId}-${i + 1}`,
+      insurerName: insurer,
+      insuranceClass: insuranceClasses[i % insuranceClasses.length],
+      garageType: garageTypes[i % garageTypes.length],
+      priceListStatus: status,
+      emailSentAt: hasEmailSent ? `2569-01-15 21:13:19` : undefined,
+      waitingTimeDays: hasEmailSent ? Math.floor(Math.random() * 30) : undefined,
+      followUpDate: undefined,
+      etaStatus: status === 'price_list_added' ? (isBreached ? 'breached' : 'on_time') : undefined,
+      daysOverdue: isBreached ? Math.floor(Math.random() * 5) + 1 : undefined,
+      etaRange: status === 'price_list_added' ? `${String(16 + i).padStart(2, '0')}/01/2026 ${10 + i}:00:00` : undefined,
+      priceListAddedAt: status === 'price_list_added' ? `2569-01-16 ${13 + i}:02:04` : undefined,
+    });
+  }
+
+  return quotes;
+}
 
 // Rework reason labels mapping
 const reworkReasonLabels: Record<string, { en: string; th: string }> = {
@@ -354,6 +406,11 @@ const generateLeads = (): Lead[] => {
       saleStatus = newLeadsStatuses[i % newLeadsStatuses.length] as Lead['saleStatus'];
     }
 
+    // Generate insurer quotes for new_leads and coa (not renewals)
+    const insurerQuotes = (leadType === 'new_leads' || leadType === 'coa') 
+      ? generateInsurerQuotes(String(id), 2 + (i % 2)) // 2-3 quotes per lead
+      : undefined;
+
     const leadData: Partial<Lead> = {
       id: String(id),
       leadNumber: `#${10170 - i}`,
@@ -373,6 +430,7 @@ const generateLeads = (): Lead[] => {
       createdBy: i % 2 === 0 ? 'agent' : 'admin',
       rfAssignee: rfStaff[i % rfStaff.length],
       scAssignee: hasSC ? scStaff[i % scStaff.length] : undefined,
+      insurerQuotes,
     };
 
     leads.push({

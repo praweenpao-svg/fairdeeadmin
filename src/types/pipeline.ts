@@ -181,6 +181,8 @@ export interface Lead {
   // Policy type and records for post-lead journey
   policyType?: PolicyType;
   policyRecords?: PolicyRecord[];
+  // Insurer quotes for Leads stage (New Leads / COA)
+  insurerQuotes?: InsurerQuote[];
 }
 
 export type AssignmentType = 'round_robin' | 'rf_sc' | 'none';
@@ -202,4 +204,28 @@ export interface PipelineTab {
   id: PipelineStage;
   label: string;
   count: number;
+}
+
+// Insurer Quote types for Leads stage (New Leads / COA)
+export type PriceListStatus = 
+  | 'pending'
+  | 'price_list_added'
+  | 'rejected_by_insurer'
+  | 'email_sent';
+
+export type ETAStatus = 'on_time' | 'breached';
+
+export interface InsurerQuote {
+  id: string;
+  insurerName: string;
+  insuranceClass: string;
+  garageType: 'Dealer' | 'Garage' | 'Any';
+  priceListStatus: PriceListStatus;
+  emailSentAt?: string;
+  waitingTimeDays?: number;
+  followUpDate?: string;
+  etaStatus?: ETAStatus;
+  daysOverdue?: number;
+  etaRange?: string;
+  priceListAddedAt?: string;
 }

@@ -34,6 +34,7 @@ import { HistoryLogDialog } from './HistoryLogDialog';
 import { InlineReworkActions } from './InlineReworkActions';
 import { PolicyStatusCell } from './PolicyStatusCell';
 import { getPoliciesForStage } from './PipelineTabs';
+import { InsurersExpandableRow } from './InsurersExpandableRow';
 
 interface LeadsTableProps {
   leads: Lead[];
@@ -1072,6 +1073,23 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                         </DropdownMenu>
                       </td>
                     </tr>
+                    
+                    {/* Expanded Insurer Rows for Leads Stage (New Leads / COA) */}
+                    {stage === 'to_convert' && (lead.leadType === 'new_leads' || lead.leadType === 'coa') && lead.insurerQuotes && lead.insurerQuotes.length > 0 && (
+                      <tr>
+                        <td colSpan={showDEColumn ? 11 : 10} className="p-0">
+                          <div className="mx-4 my-2">
+                            <InsurersExpandableRow 
+                              insurerQuotes={lead.insurerQuotes}
+                              onQuoteUpdate={(quoteId, updates) => {
+                                // Handle quote updates if needed
+                                console.log('Quote update:', quoteId, updates);
+                              }}
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    )}
                     
                     {/* Expanded Policy Rows */}
                     {isPostLeadStage && isExpanded && allPolicies.length > 0 && (
