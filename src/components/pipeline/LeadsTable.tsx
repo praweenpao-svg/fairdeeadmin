@@ -970,7 +970,8 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                           <div className="flex flex-col gap-1">
                             <span className="font-medium text-sm">{lead.leadNumber}</span>
                             <div className="flex items-center gap-1">
-                              <CreatedByBadge createdBy={lead.createdBy} />
+                              {/* Hidden for now - to be brought back later */}
+                              {/* <CreatedByBadge createdBy={lead.createdBy} /> */}
                               {lead.policyType && (
                                 <>
                                   <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
