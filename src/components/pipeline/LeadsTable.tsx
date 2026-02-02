@@ -1036,38 +1036,42 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                           <td className="px-4 py-3 text-sm">{getPremiumDisplay(lead, stage)}</td>
                           <td className="px-4 py-3 text-sm">{getPaymentMethodLabel(lead)}</td>
                           <td className="px-4 py-3">
-                            {(() => {
-                              const currentStatus = getPaymentStatusForStage(stage);
-                              const handlePaymentStatusChange = (newValue: string) => {
-                                // Show error toast when trying to change
-                                toast.error(
-                                  language === 'th' 
-                                    ? 'ไม่สามารถเปลี่ยนสถานะการชำระเงินได้ที่นี่' 
-                                    : 'Cannot change payment status from here'
+                            {stage === 'to_pay' ? (
+                              <span className="text-sm">-</span>
+                            ) : (
+                              (() => {
+                                const currentStatus = getPaymentStatusForStage(stage);
+                                const handlePaymentStatusChange = (newValue: string) => {
+                                  // Show error toast when trying to change
+                                  toast.error(
+                                    language === 'th' 
+                                      ? 'ไม่สามารถเปลี่ยนสถานะการชำระเงินได้ที่นี่' 
+                                      : 'Cannot change payment status from here'
+                                  );
+                                };
+                                
+                                return (
+                                  <Select value={currentStatus} onValueChange={handlePaymentStatusChange}>
+                                    <SelectTrigger className="w-[180px] h-8 text-xs">
+                                      <SelectValue>
+                                        {getPaymentStatusLabelByMethod(lead, stage, language)}
+                                      </SelectValue>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="cbc_to_fairdee_verified">
+                                        {paymentStatusByMethod.cbc_to_fairdee[language]}
+                                      </SelectItem>
+                                      <SelectItem value="cbc_to_insurer_notified">
+                                        {paymentStatusByMethod.cbc_to_insurer[language]}
+                                      </SelectItem>
+                                      <SelectItem value="credit_approved">
+                                        {paymentStatusByMethod.credit[language]}
+                                      </SelectItem>
+                                    </SelectContent>
+                                  </Select>
                                 );
-                              };
-                              
-                              return (
-                                <Select value={currentStatus} onValueChange={handlePaymentStatusChange}>
-                                  <SelectTrigger className="w-[180px] h-8 text-xs">
-                                    <SelectValue>
-                                      {getPaymentStatusLabelByMethod(lead, stage, language)}
-                                    </SelectValue>
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="cbc_to_fairdee_verified">
-                                      {paymentStatusByMethod.cbc_to_fairdee[language]}
-                                    </SelectItem>
-                                    <SelectItem value="cbc_to_insurer_notified">
-                                      {paymentStatusByMethod.cbc_to_insurer[language]}
-                                    </SelectItem>
-                                    <SelectItem value="credit_approved">
-                                      {paymentStatusByMethod.credit[language]}
-                                    </SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              );
-                            })()}
+                              })()
+                            )}
                           </td>
                         </>
                       )}
