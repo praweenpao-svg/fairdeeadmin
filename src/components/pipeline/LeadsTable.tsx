@@ -6,6 +6,8 @@ import {
   Eye,
   ChevronRight,
   ChevronDown,
+  FileText,
+  MessageSquare,
 } from 'lucide-react';
 import { Lead, PipelineStage, LeadType, ReworkConfig, CreatedByType, ReworkAttachment, ReworkHistoryEntry, HistoryLogEntry, PolicyStatus, PolicyReworkEntry } from '@/types/pipeline';
 import { cn } from '@/lib/utils';
@@ -1077,7 +1079,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                         <td colSpan={showDEColumn ? 10 : 9} className="p-0">
                           <div className="mx-4 my-2 rounded-lg border border-border overflow-hidden bg-card shadow-sm">
                             {/* Policy Sub-Table Header */}
-                            <div className="grid grid-cols-6 gap-4 px-4 py-2.5 bg-muted/60 border-b border-border">
+                            <div className="grid grid-cols-9 gap-3 px-4 py-2.5 bg-muted/60 border-b border-border">
                               <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                                 {language === 'th' ? 'ประเภท' : 'Type'}
                               </div>
@@ -1092,6 +1094,15 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                               </div>
                               <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                                 {language === 'th' ? 'วันเริ่มคุ้มครอง' : 'Start Date'}
+                              </div>
+                              <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                                {language === 'th' ? 'เลขกรมธรรม์' : 'Policy No.'}
+                              </div>
+                              <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                                {language === 'th' ? 'ไฟล์กรมธรรม์' : 'Policy File'}
+                              </div>
+                              <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                                {language === 'th' ? 'หมายเหตุ' : 'Remarks'}
                               </div>
                               <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                                 {language === 'th' ? 'สถานะ' : 'Status'}
@@ -1141,10 +1152,12 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                     return '-';
                                   };
                                   
+                                  const remarkCount = policy.remarks?.length || 0;
+                                  
                                   return (
                                     <div 
                                       key={policy.id}
-                                      className="grid grid-cols-6 gap-4 px-4 py-3 items-center transition-colors bg-card hover:bg-muted/30"
+                                      className="grid grid-cols-9 gap-3 px-4 py-3 items-center transition-colors bg-card hover:bg-muted/30"
                                     >
                                       {/* Policy Kind Badge */}
                                       <div>
@@ -1189,6 +1202,46 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                       {/* Policy Start Date */}
                                       <div className="text-xs text-foreground font-medium">
                                         {formatDateOnly(policy.policyStartDate)}
+                                      </div>
+                                      
+                                      {/* Policy Number */}
+                                      <div className="text-xs text-foreground font-mono">
+                                        {policy.policyNumber || <span className="text-muted-foreground/50">-</span>}
+                                      </div>
+                                      
+                                      {/* Policy File */}
+                                      <div>
+                                        {policy.policyFileUrl ? (
+                                          <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="h-7 text-xs gap-1.5"
+                                            onClick={() => window.open(policy.policyFileUrl, '_blank')}
+                                          >
+                                            <FileText className="w-3.5 h-3.5" />
+                                            {language === 'th' ? 'ดูกรมธรรม์' : 'View Policy'}
+                                          </Button>
+                                        ) : (
+                                          <span className="text-xs text-muted-foreground/50">-</span>
+                                        )}
+                                      </div>
+                                      
+                                      {/* Remarks */}
+                                      <div>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-7 text-xs gap-1.5 text-muted-foreground hover:text-foreground"
+                                        >
+                                          <MessageSquare className="w-3.5 h-3.5" />
+                                          {remarkCount > 0 ? (
+                                            <span className="bg-primary/15 text-primary px-1.5 py-0.5 rounded-full text-[10px] font-medium">
+                                              {remarkCount}
+                                            </span>
+                                          ) : (
+                                            <span>{language === 'th' ? 'เพิ่ม' : 'Add'}</span>
+                                          )}
+                                        </Button>
                                       </div>
                                       
                                       {/* Status */}
