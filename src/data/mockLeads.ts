@@ -447,14 +447,14 @@ const generateLeads = (): Lead[] => {
     id++;
   }
 
-  // TO PAY (8 leads) - with policyType and policyRecords
-  // TO PAY: 6 base records (no splits from here to avoid overflow in other stages)
+  // TO PAY (6 leads) - with policyType and policyRecords
+  // VMI and CMI always move together at To Pay stage (payment is one-go for both)
   const toPayScenarios: Array<{ policyType: PolicyType; vmiStatus: PolicyStatus; cmiStatus?: PolicyStatus }> = [
     { policyType: 'vmi_only', vmiStatus: 'pending_payment' },
     { policyType: 'vmi_only', vmiStatus: 'pending_payment' },
-    { policyType: 'vmi_cmi', vmiStatus: 'pending_payment', cmiStatus: 'pending_payment' }, // Both same stage
-    { policyType: 'vmi_cmi', vmiStatus: 'pending_payment', cmiStatus: 'pending_payment' }, // Both same stage
-    { policyType: 'vmi_cmi', vmiStatus: 'pending_payment', cmiStatus: 'pending_review' }, // Split: To Pay + To Report (1 split only)
+    { policyType: 'vmi_cmi', vmiStatus: 'pending_payment', cmiStatus: 'pending_payment' }, // Both pending
+    { policyType: 'vmi_cmi', vmiStatus: 'pending_payment', cmiStatus: 'pending_payment' }, // Both pending
+    { policyType: 'vmi_cmi', vmiStatus: 'pending_payment', cmiStatus: 'pending_payment' }, // Both pending (no split at To Pay)
     { policyType: 'vmi_only', vmiStatus: 'pending_payment' },
   ];
 
