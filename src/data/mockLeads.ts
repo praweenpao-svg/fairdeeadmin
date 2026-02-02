@@ -15,7 +15,7 @@ const deStaff = ['Oscar', 'Paula', 'Quinn', 'Pao'];
 
 // Current user constant
 export const CURRENT_USER = 'Pao';
-const vehiclePlates = ['2มว7814', '2ศย8965', 'KL4521', 'PQ8823', 'AB1234', 'CD5678', 'EF9012', 'GH3456', 'IJ7890', 'MN6789', 'OP1234', 'QR5678'];
+const vehiclePlates = ['2มว7814', '2ศย8965', 'กย4521', 'ษท8823', '1กก1234', 'ฆจ5678', '3ขค9012', 'พร3456', 'ศว7890', '2ญม6789', 'นค1234', 'ฉฬ5678'];
 
 // Vehicle brands and sub-brands for mock data
 const vehicleBrands: Array<{ brand: string; subBrands: string[] }> = [
