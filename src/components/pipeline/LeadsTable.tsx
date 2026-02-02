@@ -971,10 +971,17 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                             <span className="font-medium text-sm">{lead.leadNumber}</span>
                             <div className="flex items-center gap-1">
                               <CreatedByBadge createdBy={lead.createdBy} />
-                              {lead.policyType === 'vmi_cmi' && (
-                                <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300">
-                                  CMI
-                                </span>
+                              {lead.policyType && (
+                                <>
+                                  <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                                    VMI
+                                  </span>
+                                  {lead.policyType === 'vmi_cmi' && (
+                                    <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300">
+                                      CMI
+                                    </span>
+                                  )}
+                                </>
                               )}
                             </div>
                           </div>
