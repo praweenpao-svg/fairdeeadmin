@@ -1186,17 +1186,8 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                       </div>
                                       
                                       {/* Printing Preference */}
-                                      <div>
-                                        <span className={cn(
-                                          'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium',
-                                          policy.shippingMethod === 'print_by_fairdee' 
-                                            ? 'bg-primary/15 text-primary' 
-                                            : policy.shippingMethod === 'e_policy'
-                                            ? 'bg-info/15 text-info'
-                                            : 'bg-muted text-muted-foreground'
-                                        )}>
-                                          {getPrintingPreferenceLabel(policy.shippingMethod)}
-                                        </span>
+                                      <div className="text-xs text-muted-foreground">
+                                        {getPrintingPreferenceLabel(policy.shippingMethod)}
                                       </div>
                                       
                                       {/* Policy Start Date */}
