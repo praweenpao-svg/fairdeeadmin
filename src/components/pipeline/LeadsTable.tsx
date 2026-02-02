@@ -12,6 +12,7 @@ import {
 import { Lead, PipelineStage, LeadType, ReworkConfig, CreatedByType, ReworkAttachment, ReworkHistoryEntry, HistoryLogEntry, PolicyStatus, PolicyReworkEntry, PaymentMethod } from '@/types/pipeline';
 import { cn } from '@/lib/utils';
 import { useLanguageStore } from '@/stores/languageStore';
+import { toast } from 'sonner';
 import {
   Select,
   SelectContent,
@@ -204,9 +205,9 @@ const paymentMethodLabels: Record<PaymentMethod, string> = {
 };
 
 // Payment status options
-type PaymentStatus = 'pending' | 'verified';
+type PaymentStatus = 'invoice_issued' | 'verified';
 const paymentStatusLabels: Record<PaymentStatus, { en: string; th: string }> = {
-  pending: { en: '-', th: '-' },
+  invoice_issued: { en: 'Invoice Issued', th: 'ออกใบแจ้งหนี้แล้ว' },
   verified: { en: 'Payment Verified', th: 'ยืนยันการชำระเงินแล้ว' },
 };
 
@@ -236,9 +237,9 @@ function getPremiumDisplay(lead: Lead): string {
   return formatPremium(lead.premium);
 }
 
-// Helper to get payment status for display
-function getPaymentStatus(lead: Lead): PaymentStatus {
-  if (areBothPoliciesPending(lead)) return 'pending';
+// Helper to get payment status for display based on stage
+function getPaymentStatusForStage(stage: PipelineStage): PaymentStatus {
+  if (stage === 'to_pay') return 'invoice_issued';
   return 'verified';
 }
 
@@ -1012,22 +1013,35 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                           <td className="px-4 py-3 text-sm">{getPremiumDisplay(lead)}</td>
                           <td className="px-4 py-3 text-sm">{getPaymentMethodLabel(lead)}</td>
                           <td className="px-4 py-3">
-                            {areBothPoliciesPending(lead) ? (
-                              <span className="text-sm">-</span>
-                            ) : (
-                              <Select value="verified" disabled>
-                                <SelectTrigger className="w-[180px] h-8 text-xs">
-                                  <SelectValue>
-                                    {paymentStatusLabels.verified[language]}
-                                  </SelectValue>
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="verified">
-                                    {paymentStatusLabels.verified[language]}
-                                  </SelectItem>
-                                </SelectContent>
-                              </Select>
-                            )}
+                            {(() => {
+                              const currentStatus = getPaymentStatusForStage(stage);
+                              const handlePaymentStatusChange = (newValue: string) => {
+                                // Show error toast when trying to change
+                                toast.error(
+                                  language === 'th' 
+                                    ? 'ไม่สามารถเปลี่ยนสถานะการชำระเงินได้ที่นี่' 
+                                    : 'Cannot change payment status from here'
+                                );
+                              };
+                              
+                              return (
+                                <Select value={currentStatus} onValueChange={handlePaymentStatusChange}>
+                                  <SelectTrigger className="w-[180px] h-8 text-xs">
+                                    <SelectValue>
+                                      {paymentStatusLabels[currentStatus][language]}
+                                    </SelectValue>
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="invoice_issued">
+                                      {paymentStatusLabels.invoice_issued[language]}
+                                    </SelectItem>
+                                    <SelectItem value="verified">
+                                      {paymentStatusLabels.verified[language]}
+                                    </SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              );
+                            })()}
                           </td>
                         </>
                       )}
