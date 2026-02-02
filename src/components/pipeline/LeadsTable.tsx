@@ -203,42 +203,46 @@ const paymentMethodLabels: Record<PaymentMethod, string> = {
   cbc_to_insurer: 'CBC to Insurer',
 };
 
-// Helper to get payment method display
-function getPaymentMethodLabel(lead: Lead): string {
-  // Only show if VMI and CMI are NOT both pending_payment
+// Payment status options
+type PaymentStatus = 'pending' | 'verified';
+const paymentStatusLabels: Record<PaymentStatus, { en: string; th: string }> = {
+  pending: { en: '-', th: '-' },
+  verified: { en: 'Payment Verified', th: 'ยืนยันการชำระเงินแล้ว' },
+};
+
+// Helper to check if both policies are pending
+function areBothPoliciesPending(lead: Lead): boolean {
   const vmiPolicy = lead.policyRecords?.find(p => p.kind === 'vmi');
   const cmiPolicy = lead.policyRecords?.find(p => p.kind === 'cmi');
   
-  // Check if both policies are pending_payment
   const vmiisPending = vmiPolicy?.status === 'pending_payment';
   const cmiisPending = cmiPolicy?.status === 'pending_payment';
   
-  // If both are pending (or only VMI exists and is pending), show "-"
   if (lead.policyType === 'vmi_cmi') {
-    if (vmiisPending && cmiisPending) return '-';
-  } else {
-    if (vmiisPending) return '-';
+    return vmiisPending && cmiisPending;
   }
-  
+  return vmiisPending === true;
+}
+
+// Helper to get payment method display
+function getPaymentMethodLabel(lead: Lead): string {
+  if (areBothPoliciesPending(lead)) return '-';
   return lead.paymentMethod ? paymentMethodLabels[lead.paymentMethod] : '-';
 }
 
 // Helper to get premium display (same logic as payment method)
 function getPremiumDisplay(lead: Lead): string {
-  const vmiPolicy = lead.policyRecords?.find(p => p.kind === 'vmi');
-  const cmiPolicy = lead.policyRecords?.find(p => p.kind === 'cmi');
-  
-  const vmiisPending = vmiPolicy?.status === 'pending_payment';
-  const cmiisPending = cmiPolicy?.status === 'pending_payment';
-  
-  if (lead.policyType === 'vmi_cmi') {
-    if (vmiisPending && cmiisPending) return '-';
-  } else {
-    if (vmiisPending) return '-';
-  }
-  
+  if (areBothPoliciesPending(lead)) return '-';
   return formatPremium(lead.premium);
 }
+
+// Helper to get payment status for display
+function getPaymentStatus(lead: Lead): PaymentStatus {
+  if (areBothPoliciesPending(lead)) return 'pending';
+  return 'verified';
+}
+
+// Helper to get staff members by team (based on fixed rosters)
 
 // Helper to get staff members by team (based on fixed rosters)
 const teamRosters: Record<string, string[]> = {
@@ -898,6 +902,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                   <>
                     <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'เบี้ยประกัน' : 'Premium'}</th>
                     <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'วิธีชำระเงิน' : 'Payment Method'}</th>
+                    <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'สถานะการชำระเงิน' : 'Payment Status'}</th>
                   </>
                 )}
                 <th className="data-table-header px-4 py-3 text-left">RF</th>
@@ -915,7 +920,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
             <tbody>
               {sortedLeads.length === 0 ? (
                 <tr>
-                  <td colSpan={isPostLeadStage ? (showDEColumn ? 12 : 11) : (showDEColumn ? 11 : 10)} className="px-4 py-12 text-center text-muted-foreground">
+                  <td colSpan={isPostLeadStage ? (showDEColumn ? 13 : 12) : (showDEColumn ? 11 : 10)} className="px-4 py-12 text-center text-muted-foreground">
                     No leads found for this stage
                   </td>
                 </tr>
@@ -1006,6 +1011,24 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                         <>
                           <td className="px-4 py-3 text-sm">{getPremiumDisplay(lead)}</td>
                           <td className="px-4 py-3 text-sm">{getPaymentMethodLabel(lead)}</td>
+                          <td className="px-4 py-3">
+                            {areBothPoliciesPending(lead) ? (
+                              <span className="text-sm">-</span>
+                            ) : (
+                              <Select value="verified" disabled>
+                                <SelectTrigger className="w-[180px] h-8 text-xs">
+                                  <SelectValue>
+                                    {paymentStatusLabels.verified[language]}
+                                  </SelectValue>
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="verified">
+                                    {paymentStatusLabels.verified[language]}
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                            )}
+                          </td>
                         </>
                       )}
                       <td className="px-4 py-3">
