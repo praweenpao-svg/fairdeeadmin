@@ -515,7 +515,7 @@ const generateLeads = (): Lead[] => {
     const vehicle = getRandomVehicle();
     const leadData: Partial<Lead> = {
       id: String(id),
-      leadNumber: `#${10154 - i}`,
+      leadNumber: `#${10001 + i}`,
       leadType: i % 3 === 0 ? 'coa' : 'new_leads',
       paymentType: i % 2 === 0 ? 'full' : 'installment',
       agentId: agent.id,
@@ -578,7 +578,7 @@ const generateLeads = (): Lead[] => {
     const vehicle = getRandomVehicle();
     const leadData: Partial<Lead> = {
       id: String(id),
-      leadNumber: `#${10143 - i}`,
+      leadNumber: `#${10007 + i}`,
       leadType: i % 3 === 0 ? 'coa' : 'new_leads',
       paymentType: i % 2 === 0 ? 'full' : 'installment',
       agentId: agent.id,
@@ -641,7 +641,7 @@ const generateLeads = (): Lead[] => {
     const vehicle = getRandomVehicle();
     const leadData: Partial<Lead> = {
       id: String(id),
-      leadNumber: `#${10135 - i}`,
+      leadNumber: `#${10013 + i}`,
       leadType: i % 3 === 0 ? 'coa' : 'new_leads',
       paymentType: i % 2 === 0 ? 'full' : 'installment',
       agentId: agent.id,
@@ -706,7 +706,7 @@ const generateLeads = (): Lead[] => {
     const vehicle = getRandomVehicle();
     const leadData: Partial<Lead> = {
       id: String(id),
-      leadNumber: `#${10128 - i}`,
+      leadNumber: `#${10019 + i}`,
       leadType: i % 3 === 0 ? 'coa' : 'new_leads',
       paymentType: i % 2 === 0 ? 'full' : 'installment',
       agentId: agent.id,
@@ -771,7 +771,7 @@ const generateLeads = (): Lead[] => {
     const vehicle = getRandomVehicle();
     const leadData: Partial<Lead> = {
       id: String(id),
-      leadNumber: `#${10120 - i}`,
+      leadNumber: `#${10025 + i}`,
       leadType: i % 3 === 0 ? 'coa' : 'new_leads',
       paymentType: i % 2 === 0 ? 'full' : 'installment',
       agentId: agent.id,
@@ -835,7 +835,7 @@ const generateLeads = (): Lead[] => {
     const vehicle = getRandomVehicle();
     const leadData: Partial<Lead> = {
       id: String(id),
-      leadNumber: `#${10108 - i}`,
+      leadNumber: `#${10031 + i}`,
       leadType: i % 2 === 0 ? 'coa' : 'new_leads',
       paymentType: i % 2 === 0 ? 'full' : 'installment',
       agentId: agent.id,
