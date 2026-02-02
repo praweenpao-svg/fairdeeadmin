@@ -897,7 +897,6 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                 <th className="data-table-header px-4 py-3 text-left">ID</th>
                 <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'ตัวแทน' : 'Agent'}</th>
                 <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'วันที่สร้าง' : 'Created On'}</th>
-                <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'วันที่อัพเดท' : 'Updated On'}</th>
                 <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'รายละเอียดรถ' : 'Vehicle details'}</th>
                 {isPostLeadStage && (
                   <>
@@ -921,7 +920,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
             <tbody>
               {sortedLeads.length === 0 ? (
                 <tr>
-                  <td colSpan={isPostLeadStage ? (showDEColumn ? 13 : 12) : (showDEColumn ? 11 : 10)} className="px-4 py-12 text-center text-muted-foreground">
+                  <td colSpan={isPostLeadStage ? (showDEColumn ? 12 : 11) : (showDEColumn ? 10 : 9)} className="px-4 py-12 text-center text-muted-foreground">
                     No leads found for this stage
                   </td>
                 </tr>
@@ -1001,10 +1000,12 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                         </div>
                       </td>
                       <td className="px-4 py-3 text-sm">{lead.createdOn}</td>
-                      <td className="px-4 py-3 text-sm">{lead.updatedOn}</td>
                       <td className="px-4 py-3">
                         <div className="flex flex-col">
-                          <span className="text-sm font-medium">{lead.vehicleDetails || '-'}</span>
+                          <span className="text-sm font-medium">
+                            {lead.vehicleDetails || '-'}
+                            {lead.vehicleProvince && <span className="text-muted-foreground"> ({lead.vehicleProvince})</span>}
+                          </span>
                           <span className="text-xs text-muted-foreground">
                             {lead.vehicleBrand && lead.vehicleSubBrand && lead.vehicleYear
                               ? `${lead.vehicleBrand} ${lead.vehicleSubBrand} ${lead.vehicleYear}`

@@ -163,6 +163,7 @@ export interface Lead {
   createdOn: string;
   updatedOn: string;
   vehicleDetails: string;
+  vehicleProvince?: string;
   vehicleBrand?: string;
   vehicleSubBrand?: string;
   vehicleYear?: number;

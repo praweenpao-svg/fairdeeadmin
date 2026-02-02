@@ -17,6 +17,20 @@ const deStaff = ['Oscar', 'Paula', 'Quinn', 'Pao'];
 export const CURRENT_USER = 'Pao';
 const vehiclePlates = ['2มว7814', '2ศย8965', 'กย4521', 'ษท8823', '1กก1234', 'ฆจ5678', '3ขค9012', 'พร3456', 'ศว7890', '2ญม6789', 'นค1234', 'ฉฬ5678'];
 
+// Thai provinces for license plates
+const vehicleProvinces = [
+  'กรุงเทพมหานคร',
+  'นนทบุรี',
+  'ปทุมธานี',
+  'สมุทรปราการ',
+  'ชลบุรี',
+  'เชียงใหม่',
+  'ภูเก็ต',
+  'ขอนแก่น',
+  'นครราชสีมา',
+  'สงขลา',
+];
+
 // Vehicle brands and sub-brands for mock data
 const vehicleBrands: Array<{ brand: string; subBrands: string[] }> = [
   { brand: 'Toyota', subBrands: ['Yaris', 'Camry', 'Corolla', 'Vios', 'Fortuner', 'Hilux'] },
@@ -34,7 +48,8 @@ function getRandomVehicle() {
   const brandData = vehicleBrands[Math.floor(Math.random() * vehicleBrands.length)];
   const subBrand = brandData.subBrands[Math.floor(Math.random() * brandData.subBrands.length)];
   const year = 2015 + Math.floor(Math.random() * 11); // 2015-2025
-  return { brand: brandData.brand, subBrand, year };
+  const province = vehicleProvinces[Math.floor(Math.random() * vehicleProvinces.length)];
+  return { brand: brandData.brand, subBrand, year, province };
 }
 
 // Insurer names for mock data
@@ -451,6 +466,7 @@ const generateLeads = (): Lead[] => {
       vehicleBrand: vehicle.brand,
       vehicleSubBrand: vehicle.subBrand,
       vehicleYear: vehicle.year,
+      vehicleProvince: vehicle.province,
       rfStatus: i < 2 ? 'pending' : 'transferred',
       scStatus: hasSC ? 'claimed' : 'pending',
       saleStatus,
@@ -510,6 +526,7 @@ const generateLeads = (): Lead[] => {
       vehicleBrand: vehicle.brand,
       vehicleSubBrand: vehicle.subBrand,
       vehicleYear: vehicle.year,
+      vehicleProvince: vehicle.province,
       rfStatus: 'transferred',
       scStatus: 'claimed',
       saleStatus: 'pending_payment',
@@ -572,6 +589,7 @@ const generateLeads = (): Lead[] => {
       vehicleBrand: vehicle.brand,
       vehicleSubBrand: vehicle.subBrand,
       vehicleYear: vehicle.year,
+      vehicleProvince: vehicle.province,
       rfStatus: 'transferred',
       scStatus: 'claimed',
       saleStatus: 'pending_review',
@@ -634,6 +652,7 @@ const generateLeads = (): Lead[] => {
       vehicleBrand: vehicle.brand,
       vehicleSubBrand: vehicle.subBrand,
       vehicleYear: vehicle.year,
+      vehicleProvince: vehicle.province,
       rfStatus: 'transferred',
       scStatus: 'claimed',
       saleStatus: 'pending_issuance',
@@ -698,6 +717,7 @@ const generateLeads = (): Lead[] => {
       vehicleBrand: vehicle.brand,
       vehicleSubBrand: vehicle.subBrand,
       vehicleYear: vehicle.year,
+      vehicleProvince: vehicle.province,
       rfStatus: 'transferred',
       scStatus: 'claimed',
       saleStatus: 'policy_issued',
@@ -762,6 +782,7 @@ const generateLeads = (): Lead[] => {
       vehicleBrand: vehicle.brand,
       vehicleSubBrand: vehicle.subBrand,
       vehicleYear: vehicle.year,
+      vehicleProvince: vehicle.province,
       rfStatus: 'completed',
       scStatus: 'completed',
       saleStatus: scenario.vmiStatus === 'policy_delivered' ? 'policy_delivered' : 'policy_shipped',
@@ -825,6 +846,7 @@ const generateLeads = (): Lead[] => {
       vehicleBrand: vehicle.brand,
       vehicleSubBrand: vehicle.subBrand,
       vehicleYear: vehicle.year,
+      vehicleProvince: vehicle.province,
       rfStatus: 'completed',
       scStatus: 'completed',
       saleStatus: 'policy_cancelled',
