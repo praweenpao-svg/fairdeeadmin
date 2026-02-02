@@ -238,8 +238,9 @@ function getPaymentMethodLabel(lead: Lead): string {
   return lead.paymentMethod ? paymentMethodLabels[lead.paymentMethod] : '-';
 }
 
-// Helper to get premium display (same logic as payment method)
-function getPremiumDisplay(lead: Lead): string {
+// Helper to get premium display (shows "-" for To Pay stage)
+function getPremiumDisplay(lead: Lead, stage: PipelineStage): string {
+  if (stage === 'to_pay') return '-';
   if (areBothPoliciesPending(lead)) return '-';
   return formatPremium(lead.premium);
 }
@@ -252,8 +253,9 @@ function getPaymentStatusForStage(stage: PipelineStage): PaymentStatus {
 
 // Helper to get payment status label based on payment method (for post to_pay stages)
 function getPaymentStatusLabelByMethod(lead: Lead, stage: PipelineStage, language: 'en' | 'th'): string {
+  // To Pay stage shows "-"
   if (stage === 'to_pay') {
-    return paymentStatusLabels.invoice_issued[language];
+    return '-';
   }
   // For post to_pay stages, show label based on payment method
   if (lead.paymentMethod) {
@@ -1031,7 +1033,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                       </td>
                       {isPostLeadStage && (
                         <>
-                          <td className="px-4 py-3 text-sm">{getPremiumDisplay(lead)}</td>
+                          <td className="px-4 py-3 text-sm">{getPremiumDisplay(lead, stage)}</td>
                           <td className="px-4 py-3 text-sm">{getPaymentMethodLabel(lead)}</td>
                           <td className="px-4 py-3">
                             {(() => {
@@ -1053,9 +1055,6 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                     </SelectValue>
                                   </SelectTrigger>
                                   <SelectContent>
-                                    <SelectItem value="invoice_issued">
-                                      {paymentStatusLabels.invoice_issued[language]}
-                                    </SelectItem>
                                     <SelectItem value="cbc_to_fairdee_verified">
                                       {paymentStatusByMethod.cbc_to_fairdee[language]}
                                     </SelectItem>
