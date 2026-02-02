@@ -1005,7 +1005,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                           <span className="text-sm font-medium">{lead.vehicleDetails || '-'}</span>
                           <span className="text-xs text-muted-foreground">
                             {lead.vehicleBrand && lead.vehicleSubBrand && lead.vehicleYear
-                              ? `${lead.vehicleBrand} ${lead.vehicleSubBrand} ${lead.vehicleYear}${lead.vehicleProvince ? `, ${lead.vehicleProvince}` : ''}`
+                              ? `${lead.vehicleBrand} ${lead.vehicleSubBrand} ${lead.vehicleYear}`
                               : 'N/A'}
                           </span>
                         </div>
