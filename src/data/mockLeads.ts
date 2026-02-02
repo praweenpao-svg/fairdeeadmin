@@ -17,6 +17,26 @@ const deStaff = ['Oscar', 'Paula', 'Quinn', 'Pao'];
 export const CURRENT_USER = 'Pao';
 const vehiclePlates = ['2มว7814', '2ศย8965', 'KL4521', 'PQ8823', 'AB1234', 'CD5678', 'EF9012', 'GH3456', 'IJ7890', 'MN6789', 'OP1234', 'QR5678'];
 
+// Vehicle brands and sub-brands for mock data
+const vehicleBrands: Array<{ brand: string; subBrands: string[] }> = [
+  { brand: 'Toyota', subBrands: ['Yaris', 'Camry', 'Corolla', 'Vios', 'Fortuner', 'Hilux'] },
+  { brand: 'Honda', subBrands: ['City', 'Civic', 'Accord', 'CR-V', 'Jazz', 'HR-V'] },
+  { brand: 'Mazda', subBrands: ['2', '3', 'CX-3', 'CX-5', 'CX-30', 'BT-50'] },
+  { brand: 'Isuzu', subBrands: ['D-Max', 'MU-X'] },
+  { brand: 'Ford', subBrands: ['Ranger', 'Everest', 'Territory'] },
+  { brand: 'Nissan', subBrands: ['Almera', 'March', 'Kicks', 'Terra', 'Navara'] },
+  { brand: 'Mitsubishi', subBrands: ['Triton', 'Pajero Sport', 'Xpander', 'Attrage'] },
+  { brand: 'Suzuki', subBrands: ['Swift', 'Ciaz', 'Ertiga', 'XL7'] },
+];
+
+// Helper to get random vehicle info
+function getRandomVehicle() {
+  const brandData = vehicleBrands[Math.floor(Math.random() * vehicleBrands.length)];
+  const subBrand = brandData.subBrands[Math.floor(Math.random() * brandData.subBrands.length)];
+  const year = 2015 + Math.floor(Math.random() * 11); // 2015-2025
+  return { brand: brandData.brand, subBrand, year };
+}
+
 // Insurer names for mock data
 const insurerNames = [
   'Viriyah Insurance',
@@ -417,6 +437,7 @@ const generateLeads = (): Lead[] => {
       ? generateInsurerQuotes(String(id), 2 + (i % 2)) // 2-3 quotes per lead
       : undefined;
 
+    const vehicle = getRandomVehicle();
     const leadData: Partial<Lead> = {
       id: String(id),
       leadNumber: `#${10170 - i}`,
@@ -427,6 +448,9 @@ const generateLeads = (): Lead[] => {
       createdOn: createdOnFull,
       updatedOn: generateUpdatedOn(createdOn, i % 8),
       vehicleDetails: vehiclePlates[i % vehiclePlates.length],
+      vehicleBrand: vehicle.brand,
+      vehicleSubBrand: vehicle.subBrand,
+      vehicleYear: vehicle.year,
       rfStatus: i < 2 ? 'pending' : 'transferred',
       scStatus: hasSC ? 'claimed' : 'pending',
       saleStatus,
@@ -472,6 +496,7 @@ const generateLeads = (): Lead[] => {
           { id: `pol-${id}-cmi`, kind: 'cmi', status: scenario.cmiStatus!, policyAttached: scenario.cmiStatus === 'policy_issued' || scenario.cmiStatus === 'policy_delivered', updatedOn: createdOnFull, policyStartDate },
         ];
 
+    const vehicle = getRandomVehicle();
     const leadData: Partial<Lead> = {
       id: String(id),
       leadNumber: `#${10154 - i}`,
@@ -482,6 +507,9 @@ const generateLeads = (): Lead[] => {
       createdOn: createdOnFull,
       updatedOn: generateUpdatedOn(createdOn, i % 8),
       vehicleDetails: vehiclePlates[i % vehiclePlates.length],
+      vehicleBrand: vehicle.brand,
+      vehicleSubBrand: vehicle.subBrand,
+      vehicleYear: vehicle.year,
       rfStatus: 'transferred',
       scStatus: 'claimed',
       saleStatus: 'pending_payment',
@@ -530,6 +558,7 @@ const generateLeads = (): Lead[] => {
           { id: `pol-${id}-cmi`, kind: 'cmi', status: scenario.cmiStatus!, policyAttached: scenario.cmiStatus === 'policy_issued' || scenario.cmiStatus === 'policy_delivered', updatedOn: createdOnFull, policyStartDate },
         ];
 
+    const vehicle = getRandomVehicle();
     const leadData: Partial<Lead> = {
       id: String(id),
       leadNumber: `#${10143 - i}`,
@@ -540,6 +569,9 @@ const generateLeads = (): Lead[] => {
       createdOn: createdOnFull,
       updatedOn: generateUpdatedOn(createdOn, i % 6 + 1),
       vehicleDetails: vehiclePlates[(i + 5) % vehiclePlates.length],
+      vehicleBrand: vehicle.brand,
+      vehicleSubBrand: vehicle.subBrand,
+      vehicleYear: vehicle.year,
       rfStatus: 'transferred',
       scStatus: 'claimed',
       saleStatus: 'pending_review',
@@ -588,6 +620,7 @@ const generateLeads = (): Lead[] => {
           { id: `pol-${id}-cmi`, kind: 'cmi', status: scenario.cmiStatus!, policyAttached: scenario.cmiStatus === 'policy_issued' || scenario.cmiStatus === 'policy_delivered', updatedOn: createdOnFull, policyStartDate },
         ];
 
+    const vehicle = getRandomVehicle();
     const leadData: Partial<Lead> = {
       id: String(id),
       leadNumber: `#${10135 - i}`,
@@ -598,6 +631,9 @@ const generateLeads = (): Lead[] => {
       createdOn: createdOnFull,
       updatedOn: generateUpdatedOn(createdOn, i % 5 + 2),
       vehicleDetails: vehiclePlates[(i + 3) % vehiclePlates.length],
+      vehicleBrand: vehicle.brand,
+      vehicleSubBrand: vehicle.subBrand,
+      vehicleYear: vehicle.year,
       rfStatus: 'transferred',
       scStatus: 'claimed',
       saleStatus: 'pending_issuance',
@@ -648,6 +684,7 @@ const generateLeads = (): Lead[] => {
           { id: `pol-${id}-cmi`, kind: 'cmi', status: scenario.cmiStatus!, policyAttached: scenario.cmiStatus === 'policy_issued' || scenario.cmiStatus === 'policy_delivered', shippingMethod: scenario.cmiStatus === 'policy_issued' || scenario.cmiStatus === 'policy_delivered' ? shippingMethods[(i + 1) % 3] : undefined, updatedOn: createdOnFull, policyUploadedOn: scenario.cmiStatus === 'policy_issued' || scenario.cmiStatus === 'policy_delivered' ? policyUploadedOn : undefined, policyStartDate },
         ];
 
+    const vehicle = getRandomVehicle();
     const leadData: Partial<Lead> = {
       id: String(id),
       leadNumber: `#${10128 - i}`,
@@ -658,6 +695,9 @@ const generateLeads = (): Lead[] => {
       createdOn: createdOnFull,
       updatedOn: generateUpdatedOn(createdOn, i % 4 + 3),
       vehicleDetails: vehiclePlates[(i + 7) % vehiclePlates.length],
+      vehicleBrand: vehicle.brand,
+      vehicleSubBrand: vehicle.subBrand,
+      vehicleYear: vehicle.year,
       rfStatus: 'transferred',
       scStatus: 'claimed',
       saleStatus: 'policy_issued',
@@ -708,6 +748,7 @@ const generateLeads = (): Lead[] => {
           { id: `pol-${id}-cmi`, kind: 'cmi', status: scenario.cmiStatus!, policyAttached: true, shippingMethod: 'print_by_fairdee', trackingNumber: `TH${100000000 + i * 12345}`, updatedOn: createdOnFull, policyUploadedOn, policyStartDate },
         ];
 
+    const vehicle = getRandomVehicle();
     const leadData: Partial<Lead> = {
       id: String(id),
       leadNumber: `#${10120 - i}`,
@@ -718,6 +759,9 @@ const generateLeads = (): Lead[] => {
       createdOn: createdOnFull,
       updatedOn: generateUpdatedOn(createdOn, i % 7 + 1),
       vehicleDetails: vehiclePlates[(i + 2) % vehiclePlates.length],
+      vehicleBrand: vehicle.brand,
+      vehicleSubBrand: vehicle.subBrand,
+      vehicleYear: vehicle.year,
       rfStatus: 'completed',
       scStatus: 'completed',
       saleStatus: scenario.vmiStatus === 'policy_delivered' ? 'policy_delivered' : 'policy_shipped',
@@ -767,6 +811,7 @@ const generateLeads = (): Lead[] => {
           { id: `pol-${id}-cmi`, kind: 'cmi', status: scenario.cmiStatus!, policyAttached: scenario.cmiStatus === 'policy_delivered' },
         ];
 
+    const vehicle = getRandomVehicle();
     const leadData: Partial<Lead> = {
       id: String(id),
       leadNumber: `#${10108 - i}`,
@@ -777,6 +822,9 @@ const generateLeads = (): Lead[] => {
       createdOn: createdOnFull,
       updatedOn: generateUpdatedOn(createdOn, i % 3 + 4),
       vehicleDetails: vehiclePlates[(i + 4) % vehiclePlates.length],
+      vehicleBrand: vehicle.brand,
+      vehicleSubBrand: vehicle.subBrand,
+      vehicleYear: vehicle.year,
       rfStatus: 'completed',
       scStatus: 'completed',
       saleStatus: 'policy_cancelled',
