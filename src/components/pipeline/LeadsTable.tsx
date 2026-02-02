@@ -204,11 +204,18 @@ const paymentMethodLabels: Record<PaymentMethod, string> = {
   cbc_to_insurer: 'CBC to Insurer',
 };
 
-// Payment status options
+// Payment status options - varies by payment method
 type PaymentStatus = 'invoice_issued' | 'verified';
 const paymentStatusLabels: Record<PaymentStatus, { en: string; th: string }> = {
   invoice_issued: { en: 'Invoice Issued', th: 'ออกใบแจ้งหนี้แล้ว' },
   verified: { en: 'Payment Verified', th: 'ยืนยันการชำระเงินแล้ว' },
+};
+
+// Payment status labels that vary by payment method (for post to_pay stages)
+const paymentStatusByMethod: Record<PaymentMethod, { en: string; th: string }> = {
+  cbc_to_fairdee: { en: 'Payment Verified', th: 'ยืนยันการชำระเงินแล้ว' },
+  cbc_to_insurer: { en: 'Insurer Notified', th: 'แจ้งบริษัทประกันแล้ว' },
+  credit: { en: 'Credit Approved', th: 'อนุมัติเครดิตแล้ว' },
 };
 
 // Helper to check if both policies are pending
@@ -241,6 +248,18 @@ function getPremiumDisplay(lead: Lead): string {
 function getPaymentStatusForStage(stage: PipelineStage): PaymentStatus {
   if (stage === 'to_pay') return 'invoice_issued';
   return 'verified';
+}
+
+// Helper to get payment status label based on payment method (for post to_pay stages)
+function getPaymentStatusLabelByMethod(lead: Lead, stage: PipelineStage, language: 'en' | 'th'): string {
+  if (stage === 'to_pay') {
+    return paymentStatusLabels.invoice_issued[language];
+  }
+  // For post to_pay stages, show label based on payment method
+  if (lead.paymentMethod) {
+    return paymentStatusByMethod[lead.paymentMethod][language];
+  }
+  return paymentStatusLabels.verified[language];
 }
 
 // Helper to get staff members by team (based on fixed rosters)
@@ -1030,7 +1049,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                 <Select value={currentStatus} onValueChange={handlePaymentStatusChange}>
                                   <SelectTrigger className="w-[180px] h-8 text-xs">
                                     <SelectValue>
-                                      {paymentStatusLabels[currentStatus][language]}
+                                      {getPaymentStatusLabelByMethod(lead, stage, language)}
                                     </SelectValue>
                                   </SelectTrigger>
                                   <SelectContent>
