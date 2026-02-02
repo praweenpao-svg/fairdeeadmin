@@ -35,17 +35,19 @@ export const policyStatusColors: Record<string, StatusColorConfig> = {
 };
 
 // Get inline styles for a status
+// NOTE: Colors temporarily disabled - to be brought back later
 export function getStatusStyles(status: string, colors: Record<string, StatusColorConfig>, disabled = false): React.CSSProperties {
-  const config = colors[status];
+  // Temporarily return empty styles to hide colors
+  return {};
   
-  if (!config || !config.bg) {
-    return {}; // Return empty for default styling
-  }
-  
-  const opacity = disabled ? 0.8 : 1;
-  
-  return {
-    backgroundColor: config.bg,
-    opacity,
-  };
+  // Original implementation (to be restored later):
+  // const config = colors[status];
+  // if (!config || !config.bg) {
+  //   return {}; // Return empty for default styling
+  // }
+  // const opacity = disabled ? 0.8 : 1;
+  // return {
+  //   backgroundColor: config.bg,
+  //   opacity,
+  // };
 }

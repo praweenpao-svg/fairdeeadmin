@@ -30,30 +30,24 @@ export function InsurersExpandableRow({
   onQuoteUpdate 
 }: InsurersExpandableRowProps) {
   const { language } = useLanguageStore();
-  const [isExpanded, setIsExpanded] = useState(true); // Expanded by default
+  const [isExpanded, setIsExpanded] = useState(false); // Collapsed by default
   
   if (!insurerQuotes || insurerQuotes.length === 0) {
     return null;
   }
 
-  const quoteCount = insurerQuotes.length;
-  const quoteLabel = language === 'th' 
-    ? `${quoteCount} บริษัทประกัน`
-    : `${quoteCount} Insurer${quoteCount > 1 ? 's' : ''}`;
-
   return (
     <div className="w-full">
-      {/* Toggle Button */}
+      {/* Toggle Button - just chevron icon, similar to post-lead stages */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors py-1"
+        className="p-0.5 hover:bg-muted rounded transition-colors"
       >
         {isExpanded ? (
-          <ChevronDown className="w-4 h-4" />
+          <ChevronDown className="w-4 h-4 text-muted-foreground" />
         ) : (
-          <ChevronRight className="w-4 h-4" />
+          <ChevronRight className="w-4 h-4 text-muted-foreground" />
         )}
-        <span>{quoteLabel}</span>
       </button>
 
       {/* Expanded Insurer Grid */}
