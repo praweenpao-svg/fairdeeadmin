@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ChevronDown, ChevronRight, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import React from 'react';
+import { AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { InsurerQuote, PriceListStatus } from '@/types/pipeline';
 import { cn } from '@/lib/utils';
 import { useLanguageStore } from '@/stores/languageStore';
@@ -30,7 +30,6 @@ export function InsurersExpandableRow({
   onQuoteUpdate 
 }: InsurersExpandableRowProps) {
   const { language } = useLanguageStore();
-  const [isExpanded, setIsExpanded] = useState(false); // Collapsed by default
   
   if (!insurerQuotes || insurerQuotes.length === 0) {
     return null;
@@ -38,21 +37,8 @@ export function InsurersExpandableRow({
 
   return (
     <div className="w-full">
-      {/* Toggle Button - just chevron icon, similar to post-lead stages */}
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="p-0.5 hover:bg-muted rounded transition-colors"
-      >
-        {isExpanded ? (
-          <ChevronDown className="w-4 h-4 text-muted-foreground" />
-        ) : (
-          <ChevronRight className="w-4 h-4 text-muted-foreground" />
-        )}
-      </button>
-
-      {/* Expanded Insurer Grid */}
-      {isExpanded && (
-        <div className="mt-2 bg-card rounded-lg border border-border overflow-hidden">
+      {/* Insurer Grid - always shown since parent controls visibility */}
+      <div className="bg-card rounded-lg border border-border overflow-hidden">
           {/* Header Row */}
           <div className="grid grid-cols-12 gap-2 px-3 py-2 border-b border-border bg-muted/30 text-xs font-medium text-muted-foreground">
             <div className="col-span-2">{language === 'th' ? 'ชื่อบริษัทประกัน' : 'Insurer Name'}</div>
@@ -189,7 +175,6 @@ export function InsurersExpandableRow({
             </div>
           ))}
         </div>
-      )}
     </div>
   );
 }
