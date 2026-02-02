@@ -163,6 +163,9 @@ export interface Lead {
   createdOn: string;
   updatedOn: string;
   vehicleDetails: string;
+  vehicleBrand?: string;
+  vehicleSubBrand?: string;
+  vehicleYear?: number;
   rfStatus: 'pending' | 'transferred' | 'completed';
   scStatus: 'pending' | 'claimed' | 'completed';
   saleStatus: SaleStatus;

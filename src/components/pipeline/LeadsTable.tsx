@@ -1005,7 +1005,11 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                       <td className="px-4 py-3">
                         <div className="flex flex-col">
                           <span className="text-sm font-medium">{lead.vehicleDetails || '-'}</span>
-                          <span className="text-xs text-muted-foreground">N/A</span>
+                          <span className="text-xs text-muted-foreground">
+                            {lead.vehicleBrand && lead.vehicleSubBrand && lead.vehicleYear
+                              ? `${lead.vehicleBrand} ${lead.vehicleSubBrand} ${lead.vehicleYear}`
+                              : 'N/A'}
+                          </span>
                         </div>
                       </td>
                       {isPostLeadStage && (
