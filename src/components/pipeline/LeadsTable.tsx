@@ -256,7 +256,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
   const [selectedPolicyId, setSelectedPolicyId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [expandedLeads, setExpandedLeads] = useState<Set<string>>(() => new Set(leads.map(l => l.id)));
+  const [expandedLeads, setExpandedLeads] = useState<Set<string>>(() => new Set());
 
   // Toggle expanded state for a lead
   const toggleLeadExpanded = (leadId: string) => {
