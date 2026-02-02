@@ -198,10 +198,10 @@ function formatPremium(premium?: number): string {
 }
 
 // Payment method display labels
-const paymentMethodLabels: Record<PaymentMethod, string> = {
-  credit: 'Credit',
-  cbc_to_fairdee: 'CBC to FairDee',
-  cbc_to_insurer: 'CBC to Insurer',
+const paymentMethodLabels: Record<PaymentMethod, { en: string; th: string }> = {
+  credit: { en: 'Credit', th: 'เครดิต' },
+  cbc_to_fairdee: { en: 'CBC to FairDee', th: 'จ่ายเข้าแฟร์ดี' },
+  cbc_to_insurer: { en: 'CBC to Insurer', th: 'จ่ายเข้าบ.ประกัน' },
 };
 
 // Payment status options - varies by payment method
@@ -233,9 +233,9 @@ function areBothPoliciesPending(lead: Lead): boolean {
 }
 
 // Helper to get payment method display
-function getPaymentMethodLabel(lead: Lead): string {
+function getPaymentMethodLabel(lead: Lead, language: 'en' | 'th'): string {
   if (areBothPoliciesPending(lead)) return '-';
-  return lead.paymentMethod ? paymentMethodLabels[lead.paymentMethod] : '-';
+  return lead.paymentMethod ? paymentMethodLabels[lead.paymentMethod][language] : '-';
 }
 
 // Helper to get premium display (shows "-" for To Pay stage)
@@ -1034,7 +1034,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                       {isPostLeadStage && (
                         <>
                           <td className="px-4 py-3 text-sm">{getPremiumDisplay(lead, stage)}</td>
-                          <td className="px-4 py-3 text-sm">{getPaymentMethodLabel(lead)}</td>
+                          <td className="px-4 py-3 text-sm">{getPaymentMethodLabel(lead, language)}</td>
                           <td className="px-4 py-3">
                             {stage === 'to_pay' ? (
                               <span className="text-sm">-</span>
