@@ -60,6 +60,13 @@ export interface PolicyReworkEntry {
   previousStatus: PolicyStatus; // Status before rework was triggered
 }
 
+export interface PolicyRemark {
+  id: string;
+  comment: string;
+  createdBy: string;
+  createdAt: string;
+}
+
 export interface PolicyRecord {
   id: string;
   kind: PolicyKind;
@@ -70,6 +77,9 @@ export interface PolicyRecord {
   updatedOn?: string;
   policyUploadedOn?: string;
   policyStartDate?: string;
+  policyNumber?: string;
+  policyFileUrl?: string;
+  remarks?: PolicyRemark[];
   // Policy-level rework
   reworkRequired?: boolean;
   reworkHistory?: PolicyReworkEntry[];
