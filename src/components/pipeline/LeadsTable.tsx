@@ -1056,8 +1056,14 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                     <SelectItem value="invoice_issued">
                                       {paymentStatusLabels.invoice_issued[language]}
                                     </SelectItem>
-                                    <SelectItem value="verified">
-                                      {paymentStatusLabels.verified[language]}
+                                    <SelectItem value="cbc_to_fairdee_verified">
+                                      {paymentStatusByMethod.cbc_to_fairdee[language]}
+                                    </SelectItem>
+                                    <SelectItem value="cbc_to_insurer_notified">
+                                      {paymentStatusByMethod.cbc_to_insurer[language]}
+                                    </SelectItem>
+                                    <SelectItem value="credit_approved">
+                                      {paymentStatusByMethod.credit[language]}
                                     </SelectItem>
                                   </SelectContent>
                                 </Select>
