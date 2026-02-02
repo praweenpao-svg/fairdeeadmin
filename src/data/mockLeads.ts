@@ -1,4 +1,4 @@
-import { Lead, ReworkConfig, HistoryLogEntry, PolicyType, PolicyRecord, PolicyStatus, InsurerQuote, PriceListStatus, ETAStatus } from '@/types/pipeline';
+import { Lead, ReworkConfig, HistoryLogEntry, PolicyType, PolicyRecord, PolicyStatus, InsurerQuote, PriceListStatus, ETAStatus, PaymentMethod } from '@/types/pipeline';
 
 const agents = [
   { id: 'FD-3460', name: 'Akshay Bazad' },
@@ -32,6 +32,12 @@ const insurerNames = [
 const insuranceClasses = ['type_1_insurance', 'type_2_insurance', 'type_3_insurance', 'type_2+_insurance'];
 const garageTypes: Array<'Dealer' | 'Garage' | 'Any'> = ['Dealer', 'Garage', 'Any'];
 const priceListStatuses: PriceListStatus[] = ['pending', 'price_list_added', 'rejected_by_insurer', 'email_sent'];
+const paymentMethods: PaymentMethod[] = ['credit', 'cbc_to_fairdee', 'cbc_to_insurer'];
+
+// Helper to generate random premium between 5000 and 20000
+function generatePremium(): number {
+  return Math.round((5000 + Math.random() * 15000) * 100) / 100;
+}
 
 // Helper to generate insurer quotes for a lead
 function generateInsurerQuotes(leadId: string, numQuotes: number = 3): InsurerQuote[] {
@@ -488,6 +494,8 @@ const generateLeads = (): Lead[] => {
       deAssignee: deStaff[i % deStaff.length], // Assign DE for Owner column
       policyType: scenario.policyType,
       policyRecords,
+      premium: generatePremium(),
+      paymentMethod: paymentMethods[i % paymentMethods.length],
     };
 
     leads.push({
@@ -544,6 +552,8 @@ const generateLeads = (): Lead[] => {
       deAssignee: deStaff[i % deStaff.length],
       policyType: scenario.policyType,
       policyRecords,
+      premium: generatePremium(),
+      paymentMethod: paymentMethods[i % paymentMethods.length],
     };
 
     leads.push({
@@ -600,6 +610,8 @@ const generateLeads = (): Lead[] => {
       deAssignee: deStaff[i % deStaff.length],
       policyType: scenario.policyType,
       policyRecords,
+      premium: generatePremium(),
+      paymentMethod: paymentMethods[i % paymentMethods.length],
     };
 
     leads.push({
@@ -659,6 +671,8 @@ const generateLeads = (): Lead[] => {
       deAssignee: deStaff[i % deStaff.length],
       policyType: scenario.policyType,
       policyRecords,
+      premium: generatePremium(),
+      paymentMethod: paymentMethods[i % paymentMethods.length],
     };
 
     leads.push({
@@ -718,6 +732,8 @@ const generateLeads = (): Lead[] => {
       deAssignee: deStaff[i % deStaff.length],
       policyType: scenario.policyType,
       policyRecords,
+      premium: generatePremium(),
+      paymentMethod: paymentMethods[i % paymentMethods.length],
     };
 
     leads.push({
@@ -773,6 +789,8 @@ const generateLeads = (): Lead[] => {
       deAssignee: deStaff[i % deStaff.length],
       policyType: scenario.policyType,
       policyRecords,
+      premium: generatePremium(),
+      paymentMethod: paymentMethods[i % paymentMethods.length],
     };
 
     leads.push({

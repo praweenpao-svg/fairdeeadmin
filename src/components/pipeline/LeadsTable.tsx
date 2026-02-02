@@ -9,7 +9,7 @@ import {
   FileText,
   MessageSquare,
 } from 'lucide-react';
-import { Lead, PipelineStage, LeadType, ReworkConfig, CreatedByType, ReworkAttachment, ReworkHistoryEntry, HistoryLogEntry, PolicyStatus, PolicyReworkEntry } from '@/types/pipeline';
+import { Lead, PipelineStage, LeadType, ReworkConfig, CreatedByType, ReworkAttachment, ReworkHistoryEntry, HistoryLogEntry, PolicyStatus, PolicyReworkEntry, PaymentMethod } from '@/types/pipeline';
 import { cn } from '@/lib/utils';
 import { useLanguageStore } from '@/stores/languageStore';
 import {
@@ -185,6 +185,59 @@ function CreatedByBadge({ createdBy }: { createdBy: CreatedByType }) {
   };
   const { label, className } = config[createdBy];
   return <span className={cn('text-[10px] px-1.5 py-0.5 rounded font-medium', className)}>{label}</span>;
+}
+
+// Helper to format premium in THB
+function formatPremium(premium?: number): string {
+  if (premium === undefined || premium === null) return '-';
+  return new Intl.NumberFormat('th-TH', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(premium);
+}
+
+// Payment method display labels
+const paymentMethodLabels: Record<PaymentMethod, string> = {
+  credit: 'Credit',
+  cbc_to_fairdee: 'CBC to FairDee',
+  cbc_to_insurer: 'CBC to Insurer',
+};
+
+// Helper to get payment method display
+function getPaymentMethodLabel(lead: Lead): string {
+  // Only show if VMI and CMI are NOT both pending_payment
+  const vmiPolicy = lead.policyRecords?.find(p => p.kind === 'vmi');
+  const cmiPolicy = lead.policyRecords?.find(p => p.kind === 'cmi');
+  
+  // Check if both policies are pending_payment
+  const vmiisPending = vmiPolicy?.status === 'pending_payment';
+  const cmiisPending = cmiPolicy?.status === 'pending_payment';
+  
+  // If both are pending (or only VMI exists and is pending), show "-"
+  if (lead.policyType === 'vmi_cmi') {
+    if (vmiisPending && cmiisPending) return '-';
+  } else {
+    if (vmiisPending) return '-';
+  }
+  
+  return lead.paymentMethod ? paymentMethodLabels[lead.paymentMethod] : '-';
+}
+
+// Helper to get premium display (same logic as payment method)
+function getPremiumDisplay(lead: Lead): string {
+  const vmiPolicy = lead.policyRecords?.find(p => p.kind === 'vmi');
+  const cmiPolicy = lead.policyRecords?.find(p => p.kind === 'cmi');
+  
+  const vmiisPending = vmiPolicy?.status === 'pending_payment';
+  const cmiisPending = cmiPolicy?.status === 'pending_payment';
+  
+  if (lead.policyType === 'vmi_cmi') {
+    if (vmiisPending && cmiisPending) return '-';
+  } else {
+    if (vmiisPending) return '-';
+  }
+  
+  return formatPremium(lead.premium);
 }
 
 // Helper to get staff members by team (based on fixed rosters)
@@ -841,6 +894,12 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                 <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'วันที่สร้าง' : 'Created On'}</th>
                 <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'วันที่อัพเดท' : 'Updated On'}</th>
                 <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'รายละเอียดรถ' : 'Vehicle details'}</th>
+                {isPostLeadStage && (
+                  <>
+                    <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'เบี้ยประกัน' : 'Premium'}</th>
+                    <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'วิธีชำระเงิน' : 'Payment Method'}</th>
+                  </>
+                )}
                 <th className="data-table-header px-4 py-3 text-left">RF</th>
                 <th className="data-table-header px-4 py-3 text-left">SC</th>
                 {showDEColumn && (
@@ -856,7 +915,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
             <tbody>
               {sortedLeads.length === 0 ? (
                 <tr>
-                  <td colSpan={isPostLeadStage ? (showDEColumn ? 10 : 9) : (showDEColumn ? 11 : 10)} className="px-4 py-12 text-center text-muted-foreground">
+                  <td colSpan={isPostLeadStage ? (showDEColumn ? 12 : 11) : (showDEColumn ? 11 : 10)} className="px-4 py-12 text-center text-muted-foreground">
                     No leads found for this stage
                   </td>
                 </tr>
@@ -943,6 +1002,12 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                           <span className="text-xs text-muted-foreground">N/A</span>
                         </div>
                       </td>
+                      {isPostLeadStage && (
+                        <>
+                          <td className="px-4 py-3 text-sm">{getPremiumDisplay(lead)}</td>
+                          <td className="px-4 py-3 text-sm">{getPaymentMethodLabel(lead)}</td>
+                        </>
+                      )}
                       <td className="px-4 py-3">
                         <Select 
                           value={lead.rfAssignee || '__none__'}

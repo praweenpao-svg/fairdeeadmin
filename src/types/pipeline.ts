@@ -28,6 +28,9 @@ export type SaleStatus =
 
 export type ShippingMethod = 'e_policy' | 'print_by_myself' | 'print_by_fairdee';
 
+// Payment method for the sale
+export type PaymentMethod = 'credit' | 'cbc_to_fairdee' | 'cbc_to_insurer';
+
 // Policy type for post-lead journey (VMI only vs VMI + CMI)
 export type PolicyType = 'vmi_only' | 'vmi_cmi';
 
@@ -168,6 +171,9 @@ export interface Lead {
   shippingMethod?: ShippingMethod;
   trackingNumber?: string;
   reworkRequired: boolean;
+  // Sale-level financial info (shown in post-lead stages)
+  premium?: number; // Premium amount in THB
+  paymentMethod?: PaymentMethod;
   reworkReasonId?: string;
   assignedTo?: string;
   createdBy: CreatedByType;
