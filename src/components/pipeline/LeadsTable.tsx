@@ -947,8 +947,8 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                     >
                       <td className="px-4 py-3">
                         <div className="flex items-start gap-2">
-                          {/* Expand/Collapse chevron for post-lead stages OR leads with insurer quotes */}
-                          {(isPostLeadStage && hasPolicies) || (stage === 'to_convert' && (lead.leadType === 'new_leads' || lead.leadType === 'coa') && lead.insurerQuotes && lead.insurerQuotes.length > 0) ? (
+                          {/* Expand/Collapse chevron for post-lead stages only (insurer quotes hidden for now) */}
+                          {(isPostLeadStage && hasPolicies) ? (
                             <button 
                               onClick={() => toggleLeadExpanded(lead.id)}
                               className="mt-0.5 p-0.5 hover:bg-muted rounded transition-colors"
@@ -1139,7 +1139,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                       </td>
                     </tr>
                     
-                    {/* Expanded Insurer Rows for Leads Stage (New Leads / COA) */}
+                    {/* Expanded Insurer Rows for Leads Stage (New Leads / COA) - Hidden for now
                     {stage === 'to_convert' && isExpanded && (lead.leadType === 'new_leads' || lead.leadType === 'coa') && lead.insurerQuotes && lead.insurerQuotes.length > 0 && (
                       <tr>
                         <td colSpan={showDEColumn ? 11 : 10} className="p-0">
@@ -1155,6 +1155,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                         </td>
                       </tr>
                     )}
+                    */}
                     
                     {/* Expanded Policy Rows */}
                     {isPostLeadStage && isExpanded && allPolicies.length > 0 && (
