@@ -31,16 +31,14 @@ const vehicleProvinces = [
   'สงขลา',
 ];
 
-// Vehicle brands and sub-brands for mock data
+// Vehicle brands and models for mock data (short names only)
 const vehicleBrands: Array<{ brand: string; subBrands: string[] }> = [
-  { brand: 'Toyota', subBrands: ['Yaris', 'Camry', 'Corolla', 'Vios', 'Fortuner', 'Hilux'] },
-  { brand: 'Honda', subBrands: ['City', 'Civic', 'Accord', 'CR-V', 'Jazz', 'HR-V'] },
-  { brand: 'Mazda', subBrands: ['2', '3', 'CX-3', 'CX-5', 'CX-30', 'BT-50'] },
-  { brand: 'Isuzu', subBrands: ['D-Max', 'MU-X'] },
-  { brand: 'Ford', subBrands: ['Ranger', 'Everest', 'Territory'] },
-  { brand: 'Nissan', subBrands: ['Almera', 'March', 'Kicks', 'Terra', 'Navara'] },
-  { brand: 'Mitsubishi', subBrands: ['Triton', 'Pajero Sport', 'Xpander', 'Attrage'] },
-  { brand: 'Suzuki', subBrands: ['Swift', 'Ciaz', 'Ertiga', 'XL7'] },
+  { brand: 'Nissan', subBrands: ['Terra', 'Kicks', 'Almera'] },
+  { brand: 'Honda', subBrands: ['Civic', 'City', 'CR-V'] },
+  { brand: 'Suzuki', subBrands: ['XL7', 'Ertiga', 'Swift'] },
+  { brand: 'Mazda', subBrands: ['CX-5', 'CX-3', '3'] },
+  { brand: 'Isuzu', subBrands: ['MU-X', 'D-Max'] },
+  { brand: 'Toyota', subBrands: ['Vios', 'Yaris', 'Camry'] },
 ];
 
 // Helper to get random vehicle info
