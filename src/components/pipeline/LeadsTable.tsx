@@ -342,6 +342,9 @@ function parseDateTime(dateStr: string): Date {
   return new Date(year, month - 1, day, hours, minutes);
 }
 
+// Current user - would come from auth context in production
+const CURRENT_USER = 'Pao';
+
 export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsTableProps) {
   const { language } = useLanguageStore();
   const [reworkDialogOpen, setReworkDialogOpen] = useState(false);
@@ -449,7 +452,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
     const historyLogEntry: HistoryLogEntry = {
       id: crypto.randomUUID(),
       action: 'status_changed',
-      triggeredBy: 'Akshay Bazad',
+      triggeredBy: CURRENT_USER,
       triggeredAt: timestamp,
       fromStatus: policy?.status,
       toStatus: newStatus,
@@ -493,7 +496,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
             ...entry,
             resolved: true,
             resolvedAt: timestamp,
-            resolvedBy: 'Akshay Bazad',
+            resolvedBy: CURRENT_USER,
           };
         }
         return entry;
@@ -503,7 +506,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
       const policyHistoryEntry: PolicyHistoryLogEntry = {
         id: crypto.randomUUID(),
         action: 'rework_resolved',
-        triggeredBy: 'Akshay Bazad',
+        triggeredBy: CURRENT_USER,
         triggeredAt: timestamp,
         reworkReasonId: unresolvedEntry.reasonId,
         reworkReasonLabel: unresolvedEntry.reasonLabel,
@@ -523,7 +526,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
     const historyLogEntry: HistoryLogEntry = {
       id: crypto.randomUUID(),
       action: 'rework_resolved',
-      triggeredBy: 'Akshay Bazad',
+      triggeredBy: CURRENT_USER,
       triggeredAt: timestamp,
       reworkReasonId: latestUnresolved?.reasonId,
       reworkReasonLabel: latestUnresolved?.reasonLabel,
@@ -578,7 +581,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
             ...entry,
             resolved: true,
             resolvedAt: timestamp,
-            resolvedBy: 'Akshay Bazad (Reassigned)',
+            resolvedBy: `${CURRENT_USER} (Reassigned)`,
           };
         }
         return entry;
@@ -591,7 +594,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
         reasonLabel,
         details,
         attachments,
-        savedBy: 'Akshay Bazad',
+        savedBy: CURRENT_USER,
         savedAt: timestamp,
         previousStatus,
       };
@@ -600,7 +603,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
       const policyHistoryEntry: PolicyHistoryLogEntry = {
         id: crypto.randomUUID(),
         action: 'rework_reassigned',
-        triggeredBy: 'Akshay Bazad',
+        triggeredBy: CURRENT_USER,
         triggeredAt: timestamp,
         reworkReasonId: newReasonId,
         reworkReasonLabel: reasonLabel,
@@ -625,7 +628,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
     const historyLogEntry: HistoryLogEntry = {
       id: crypto.randomUUID(),
       action: 'rework_reassigned',
-      triggeredBy: 'Akshay Bazad',
+      triggeredBy: CURRENT_USER,
       triggeredAt: timestamp,
       reworkReasonId: newReasonId,
       reworkReasonLabel: reasonLabel,
@@ -681,7 +684,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
       const historyLogEntry: HistoryLogEntry = {
         id: crypto.randomUUID(),
         action: 'status_changed',
-        triggeredBy: 'Akshay Bazad',
+        triggeredBy: CURRENT_USER,
         triggeredAt: timestamp,
         fromStatus: lead.saleStatus,
         toStatus: newStatus,
@@ -746,7 +749,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
         reasonLabel,
         details,
         attachments,
-        savedBy: 'Akshay Bazad',
+        savedBy: CURRENT_USER,
         savedAt: timestamp,
         previousStatus,
       };
@@ -766,7 +769,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
       const historyLogEntry: HistoryLogEntry = {
         id: crypto.randomUUID(),
         action: 'rework_created',
-        triggeredBy: 'Akshay Bazad',
+        triggeredBy: CURRENT_USER,
         triggeredAt: timestamp,
         reworkReasonId: reasonId,
         reworkReasonLabel: reasonLabel,
@@ -815,7 +818,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
       reasonLabel,
       details,
       attachments,
-      savedBy: 'Akshay Bazad',
+      savedBy: CURRENT_USER,
       savedAt: timestamp,
       previousStatus,
     };
@@ -824,7 +827,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
     const historyLogEntry: HistoryLogEntry = {
       id: crypto.randomUUID(),
       action: 'rework_created',
-      triggeredBy: 'Akshay Bazad',
+      triggeredBy: CURRENT_USER,
       triggeredAt: timestamp,
       reworkReasonId: reasonId,
       reworkReasonLabel: reasonLabel,
@@ -879,14 +882,14 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
       ...entry,
       resolved: true,
       resolvedAt,
-      resolvedBy: 'Akshay Bazad',
+      resolvedBy: CURRENT_USER,
     };
 
     // Create history log entry for rework resolution
     const historyLogEntry: HistoryLogEntry = {
       id: crypto.randomUUID(),
       action: 'rework_resolved',
-      triggeredBy: 'Akshay Bazad',
+      triggeredBy: CURRENT_USER,
       triggeredAt: resolvedAt,
       reworkReasonId: entry.reasonId,
       reworkReasonLabel: entry.reasonLabel,
@@ -947,7 +950,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
       ...entry,
       resolved: true,
       resolvedAt,
-      resolvedBy: 'Akshay Bazad (Reassigned)',
+      resolvedBy: `${CURRENT_USER} (Reassigned)`,
     };
 
     // Create new rework entry with the new reason
@@ -957,7 +960,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
       reasonLabel: newReasonLabel,
       details: details || `Reassigned from: ${entry.reasonLabel}`,
       attachments,
-      savedBy: 'Akshay Bazad',
+      savedBy: CURRENT_USER,
       savedAt: resolvedAt,
       previousStatus: entry.previousStatus, // Keep the original previous status
     };
@@ -976,7 +979,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
     const historyLogEntry: HistoryLogEntry = {
       id: crypto.randomUUID(),
       action: 'rework_reassigned',
-      triggeredBy: 'Akshay Bazad',
+      triggeredBy: CURRENT_USER,
       triggeredAt: resolvedAt,
       reworkReasonId: newReasonId,
       reworkReasonLabel: newReasonLabel,
@@ -1025,7 +1028,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
     const newRemark = {
       id: crypto.randomUUID(),
       comment,
-      createdBy: 'Akshay Bazad',
+      createdBy: CURRENT_USER,
       createdAt: timestamp,
     };
 
@@ -1035,7 +1038,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
       const policyHistoryEntry: PolicyHistoryLogEntry = {
         id: crypto.randomUUID(),
         action: 'remark_added',
-        triggeredBy: 'Akshay Bazad',
+        triggeredBy: CURRENT_USER,
         triggeredAt: new Date().toLocaleString('en-US', {
           year: 'numeric',
           month: 'short',
