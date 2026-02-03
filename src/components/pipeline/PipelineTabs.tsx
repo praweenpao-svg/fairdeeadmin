@@ -199,8 +199,16 @@ export function getLeadsForStage(leads: Lead[], stage: PipelineStage): Lead[] {
 
 // Get the actual owner of a lead based on rework status and stage
 function getLeadOwner(lead: Lead, stage: PipelineStage): string | undefined {
-  // If rework is required, the assignedTo field determines the owner
-  if (lead.reworkRequired && lead.assignedTo) {
+  // If any policy is in active rework, that takes priority (owner comes from assignedTo)
+  const hasActivePolicyRework = Boolean(
+    lead.policyRecords?.some(
+      (p) =>
+        p.status === 'rework_required' &&
+        (p.reworkHistory?.some((e) => !e.resolved) ?? false)
+    )
+  );
+
+  if ((hasActivePolicyRework || lead.reworkRequired) && lead.assignedTo) {
     return lead.assignedTo;
   }
   
