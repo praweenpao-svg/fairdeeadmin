@@ -8,6 +8,7 @@ import {
   ChevronDown,
   FileText,
   MessageSquare,
+  Truck,
 } from 'lucide-react';
 import { Lead, PipelineStage, LeadType, ReworkConfig, CreatedByType, ReworkAttachment, ReworkHistoryEntry, HistoryLogEntry, PolicyStatus, PolicyReworkEntry, PaymentMethod } from '@/types/pipeline';
 import { cn } from '@/lib/utils';
@@ -1230,7 +1231,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                         <td colSpan={showDEColumn ? 10 : 9} className="p-0">
                           <div className="mx-4 my-2 rounded-lg border border-border overflow-hidden bg-card shadow-sm">
                             {/* Policy Sub-Table Header */}
-                            <div className="grid grid-cols-9 gap-3 px-4 py-2.5 bg-muted/60 border-b border-border">
+                            <div className="grid grid-cols-10 gap-3 px-4 py-2.5 bg-muted/60 border-b border-border">
                               <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                                 {language === 'th' ? 'ประเภท' : 'Type'}
                               </div>
@@ -1251,6 +1252,9 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                               </div>
                               <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                                 {language === 'th' ? 'ไฟล์กรมธรรม์' : 'Policy File'}
+                              </div>
+                              <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                                {language === 'th' ? 'ติดตามพัสดุ' : 'Tracking'}
                               </div>
                               <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                                 {language === 'th' ? 'หมายเหตุ' : 'Remarks'}
@@ -1300,10 +1304,14 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                   
                                   const remarkCount = policy.remarks?.length || 0;
                                   
+                                  // Show tracking button when print_by_fairdee and policy shipped/delivered
+                                  const showTracking = policy.shippingMethod === 'print_by_fairdee' && 
+                                    (policy.status === 'policy_shipped' || policy.status === 'policy_delivered');
+                                  
                                   return (
                                     <div 
                                       key={policy.id}
-                                      className="grid grid-cols-9 gap-3 px-4 py-3 items-center transition-colors bg-card hover:bg-muted/30"
+                                      className="grid grid-cols-10 gap-3 px-4 py-3 items-center transition-colors bg-card hover:bg-muted/30"
                                     >
                                       {/* Policy Kind Badge */}
                                       <div>
@@ -1325,7 +1333,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                       {/* Policy Uploaded On */}
                                       <div className="text-xs text-muted-foreground">
                                         {policy.policyUploadedOn ? (
-                                          <span className="text-success">{formatDate(policy.policyUploadedOn)}</span>
+                                          <span className="text-foreground">{formatDate(policy.policyUploadedOn)}</span>
                                         ) : (
                                           <span className="text-muted-foreground/50">-</span>
                                         )}
@@ -1337,12 +1345,12 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                       </div>
                                       
                                       {/* Policy Start Date */}
-                                      <div className="text-xs text-foreground font-medium">
+                                      <div className="text-xs text-muted-foreground">
                                         {formatDateOnly(policy.policyStartDate)}
                                       </div>
                                       
                                       {/* Policy Number */}
-                                      <div className="text-xs text-foreground font-mono">
+                                      <div className="text-xs text-muted-foreground font-mono">
                                         {policy.policyNumber || <span className="text-muted-foreground/50">-</span>}
                                       </div>
                                       
@@ -1357,6 +1365,26 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                           >
                                             <FileText className="w-3.5 h-3.5" />
                                             {language === 'th' ? 'ดูกรมธรรม์' : 'View Policy'}
+                                          </Button>
+                                        ) : (
+                                          <span className="text-xs text-muted-foreground/50">-</span>
+                                        )}
+                                      </div>
+                                      
+                                      {/* Tracking */}
+                                      <div>
+                                        {showTracking && policy.trackingNumber ? (
+                                          <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="h-7 text-xs gap-1.5"
+                                            onClick={() => {
+                                              // Open tracking URL - example using Thailand Post
+                                              window.open(`https://track.thailandpost.co.th/?trackNumber=${policy.trackingNumber}`, '_blank');
+                                            }}
+                                          >
+                                            <Truck className="w-3.5 h-3.5" />
+                                            {language === 'th' ? 'ติดตามพัสดุ' : 'View Tracking'}
                                           </Button>
                                         ) : (
                                           <span className="text-xs text-muted-foreground/50">-</span>
