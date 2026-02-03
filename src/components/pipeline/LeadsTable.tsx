@@ -1658,19 +1658,48 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                         )}
                                       </div>
                                       
-                                      {/* Endorsement Status - plain text display */}
-                                      <div className="w-[160px] shrink-0 text-sm">
+                                      {/* Endorsement Status - dropdown with toast error on change */}
+                                      <div className="w-[160px] shrink-0">
                                         {policy.endorsementType && policy.endorsementStatus ? (
-                                          <span className="text-foreground">
-                                            {policy.endorsementStatus === 'request_created' && (language === 'th' ? 'สร้างคำขอแล้ว' : 'Request Created')}
-                                            {policy.endorsementStatus === 'request_submitted' && (language === 'th' ? 'ส่งคำขอแล้ว' : 'Request Submitted')}
-                                            {policy.endorsementStatus === 'request_approved' && (language === 'th' ? 'อนุมัติคำขอแล้ว' : 'Request Approved')}
-                                            {policy.endorsementStatus === 'pending_on_ops' && (language === 'th' ? 'รอดำเนินการ Ops' : 'Pending on Ops')}
-                                            {policy.endorsementStatus === 'pending_finance' && (language === 'th' ? 'รอการเงิน' : 'Pending Finance')}
-                                            {policy.endorsementStatus === 'invalid' && (language === 'th' ? 'ไม่ถูกต้อง' : 'Invalid')}
-                                          </span>
+                                          <Select
+                                            value={policy.endorsementStatus}
+                                            onValueChange={(newValue) => {
+                                              if (newValue !== policy.endorsementStatus) {
+                                                toast.error(
+                                                  language === 'th' 
+                                                    ? 'ไม่สามารถเปลี่ยนสถานะได้โดยตรง กรุณาดำเนินการผ่านระบบที่เกี่ยวข้อง'
+                                                    : 'Cannot change endorsement status directly. Please process through the appropriate workflow.',
+                                                  { duration: 4000 }
+                                                );
+                                              }
+                                            }}
+                                          >
+                                            <SelectTrigger className="h-8 text-xs w-full bg-popover">
+                                              <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent className="bg-popover z-50">
+                                              <SelectItem value="request_created" className="text-xs">
+                                                {language === 'th' ? 'สร้างคำขอแล้ว' : 'Request Created'}
+                                              </SelectItem>
+                                              <SelectItem value="request_submitted" className="text-xs">
+                                                {language === 'th' ? 'ส่งคำขอแล้ว' : 'Request Submitted'}
+                                              </SelectItem>
+                                              <SelectItem value="request_approved" className="text-xs">
+                                                {language === 'th' ? 'อนุมัติคำขอแล้ว' : 'Request Approved'}
+                                              </SelectItem>
+                                              <SelectItem value="pending_on_ops" className="text-xs">
+                                                {language === 'th' ? 'รอดำเนินการ Ops' : 'Pending on Ops'}
+                                              </SelectItem>
+                                              <SelectItem value="pending_finance" className="text-xs">
+                                                {language === 'th' ? 'รอการเงิน' : 'Pending Finance'}
+                                              </SelectItem>
+                                              <SelectItem value="invalid" className="text-xs">
+                                                {language === 'th' ? 'ไม่ถูกต้อง' : 'Invalid'}
+                                              </SelectItem>
+                                            </SelectContent>
+                                          </Select>
                                         ) : (
-                                          <span className="text-muted-foreground/50">-</span>
+                                          <span className="text-sm text-muted-foreground/50">-</span>
                                         )}
                                       </div>
                                       
