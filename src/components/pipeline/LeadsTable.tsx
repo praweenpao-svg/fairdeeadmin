@@ -1205,7 +1205,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                       className={cn(
                         'data-table-row',
                         lead.reworkRequired 
-                          ? 'bg-warning/5 hover:bg-warning/5' 
+                          ? 'bg-warning/5 hover:bg-warning/[0.07]' 
                           : ''
                       )}
                     >
