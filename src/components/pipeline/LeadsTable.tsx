@@ -1274,22 +1274,19 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                   
                                   const formatDate = (dateStr?: string) => {
                                     if (!dateStr) return '-';
-                                    const date = new Date(dateStr);
-                                    return date.toLocaleString(language === 'th' ? 'th-TH' : 'en-US', {
-                                      day: '2-digit',
-                                      month: '2-digit',
-                                      year: 'numeric',
-                                      hour: '2-digit',
-                                      minute: '2-digit',
-                                    });
+                                    // Parse DD-MM-YYYY HH:MM format
+                                    const [datePart, timePart] = dateStr.split(' ');
+                                    if (!datePart) return '-';
+                                    const [day, month, year] = datePart.split('-');
+                                    const [hours, mins] = (timePart || '00:00').split(':');
+                                    return `${day}/${month}/${year} ${hours}:${mins}`;
                                   };
                                   
                                   const formatDateOnly = (dateStr?: string) => {
                                     if (!dateStr) return '-';
-                                    const date = new Date(dateStr);
-                                    const day = String(date.getDate()).padStart(2, '0');
-                                    const month = String(date.getMonth() + 1).padStart(2, '0');
-                                    const year = date.getFullYear();
+                                    // Parse DD-MM-YYYY format (with optional time)
+                                    const datePart = dateStr.split(' ')[0];
+                                    const [day, month, year] = datePart.split('-');
                                     return `${day}/${month}/${year}`;
                                   };
                                   
