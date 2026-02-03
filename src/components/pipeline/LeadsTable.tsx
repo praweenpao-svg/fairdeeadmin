@@ -1411,8 +1411,8 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                       <div className="w-[120px] shrink-0 text-xs text-foreground">
                                         {policy.endorsementType ? (
                                           policy.endorsementType === 'policy_endorsement' 
-                                            ? 'Policy Endorsement'
-                                            : 'Policy Cancellation'
+                                            ? (language === 'th' ? 'สลักหลังกรมธรรม์' : 'Policy Endorsement')
+                                            : (language === 'th' ? 'ยกเลิกกรมธรรม์' : 'Policy Cancellation')
                                         ) : (
                                           <span className="text-muted-foreground/50">-</span>
                                         )}
@@ -1435,12 +1435,12 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                               <SelectValue placeholder={language === 'th' ? 'เลือกสถานะ' : 'Select status'} />
                                             </SelectTrigger>
                                             <SelectContent className="bg-popover z-50">
-                                              <SelectItem value="request_created">Request Created</SelectItem>
-                                              <SelectItem value="request_submitted">Request Submitted</SelectItem>
-                                              <SelectItem value="request_approved">Request Approved</SelectItem>
-                                              <SelectItem value="pending_on_ops">Pending on Ops</SelectItem>
-                                              <SelectItem value="pending_finance">Pending Finance</SelectItem>
-                                              <SelectItem value="invalid">Invalid</SelectItem>
+                                              <SelectItem value="request_created">{language === 'th' ? 'สร้างคำขอแล้ว' : 'Request Created'}</SelectItem>
+                                              <SelectItem value="request_submitted">{language === 'th' ? 'ส่งคำขอแล้ว' : 'Request Submitted'}</SelectItem>
+                                              <SelectItem value="request_approved">{language === 'th' ? 'อนุมัติคำขอแล้ว' : 'Request Approved'}</SelectItem>
+                                              <SelectItem value="pending_on_ops">{language === 'th' ? 'รอดำเนินการ Ops' : 'Pending on Ops'}</SelectItem>
+                                              <SelectItem value="pending_finance">{language === 'th' ? 'รอการเงิน' : 'Pending Finance'}</SelectItem>
+                                              <SelectItem value="invalid">{language === 'th' ? 'ไม่ถูกต้อง' : 'Invalid'}</SelectItem>
                                             </SelectContent>
                                           </Select>
                                         ) : (
