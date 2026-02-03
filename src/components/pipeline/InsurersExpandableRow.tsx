@@ -84,7 +84,7 @@ export function InsurersExpandableRow({
                   value={quote.priceListStatus}
                   onValueChange={(value) => onQuoteUpdate?.(quote.id, { priceListStatus: value as PriceListStatus })}
                 >
-                  <SelectTrigger className="h-6 text-[10px] w-full">
+                  <SelectTrigger className="h-7 text-xs w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-popover z-50">
