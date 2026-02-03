@@ -1000,7 +1000,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
     setCurrentPage(1);
   };
 
-  // Get owner based on stage and rework status
+  // Get owner based on stage and rework status (lead-level, for backwards compatibility)
   const getOwner = (lead: Lead): string | undefined => {
     // Policy-level rework takes priority over everything
     const activePolicyRework = getLeadActivePolicyRework(lead);
@@ -1022,6 +1022,28 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
       return lead.scAssignee || lead.rfAssignee;
     } else {
       // All other stages: DE is the owner (unless rework)
+      return lead.deAssignee;
+    }
+  };
+
+  // Get owner for a specific policy row (policy-level)
+  // When a policy is in rework, its owner is determined by the rework config
+  // When not in rework, it uses the stage-based owner (RF/SC or DE)
+  const getPolicyOwner = (lead: Lead, policy: PolicyRecord): string | undefined => {
+    // Check if this specific policy has an active rework
+    if (policy.status === 'rework_required' && policy.reworkHistory) {
+      const activeRework = policy.reworkHistory.find(e => !e.resolved);
+      if (activeRework) {
+        return computeReworkOwner(lead, activeRework.reasonId);
+      }
+    }
+
+    // No active rework on this policy - use stage-based owner
+    if (stage === 'all') {
+      return lead.deAssignee || lead.scAssignee || lead.rfAssignee;
+    } else if (stage === 'to_convert' || stage === 'to_pay') {
+      return lead.scAssignee || lead.rfAssignee;
+    } else {
       return lead.deAssignee;
     }
   };
@@ -1387,6 +1409,9 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                 <div className="w-[150px] text-xs font-semibold text-muted-foreground uppercase tracking-wide shrink-0">
                                   {language === 'th' ? 'สถานะกรมธรรม์' : 'Policy Status'}
                                 </div>
+                                <div className="w-[100px] text-xs font-semibold text-muted-foreground uppercase tracking-wide shrink-0">
+                                  {language === 'th' ? 'เจ้าของ' : 'Owner'}
+                                </div>
                                 <div className="w-[70px] text-xs font-semibold text-muted-foreground uppercase tracking-wide shrink-0">
                                   {language === 'th' ? 'หมายเหตุ' : 'Remarks'}
                                 </div>
@@ -1562,6 +1587,25 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                           onReworkResolve={(policyId) => handlePolicyReworkResolve(lead, policyId)}
                                           onReworkReassign={(policyId, reasonId, details, attachments) => handlePolicyReworkReassign(lead, policyId, reasonId, details, attachments)}
                                         />
+                                      </div>
+                                      
+                                      {/* Policy Owner */}
+                                      <div className="w-[100px] shrink-0 text-sm">
+                                        {(() => {
+                                          const policyOwner = getPolicyOwner(lead, policy);
+                                          const isReworkOwner = policy.status === 'rework_required';
+                                          if (!policyOwner) {
+                                            return <span className="text-muted-foreground/50">-</span>;
+                                          }
+                                          return (
+                                            <span className={cn(
+                                              'font-medium',
+                                              isReworkOwner ? 'text-warning' : 'text-foreground'
+                                            )}>
+                                              {policyOwner}
+                                            </span>
+                                          );
+                                        })()}
                                       </div>
                                       
                                       {/* Remarks */}
