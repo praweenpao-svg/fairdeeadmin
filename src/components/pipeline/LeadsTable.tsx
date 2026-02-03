@@ -402,8 +402,8 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
     });
   };
 
-  // Handle policy rework resolve (supports resolving multiple entries)
-  const handlePolicyReworkResolve = (lead: Lead, policyId: string, entryIds?: string[]) => {
+  // Handle policy rework resolve (single active rework at a time)
+  const handlePolicyReworkResolve = (lead: Lead, policyId: string) => {
     if (!lead.policyRecords) return;
 
     const timestamp = new Date().toLocaleString('en-US', {
@@ -419,12 +419,13 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
       
       const reworkHistory = record.reworkHistory || [];
       
-      // If entryIds provided, resolve those specific entries; otherwise resolve all unresolved
-      const idsToResolve = entryIds || reworkHistory.filter(e => !e.resolved).map(e => e.id);
+      // Find the latest unresolved entry
+      const latestUnresolved = reworkHistory.find(e => !e.resolved);
+      if (!latestUnresolved) return record;
       
-      // Mark specified entries as resolved
+      // Mark it as resolved
       const updatedHistory = reworkHistory.map(entry => {
-        if (idsToResolve.includes(entry.id) && !entry.resolved) {
+        if (entry.id === latestUnresolved.id) {
           return {
             ...entry,
             resolved: true,
@@ -435,36 +436,22 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
         return entry;
       });
 
-      // Check if there are any remaining unresolved entries
-      const remainingUnresolved = updatedHistory.filter(e => !e.resolved);
-      
-      // Get the previous status from the first resolved entry (they should all have the same previousStatus)
-      const firstResolvedEntry = reworkHistory.find(e => idsToResolve.includes(e.id) && !e.resolved);
-      
-      // Only restore status if all entries are resolved
-      if (remainingUnresolved.length === 0 && firstResolvedEntry) {
-        return {
-          ...record,
-          status: firstResolvedEntry.previousStatus,
-          reworkRequired: false,
-          reworkHistory: updatedHistory,
-        };
-      }
-
+      // Restore previous status
       return {
         ...record,
+        status: latestUnresolved.previousStatus,
+        reworkRequired: false,
         reworkHistory: updatedHistory,
       };
     });
 
     const policy = lead.policyRecords.find(r => r.id === policyId);
-    const resolvedCount = entryIds?.length || 'all';
     const historyLogEntry: HistoryLogEntry = {
       id: crypto.randomUUID(),
       action: 'rework_resolved',
       triggeredBy: 'Akshay Bazad',
       triggeredAt: timestamp,
-      comment: `${policy?.kind.toUpperCase()} policy rework resolved (${resolvedCount} reason${resolvedCount === 1 ? '' : 's'})`,
+      comment: `${policy?.kind.toUpperCase()} policy rework resolved`,
     };
 
     onLeadUpdate?.(lead.id, {
@@ -473,8 +460,8 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
     });
   };
 
-  // Handle policy rework reassign (supports reassigning multiple entries at once)
-  const handlePolicyReworkReassign = (lead: Lead, policyId: string, newReasonId: string, details: string, attachments: ReworkAttachment[], entryIds?: string[]) => {
+  // Handle policy rework reassign (single active rework at a time)
+  const handlePolicyReworkReassign = (lead: Lead, policyId: string, newReasonId: string, details: string, attachments: ReworkAttachment[]) => {
     if (!lead.policyRecords) return;
 
     const timestamp = new Date().toLocaleString('en-US', {
@@ -493,16 +480,13 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
       
       const reworkHistory = record.reworkHistory || [];
       
-      // If entryIds provided, resolve those specific entries; otherwise resolve all unresolved
-      const idsToReassign = entryIds || reworkHistory.filter(e => !e.resolved).map(e => e.id);
+      // Find the latest unresolved entry
+      const latestUnresolved = reworkHistory.find(e => !e.resolved);
+      const previousStatus = latestUnresolved?.previousStatus || (record.status as PolicyStatus);
       
-      // Get the previous status from the first entry being reassigned
-      const firstEntry = reworkHistory.find(e => idsToReassign.includes(e.id) && !e.resolved);
-      const previousStatus = firstEntry?.previousStatus || (record.status as PolicyStatus);
-      
-      // Mark specified entries as resolved (reassigned)
+      // Mark the latest unresolved entry as resolved (reassigned)
       const updatedHistory = reworkHistory.map(entry => {
-        if (idsToReassign.includes(entry.id) && !entry.resolved) {
+        if (latestUnresolved && entry.id === latestUnresolved.id) {
           return {
             ...entry,
             resolved: true,
@@ -534,7 +518,6 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
     });
 
     const policy = lead.policyRecords.find(r => r.id === policyId);
-    const reassignedCount = entryIds?.length || 'all';
     const historyLogEntry: HistoryLogEntry = {
       id: crypto.randomUUID(),
       action: 'rework_reassigned',
@@ -542,68 +525,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
       triggeredAt: timestamp,
       reworkReasonId: newReasonId,
       reworkReasonLabel: reasonLabel,
-      comment: `${policy?.kind.toUpperCase()} policy rework reassigned (${reassignedCount}): ${details || reasonLabel}`,
-    };
-
-    onLeadUpdate?.(lead.id, {
-      policyRecords: updatedRecords,
-      historyLog: [...(lead.historyLog || []), historyLogEntry],
-    });
-  };
-
-  // Handle adding a new rework reason to an existing policy in rework
-  const handlePolicyReworkAdd = (lead: Lead, policyId: string, reasonId: string, details: string, attachments: ReworkAttachment[]) => {
-    if (!lead.policyRecords) return;
-
-    const timestamp = new Date().toLocaleString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-
-    const reworkConfig = reworkConfigs.find(r => r.id === reasonId);
-    const reasonLabel = reworkConfig?.descriptionEn || 'Unknown';
-
-    const updatedRecords = lead.policyRecords.map(record => {
-      if (record.id !== policyId) return record;
-      
-      const reworkHistory = record.reworkHistory || [];
-      
-      // Get previousStatus from existing unresolved entry or current status
-      const existingUnresolved = reworkHistory.find(e => !e.resolved);
-      const previousStatus = existingUnresolved?.previousStatus || (record.status as PolicyStatus);
-
-      // Add new rework entry (keep existing ones as-is)
-      const newEntry: PolicyReworkEntry = {
-        id: crypto.randomUUID(),
-        reasonId,
-        reasonLabel,
-        details,
-        attachments,
-        savedBy: 'Akshay Bazad',
-        savedAt: timestamp,
-        previousStatus,
-      };
-
-      return {
-        ...record,
-        status: 'rework_required' as PolicyStatus,
-        reworkRequired: true,
-        reworkHistory: [...reworkHistory, newEntry],
-      };
-    });
-
-    const policy = lead.policyRecords.find(r => r.id === policyId);
-    const historyLogEntry: HistoryLogEntry = {
-      id: crypto.randomUUID(),
-      action: 'rework_created',
-      triggeredBy: 'Akshay Bazad',
-      triggeredAt: timestamp,
-      reworkReasonId: reasonId,
-      reworkReasonLabel: reasonLabel,
-      comment: `${policy?.kind.toUpperCase()} policy: additional rework reason added: ${details || reasonLabel}`,
+      comment: `${policy?.kind.toUpperCase()} policy rework reassigned: ${details || reasonLabel}`,
     };
 
     onLeadUpdate?.(lead.id, {
@@ -1537,9 +1459,8 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                           isEditable={isEditable}
                                           reworkConfigs={stageReworkConfigs}
                                           onStatusChange={(policyId, newStatus) => handlePolicyStatusChange(lead, policyId, newStatus)}
-                                          onReworkResolve={(policyId, entryIds) => handlePolicyReworkResolve(lead, policyId, entryIds)}
-                                          onReworkReassign={(policyId, reasonId, details, attachments, entryIds) => handlePolicyReworkReassign(lead, policyId, reasonId, details, attachments, entryIds)}
-                                          onReworkAdd={(policyId, reasonId, details, attachments) => handlePolicyReworkAdd(lead, policyId, reasonId, details, attachments)}
+                                          onReworkResolve={(policyId) => handlePolicyReworkResolve(lead, policyId)}
+                                          onReworkReassign={(policyId, reasonId, details, attachments) => handlePolicyReworkReassign(lead, policyId, reasonId, details, attachments)}
                                         />
                                       </div>
                                       
