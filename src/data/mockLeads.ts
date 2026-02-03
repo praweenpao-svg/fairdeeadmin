@@ -1,4 +1,4 @@
-import { Lead, ReworkConfig, HistoryLogEntry, PolicyType, PolicyRecord, PolicyStatus, InsurerQuote, PriceListStatus, ETAStatus, PaymentMethod } from '@/types/pipeline';
+import { Lead, ReworkConfig, HistoryLogEntry, PolicyType, PolicyRecord, PolicyStatus, InsurerQuote, PriceListStatus, ETAStatus, PaymentMethod, EndorsementType, EndorsementStatus } from '@/types/pipeline';
 
 const agents = [
   { id: 'FD-3460', name: 'Akshay Bazad' },
@@ -100,7 +100,9 @@ function generatePolicyRecord(
   status: PolicyStatus,
   baseDate: string,
   policyStartDate: string,
-  shippingMethodOverride?: 'e_policy' | 'print_by_myself' | 'print_by_fairdee'
+  shippingMethodOverride?: 'e_policy' | 'print_by_myself' | 'print_by_fairdee',
+  endorsementType?: EndorsementType,
+  endorsementStatus?: EndorsementStatus
 ): PolicyRecord {
   const hasUploadedPolicy = isPolicyUploaded(status);
   const shippingMethod = shippingMethodOverride || printingPreferences[Math.floor(Math.random() * printingPreferences.length)];
@@ -131,6 +133,8 @@ function generatePolicyRecord(
     policyNumber: hasUploadedPolicy ? generatePolicyNumber() : undefined,
     policyFileUrl: hasUploadedPolicy ? `/mock-policies/${id}.pdf` : undefined,
     trackingNumber: shippingMethod === 'print_by_fairdee' && hasUploadedPolicy ? `TH${Math.floor(Math.random() * 9000000000) + 1000000000}` : undefined,
+    endorsementType,
+    endorsementStatus,
   };
 }
 
@@ -617,6 +621,9 @@ const generateLeads = (): Lead[] => {
   }
 
   // TO REPORT: 6 base + 1 from To Pay split = 7 max
+  // Some records have Policy Endorsement with various statuses
+  const endorsementStatuses: EndorsementStatus[] = ['request_created', 'request_submitted', 'request_approved', 'pending_on_ops', 'pending_finance', 'invalid'];
+  
   const toReportScenarios: Array<{ policyType: PolicyType; vmiStatus: PolicyStatus; cmiStatus?: PolicyStatus }> = [
     { policyType: 'vmi_only', vmiStatus: 'pending_review' },
     { policyType: 'vmi_only', vmiStatus: 'pending_review' },
@@ -637,10 +644,14 @@ const generateLeads = (): Lead[] => {
       ? `${String(Math.max(1, parseInt(policyStartDate.split('-')[0]) + (Math.random() > 0.5 ? 1 : -1))).padStart(2, '0')}-10-2025`
       : policyStartDate;
     
+    // Add endorsement for first 2 To Report records (index 0 and 1)
+    const hasEndorsement = i < 2;
+    const endorsementStatus = hasEndorsement ? endorsementStatuses[i % endorsementStatuses.length] : undefined;
+    
     const policyRecords: PolicyRecord[] = scenario.policyType === 'vmi_only'
-      ? [generatePolicyRecord(`pol-${id}-vmi`, 'vmi', scenario.vmiStatus, createdOnFull, policyStartDate)]
+      ? [generatePolicyRecord(`pol-${id}-vmi`, 'vmi', scenario.vmiStatus, createdOnFull, policyStartDate, undefined, hasEndorsement ? 'policy_endorsement' : undefined, endorsementStatus)]
       : [
-          generatePolicyRecord(`pol-${id}-vmi`, 'vmi', scenario.vmiStatus, createdOnFull, policyStartDate),
+          generatePolicyRecord(`pol-${id}-vmi`, 'vmi', scenario.vmiStatus, createdOnFull, policyStartDate, undefined, hasEndorsement ? 'policy_endorsement' : undefined, endorsementStatus),
           generatePolicyRecord(`pol-${id}-cmi`, 'cmi', scenario.cmiStatus!, createdOnFull, cmiPolicyStartDate),
         ];
 
@@ -704,11 +715,15 @@ const generateLeads = (): Lead[] => {
       ? `${String(Math.max(1, parseInt(policyStartDate.split('-')[0]) + (Math.random() > 0.5 ? 1 : -1))).padStart(2, '0')}-09-2025`
       : policyStartDate;
     
+    // Add endorsement for index 2 and 3 (VMI+CMI scenarios) with different statuses
+    const hasEndorsement = i === 2 || i === 3;
+    const endorsementStatus: EndorsementStatus | undefined = i === 2 ? 'pending_on_ops' : i === 3 ? 'pending_finance' : undefined;
+    
     const policyRecords: PolicyRecord[] = scenario.policyType === 'vmi_only'
       ? [generatePolicyRecord(`pol-${id}-vmi`, 'vmi', scenario.vmiStatus, createdOnFull, policyStartDate)]
       : [
-          generatePolicyRecord(`pol-${id}-vmi`, 'vmi', scenario.vmiStatus, createdOnFull, policyStartDate),
-          generatePolicyRecord(`pol-${id}-cmi`, 'cmi', scenario.cmiStatus!, createdOnFull, cmiPolicyStartDate),
+          generatePolicyRecord(`pol-${id}-vmi`, 'vmi', scenario.vmiStatus, createdOnFull, policyStartDate, undefined, hasEndorsement ? 'policy_endorsement' : undefined, endorsementStatus),
+          generatePolicyRecord(`pol-${id}-cmi`, 'cmi', scenario.cmiStatus!, createdOnFull, cmiPolicyStartDate, undefined, hasEndorsement ? 'policy_endorsement' : undefined, i === 3 ? 'request_submitted' : undefined),
         ];
 
     const vehicle = getRandomVehicle();
@@ -907,7 +922,7 @@ const generateLeads = (): Lead[] => {
     id++;
   }
 
-  // CANCELLED: 6 leads with VMI/CMI policy records
+  // CANCELLED: 6 leads with VMI/CMI policy records - all with Policy Cancellation endorsement type and Request Approved status
   const cancelledScenarios: Array<{ policyType: PolicyType; vmiStatus: PolicyStatus; cmiStatus?: PolicyStatus }> = [
     { policyType: 'vmi_only', vmiStatus: 'policy_cancelled' },
     { policyType: 'vmi_only', vmiStatus: 'policy_cancelled' },
@@ -925,11 +940,12 @@ const generateLeads = (): Lead[] => {
     
     const policyStartDate = `${String(15 + i).padStart(2, '0')}-01-2026`;
     
+    // For cancelled policies, add Policy Cancellation endorsement with Request Approved status
     const policyRecords: PolicyRecord[] = scenario.policyType === 'vmi_only'
-      ? [generatePolicyRecord(`pol-${id}-vmi`, 'vmi', scenario.vmiStatus, createdOnFull, policyStartDate)]
+      ? [generatePolicyRecord(`pol-${id}-vmi`, 'vmi', scenario.vmiStatus, createdOnFull, policyStartDate, undefined, 'policy_cancellation', 'request_approved')]
       : [
-          generatePolicyRecord(`pol-${id}-vmi`, 'vmi', scenario.vmiStatus, createdOnFull, policyStartDate),
-          generatePolicyRecord(`pol-${id}-cmi`, 'cmi', scenario.cmiStatus!, createdOnFull, policyStartDate),
+          generatePolicyRecord(`pol-${id}-vmi`, 'vmi', scenario.vmiStatus, createdOnFull, policyStartDate, undefined, scenario.vmiStatus === 'policy_cancelled' ? 'policy_cancellation' : undefined, scenario.vmiStatus === 'policy_cancelled' ? 'request_approved' : undefined),
+          generatePolicyRecord(`pol-${id}-cmi`, 'cmi', scenario.cmiStatus!, createdOnFull, policyStartDate, undefined, scenario.cmiStatus === 'policy_cancelled' ? 'policy_cancellation' : undefined, scenario.cmiStatus === 'policy_cancelled' ? 'request_approved' : undefined),
         ];
 
     const vehicle = getRandomVehicle();
