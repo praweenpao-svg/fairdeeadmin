@@ -1237,11 +1237,14 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                 <div className="w-[60px] text-[11px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">
                                   {language === 'th' ? 'ประเภท' : 'Type'}
                                 </div>
-                                <div className="w-[120px] text-[11px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">
-                                  {language === 'th' ? 'อัปเดตล่าสุด' : 'Updated On'}
+                                <div className="w-[140px] text-[11px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">
+                                  {language === 'th' ? 'สถานกรมธรรม์' : 'Status'}
                                 </div>
                                 <div className="w-[120px] text-[11px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">
-                                  {language === 'th' ? 'อัปโหลดกรมธรรม์' : 'Policy Uploaded'}
+                                  {language === 'th' ? 'วันที่อัปเดตล่าสุด' : 'Updated On'}
+                                </div>
+                                <div className="w-[120px] text-[11px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">
+                                  {language === 'th' ? 'วันที่อัปโหลดกรมธรรม์' : 'Policy Uploaded'}
                                 </div>
                                 <div className="w-[100px] text-[11px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">
                                   {language === 'th' ? 'รูปแบบการพิมพ์' : 'Printing Pref.'}
@@ -1259,16 +1262,13 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                   {language === 'th' ? 'ติดตามพัสดุ' : 'Tracking'}
                                 </div>
                                 <div className="w-[120px] text-[11px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">
-                                  {language === 'th' ? 'ประเภท Endorsement' : 'Endorse. Type'}
+                                  {language === 'th' ? 'ประเภทการสลักหลัง' : 'Endorse. Type'}
                                 </div>
                                 <div className="w-[150px] text-[11px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">
-                                  {language === 'th' ? 'สถานะ Endorsement' : 'Endorse. Status'}
+                                  {language === 'th' ? 'สถานะการสลักหลัง' : 'Endorse. Status'}
                                 </div>
                                 <div className="w-[70px] text-[11px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">
                                   {language === 'th' ? 'หมายเหตุ' : 'Remarks'}
-                                </div>
-                                <div className="w-[140px] text-[11px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">
-                                  {language === 'th' ? 'สถานะ' : 'Status'}
                                 </div>
                               </div>
                             
@@ -1331,6 +1331,19 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                         )}>
                                           {policyKindLabel}
                                         </span>
+                                      </div>
+                                      
+                                      {/* Status - Moved to second position */}
+                                      <div className="w-[140px] shrink-0">
+                                        <PolicyStatusCell
+                                          policy={policy}
+                                          stage={stage}
+                                          isEditable={isEditable}
+                                          reworkConfigs={stageReworkConfigs}
+                                          onStatusChange={(policyId, newStatus) => handlePolicyStatusChange(lead, policyId, newStatus)}
+                                          onReworkResolve={(policyId) => handlePolicyReworkResolve(lead, policyId)}
+                                          onReworkReassign={(policyId, reasonId, details, attachments) => handlePolicyReworkReassign(lead, policyId, reasonId, details, attachments)}
+                                        />
                                       </div>
                                       
                                       {/* Updated On */}
@@ -1413,7 +1426,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                             onValueChange={() => {
                                               toast.error(
                                                 language === 'th' 
-                                                  ? 'ไม่สามารถเปลี่ยนสถานะ Endorsement ได้ในขณะนี้' 
+                                                  ? 'ไม่สามารถเปลี่ยนสถานะการสลักหลังได้ในขณะนี้' 
                                                   : 'Cannot change endorsement status at this time'
                                               );
                                             }}
@@ -1451,19 +1464,6 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                             <span>{language === 'th' ? 'เพิ่ม' : 'Add'}</span>
                                           )}
                                         </Button>
-                                      </div>
-                                      
-                                      {/* Status */}
-                                      <div className="w-[140px] shrink-0">
-                                        <PolicyStatusCell
-                                          policy={policy}
-                                          stage={stage}
-                                          isEditable={isEditable}
-                                          reworkConfigs={stageReworkConfigs}
-                                          onStatusChange={(policyId, newStatus) => handlePolicyStatusChange(lead, policyId, newStatus)}
-                                          onReworkResolve={(policyId) => handlePolicyReworkResolve(lead, policyId)}
-                                          onReworkReassign={(policyId, reasonId, details, attachments) => handlePolicyReworkReassign(lead, policyId, reasonId, details, attachments)}
-                                        />
                                       </div>
                                     </div>
                                   );
