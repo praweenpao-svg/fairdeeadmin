@@ -223,6 +223,7 @@ export interface ReworkConfig {
   targetReason?: string;
   assignment: AssignmentType;
   stages: PipelineStage[];
+  movesToCancellation?: boolean; // If true, selecting this rework moves the lead to Cancellation tab
 }
 
 export interface PipelineTab {
