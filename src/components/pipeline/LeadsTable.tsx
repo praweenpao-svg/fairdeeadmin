@@ -1261,7 +1261,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                             <InlineReworkActions
                               lead={lead}
                               latestEntry={latestReworkEntry}
-                              reworkConfigs={stageReworkConfigs}
+                              reworkConfigs={reworkConfigs}
                               onResolve={handleResolveRework}
                               onReassign={handleReassignRework}
                             />
@@ -1557,7 +1557,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                           policy={policy}
                                           stage={stage}
                                           isEditable={isEditable}
-                                          reworkConfigs={stageReworkConfigs}
+                                          reworkConfigs={reworkConfigs}
                                           onStatusChange={(policyId, newStatus) => handlePolicyStatusChange(lead, policyId, newStatus)}
                                           onReworkResolve={(policyId) => handlePolicyReworkResolve(lead, policyId)}
                                           onReworkReassign={(policyId, reasonId, details, attachments) => handlePolicyReworkReassign(lead, policyId, reasonId, details, attachments)}
