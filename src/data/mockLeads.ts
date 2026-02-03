@@ -66,10 +66,72 @@ const insuranceClasses = ['type_1_insurance', 'type_2_insurance', 'type_3_insura
 const garageTypes: Array<'Dealer' | 'Garage' | 'Any'> = ['Dealer', 'Garage', 'Any'];
 const priceListStatuses: PriceListStatus[] = ['pending', 'price_list_added', 'rejected_by_insurer', 'email_sent'];
 const paymentMethods: PaymentMethod[] = ['credit', 'cbc_to_fairdee', 'cbc_to_insurer'];
+const printingPreferences: Array<'e_policy' | 'print_by_myself' | 'print_by_fairdee'> = ['e_policy', 'print_by_myself', 'print_by_fairdee'];
 
 // Helper to generate random premium between 5000 and 20000
 function generatePremium(): number {
   return Math.round((5000 + Math.random() * 15000) * 100) / 100;
+}
+
+// Helper to generate 11-character policy number (mix of letters and digits)
+function generatePolicyNumber(): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let result = '';
+  for (let i = 0; i < 11; i++) {
+    // Mix letters and numbers
+    if (i < 3) {
+      result += chars.charAt(Math.floor(Math.random() * 26)); // First 3 are letters
+    } else {
+      result += chars.charAt(26 + Math.floor(Math.random() * 10)); // Rest are numbers
+    }
+  }
+  return result;
+}
+
+// Helper to check if policy status means policy has been uploaded
+function isPolicyUploaded(status: PolicyStatus): boolean {
+  return ['policy_issued', 'policy_shipped', 'policy_delivered', 'policy_cancelled'].includes(status);
+}
+
+// Helper to generate policy record with proper timestamps
+function generatePolicyRecord(
+  id: string,
+  kind: 'vmi' | 'cmi',
+  status: PolicyStatus,
+  baseDate: string,
+  policyStartDate: string,
+  shippingMethodOverride?: 'e_policy' | 'print_by_myself' | 'print_by_fairdee'
+): PolicyRecord {
+  const hasUploadedPolicy = isPolicyUploaded(status);
+  const shippingMethod = shippingMethodOverride || printingPreferences[Math.floor(Math.random() * printingPreferences.length)];
+  
+  // Generate updatedOn - latest timestamp of any action (random hours after base date)
+  const [datePart, timePart] = baseDate.split(' ');
+  const [day, month, year] = datePart.split('-').map(Number);
+  const [hours, mins] = (timePart || '09:00').split(':').map(Number);
+  const updateDate = new Date(year, month - 1, day, hours + Math.floor(Math.random() * 48), Math.floor(Math.random() * 60));
+  const updatedOn = `${String(updateDate.getDate()).padStart(2, '0')}-${String(updateDate.getMonth() + 1).padStart(2, '0')}-${updateDate.getFullYear()} ${String(updateDate.getHours()).padStart(2, '0')}:${String(updateDate.getMinutes()).padStart(2, '0')}`;
+  
+  // Generate policyUploadedOn only if status indicates policy was uploaded
+  let policyUploadedOn: string | undefined;
+  if (hasUploadedPolicy) {
+    const uploadDate = new Date(year, month - 1, day, hours + Math.floor(Math.random() * 24), Math.floor(Math.random() * 60));
+    policyUploadedOn = `${String(uploadDate.getDate()).padStart(2, '0')}-${String(uploadDate.getMonth() + 1).padStart(2, '0')}-${uploadDate.getFullYear()} ${String(uploadDate.getHours()).padStart(2, '0')}:${String(uploadDate.getMinutes()).padStart(2, '0')}`;
+  }
+
+  return {
+    id,
+    kind,
+    status,
+    policyAttached: hasUploadedPolicy,
+    shippingMethod,
+    updatedOn,
+    policyUploadedOn,
+    policyStartDate,
+    policyNumber: hasUploadedPolicy ? generatePolicyNumber() : undefined,
+    policyFileUrl: hasUploadedPolicy ? `/mock-policies/${id}.pdf` : undefined,
+    trackingNumber: shippingMethod === 'print_by_fairdee' && hasUploadedPolicy ? `TH${Math.floor(Math.random() * 9000000000) + 1000000000}` : undefined,
+  };
 }
 
 // Helper to generate insurer quotes for a lead
@@ -503,11 +565,16 @@ const generateLeads = (): Lead[] => {
     const createdOnFull = `${createdOn} 09:00`;
     const policyStartDate = `${String(15 + i).padStart(2, '0')}-02-2026`;
     
+    // VMI and CMI may have slightly different start dates (within a few days)
+    const cmiPolicyStartDate = Math.random() > 0.7 
+      ? `${String(Math.max(1, parseInt(policyStartDate.split('-')[0]) + (Math.random() > 0.5 ? 1 : -1))).padStart(2, '0')}-02-2026`
+      : policyStartDate;
+    
     const policyRecords: PolicyRecord[] = scenario.policyType === 'vmi_only'
-      ? [{ id: `pol-${id}-vmi`, kind: 'vmi', status: scenario.vmiStatus, policyAttached: false, updatedOn: createdOnFull, policyStartDate }]
+      ? [generatePolicyRecord(`pol-${id}-vmi`, 'vmi', scenario.vmiStatus, createdOnFull, policyStartDate)]
       : [
-          { id: `pol-${id}-vmi`, kind: 'vmi', status: scenario.vmiStatus, policyAttached: false, updatedOn: createdOnFull, policyStartDate },
-          { id: `pol-${id}-cmi`, kind: 'cmi', status: scenario.cmiStatus!, policyAttached: scenario.cmiStatus === 'policy_issued' || scenario.cmiStatus === 'policy_delivered', updatedOn: createdOnFull, policyStartDate },
+          generatePolicyRecord(`pol-${id}-vmi`, 'vmi', scenario.vmiStatus, createdOnFull, policyStartDate),
+          generatePolicyRecord(`pol-${id}-cmi`, 'cmi', scenario.cmiStatus!, createdOnFull, cmiPolicyStartDate),
         ];
 
     const vehicle = getRandomVehicle();
@@ -566,11 +633,15 @@ const generateLeads = (): Lead[] => {
     const createdOnFull = `${createdOn} 10:00`;
     const policyStartDate = `${String(1 + i).padStart(2, '0')}-10-2025`;
     
+    const cmiPolicyStartDate = Math.random() > 0.7 
+      ? `${String(Math.max(1, parseInt(policyStartDate.split('-')[0]) + (Math.random() > 0.5 ? 1 : -1))).padStart(2, '0')}-10-2025`
+      : policyStartDate;
+    
     const policyRecords: PolicyRecord[] = scenario.policyType === 'vmi_only'
-      ? [{ id: `pol-${id}-vmi`, kind: 'vmi', status: scenario.vmiStatus, policyAttached: false, updatedOn: createdOnFull, policyStartDate }]
+      ? [generatePolicyRecord(`pol-${id}-vmi`, 'vmi', scenario.vmiStatus, createdOnFull, policyStartDate)]
       : [
-          { id: `pol-${id}-vmi`, kind: 'vmi', status: scenario.vmiStatus, policyAttached: false, updatedOn: createdOnFull, policyStartDate },
-          { id: `pol-${id}-cmi`, kind: 'cmi', status: scenario.cmiStatus!, policyAttached: scenario.cmiStatus === 'policy_issued' || scenario.cmiStatus === 'policy_delivered', updatedOn: createdOnFull, policyStartDate },
+          generatePolicyRecord(`pol-${id}-vmi`, 'vmi', scenario.vmiStatus, createdOnFull, policyStartDate),
+          generatePolicyRecord(`pol-${id}-cmi`, 'cmi', scenario.cmiStatus!, createdOnFull, cmiPolicyStartDate),
         ];
 
     const vehicle = getRandomVehicle();
@@ -629,11 +700,15 @@ const generateLeads = (): Lead[] => {
     const createdOnFull = `${createdOn} 11:00`;
     const policyStartDate = `${String(25 - i).padStart(2, '0')}-09-2025`;
     
+    const cmiPolicyStartDate = Math.random() > 0.7 
+      ? `${String(Math.max(1, parseInt(policyStartDate.split('-')[0]) + (Math.random() > 0.5 ? 1 : -1))).padStart(2, '0')}-09-2025`
+      : policyStartDate;
+    
     const policyRecords: PolicyRecord[] = scenario.policyType === 'vmi_only'
-      ? [{ id: `pol-${id}-vmi`, kind: 'vmi', status: scenario.vmiStatus, policyAttached: false, updatedOn: createdOnFull, policyStartDate }]
+      ? [generatePolicyRecord(`pol-${id}-vmi`, 'vmi', scenario.vmiStatus, createdOnFull, policyStartDate)]
       : [
-          { id: `pol-${id}-vmi`, kind: 'vmi', status: scenario.vmiStatus, policyAttached: false, updatedOn: createdOnFull, policyStartDate },
-          { id: `pol-${id}-cmi`, kind: 'cmi', status: scenario.cmiStatus!, policyAttached: scenario.cmiStatus === 'policy_issued' || scenario.cmiStatus === 'policy_delivered', updatedOn: createdOnFull, policyStartDate },
+          generatePolicyRecord(`pol-${id}-vmi`, 'vmi', scenario.vmiStatus, createdOnFull, policyStartDate),
+          generatePolicyRecord(`pol-${id}-cmi`, 'cmi', scenario.cmiStatus!, createdOnFull, cmiPolicyStartDate),
         ];
 
     const vehicle = getRandomVehicle();
@@ -676,7 +751,6 @@ const generateLeads = (): Lead[] => {
   }
 
   // TO DELIVER: 6 base + 1 from To Issue split = 7 max
-  const shippingMethods: Array<'print_by_fairdee' | 'e_policy' | 'print_by_myself'> = ['print_by_fairdee', 'e_policy', 'print_by_myself'];
   const toDeliverScenarios: Array<{ policyType: PolicyType; vmiStatus: PolicyStatus; cmiStatus?: PolicyStatus }> = [
     { policyType: 'vmi_only', vmiStatus: 'policy_issued' },
     { policyType: 'vmi_only', vmiStatus: 'policy_issued' },
@@ -692,13 +766,15 @@ const generateLeads = (): Lead[] => {
     const createdOn = `${String(12 - i).padStart(2, '0')}-09-2025`;
     const createdOnFull = `${createdOn} 14:00`;
     const policyStartDate = `${String(20 - i).padStart(2, '0')}-09-2025`;
-    const policyUploadedOn = `${String(14 - i).padStart(2, '0')}-09-2025 16:30`;
+    const cmiPolicyStartDate = Math.random() > 0.7 
+      ? `${String(Math.max(1, parseInt(policyStartDate.split('-')[0]) + (Math.random() > 0.5 ? 1 : -1))).padStart(2, '0')}-09-2025`
+      : policyStartDate;
     
     const policyRecords: PolicyRecord[] = scenario.policyType === 'vmi_only'
-      ? [{ id: `pol-${id}-vmi`, kind: 'vmi', status: scenario.vmiStatus, policyAttached: true, shippingMethod: shippingMethods[i % 3], updatedOn: createdOnFull, policyUploadedOn, policyStartDate }]
+      ? [generatePolicyRecord(`pol-${id}-vmi`, 'vmi', scenario.vmiStatus, createdOnFull, policyStartDate, printingPreferences[i % 3])]
       : [
-          { id: `pol-${id}-vmi`, kind: 'vmi', status: scenario.vmiStatus, policyAttached: true, shippingMethod: shippingMethods[i % 3], updatedOn: createdOnFull, policyUploadedOn, policyStartDate },
-          { id: `pol-${id}-cmi`, kind: 'cmi', status: scenario.cmiStatus!, policyAttached: scenario.cmiStatus === 'policy_issued' || scenario.cmiStatus === 'policy_delivered', shippingMethod: scenario.cmiStatus === 'policy_issued' || scenario.cmiStatus === 'policy_delivered' ? shippingMethods[(i + 1) % 3] : undefined, updatedOn: createdOnFull, policyUploadedOn: scenario.cmiStatus === 'policy_issued' || scenario.cmiStatus === 'policy_delivered' ? policyUploadedOn : undefined, policyStartDate },
+          generatePolicyRecord(`pol-${id}-vmi`, 'vmi', scenario.vmiStatus, createdOnFull, policyStartDate, printingPreferences[i % 3]),
+          generatePolicyRecord(`pol-${id}-cmi`, 'cmi', scenario.cmiStatus!, createdOnFull, cmiPolicyStartDate, printingPreferences[(i + 1) % 3]),
         ];
 
     const vehicle = getRandomVehicle();
@@ -721,7 +797,7 @@ const generateLeads = (): Lead[] => {
       saleStatus: 'policy_issued',
       paymentStatus: 'paid',
       policyAttached: true,
-      shippingMethod: shippingMethods[i % 3],
+      shippingMethod: printingPreferences[i % 3],
       reworkRequired: false,
       createdBy: i % 2 === 0 ? 'admin' : 'agent',
       rfAssignee: rfStaff[i % rfStaff.length],
@@ -757,13 +833,16 @@ const generateLeads = (): Lead[] => {
     const createdOn = `${String(5 - Math.floor(i / 2)).padStart(2, '0')}-09-2025`;
     const createdOnFull = `${createdOn} 08:00`;
     const policyStartDate = `${String(10 - i).padStart(2, '0')}-09-2025`;
-    const policyUploadedOn = `${String(7 - Math.floor(i / 2)).padStart(2, '0')}-09-2025 10:00`;
+    
+    const cmiPolicyStartDate = Math.random() > 0.7 
+      ? `${String(Math.max(1, parseInt(policyStartDate.split('-')[0]) + (Math.random() > 0.5 ? 1 : -1))).padStart(2, '0')}-09-2025`
+      : policyStartDate;
     
     const policyRecords: PolicyRecord[] = scenario.policyType === 'vmi_only'
-      ? [{ id: `pol-${id}-vmi`, kind: 'vmi', status: scenario.vmiStatus, policyAttached: true, shippingMethod: shippingMethods[i % 3], trackingNumber: `TH${100000000 + i * 12345}`, updatedOn: createdOnFull, policyUploadedOn, policyStartDate }]
+      ? [generatePolicyRecord(`pol-${id}-vmi`, 'vmi', scenario.vmiStatus, createdOnFull, policyStartDate, printingPreferences[i % 3])]
       : [
-          { id: `pol-${id}-vmi`, kind: 'vmi', status: scenario.vmiStatus, policyAttached: true, shippingMethod: 'e_policy', updatedOn: createdOnFull, policyUploadedOn, policyStartDate },
-          { id: `pol-${id}-cmi`, kind: 'cmi', status: scenario.cmiStatus!, policyAttached: true, shippingMethod: 'print_by_fairdee', trackingNumber: `TH${100000000 + i * 12345}`, updatedOn: createdOnFull, policyUploadedOn, policyStartDate },
+          generatePolicyRecord(`pol-${id}-vmi`, 'vmi', scenario.vmiStatus, createdOnFull, policyStartDate, 'e_policy'),
+          generatePolicyRecord(`pol-${id}-cmi`, 'cmi', scenario.cmiStatus!, createdOnFull, cmiPolicyStartDate, 'print_by_fairdee'),
         ];
 
     const vehicle = getRandomVehicle();
@@ -786,7 +865,7 @@ const generateLeads = (): Lead[] => {
       saleStatus: scenario.vmiStatus === 'policy_delivered' ? 'policy_delivered' : 'policy_shipped',
       paymentStatus: 'paid',
       policyAttached: true,
-      shippingMethod: shippingMethods[i % 3],
+      shippingMethod: printingPreferences[i % 3],
       trackingNumber: `TH${100000000 + i * 12345}`,
       reworkRequired: false,
       createdBy: i % 2 === 0 ? 'agent' : 'admin',
@@ -823,11 +902,13 @@ const generateLeads = (): Lead[] => {
     const createdOn = `${String(10 - i).padStart(2, '0')}-01-2026`;
     const createdOnFull = `${createdOn} 12:00`;
     
+    const policyStartDate = `${String(15 + i).padStart(2, '0')}-01-2026`;
+    
     const policyRecords: PolicyRecord[] = scenario.policyType === 'vmi_only'
-      ? [{ id: `pol-${id}-vmi`, kind: 'vmi', status: scenario.vmiStatus, policyAttached: false }]
+      ? [generatePolicyRecord(`pol-${id}-vmi`, 'vmi', scenario.vmiStatus, createdOnFull, policyStartDate)]
       : [
-          { id: `pol-${id}-vmi`, kind: 'vmi', status: scenario.vmiStatus, policyAttached: false },
-          { id: `pol-${id}-cmi`, kind: 'cmi', status: scenario.cmiStatus!, policyAttached: scenario.cmiStatus === 'policy_delivered' },
+          generatePolicyRecord(`pol-${id}-vmi`, 'vmi', scenario.vmiStatus, createdOnFull, policyStartDate),
+          generatePolicyRecord(`pol-${id}-cmi`, 'cmi', scenario.cmiStatus!, createdOnFull, policyStartDate),
         ];
 
     const vehicle = getRandomVehicle();
