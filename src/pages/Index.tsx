@@ -145,7 +145,6 @@ const Index = () => {
           </div>
           */}
           
-          {/* My Cases Toggle - Hidden for now, to be brought back later
           <button
             onClick={() => setMyCasesOnly(!myCasesOnly)}
             className={cn(
@@ -155,9 +154,8 @@ const Index = () => {
                 : 'bg-muted/50 text-foreground border-border hover:bg-muted hover:border-primary/50'
             )}
           >
-            My Cases
+            {language === 'th' ? 'เคสของฉัน' : 'My Cases'}
           </button>
-          */}
           
           {/* DateRangeFilter - Hidden for now, to be brought back later
           <DateRangeFilter
