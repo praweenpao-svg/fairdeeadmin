@@ -1326,31 +1326,27 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                       </div>
                                       
                                       {/* Updated On */}
-                                      <div className="text-xs text-muted-foreground">
-                                        {formatDate(policy.updatedOn)}
+                                      <div className="text-xs text-foreground">
+                                        {policy.updatedOn ? formatDate(policy.updatedOn) : <span className="text-muted-foreground/50">-</span>}
                                       </div>
                                       
                                       {/* Policy Uploaded On */}
-                                      <div className="text-xs text-muted-foreground">
-                                        {policy.policyUploadedOn ? (
-                                          <span className="text-foreground">{formatDate(policy.policyUploadedOn)}</span>
-                                        ) : (
-                                          <span className="text-muted-foreground/50">-</span>
-                                        )}
+                                      <div className="text-xs text-foreground">
+                                        {policy.policyUploadedOn ? formatDate(policy.policyUploadedOn) : <span className="text-muted-foreground/50">-</span>}
                                       </div>
                                       
                                       {/* Printing Preference */}
-                                      <div className="text-xs text-muted-foreground">
-                                        {getPrintingPreferenceLabel(policy.shippingMethod)}
+                                      <div className="text-xs text-foreground">
+                                        {policy.shippingMethod ? getPrintingPreferenceLabel(policy.shippingMethod) : <span className="text-muted-foreground/50">-</span>}
                                       </div>
                                       
                                       {/* Policy Start Date */}
-                                      <div className="text-xs text-muted-foreground">
-                                        {formatDateOnly(policy.policyStartDate)}
+                                      <div className="text-xs text-foreground">
+                                        {policy.policyStartDate ? formatDateOnly(policy.policyStartDate) : <span className="text-muted-foreground/50">-</span>}
                                       </div>
                                       
                                       {/* Policy Number */}
-                                      <div className="text-xs text-muted-foreground font-mono">
+                                      <div className="text-xs text-foreground font-mono">
                                         {policy.policyNumber || <span className="text-muted-foreground/50">-</span>}
                                       </div>
                                       
