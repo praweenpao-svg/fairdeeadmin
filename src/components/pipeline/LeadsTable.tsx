@@ -1674,7 +1674,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                               }
                                             }}
                                           >
-                                            <SelectTrigger className="h-8 text-xs w-full bg-popover">
+                                            <SelectTrigger className="h-8 text-xs w-full">
                                               <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent className="bg-popover z-50">
