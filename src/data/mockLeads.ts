@@ -750,13 +750,14 @@ const generateLeads = (): Lead[] => {
     id++;
   }
 
-  // TO DELIVER: 6 base + 1 from To Issue split = 7 max
+  // TO DELIVER: Only policies with "Print by FairDee" go through this stage
+  // E-Policy and Print by Myself skip directly to Completed
   const toDeliverScenarios: Array<{ policyType: PolicyType; vmiStatus: PolicyStatus; cmiStatus?: PolicyStatus }> = [
     { policyType: 'vmi_only', vmiStatus: 'policy_issued' },
     { policyType: 'vmi_only', vmiStatus: 'policy_issued' },
     { policyType: 'vmi_cmi', vmiStatus: 'policy_issued', cmiStatus: 'policy_issued' }, // Both same stage
     { policyType: 'vmi_cmi', vmiStatus: 'policy_issued', cmiStatus: 'policy_issued' }, // Both same stage
-    { policyType: 'vmi_cmi', vmiStatus: 'policy_issued', cmiStatus: 'policy_delivered' }, // Split: To Deliver + Completed (1 split only)
+    { policyType: 'vmi_cmi', vmiStatus: 'policy_issued', cmiStatus: 'policy_shipped' }, // Split: To Deliver + Completed (CMI already shipped)
     { policyType: 'vmi_only', vmiStatus: 'policy_issued' },
   ];
 
@@ -770,11 +771,12 @@ const generateLeads = (): Lead[] => {
       ? `${String(Math.max(1, parseInt(policyStartDate.split('-')[0]) + (Math.random() > 0.5 ? 1 : -1))).padStart(2, '0')}-09-2025`
       : policyStartDate;
     
+    // To Deliver stage: ALL policies here must be "print_by_fairdee"
     const policyRecords: PolicyRecord[] = scenario.policyType === 'vmi_only'
-      ? [generatePolicyRecord(`pol-${id}-vmi`, 'vmi', scenario.vmiStatus, createdOnFull, policyStartDate, printingPreferences[i % 3])]
+      ? [generatePolicyRecord(`pol-${id}-vmi`, 'vmi', scenario.vmiStatus, createdOnFull, policyStartDate, 'print_by_fairdee')]
       : [
-          generatePolicyRecord(`pol-${id}-vmi`, 'vmi', scenario.vmiStatus, createdOnFull, policyStartDate, printingPreferences[i % 3]),
-          generatePolicyRecord(`pol-${id}-cmi`, 'cmi', scenario.cmiStatus!, createdOnFull, cmiPolicyStartDate, printingPreferences[(i + 1) % 3]),
+          generatePolicyRecord(`pol-${id}-vmi`, 'vmi', scenario.vmiStatus, createdOnFull, policyStartDate, 'print_by_fairdee'),
+          generatePolicyRecord(`pol-${id}-cmi`, 'cmi', scenario.cmiStatus!, createdOnFull, cmiPolicyStartDate, 'print_by_fairdee'),
         ];
 
     const vehicle = getRandomVehicle();
@@ -797,7 +799,7 @@ const generateLeads = (): Lead[] => {
       saleStatus: 'policy_issued',
       paymentStatus: 'paid',
       policyAttached: true,
-      shippingMethod: printingPreferences[i % 3],
+      shippingMethod: 'print_by_fairdee', // Only print_by_fairdee goes to To Deliver
       reworkRequired: false,
       createdBy: i % 2 === 0 ? 'admin' : 'agent',
       rfAssignee: rfStaff[i % rfStaff.length],
@@ -817,14 +819,27 @@ const generateLeads = (): Lead[] => {
     id++;
   }
 
-  // COMPLETED: 6 base + 1 from To Deliver split = 7 max
-  const completedScenarios: Array<{ policyType: PolicyType; vmiStatus: PolicyStatus; cmiStatus?: PolicyStatus }> = [
-    { policyType: 'vmi_only', vmiStatus: 'policy_delivered' },
-    { policyType: 'vmi_only', vmiStatus: 'policy_shipped' },
-    { policyType: 'vmi_cmi', vmiStatus: 'policy_delivered', cmiStatus: 'policy_delivered' }, // Both same stage
-    { policyType: 'vmi_cmi', vmiStatus: 'policy_shipped', cmiStatus: 'policy_shipped' }, // Both same stage
-    { policyType: 'vmi_only', vmiStatus: 'policy_delivered' },
-    { policyType: 'vmi_only', vmiStatus: 'policy_shipped' },
+  // COMPLETED: Mix of different completion paths
+  // - E-Policy & Print by Myself: policy_issued is final (skip To Deliver)
+  // - Print by FairDee: policy_shipped → policy_delivered (went through To Deliver)
+  const completedScenarios: Array<{ 
+    policyType: PolicyType; 
+    vmiStatus: PolicyStatus; 
+    vmiShipping: 'e_policy' | 'print_by_myself' | 'print_by_fairdee';
+    cmiStatus?: PolicyStatus;
+    cmiShipping?: 'e_policy' | 'print_by_myself' | 'print_by_fairdee';
+  }> = [
+    // E-Policy completes at policy_issued
+    { policyType: 'vmi_only', vmiStatus: 'policy_issued', vmiShipping: 'e_policy' },
+    // Print by Myself completes at policy_issued
+    { policyType: 'vmi_only', vmiStatus: 'policy_issued', vmiShipping: 'print_by_myself' },
+    // Print by FairDee goes through shipping flow
+    { policyType: 'vmi_only', vmiStatus: 'policy_shipped', vmiShipping: 'print_by_fairdee' },
+    { policyType: 'vmi_only', vmiStatus: 'policy_delivered', vmiShipping: 'print_by_fairdee' },
+    // VMI+CMI: VMI e-policy (issued), CMI print_by_fairdee (delivered)
+    { policyType: 'vmi_cmi', vmiStatus: 'policy_issued', vmiShipping: 'e_policy', cmiStatus: 'policy_delivered', cmiShipping: 'print_by_fairdee' },
+    // VMI+CMI: Both print_by_fairdee, both shipped
+    { policyType: 'vmi_cmi', vmiStatus: 'policy_shipped', vmiShipping: 'print_by_fairdee', cmiStatus: 'policy_shipped', cmiShipping: 'print_by_fairdee' },
   ];
 
   for (let i = 0; i < completedScenarios.length; i++) {
@@ -839,13 +854,19 @@ const generateLeads = (): Lead[] => {
       : policyStartDate;
     
     const policyRecords: PolicyRecord[] = scenario.policyType === 'vmi_only'
-      ? [generatePolicyRecord(`pol-${id}-vmi`, 'vmi', scenario.vmiStatus, createdOnFull, policyStartDate, printingPreferences[i % 3])]
+      ? [generatePolicyRecord(`pol-${id}-vmi`, 'vmi', scenario.vmiStatus, createdOnFull, policyStartDate, scenario.vmiShipping)]
       : [
-          generatePolicyRecord(`pol-${id}-vmi`, 'vmi', scenario.vmiStatus, createdOnFull, policyStartDate, 'e_policy'),
-          generatePolicyRecord(`pol-${id}-cmi`, 'cmi', scenario.cmiStatus!, createdOnFull, cmiPolicyStartDate, 'print_by_fairdee'),
+          generatePolicyRecord(`pol-${id}-vmi`, 'vmi', scenario.vmiStatus, createdOnFull, policyStartDate, scenario.vmiShipping),
+          generatePolicyRecord(`pol-${id}-cmi`, 'cmi', scenario.cmiStatus!, createdOnFull, cmiPolicyStartDate, scenario.cmiShipping!),
         ];
 
     const vehicle = getRandomVehicle();
+    
+    // Determine lead-level saleStatus based on most progressed policy
+    const isDelivered = scenario.vmiStatus === 'policy_delivered' || scenario.cmiStatus === 'policy_delivered';
+    const isShipped = scenario.vmiStatus === 'policy_shipped' || scenario.cmiStatus === 'policy_shipped';
+    const saleStatus = isDelivered ? 'policy_delivered' : isShipped ? 'policy_shipped' : 'policy_issued';
+    
     const leadData: Partial<Lead> = {
       id: String(id),
       leadNumber: `#${10030 - i}`,
@@ -862,11 +883,11 @@ const generateLeads = (): Lead[] => {
       vehicleProvince: vehicle.province,
       rfStatus: 'completed',
       scStatus: 'completed',
-      saleStatus: scenario.vmiStatus === 'policy_delivered' ? 'policy_delivered' : 'policy_shipped',
+      saleStatus: saleStatus as Lead['saleStatus'],
       paymentStatus: 'paid',
       policyAttached: true,
-      shippingMethod: printingPreferences[i % 3],
-      trackingNumber: `TH${100000000 + i * 12345}`,
+      shippingMethod: scenario.vmiShipping,
+      trackingNumber: scenario.vmiShipping === 'print_by_fairdee' ? `TH${100000000 + i * 12345}` : undefined,
       reworkRequired: false,
       createdBy: i % 2 === 0 ? 'agent' : 'admin',
       rfAssignee: rfStaff[i % rfStaff.length],
