@@ -1233,7 +1233,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                             {/* Policy Sub-Table - Horizontally scrollable */}
                             <div className="overflow-x-auto">
                               {/* Policy Sub-Table Header */}
-                              <div className="flex gap-6 px-4 py-2.5 bg-muted/60 border-b border-border min-w-max">
+                              <div className="flex gap-8 px-4 py-2.5 bg-muted/60 border-b border-border min-w-max">
                                 <div className="w-[55px] text-[11px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">
                                   {language === 'th' ? 'ประเภท' : 'Type'}
                                 </div>
@@ -1319,7 +1319,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                   return (
                                     <div 
                                       key={policy.id}
-                                      className="flex gap-6 px-4 py-3 items-center transition-colors bg-card hover:bg-muted/30 min-w-max"
+                                      className="flex gap-8 px-4 py-3 items-center transition-colors bg-card hover:bg-muted/30 min-w-max"
                                     >
                                       {/* Policy Kind Badge */}
                                       <div className="w-[55px] shrink-0">
