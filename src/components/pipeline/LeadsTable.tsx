@@ -1231,7 +1231,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                         <td colSpan={showDEColumn ? 10 : 9} className="p-0">
                           <div className="mx-4 my-2 rounded-lg border border-border overflow-hidden bg-card shadow-sm">
                             {/* Policy Sub-Table Header */}
-                            <div className="grid grid-cols-10 gap-3 px-4 py-2.5 bg-muted/60 border-b border-border">
+                            <div className="grid grid-cols-12 gap-3 px-4 py-2.5 bg-muted/60 border-b border-border">
                               <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                                 {language === 'th' ? 'ประเภท' : 'Type'}
                               </div>
@@ -1255,6 +1255,12 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                               </div>
                               <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                                 {language === 'th' ? 'ติดตามพัสดุ' : 'Tracking'}
+                              </div>
+                              <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                                {language === 'th' ? 'ประเภท Endorsement' : 'Endorsement Type'}
+                              </div>
+                              <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                                {language === 'th' ? 'สถานะ Endorsement' : 'Endorsement Status'}
                               </div>
                               <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                                 {language === 'th' ? 'หมายเหตุ' : 'Remarks'}
@@ -1311,7 +1317,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                   return (
                                     <div 
                                       key={policy.id}
-                                      className="grid grid-cols-10 gap-3 px-4 py-3 items-center transition-colors bg-card hover:bg-muted/30"
+                                      className="grid grid-cols-12 gap-3 px-4 py-3 items-center transition-colors bg-card hover:bg-muted/30"
                                     >
                                       {/* Policy Kind Badge */}
                                       <div>
@@ -1382,6 +1388,56 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                             <Truck className="w-3.5 h-3.5" />
                                             {language === 'th' ? 'ติดตามพัสดุ' : 'View Tracking'}
                                           </Button>
+                                        ) : (
+                                          <span className="text-xs text-muted-foreground/50">-</span>
+                                        )}
+                                      </div>
+                                      
+                                      {/* Endorsement Type */}
+                                      <div className="text-xs text-foreground">
+                                        {policy.endorsementType ? (
+                                          policy.endorsementType === 'policy_endorsement' 
+                                            ? (language === 'th' ? 'Policy Endorsement' : 'Policy Endorsement')
+                                            : (language === 'th' ? 'Policy Cancellation' : 'Policy Cancellation')
+                                        ) : (
+                                          <span className="text-muted-foreground/50">-</span>
+                                        )}
+                                      </div>
+                                      
+                                      {/* Endorsement Status */}
+                                      <div>
+                                        {policy.endorsementType ? (
+                                          <Select
+                                            value={policy.endorsementStatus || ''}
+                                            onValueChange={(value) => {
+                                              // Endorsement status change handler would go here
+                                              console.log('Endorsement status changed:', policy.id, value);
+                                            }}
+                                          >
+                                            <SelectTrigger className="h-7 text-xs w-full min-w-[120px]">
+                                              <SelectValue placeholder={language === 'th' ? 'เลือกสถานะ' : 'Select status'} />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              <SelectItem value="request_created">
+                                                {language === 'th' ? 'Request Created' : 'Request Created'}
+                                              </SelectItem>
+                                              <SelectItem value="request_submitted">
+                                                {language === 'th' ? 'Request Submitted' : 'Request Submitted'}
+                                              </SelectItem>
+                                              <SelectItem value="request_approved">
+                                                {language === 'th' ? 'Request Approved' : 'Request Approved'}
+                                              </SelectItem>
+                                              <SelectItem value="pending_on_ops">
+                                                {language === 'th' ? 'Pending on Ops' : 'Pending on Ops'}
+                                              </SelectItem>
+                                              <SelectItem value="pending_finance">
+                                                {language === 'th' ? 'Pending Finance' : 'Pending Finance'}
+                                              </SelectItem>
+                                              <SelectItem value="invalid">
+                                                {language === 'th' ? 'Invalid' : 'Invalid'}
+                                              </SelectItem>
+                                            </SelectContent>
+                                          </Select>
                                         ) : (
                                           <span className="text-xs text-muted-foreground/50">-</span>
                                         )}

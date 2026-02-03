@@ -37,6 +37,18 @@ export type PolicyType = 'vmi_only' | 'vmi_cmi';
 // Individual policy record within a sale (VMI or CMI)
 export type PolicyKind = 'vmi' | 'cmi';
 
+// Endorsement types for policy modifications
+export type EndorsementType = 'policy_endorsement' | 'policy_cancellation';
+
+// Endorsement status workflow
+export type EndorsementStatus = 
+  | 'request_created'
+  | 'request_submitted'
+  | 'request_approved'
+  | 'pending_on_ops'
+  | 'pending_finance'
+  | 'invalid';
+
 // Status specific to each policy record in post-lead stages
 export type PolicyStatus = 
   | 'pending_payment'
@@ -86,6 +98,9 @@ export interface PolicyRecord {
   // Policy-level rework
   reworkRequired?: boolean;
   reworkHistory?: PolicyReworkEntry[];
+  // Endorsement fields
+  endorsementType?: EndorsementType;
+  endorsementStatus?: EndorsementStatus;
 }
 
 export type CreatedByType = 'agent' | 'admin';
