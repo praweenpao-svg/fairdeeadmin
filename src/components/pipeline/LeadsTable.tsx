@@ -10,7 +10,7 @@ import {
   MessageSquare,
   Truck,
 } from 'lucide-react';
-import { Lead, PipelineStage, LeadType, ReworkConfig, CreatedByType, ReworkAttachment, ReworkHistoryEntry, HistoryLogEntry, PolicyStatus, PolicyReworkEntry, PaymentMethod } from '@/types/pipeline';
+import { Lead, PipelineStage, LeadType, ReworkConfig, CreatedByType, ReworkAttachment, ReworkHistoryEntry, HistoryLogEntry, PolicyStatus, PolicyReworkEntry, PolicyRecord, PaymentMethod } from '@/types/pipeline';
 import { cn } from '@/lib/utils';
 import { useLanguageStore } from '@/stores/languageStore';
 import { toast } from 'sonner';
@@ -300,6 +300,19 @@ function getDEStaff() {
 // Round robin state per team
 const roundRobinIndexes: Record<string, number> = {};
 
+// Round robin state for arbitrary lists (e.g., ReworkConsole teamMembers)
+const roundRobinListIndexes: Record<string, number> = {};
+
+function getNextFromList(key: string, members: string[]): string | undefined {
+  if (!members || members.length === 0) return undefined;
+  if (!(key in roundRobinListIndexes)) {
+    roundRobinListIndexes[key] = 0;
+  }
+  const idx = roundRobinListIndexes[key] % members.length;
+  roundRobinListIndexes[key] = (roundRobinListIndexes[key] + 1) % members.length;
+  return members[idx];
+}
+
 // Get next staff member via round robin for a team
 function getNextRoundRobinStaff(team: string): string | undefined {
   const teamStaff = getStaffByTeam(team);
@@ -359,6 +372,50 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
 
   // Filter rework configs by current stage
   const stageReworkConfigs = reworkConfigs.filter(config => config.stages.includes(stage));
+
+  const getActivePolicyRework = (policy: PolicyRecord | undefined): PolicyReworkEntry | undefined => {
+    const history = policy?.reworkHistory;
+    if (!history || history.length === 0) return undefined;
+    // Most recent unresolved wins
+    return [...history].reverse().find(e => !e.resolved);
+  };
+
+  const getLeadActivePolicyRework = (lead: Lead): { policyId: string; kind: 'vmi' | 'cmi'; entry: PolicyReworkEntry } | undefined => {
+    const records = lead.policyRecords;
+    if (!records || records.length === 0) return undefined;
+
+    // Prefer VMI over CMI if both are in rework
+    const vmi = records.find(r => r.kind === 'vmi');
+    const cmi = records.find(r => r.kind === 'cmi');
+
+    const vmiEntry = vmi?.status === 'rework_required' ? getActivePolicyRework(vmi) : undefined;
+    if (vmi && vmiEntry) return { policyId: vmi.id, kind: 'vmi', entry: vmiEntry };
+
+    const cmiEntry = cmi?.status === 'rework_required' ? getActivePolicyRework(cmi) : undefined;
+    if (cmi && cmiEntry) return { policyId: cmi.id, kind: 'cmi', entry: cmiEntry };
+
+    return undefined;
+  };
+
+  const computeReworkOwner = (lead: Lead, reasonId: string): string | undefined => {
+    const config = reworkConfigs.find(r => r.id === reasonId);
+    if (!config) return undefined;
+
+    switch (config.assignment) {
+      case 'round_robin': {
+        if (config.teamMembers && config.teamMembers.length > 0) {
+          return getNextFromList(`rework-${config.id}`, config.teamMembers);
+        }
+        return getNextRoundRobinStaff(config.team || 'Admin');
+      }
+      case 'rf_sc':
+        return lead.scAssignee || lead.rfAssignee;
+      case 'none':
+        return undefined;
+      default:
+        return undefined;
+    }
+  };
 
   // Handle policy status change (for non-rework status changes)
   const handlePolicyStatusChange = (lead: Lead, policyId: string, newStatus: PolicyStatus) => {
@@ -454,8 +511,15 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
       comment: `${policy?.kind.toUpperCase()} policy rework resolved`,
     };
 
+    // If any policy is still in active rework, keep lead-level rework priority + owner
+    const leadAfter: Lead = { ...lead, policyRecords: updatedRecords };
+    const active = getLeadActivePolicyRework(leadAfter);
+    const nextOwner = active ? computeReworkOwner(lead, active.entry.reasonId) : undefined;
+
     onLeadUpdate?.(lead.id, {
       policyRecords: updatedRecords,
+      reworkRequired: Boolean(active),
+      assignedTo: active ? nextOwner : undefined,
       historyLog: [...(lead.historyLog || []), historyLogEntry],
     });
   };
@@ -474,25 +538,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
 
     const reworkConfig = reworkConfigs.find(r => r.id === newReasonId);
     const reasonLabel = reworkConfig?.descriptionEn || 'Unknown';
-
-    // Determine new owner based on rework config assignment type
-    let newOwner: string | undefined;
-    if (reworkConfig) {
-      switch (reworkConfig.assignment) {
-        case 'round_robin':
-          // Use team from config, fallback to Admin team
-          newOwner = getNextRoundRobinStaff(reworkConfig.team || 'Admin');
-          break;
-        case 'rf_sc':
-          // Assign to SC if available, otherwise RF
-          newOwner = lead.scAssignee || lead.rfAssignee;
-          break;
-        case 'none':
-          // No owner
-          newOwner = undefined;
-          break;
-      }
-    }
+    const newOwner = computeReworkOwner(lead, newReasonId);
 
     const updatedRecords = lead.policyRecords.map(record => {
       if (record.id !== policyId) return record;
@@ -550,6 +596,8 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
     // Build update object with new owner
     const updates: Partial<Lead> = {
       policyRecords: updatedRecords,
+      // Policy-level rework should take priority over normal ownership
+      reworkRequired: true,
       assignedTo: newOwner,
       historyLog: [...(lead.historyLog || []), historyLogEntry],
     };
@@ -668,6 +716,8 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
         };
       });
 
+      const assignedOwner = computeReworkOwner(selectedLead, reasonId);
+
       const historyLogEntry: HistoryLogEntry = {
         id: crypto.randomUUID(),
         action: 'rework_created',
@@ -684,10 +734,27 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
         })),
       };
 
-      onLeadUpdate?.(selectedLead.id, {
+      const updates: Partial<Lead> = {
         policyRecords: updatedRecords,
+        // Policy-level rework takes priority over normal ownership
+        reworkRequired: true,
+        assignedTo: assignedOwner,
         historyLog: [...(selectedLead.historyLog || []), historyLogEntry],
-      });
+      };
+
+      if (assignedOwner !== selectedLead.assignedTo) {
+        updates.historyLog = [...(updates.historyLog || []), {
+          id: crypto.randomUUID(),
+          action: 'assignee_changed',
+          triggeredBy: 'System',
+          triggeredAt: timestamp,
+          assigneeType: 'owner',
+          fromAssignee: selectedLead.assignedTo,
+          toAssignee: assignedOwner,
+        }];
+      }
+
+      onLeadUpdate?.(selectedLead.id, updates);
 
       setSelectedLead(null);
       setSelectedPolicyId(null);
@@ -906,9 +973,13 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
     const comparison = dateB - dateA; // descending (newest first)
     if (comparison !== 0) return comparison;
     
-    // Then prioritize rework required
-    if (a.reworkRequired && !b.reworkRequired) return -1;
-    if (!a.reworkRequired && b.reworkRequired) return 1;
+    // Then prioritize rework required (lead-level OR any policy-level)
+    const aHasPolicyRework = Boolean(getLeadActivePolicyRework(a));
+    const bHasPolicyRework = Boolean(getLeadActivePolicyRework(b));
+    const aIsRework = a.reworkRequired || aHasPolicyRework;
+    const bIsRework = b.reworkRequired || bHasPolicyRework;
+    if (aIsRework && !bIsRework) return -1;
+    if (!aIsRework && bIsRework) return 1;
     return 0;
   });
 
@@ -931,6 +1002,12 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
 
   // Get owner based on stage and rework status
   const getOwner = (lead: Lead): string | undefined => {
+    // Policy-level rework takes priority over everything
+    const activePolicyRework = getLeadActivePolicyRework(lead);
+    if (activePolicyRework) {
+      return lead.assignedTo || computeReworkOwner(lead, activePolicyRework.entry.reasonId);
+    }
+
     // If rework is required, assignedTo takes priority
     if (lead.reworkRequired && lead.assignedTo) {
       return lead.assignedTo;
