@@ -37,6 +37,7 @@ import { InlineReworkActions } from './InlineReworkActions';
 import { PolicyStatusCell } from './PolicyStatusCell';
 import { getPoliciesForStage } from './PipelineTabs';
 import { InsurersExpandableRow } from './InsurersExpandableRow';
+import { PolicyRemarksDialog } from './PolicyRemarksDialog';
 
 interface LeadsTableProps {
   leads: Lead[];
@@ -345,8 +346,10 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
   const { language } = useLanguageStore();
   const [reworkDialogOpen, setReworkDialogOpen] = useState(false);
   const [historyLogDialogOpen, setHistoryLogDialogOpen] = useState(false);
+  const [remarksDialogOpen, setRemarksDialogOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [selectedPolicyId, setSelectedPolicyId] = useState<string | null>(null);
+  const [selectedPolicyForRemarks, setSelectedPolicyForRemarks] = useState<{ leadId: string; policyId: string; kind: 'vmi' | 'cmi' } | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [expandedLeads, setExpandedLeads] = useState<Set<string>>(() => new Set());
@@ -1007,6 +1010,52 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
     setHistoryLogDialogOpen(true);
   };
 
+  const handleOpenRemarks = (leadId: string, policyId: string, kind: 'vmi' | 'cmi') => {
+    setSelectedPolicyForRemarks({ leadId, policyId, kind });
+    setRemarksDialogOpen(true);
+  };
+
+  const handleAddRemark = (comment: string) => {
+    if (!selectedPolicyForRemarks) return;
+
+    const lead = leads.find(l => l.id === selectedPolicyForRemarks.leadId);
+    if (!lead || !lead.policyRecords) return;
+
+    const timestamp = new Date().toISOString();
+    const newRemark = {
+      id: crypto.randomUUID(),
+      comment,
+      createdBy: 'Akshay Bazad',
+      createdAt: timestamp,
+    };
+
+    const updatedRecords = lead.policyRecords.map(record => {
+      if (record.id !== selectedPolicyForRemarks.policyId) return record;
+      
+      const policyHistoryEntry: PolicyHistoryLogEntry = {
+        id: crypto.randomUUID(),
+        action: 'remark_added',
+        triggeredBy: 'Akshay Bazad',
+        triggeredAt: new Date().toLocaleString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+        comment,
+      };
+
+      return {
+        ...record,
+        remarks: [...(record.remarks || []), newRemark],
+        historyLog: [...(record.historyLog || []), policyHistoryEntry],
+      };
+    });
+
+    onLeadUpdate?.(lead.id, { policyRecords: updatedRecords });
+  };
+
   // Sort leads by createdOn descending (newest first)
   const sortedLeads = [...leads].sort((a, b) => {
     const dateA = parseDateTime(a.createdOn).getTime();
@@ -1660,6 +1709,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                           variant="ghost"
                                           size="sm"
                                           className="h-8 px-3 text-xs text-muted-foreground hover:text-foreground"
+                                          onClick={() => handleOpenRemarks(lead.id, policy.id, policy.kind)}
                                         >
                                           <MessageSquare className="w-4 h-4 mr-1" />
                                           {remarkCount > 0 ? remarkCount : '0'}
@@ -1717,6 +1767,25 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
         }}
         leadNumber={selectedLead?.leadNumber || ''}
         historyLog={selectedLead?.historyLog || []}
+      />
+
+      {/* Policy Remarks Dialog */}
+      <PolicyRemarksDialog
+        open={remarksDialogOpen}
+        onOpenChange={(open) => {
+          setRemarksDialogOpen(open);
+          if (!open) {
+            setSelectedPolicyForRemarks(null);
+          }
+        }}
+        policyKind={selectedPolicyForRemarks?.kind || 'vmi'}
+        remarks={(() => {
+          if (!selectedPolicyForRemarks) return [];
+          const lead = leads.find(l => l.id === selectedPolicyForRemarks.leadId);
+          const policy = lead?.policyRecords?.find(p => p.id === selectedPolicyForRemarks.policyId);
+          return policy?.remarks || [];
+        })()}
+        onAddRemark={handleAddRemark}
       />
     </>
   );
