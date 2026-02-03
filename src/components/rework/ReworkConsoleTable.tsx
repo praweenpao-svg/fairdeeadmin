@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Plus, Pencil, Trash2, XCircle } from 'lucide-react';
 import { ReworkConfig, AssignmentType, PipelineStage } from '@/types/pipeline';
 import { useTeamsStore } from '@/stores/teamsStore';
+import { useLanguageStore } from '@/stores/languageStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { TablePagination } from '@/components/ui/table-pagination';
@@ -57,6 +58,7 @@ const sanitizeStages = (stages: PipelineStage[]): PipelineStage[] => {
 
 export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTableProps) {
   const { teams } = useTeamsStore();
+  const { language } = useLanguageStore();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingConfig, setEditingConfig] = useState<ReworkConfig | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -153,7 +155,8 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
   const getTargetReasonLabel = (targetReasonId?: string) => {
     if (!targetReasonId) return '-';
     const targetConfig = uniqueConfigs.find(c => c.id === targetReasonId);
-    return targetConfig?.descriptionEn || '-';
+    if (!targetConfig) return '-';
+    return language === 'th' ? targetConfig.descriptionTh : targetConfig.descriptionEn;
   };
 
   // Pagination (dedupe by descriptions so "ซ้ำ" doesn't show in console)
@@ -397,16 +400,33 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
           <table className="w-full">
             <thead>
               <tr className="border-b border-border">
-                <th className="data-table-header px-4 py-3 text-left">Description (TH)</th>
-                <th className="data-table-header px-4 py-3 text-left">Description (EN)</th>
-                <th className="data-table-header px-4 py-3 text-left">Assignment Logic</th>
-                <th className="data-table-header px-4 py-3 text-left">Teams</th>
-                <th className="data-table-header px-4 py-3 text-left">Stages</th>
-                <th className="data-table-header px-4 py-3 text-center">→ Cancellation</th>
-                <th className="data-table-header px-4 py-3 text-center">Auto-Move</th>
-                <th className="data-table-header px-4 py-3 text-center">Threshold</th>
-                <th className="data-table-header px-4 py-3 text-left">Target Status</th>
-                <th className="data-table-header px-4 py-3 text-right">Actions</th>
+                <th className="data-table-header px-4 py-3 text-left">
+                  {language === 'th' ? 'เหตุผล Rework' : 'Rework Reason'}
+                </th>
+                <th className="data-table-header px-4 py-3 text-left">
+                  {language === 'th' ? 'การมอบหมาย' : 'Assignment Logic'}
+                </th>
+                <th className="data-table-header px-4 py-3 text-left">
+                  {language === 'th' ? 'ทีม' : 'Teams'}
+                </th>
+                <th className="data-table-header px-4 py-3 text-left">
+                  {language === 'th' ? 'สเตจ' : 'Stages'}
+                </th>
+                <th className="data-table-header px-4 py-3 text-center">
+                  {language === 'th' ? '→ ยกเลิก' : '→ Cancellation'}
+                </th>
+                <th className="data-table-header px-4 py-3 text-center">
+                  {language === 'th' ? 'ย้ายอัตโนมัติ' : 'Auto-Move'}
+                </th>
+                <th className="data-table-header px-4 py-3 text-center">
+                  {language === 'th' ? 'ระยะเวลา' : 'Threshold'}
+                </th>
+                <th className="data-table-header px-4 py-3 text-left">
+                  {language === 'th' ? 'สถานะเป้าหมาย' : 'Target Status'}
+                </th>
+                <th className="data-table-header px-4 py-3 text-right">
+                  {language === 'th' ? 'การดำเนินการ' : 'Actions'}
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -414,8 +434,9 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                 const isCancellationReason = config.movesToCancellation === true;
                 return (
                 <tr key={config.id} className="data-table-row">
-                  <td className="px-4 py-3 text-sm">{config.descriptionTh}</td>
-                  <td className="px-4 py-3 text-sm">{config.descriptionEn}</td>
+                  <td className="px-4 py-3 text-sm">
+                    {language === 'th' ? config.descriptionTh : config.descriptionEn}
+                  </td>
                   <td className="px-4 py-3 text-sm">
                     {assignmentOptions.find(o => o.value === config.assignment)?.label || config.assignment}
                   </td>
