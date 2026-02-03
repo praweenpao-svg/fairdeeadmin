@@ -475,6 +475,25 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
     const reworkConfig = reworkConfigs.find(r => r.id === newReasonId);
     const reasonLabel = reworkConfig?.descriptionEn || 'Unknown';
 
+    // Determine new owner based on rework config assignment type
+    let newOwner: string | undefined;
+    if (reworkConfig) {
+      switch (reworkConfig.assignment) {
+        case 'round_robin':
+          // Use team from config, fallback to Admin team
+          newOwner = getNextRoundRobinStaff(reworkConfig.team || 'Admin');
+          break;
+        case 'rf_sc':
+          // Assign to SC if available, otherwise RF
+          newOwner = lead.scAssignee || lead.rfAssignee;
+          break;
+        case 'none':
+          // No owner
+          newOwner = undefined;
+          break;
+      }
+    }
+
     const updatedRecords = lead.policyRecords.map(record => {
       if (record.id !== policyId) return record;
       
@@ -528,10 +547,28 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
       comment: `${policy?.kind.toUpperCase()} policy rework reassigned: ${details || reasonLabel}`,
     };
 
-    onLeadUpdate?.(lead.id, {
+    // Build update object with new owner
+    const updates: Partial<Lead> = {
       policyRecords: updatedRecords,
+      assignedTo: newOwner,
       historyLog: [...(lead.historyLog || []), historyLogEntry],
-    });
+    };
+
+    // Add assignee change to history if owner changed
+    if (newOwner !== lead.assignedTo) {
+      const assigneeChangeEntry: HistoryLogEntry = {
+        id: crypto.randomUUID(),
+        action: 'assignee_changed',
+        triggeredBy: 'System',
+        triggeredAt: timestamp,
+        assigneeType: 'owner',
+        fromAssignee: lead.assignedTo,
+        toAssignee: newOwner,
+      };
+      updates.historyLog = [...(updates.historyLog || []), assigneeChangeEntry];
+    }
+
+    onLeadUpdate?.(lead.id, updates);
   };
 
   const handleStatusChange = (lead: Lead, newStatus: string) => {
