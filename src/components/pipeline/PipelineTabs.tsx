@@ -22,13 +22,12 @@ interface PipelineTabsProps {
 }
 
 const stageConfig = [
-  // Hidden for now - to be brought back later
-  // { 
-  //   id: 'all' as const, 
-  //   icon: LayoutGrid,
-  //   description: 'All leads'
-  // },
   { 
+    id: 'all' as const, 
+    icon: LayoutGrid,
+    description: 'All leads'
+  },
+  {
     id: 'to_convert' as const, 
     icon: RefreshCw,
     description: 'Awaiting conversion'
