@@ -16,8 +16,9 @@ interface PolicyStatusCellProps {
   isEditable?: boolean;
   reworkConfigs?: ReworkConfig[];
   onStatusChange?: (policyId: string, newStatus: PolicyStatus) => void;
-  onReworkResolve?: (policyId: string) => void;
-  onReworkReassign?: (policyId: string, newReasonId: string, details: string, attachments: ReworkAttachment[]) => void;
+  onReworkResolve?: (policyId: string, entryIds?: string[]) => void;
+  onReworkReassign?: (policyId: string, newReasonId: string, details: string, attachments: ReworkAttachment[], entryIds?: string[]) => void;
+  onReworkAdd?: (policyId: string, reasonId: string, details: string, attachments: ReworkAttachment[]) => void;
 }
 
 // Policy status translations
@@ -80,6 +81,7 @@ export function PolicyStatusCell({
   onStatusChange,
   onReworkResolve,
   onReworkReassign,
+  onReworkAdd,
 }: PolicyStatusCellProps) {
   const { language } = useLanguageStore();
 
@@ -99,6 +101,7 @@ export function PolicyStatusCell({
         reworkConfigs={reworkConfigs}
         onResolve={onReworkResolve}
         onReassign={onReworkReassign}
+        onAddRework={onReworkAdd}
       />
     );
   }
