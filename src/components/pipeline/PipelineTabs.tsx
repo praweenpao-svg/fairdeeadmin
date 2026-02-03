@@ -66,18 +66,19 @@ const stageConfig = [
 ];
 
 // Map policy statuses to pipeline stages (rework_required is special - uses previousStatus)
+// Note: policy_issued is special - goes to to_deliver only if print_by_fairdee, otherwise completed
 const policyStatusToStage: Record<PolicyStatus, PipelineStage | null> = {
   pending_payment: 'to_pay',
   pending_review: 'to_report',
   pending_issuance: 'to_issue',
-  policy_issued: 'to_deliver',
+  policy_issued: 'to_deliver', // Will be overridden in getPolicyStage for e_policy/print_by_myself
   policy_shipped: 'completed',
   policy_delivered: 'completed',
   policy_cancelled: 'cancelled',
   rework_required: null, // Special case - stage determined by previousStatus in rework history
 };
 
-// Get the effective stage for a policy (considering rework)
+// Get the effective stage for a policy (considering rework and shipping method)
 function getPolicyStage(policy: PolicyRecord): PipelineStage | null {
   if (policy.status === 'rework_required' && policy.reworkHistory && policy.reworkHistory.length > 0) {
     // Find the latest rework entry to get previousStatus
@@ -86,6 +87,19 @@ function getPolicyStage(policy: PolicyRecord): PipelineStage | null {
       return policyStatusToStage[latestRework.previousStatus];
     }
   }
+  
+  // Special handling for policy_issued:
+  // - print_by_fairdee: goes to to_deliver (needs shipping)
+  // - e_policy / print_by_myself: goes directly to completed (no shipping needed)
+  if (policy.status === 'policy_issued') {
+    if (policy.shippingMethod === 'print_by_fairdee') {
+      return 'to_deliver';
+    } else {
+      // e_policy or print_by_myself skip to_deliver and go directly to completed
+      return 'completed';
+    }
+  }
+  
   return policyStatusToStage[policy.status];
 }
 
