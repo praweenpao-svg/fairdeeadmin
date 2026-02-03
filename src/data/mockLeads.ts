@@ -1,4 +1,4 @@
-import { Lead, ReworkConfig, HistoryLogEntry, PolicyType, PolicyRecord, PolicyStatus, InsurerQuote, PriceListStatus, ETAStatus, PaymentMethod, EndorsementType, EndorsementStatus } from '@/types/pipeline';
+import { Lead, ReworkConfig, HistoryLogEntry, PolicyType, PolicyRecord, PolicyStatus, PolicyReworkEntry, InsurerQuote, PriceListStatus, ETAStatus, PaymentMethod, EndorsementType, EndorsementStatus } from '@/types/pipeline';
 
 const agents = [
   { id: 'FD-3460', name: 'Akshay Bazad' },
@@ -135,6 +135,54 @@ function generatePolicyRecord(
     trackingNumber: shippingMethod === 'print_by_fairdee' && hasUploadedPolicy ? `TH${Math.floor(Math.random() * 9000000000) + 1000000000}` : undefined,
     endorsementType,
     endorsementStatus,
+  };
+}
+
+// Helper to generate policy record with multiple rework entries
+function generatePolicyRecordWithRework(
+  id: string,
+  kind: 'vmi' | 'cmi',
+  previousStatus: PolicyStatus,
+  baseDate: string,
+  policyStartDate: string,
+  reworkReasonIds: string[],
+  shippingMethodOverride?: 'e_policy' | 'print_by_myself' | 'print_by_fairdee',
+): PolicyRecord {
+  const shippingMethod = shippingMethodOverride || printingPreferences[Math.floor(Math.random() * printingPreferences.length)];
+  
+  const [datePart, timePart] = baseDate.split(' ');
+  const [day, month, year] = datePart.split('-').map(Number);
+  const [hours, mins] = (timePart || '09:00').split(':').map(Number);
+  const updateDate = new Date(year, month - 1, day, hours + Math.floor(Math.random() * 48), Math.floor(Math.random() * 60));
+  const updatedOn = `${String(updateDate.getDate()).padStart(2, '0')}-${String(updateDate.getMonth() + 1).padStart(2, '0')}-${updateDate.getFullYear()} ${String(updateDate.getHours()).padStart(2, '0')}:${String(updateDate.getMinutes()).padStart(2, '0')}`;
+  
+  // Generate rework history entries
+  const reworkHistory: PolicyReworkEntry[] = reworkReasonIds.map((reasonId, idx) => {
+    const entryDate = new Date(year, month - 1, day, hours + idx * 2, Math.floor(Math.random() * 60));
+    const savedAt = `${String(entryDate.getDate()).padStart(2, '0')}-${String(entryDate.getMonth() + 1).padStart(2, '0')}-${entryDate.getFullYear()} ${String(entryDate.getHours()).padStart(2, '0')}:${String(entryDate.getMinutes()).padStart(2, '0')}`;
+    
+    return {
+      id: `rework-${id}-${idx}`,
+      reasonId,
+      reasonLabel: reworkReasonLabels[reasonId]?.en || 'Unknown',
+      details: idx === 0 ? 'ต้องการข้อมูลเพิ่มเติม' : 'รอเอกสารจากลูกค้า',
+      attachments: [],
+      savedBy: deStaff[idx % deStaff.length],
+      savedAt,
+      previousStatus,
+    };
+  });
+
+  return {
+    id,
+    kind,
+    status: 'rework_required',
+    policyAttached: false,
+    shippingMethod,
+    updatedOn,
+    policyStartDate,
+    reworkRequired: true,
+    reworkHistory,
   };
 }
 
@@ -695,11 +743,12 @@ const generateLeads = (): Lead[] => {
   }
 
   // TO ISSUE: 6 base + 1 from To Report split = 7 max
-  const toIssueScenarios: Array<{ policyType: PolicyType; vmiStatus: PolicyStatus; cmiStatus?: PolicyStatus }> = [
+  // Include 2 leads with rework status (one with single rework, one with multiple)
+  const toIssueScenarios: Array<{ policyType: PolicyType; vmiStatus: PolicyStatus; cmiStatus?: PolicyStatus; hasRework?: boolean; multipleRework?: boolean }> = [
     { policyType: 'vmi_only', vmiStatus: 'pending_issuance' },
-    { policyType: 'vmi_only', vmiStatus: 'pending_issuance' },
+    { policyType: 'vmi_only', vmiStatus: 'pending_issuance', hasRework: true }, // Single rework
     { policyType: 'vmi_cmi', vmiStatus: 'pending_issuance', cmiStatus: 'pending_issuance' }, // Both same stage
-    { policyType: 'vmi_cmi', vmiStatus: 'pending_issuance', cmiStatus: 'pending_issuance' }, // Both same stage
+    { policyType: 'vmi_cmi', vmiStatus: 'pending_issuance', cmiStatus: 'pending_issuance', hasRework: true, multipleRework: true }, // Multiple reworks
     { policyType: 'vmi_cmi', vmiStatus: 'pending_issuance', cmiStatus: 'policy_issued' }, // Split: To Issue + To Deliver (1 split only)
     { policyType: 'vmi_only', vmiStatus: 'pending_issuance' },
   ];
@@ -719,12 +768,26 @@ const generateLeads = (): Lead[] => {
     const hasEndorsement = i === 2 || i === 3;
     const endorsementStatus: EndorsementStatus | undefined = i === 2 ? 'pending_on_ops' : i === 3 ? 'pending_finance' : undefined;
     
-    const policyRecords: PolicyRecord[] = scenario.policyType === 'vmi_only'
-      ? [generatePolicyRecord(`pol-${id}-vmi`, 'vmi', scenario.vmiStatus, createdOnFull, policyStartDate)]
-      : [
-          generatePolicyRecord(`pol-${id}-vmi`, 'vmi', scenario.vmiStatus, createdOnFull, policyStartDate, undefined, hasEndorsement ? 'policy_endorsement' : undefined, endorsementStatus),
-          generatePolicyRecord(`pol-${id}-cmi`, 'cmi', scenario.cmiStatus!, createdOnFull, cmiPolicyStartDate, undefined, hasEndorsement ? 'policy_endorsement' : undefined, i === 3 ? 'request_submitted' : undefined),
+    // Generate policy records - some with rework status
+    let policyRecords: PolicyRecord[];
+    if (scenario.hasRework) {
+      const reworkReasonIds = scenario.multipleRework ? ['5', '6', '7'] : ['6'];
+      if (scenario.policyType === 'vmi_only') {
+        policyRecords = [generatePolicyRecordWithRework(`pol-${id}-vmi`, 'vmi', 'pending_issuance', createdOnFull, policyStartDate, reworkReasonIds)];
+      } else {
+        policyRecords = [
+          generatePolicyRecordWithRework(`pol-${id}-vmi`, 'vmi', 'pending_issuance', createdOnFull, policyStartDate, reworkReasonIds),
+          generatePolicyRecord(`pol-${id}-cmi`, 'cmi', scenario.cmiStatus!, createdOnFull, cmiPolicyStartDate),
         ];
+      }
+    } else {
+      policyRecords = scenario.policyType === 'vmi_only'
+        ? [generatePolicyRecord(`pol-${id}-vmi`, 'vmi', scenario.vmiStatus, createdOnFull, policyStartDate)]
+        : [
+            generatePolicyRecord(`pol-${id}-vmi`, 'vmi', scenario.vmiStatus, createdOnFull, policyStartDate, undefined, hasEndorsement ? 'policy_endorsement' : undefined, endorsementStatus),
+            generatePolicyRecord(`pol-${id}-cmi`, 'cmi', scenario.cmiStatus!, createdOnFull, cmiPolicyStartDate, undefined, hasEndorsement ? 'policy_endorsement' : undefined, i === 3 ? 'request_submitted' : undefined),
+          ];
+    }
 
     const vehicle = getRandomVehicle();
     const leadData: Partial<Lead> = {
@@ -743,10 +806,10 @@ const generateLeads = (): Lead[] => {
       vehicleProvince: vehicle.province,
       rfStatus: 'transferred',
       scStatus: 'claimed',
-      saleStatus: 'pending_issuance',
+      saleStatus: scenario.hasRework ? 'pending_issuance' : 'pending_issuance',
       paymentStatus: 'paid',
       policyAttached: false,
-      reworkRequired: false,
+      reworkRequired: scenario.hasRework || false,
       createdBy: i % 2 === 0 ? 'agent' : 'admin',
       rfAssignee: rfStaff[i % rfStaff.length],
       scAssignee: scStaff[i % scStaff.length],
@@ -759,7 +822,7 @@ const generateLeads = (): Lead[] => {
 
     leads.push({
       ...leadData,
-      historyLog: generateHistoryLog(leadData, false, createdOnFull),
+      historyLog: generateHistoryLog(leadData, scenario.hasRework || false, createdOnFull),
       reworkHistory: [],
     } as Lead);
     id++;
