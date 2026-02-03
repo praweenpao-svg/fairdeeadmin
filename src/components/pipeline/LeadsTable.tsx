@@ -1309,7 +1309,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                     if (!method) return '-';
                                     if (method === 'e_policy') return 'E-Policy';
                                     if (method === 'print_by_myself') return language === 'th' ? 'พิมพ์เอง' : 'Print by Myself';
-                                    if (method === 'print_by_fairdee') return language === 'th' ? 'พิมพ์โดย FairDee' : 'Print by FairDee';
+                                    if (method === 'print_by_fairdee') return language === 'th' ? 'พิมพ์โดยแฟร์ดี' : 'Print by FairDee';
                                     return '-';
                                   };
                                   
@@ -1360,7 +1360,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                       </div>
                                       
                                       {/* Printing Preference */}
-                                      <div className="w-[100px] shrink-0 text-sm text-foreground">
+                                      <div className="w-[100px] shrink-0 text-sm text-foreground whitespace-nowrap">
                                         {policy.shippingMethod ? getPrintingPreferenceLabel(policy.shippingMethod) : <span className="text-muted-foreground/50">-</span>}
                                       </div>
                                       

@@ -75,7 +75,7 @@ export function PolicyRecordRow({
         <span className="text-xs text-muted-foreground">
           {policy.shippingMethod === 'e_policy' && 'E-Policy'}
           {policy.shippingMethod === 'print_by_myself' && (language === 'th' ? 'พิมพ์เอง' : 'Print By Myself')}
-          {policy.shippingMethod === 'print_by_fairdee' && (language === 'th' ? 'พิมพ์โดย Fairdee' : 'Print By Fairdee')}
+          {policy.shippingMethod === 'print_by_fairdee' && (language === 'th' ? 'พิมพ์โดยแฟร์ดี' : 'Print By FairDee')}
         </span>
       )}
 
