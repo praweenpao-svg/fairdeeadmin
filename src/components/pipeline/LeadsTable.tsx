@@ -1074,14 +1074,16 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                 {!isPostLeadStage && (
                   <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'สถานะงาน' : 'Status'}</th>
                 )}
+                {/* Owner column hidden - now at policy row level. Uncomment to restore:
                 <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'ผู้รับผิดชอบ' : 'Owner'}</th>
+                */}
                 <th className="data-table-header w-10 px-4 py-3"></th>
               </tr>
             </thead>
             <tbody>
               {sortedLeads.length === 0 ? (
                 <tr>
-                  <td colSpan={isPostLeadStage ? (showDEColumn ? 12 : 11) : (showDEColumn ? 10 : 9)} className="px-4 py-12 text-center text-muted-foreground">
+                  <td colSpan={isPostLeadStage ? (showDEColumn ? 11 : 10) : (showDEColumn ? 9 : 8)} className="px-4 py-12 text-center text-muted-foreground">
                     No leads found for this stage
                   </td>
                 </tr>
@@ -1312,6 +1314,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                           )}
                         </td>
                       )}
+                      {/* Owner cell hidden - now at policy row level. Uncomment to restore:
                       <td className="px-4 py-3">
                         {(() => {
                           const owner = getOwner(lead);
@@ -1325,6 +1328,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                           return <span className="text-xs text-muted-foreground">-</span>;
                         })()}
                       </td>
+                      */}
                       <td className="px-4 py-3">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
