@@ -43,16 +43,12 @@ const stageOptions: { value: PipelineStage; label: string }[] = [
   { value: 'cancelled', label: 'Cancelled' },
 ];
 
-// Rework reason IDs that will move leads to the Cancellation tab when selected
-// These are cancellation-related rework reasons
-export const CANCELLATION_REWORK_REASON_IDS = [
-  '11', // รอแจ้งประกันยกเลิก รอเอกสาร (Pending Cancellation: Awaiting Documents)
-  '12', // รอแจ้งประกันยกเลิก เอกสารครบ (Pending Cancellation: Documents Complete)
-  '13', // แจ้งประกันยกเลิกแล้ว รอเอกสาร (Cancellation Submitted: Awaiting Documents)
-  '14', // แจ้งประกันยกเลิกแล้ว เอกสารครบ (Cancellation Submitted: Documents Complete)
-  '15', // รอยกเลิก (Pending Cancellation)
-  '16', // ยกเลิก (Cancelled)
-];
+// Helper function to check if a rework reason moves leads to Cancellation tab
+// This checks the movesToCancellation property on the config
+export function isCancellationReworkReason(reasonId: string, reworkConfigs: ReworkConfig[]): boolean {
+  const config = reworkConfigs.find(c => c.id === reasonId);
+  return config?.movesToCancellation === true;
+}
 
 // Filter out 'to_convert' from any stages array (not allowed in rework console)
 const sanitizeStages = (stages: PipelineStage[]): PipelineStage[] => {
@@ -75,6 +71,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
     automationEnabled: false,
     automationDays: undefined,
     targetReason: undefined,
+    movesToCancellation: false,
   });
 
   const openDialog = (config?: ReworkConfig) => {
@@ -92,6 +89,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
         automationEnabled: false,
         automationDays: undefined,
         targetReason: undefined,
+        movesToCancellation: false,
       });
     }
     setIsDialogOpen(true);
@@ -125,6 +123,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
         targetReason: formData.targetReason,
         assignment: formData.assignment || 'rf_sc',
         stages: formData.stages || [],
+        movesToCancellation: formData.movesToCancellation || false,
       };
       onUpdate([...reworkConfigs, newConfig]);
     }
@@ -298,6 +297,24 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                   </div>
                 </div>
 
+                {/* Moves to Cancellation Toggle */}
+                <div className="flex items-center justify-between py-3 border rounded-md px-3 bg-destructive/5">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="movesToCancellation" className="flex items-center gap-2">
+                      <XCircle className="w-4 h-4 text-destructive" />
+                      Moves to Cancellation
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      Lead will appear in Cancellation tab when this reason is selected
+                    </p>
+                  </div>
+                  <Switch
+                    id="movesToCancellation"
+                    checked={formData.movesToCancellation || false}
+                    onCheckedChange={(checked) => setFormData({ ...formData, movesToCancellation: checked })}
+                  />
+                </div>
+
                 {/* Date Automation Section */}
                 <div className="border-t pt-4 mt-2">
                   
@@ -385,6 +402,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                 <th className="data-table-header px-4 py-3 text-left">Assignment Logic</th>
                 <th className="data-table-header px-4 py-3 text-left">Teams</th>
                 <th className="data-table-header px-4 py-3 text-left">Stages</th>
+                <th className="data-table-header px-4 py-3 text-center">→ Cancellation</th>
                 <th className="data-table-header px-4 py-3 text-center">Auto-Move</th>
                 <th className="data-table-header px-4 py-3 text-center">Threshold</th>
                 <th className="data-table-header px-4 py-3 text-left">Target Status</th>
@@ -393,32 +411,26 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
             </thead>
             <tbody>
               {paginatedConfigs.map((config) => {
-                const isCancellationReason = CANCELLATION_REWORK_REASON_IDS.includes(config.id);
+                const isCancellationReason = config.movesToCancellation === true;
                 return (
                 <tr key={config.id} className="data-table-row">
-                  <td className="px-4 py-3 text-sm">
-                    <div className="flex items-center gap-2">
-                      {isCancellationReason && (
-                        <XCircle className="w-4 h-4 text-destructive shrink-0" />
-                      )}
-                      {config.descriptionTh}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-sm">
-                    <div className="flex items-center gap-2">
-                      {config.descriptionEn}
-                      {isCancellationReason && (
-                        <span className="text-xs bg-destructive/10 text-destructive px-2 py-0.5 rounded-full whitespace-nowrap">
-                          → Cancellation
-                        </span>
-                      )}
-                    </div>
-                  </td>
+                  <td className="px-4 py-3 text-sm">{config.descriptionTh}</td>
+                  <td className="px-4 py-3 text-sm">{config.descriptionEn}</td>
                   <td className="px-4 py-3 text-sm">
                     {assignmentOptions.find(o => o.value === config.assignment)?.label || config.assignment}
                   </td>
                   <td className="px-4 py-3 text-sm">{getTeamDisplay(config)}</td>
                   <td className="px-4 py-3 text-sm">{getStageLabels(config.stages || [])}</td>
+                  <td className="px-4 py-3 text-sm text-center">
+                    {isCancellationReason ? (
+                      <span className="inline-flex items-center gap-1 text-xs bg-destructive/10 text-destructive px-2 py-1 rounded-full">
+                        <XCircle className="w-3 h-3" />
+                        Yes
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground">-</span>
+                    )}
+                  </td>
                   <td className="px-4 py-3 text-sm text-center">
                     <span className={config.automationEnabled ? 'text-green-500' : 'text-muted-foreground'}>
                       {config.automationEnabled ? 'ON' : 'OFF'}

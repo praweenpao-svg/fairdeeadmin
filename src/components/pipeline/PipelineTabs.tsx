@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
-import { PipelineStage, Lead, PolicyStatus, PolicyRecord } from '@/types/pipeline';
-import { CURRENT_USER } from '@/data/mockLeads';
+import { PipelineStage, Lead, PolicyStatus, PolicyRecord, ReworkConfig } from '@/types/pipeline';
+import { CURRENT_USER, mockReworkConfigs } from '@/data/mockLeads';
 import { useLanguageStore, stageTranslations, StageKey } from '@/stores/languageStore';
 import { 
   CreditCard, 
@@ -78,17 +78,18 @@ const policyStatusToStage: Record<PolicyStatus, PipelineStage | null> = {
   rework_required: null, // Special case - stage determined by previousStatus in rework history
 };
 
-// Import cancellation rework reason IDs from ReworkConsoleTable
-import { CANCELLATION_REWORK_REASON_IDS } from '@/components/rework/ReworkConsoleTable';
+// Import helper function to check cancellation rework reasons
+import { isCancellationReworkReason } from '@/components/rework/ReworkConsoleTable';
 
 // Get the effective stage for a policy (considering rework and shipping method)
-function getPolicyStage(policy: PolicyRecord): PipelineStage | null {
+// Uses mockReworkConfigs to check movesToCancellation property
+function getPolicyStage(policy: PolicyRecord, reworkConfigs: ReworkConfig[] = mockReworkConfigs): PipelineStage | null {
   if (policy.status === 'rework_required' && policy.reworkHistory && policy.reworkHistory.length > 0) {
     // Find the latest unresolved rework entry
     const latestRework = [...policy.reworkHistory].reverse().find(e => !e.resolved);
     if (latestRework) {
       // If the rework reason is cancellation-related, show in Cancellation tab
-      if (CANCELLATION_REWORK_REASON_IDS.includes(latestRework.reasonId)) {
+      if (isCancellationReworkReason(latestRework.reasonId, reworkConfigs)) {
         return 'cancelled';
       }
       // Otherwise, use the previous status to determine stage
