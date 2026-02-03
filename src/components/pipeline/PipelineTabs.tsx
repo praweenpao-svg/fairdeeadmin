@@ -78,12 +78,28 @@ const policyStatusToStage: Record<PolicyStatus, PipelineStage | null> = {
   rework_required: null, // Special case - stage determined by previousStatus in rework history
 };
 
+// Rework reason IDs that should move the policy to the Cancellation tab
+// These are cancellation-related rework reasons
+const CANCELLATION_REWORK_REASON_IDS = [
+  '11', // รอแจ้งประกันยกเลิก รอเอกสาร (Pending Cancellation: Awaiting Documents)
+  '12', // รอแจ้งประกันยกเลิก เอกสารครบ (Pending Cancellation: Documents Complete)
+  '13', // แจ้งประกันยกเลิกแล้ว รอเอกสาร (Cancellation Submitted: Awaiting Documents)
+  '14', // แจ้งประกันยกเลิกแล้ว เอกสารครบ (Cancellation Submitted: Documents Complete)
+  '15', // รอยกเลิก (Pending Cancellation)
+  '16', // ยกเลิก (Cancelled)
+];
+
 // Get the effective stage for a policy (considering rework and shipping method)
 function getPolicyStage(policy: PolicyRecord): PipelineStage | null {
   if (policy.status === 'rework_required' && policy.reworkHistory && policy.reworkHistory.length > 0) {
-    // Find the latest rework entry to get previousStatus
-    const latestRework = policy.reworkHistory[policy.reworkHistory.length - 1];
-    if (latestRework && !latestRework.resolved) {
+    // Find the latest unresolved rework entry
+    const latestRework = [...policy.reworkHistory].reverse().find(e => !e.resolved);
+    if (latestRework) {
+      // If the rework reason is cancellation-related, show in Cancellation tab
+      if (CANCELLATION_REWORK_REASON_IDS.includes(latestRework.reasonId)) {
+        return 'cancelled';
+      }
+      // Otherwise, use the previous status to determine stage
       return policyStatusToStage[latestRework.previousStatus];
     }
   }
