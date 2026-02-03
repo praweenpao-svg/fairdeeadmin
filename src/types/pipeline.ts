@@ -82,6 +82,20 @@ export interface PolicyRemark {
   createdAt: string;
 }
 
+// Policy-level history log entry
+export interface PolicyHistoryLogEntry {
+  id: string;
+  action: 'rework_created' | 'rework_resolved' | 'rework_reassigned' | 'status_changed' | 'remark_added';
+  triggeredBy: string;
+  triggeredAt: string;
+  fromStatus?: PolicyStatus;
+  toStatus?: PolicyStatus;
+  reworkReasonId?: string;
+  reworkReasonLabel?: string;
+  comment?: string;
+  attachments?: HistoryAttachment[];
+}
+
 export interface PolicyRecord {
   id: string;
   kind: PolicyKind;
@@ -98,6 +112,8 @@ export interface PolicyRecord {
   // Policy-level rework
   reworkRequired?: boolean;
   reworkHistory?: PolicyReworkEntry[];
+  // Policy-level history log
+  historyLog?: PolicyHistoryLogEntry[];
   // Endorsement fields
   endorsementType?: EndorsementType;
   endorsementStatus?: EndorsementStatus;

@@ -10,7 +10,7 @@ import {
   MessageSquare,
   Truck,
 } from 'lucide-react';
-import { Lead, PipelineStage, LeadType, ReworkConfig, CreatedByType, ReworkAttachment, ReworkHistoryEntry, HistoryLogEntry, PolicyStatus, PolicyReworkEntry, PolicyRecord, PaymentMethod } from '@/types/pipeline';
+import { Lead, PipelineStage, LeadType, ReworkConfig, CreatedByType, ReworkAttachment, ReworkHistoryEntry, HistoryLogEntry, PolicyStatus, PolicyReworkEntry, PolicyRecord, PaymentMethod, PolicyHistoryLogEntry } from '@/types/pipeline';
 import { cn } from '@/lib/utils';
 import { useLanguageStore } from '@/stores/languageStore';
 import { toast } from 'sonner';
@@ -471,18 +471,21 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
       minute: '2-digit',
     });
 
+    const policy = lead.policyRecords.find(r => r.id === policyId);
+    const latestUnresolved = policy?.reworkHistory?.find(e => !e.resolved);
+
     const updatedRecords = lead.policyRecords.map(record => {
       if (record.id !== policyId) return record;
       
       const reworkHistory = record.reworkHistory || [];
       
       // Find the latest unresolved entry
-      const latestUnresolved = reworkHistory.find(e => !e.resolved);
-      if (!latestUnresolved) return record;
+      const unresolvedEntry = reworkHistory.find(e => !e.resolved);
+      if (!unresolvedEntry) return record;
       
       // Mark it as resolved
       const updatedHistory = reworkHistory.map(entry => {
-        if (entry.id === latestUnresolved.id) {
+        if (entry.id === unresolvedEntry.id) {
           return {
             ...entry,
             resolved: true,
@@ -493,21 +496,34 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
         return entry;
       });
 
+      // Create policy-level history log entry
+      const policyHistoryEntry: PolicyHistoryLogEntry = {
+        id: crypto.randomUUID(),
+        action: 'rework_resolved',
+        triggeredBy: 'Akshay Bazad',
+        triggeredAt: timestamp,
+        reworkReasonId: unresolvedEntry.reasonId,
+        reworkReasonLabel: unresolvedEntry.reasonLabel,
+        comment: 'Rework resolved',
+      };
+
       // Restore previous status
       return {
         ...record,
-        status: latestUnresolved.previousStatus,
+        status: unresolvedEntry.previousStatus,
         reworkRequired: false,
         reworkHistory: updatedHistory,
+        historyLog: [...(record.historyLog || []), policyHistoryEntry],
       };
     });
 
-    const policy = lead.policyRecords.find(r => r.id === policyId);
     const historyLogEntry: HistoryLogEntry = {
       id: crypto.randomUUID(),
       action: 'rework_resolved',
       triggeredBy: 'Akshay Bazad',
       triggeredAt: timestamp,
+      reworkReasonId: latestUnresolved?.reasonId,
+      reworkReasonLabel: latestUnresolved?.reasonLabel,
       comment: `${policy?.kind.toUpperCase()} policy rework resolved`,
     };
 
@@ -540,18 +556,21 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
     const reasonLabel = reworkConfig?.descriptionEn || 'Unknown';
     const newOwner = computeReworkOwner(lead, newReasonId);
 
+    const policy = lead.policyRecords.find(r => r.id === policyId);
+    const latestUnresolved = policy?.reworkHistory?.find(e => !e.resolved);
+
     const updatedRecords = lead.policyRecords.map(record => {
       if (record.id !== policyId) return record;
       
       const reworkHistory = record.reworkHistory || [];
       
       // Find the latest unresolved entry
-      const latestUnresolved = reworkHistory.find(e => !e.resolved);
-      const previousStatus = latestUnresolved?.previousStatus || (record.status as PolicyStatus);
+      const unresolvedEntry = reworkHistory.find(e => !e.resolved);
+      const previousStatus = unresolvedEntry?.previousStatus || (record.status as PolicyStatus);
       
       // Mark the latest unresolved entry as resolved (reassigned)
       const updatedHistory = reworkHistory.map(entry => {
-        if (latestUnresolved && entry.id === latestUnresolved.id) {
+        if (unresolvedEntry && entry.id === unresolvedEntry.id) {
           return {
             ...entry,
             resolved: true,
@@ -574,15 +593,32 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
         previousStatus,
       };
 
+      // Create policy-level history log entry for reassignment
+      const policyHistoryEntry: PolicyHistoryLogEntry = {
+        id: crypto.randomUUID(),
+        action: 'rework_reassigned',
+        triggeredBy: 'Akshay Bazad',
+        triggeredAt: timestamp,
+        reworkReasonId: newReasonId,
+        reworkReasonLabel: reasonLabel,
+        comment: details || `Reassigned from: ${unresolvedEntry?.reasonLabel || 'Unknown'}`,
+        attachments: attachments.map(a => ({
+          id: a.id,
+          name: a.name,
+          type: a.type,
+          url: a.url,
+        })),
+      };
+
       return {
         ...record,
         status: 'rework_required' as PolicyStatus,
         reworkRequired: true,
         reworkHistory: [...updatedHistory, newEntry],
+        historyLog: [...(record.historyLog || []), policyHistoryEntry],
       };
     });
 
-    const policy = lead.policyRecords.find(r => r.id === policyId);
     const historyLogEntry: HistoryLogEntry = {
       id: crypto.randomUUID(),
       action: 'rework_reassigned',
@@ -591,6 +627,12 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
       reworkReasonId: newReasonId,
       reworkReasonLabel: reasonLabel,
       comment: `${policy?.kind.toUpperCase()} policy rework reassigned: ${details || reasonLabel}`,
+      attachments: attachments.map(a => ({
+        id: a.id,
+        name: a.name,
+        type: a.type,
+        url: a.url,
+      })),
     };
 
     // Build update object with new owner
@@ -1414,7 +1456,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                   {language === 'th' ? 'สถานะกรมธรรม์' : 'Policy Status'}
                                 </div>
                                 <div className="w-[100px] text-xs font-semibold text-muted-foreground uppercase tracking-wide shrink-0">
-                                  {language === 'th' ? 'เจ้าของ' : 'Owner'}
+                                  {language === 'th' ? 'ผู้รับผิดชอบ' : 'Owner'}
                                 </div>
                                 <div className="w-[70px] text-xs font-semibold text-muted-foreground uppercase tracking-wide shrink-0">
                                   {language === 'th' ? 'หมายเหตุ' : 'Remarks'}
