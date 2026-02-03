@@ -178,14 +178,14 @@ export function InlineReworkActions({
             <div className="space-y-2">
               <Label className="text-xs">{language === 'th' ? 'เลือกเหตุผลใหม่' : 'Select new reason'}</Label>
               <Select value={selectedNewReasonId} onValueChange={setSelectedNewReasonId}>
-                <SelectTrigger className="w-full text-xs">
+                <SelectTrigger className="w-full h-8 text-xs">
                   <SelectValue placeholder={language === 'th' ? 'เลือกเหตุผล' : 'Select reason'} />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-popover z-50">
                   {reworkConfigs
                     .filter((config) => config.id !== latestEntry.reasonId)
                     .map((config) => (
-                      <SelectItem key={config.id} value={config.id}>
+                      <SelectItem key={config.id} value={config.id} className="text-xs">
                         {language === 'th' ? config.descriptionTh : config.descriptionEn}
                       </SelectItem>
                     ))}

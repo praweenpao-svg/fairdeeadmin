@@ -118,14 +118,14 @@ export function PolicyStatusCell({
         onValueChange={(value) => onStatusChange?.(policy.id, value as PolicyStatus)}
       >
         <SelectTrigger 
-          className="w-[160px] h-8 text-xs"
+          className="w-full h-6 text-[10px]"
           style={statusStyles}
         >
           <SelectValue />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="bg-popover z-50">
           {statusOptions.map((status) => (
-            <SelectItem key={status} value={status}>
+            <SelectItem key={status} value={status} className="text-xs">
               {policyStatusTranslations[status]?.[language] || status}
             </SelectItem>
           ))}
@@ -138,7 +138,7 @@ export function PolicyStatusCell({
   const hasCustomColor = disabledStatusStyles.backgroundColor;
   return (
     <div 
-      className="w-[160px] h-8 text-xs flex items-center px-3 rounded-md border cursor-not-allowed"
+      className="w-full h-6 text-[10px] flex items-center px-2 rounded-md border cursor-not-allowed truncate"
       style={hasCustomColor ? disabledStatusStyles : { backgroundColor: 'hsl(var(--muted) / 0.5)', borderColor: 'hsl(var(--input))', color: 'hsl(var(--muted-foreground))' }}
     >
       {policyStatusTranslations[policy.status]?.[language] || policy.status}
