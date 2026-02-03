@@ -78,16 +78,8 @@ const policyStatusToStage: Record<PolicyStatus, PipelineStage | null> = {
   rework_required: null, // Special case - stage determined by previousStatus in rework history
 };
 
-// Rework reason IDs that should move the policy to the Cancellation tab
-// These are cancellation-related rework reasons
-const CANCELLATION_REWORK_REASON_IDS = [
-  '11', // รอแจ้งประกันยกเลิก รอเอกสาร (Pending Cancellation: Awaiting Documents)
-  '12', // รอแจ้งประกันยกเลิก เอกสารครบ (Pending Cancellation: Documents Complete)
-  '13', // แจ้งประกันยกเลิกแล้ว รอเอกสาร (Cancellation Submitted: Awaiting Documents)
-  '14', // แจ้งประกันยกเลิกแล้ว เอกสารครบ (Cancellation Submitted: Documents Complete)
-  '15', // รอยกเลิก (Pending Cancellation)
-  '16', // ยกเลิก (Cancelled)
-];
+// Import cancellation rework reason IDs from ReworkConsoleTable
+import { CANCELLATION_REWORK_REASON_IDS } from '@/components/rework/ReworkConsoleTable';
 
 // Get the effective stage for a policy (considering rework and shipping method)
 function getPolicyStage(policy: PolicyRecord): PipelineStage | null {

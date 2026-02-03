@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, XCircle } from 'lucide-react';
 import { ReworkConfig, AssignmentType, PipelineStage } from '@/types/pipeline';
 import { useTeamsStore } from '@/stores/teamsStore';
 import { Button } from '@/components/ui/button';
@@ -41,6 +41,17 @@ const stageOptions: { value: PipelineStage; label: string }[] = [
   { value: 'to_deliver', label: 'To Deliver' },
   { value: 'completed', label: 'Completed' },
   { value: 'cancelled', label: 'Cancelled' },
+];
+
+// Rework reason IDs that will move leads to the Cancellation tab when selected
+// These are cancellation-related rework reasons
+export const CANCELLATION_REWORK_REASON_IDS = [
+  '11', // รอแจ้งประกันยกเลิก รอเอกสาร (Pending Cancellation: Awaiting Documents)
+  '12', // รอแจ้งประกันยกเลิก เอกสารครบ (Pending Cancellation: Documents Complete)
+  '13', // แจ้งประกันยกเลิกแล้ว รอเอกสาร (Cancellation Submitted: Awaiting Documents)
+  '14', // แจ้งประกันยกเลิกแล้ว เอกสารครบ (Cancellation Submitted: Documents Complete)
+  '15', // รอยกเลิก (Pending Cancellation)
+  '16', // ยกเลิก (Cancelled)
 ];
 
 // Filter out 'to_convert' from any stages array (not allowed in rework console)
@@ -381,10 +392,28 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
               </tr>
             </thead>
             <tbody>
-              {paginatedConfigs.map((config) => (
+              {paginatedConfigs.map((config) => {
+                const isCancellationReason = CANCELLATION_REWORK_REASON_IDS.includes(config.id);
+                return (
                 <tr key={config.id} className="data-table-row">
-                  <td className="px-4 py-3 text-sm">{config.descriptionTh}</td>
-                  <td className="px-4 py-3 text-sm">{config.descriptionEn}</td>
+                  <td className="px-4 py-3 text-sm">
+                    <div className="flex items-center gap-2">
+                      {isCancellationReason && (
+                        <XCircle className="w-4 h-4 text-destructive shrink-0" />
+                      )}
+                      {config.descriptionTh}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-sm">
+                    <div className="flex items-center gap-2">
+                      {config.descriptionEn}
+                      {isCancellationReason && (
+                        <span className="text-xs bg-destructive/10 text-destructive px-2 py-0.5 rounded-full whitespace-nowrap">
+                          → Cancellation
+                        </span>
+                      )}
+                    </div>
+                  </td>
                   <td className="px-4 py-3 text-sm">
                     {assignmentOptions.find(o => o.value === config.assignment)?.label || config.assignment}
                   </td>
@@ -422,7 +451,8 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                     </div>
                   </td>
                 </tr>
-              ))}
+              );
+              })}
             </tbody>
           </table>
         </div>
