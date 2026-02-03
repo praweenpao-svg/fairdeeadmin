@@ -1252,6 +1252,9 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                 <div className="w-[100px] text-[11px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">
                                   {language === 'th' ? 'วันเริ่มคุ้มครอง' : 'Start Date'}
                                 </div>
+                                <div className="w-[100px] text-[11px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">
+                                  {language === 'th' ? 'วันสิ้นสุดคุ้มครอง' : 'End Date'}
+                                </div>
                                 <div className="w-[110px] text-[11px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">
                                   {language === 'th' ? 'เลขกรมธรรม์' : 'Policy No.'}
                                 </div>
@@ -1364,6 +1367,16 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                       {/* Policy Start Date */}
                                       <div className="w-[100px] shrink-0 text-xs text-foreground">
                                         {policy.policyStartDate ? formatDateOnly(policy.policyStartDate) : <span className="text-muted-foreground/50">-</span>}
+                                      </div>
+                                      
+                                      {/* Policy End Date - exactly 1 year after start date */}
+                                      <div className="w-[100px] shrink-0 text-xs text-foreground">
+                                        {policy.policyStartDate ? (() => {
+                                          const datePart = policy.policyStartDate.split(' ')[0];
+                                          const [day, month, year] = datePart.split('-');
+                                          const endYear = parseInt(year, 10) + 1;
+                                          return `${day}/${month}/${endYear}`;
+                                        })() : <span className="text-muted-foreground/50">-</span>}
                                       </div>
                                       
                                       {/* Policy Number */}
