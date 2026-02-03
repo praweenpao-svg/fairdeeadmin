@@ -1233,41 +1233,41 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                             {/* Policy Sub-Table - Horizontally scrollable */}
                             <div className="overflow-x-auto">
                               {/* Policy Sub-Table Header */}
-                              <div className="flex gap-3 px-4 py-2.5 bg-muted/60 border-b border-border min-w-max">
-                                <div className="w-[60px] text-[11px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">
+                              <div className="flex gap-4 px-4 py-2.5 bg-muted/60 border-b border-border min-w-max">
+                                <div className="w-[55px] text-[11px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">
                                   {language === 'th' ? 'ประเภท' : 'Type'}
                                 </div>
-                                <div className="w-[140px] text-[11px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">
+                                <div className="w-[150px] text-[11px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">
                                   {language === 'th' ? 'สถานกรมธรรม์' : 'Status'}
                                 </div>
-                                <div className="w-[120px] text-[11px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">
+                                <div className="w-[130px] text-[11px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">
                                   {language === 'th' ? 'วันที่อัปเดตล่าสุด' : 'Updated On'}
                                 </div>
-                                <div className="w-[120px] text-[11px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">
+                                <div className="w-[130px] text-[11px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">
                                   {language === 'th' ? 'วันที่อัปโหลดกรมธรรม์' : 'Policy Uploaded'}
                                 </div>
-                                <div className="w-[100px] text-[11px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">
+                                <div className="w-[110px] text-[11px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">
                                   {language === 'th' ? 'รูปแบบการพิมพ์' : 'Printing Pref.'}
                                 </div>
-                                <div className="w-[90px] text-[11px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">
+                                <div className="w-[100px] text-[11px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">
                                   {language === 'th' ? 'วันเริ่มคุ้มครอง' : 'Start Date'}
                                 </div>
-                                <div className="w-[100px] text-[11px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">
+                                <div className="w-[110px] text-[11px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">
                                   {language === 'th' ? 'เลขกรมธรรม์' : 'Policy No.'}
                                 </div>
                                 <div className="w-[100px] text-[11px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">
                                   {language === 'th' ? 'ไฟล์กรมธรรม์' : 'Policy File'}
                                 </div>
-                                <div className="w-[100px] text-[11px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">
+                                <div className="w-[110px] text-[11px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">
                                   {language === 'th' ? 'ติดตามพัสดุ' : 'Tracking'}
                                 </div>
-                                <div className="w-[120px] text-[11px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">
+                                <div className="w-[130px] text-[11px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">
                                   {language === 'th' ? 'ประเภทการสลักหลัง' : 'Endorse. Type'}
                                 </div>
-                                <div className="w-[150px] text-[11px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">
+                                <div className="w-[160px] text-[11px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">
                                   {language === 'th' ? 'สถานะการสลักหลัง' : 'Endorse. Status'}
                                 </div>
-                                <div className="w-[70px] text-[11px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">
+                                <div className="w-[80px] text-[11px] font-semibold text-muted-foreground uppercase tracking-wider shrink-0">
                                   {language === 'th' ? 'หมายเหตุ' : 'Remarks'}
                                 </div>
                               </div>
@@ -1319,10 +1319,10 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                   return (
                                     <div 
                                       key={policy.id}
-                                      className="flex gap-3 px-4 py-3 items-center transition-colors bg-card hover:bg-muted/30 min-w-max"
+                                      className="flex gap-4 px-4 py-3 items-center transition-colors bg-card hover:bg-muted/30 min-w-max"
                                     >
                                       {/* Policy Kind Badge */}
-                                      <div className="w-[60px] shrink-0">
+                                      <div className="w-[55px] shrink-0">
                                         <span className={cn(
                                           'inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold',
                                           policy.kind === 'vmi'
@@ -1334,7 +1334,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                       </div>
                                       
                                       {/* Status - Moved to second position */}
-                                      <div className="w-[140px] shrink-0">
+                                      <div className="w-[150px] shrink-0">
                                         <PolicyStatusCell
                                           policy={policy}
                                           stage={stage}
@@ -1347,27 +1347,27 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                       </div>
                                       
                                       {/* Updated On */}
-                                      <div className="w-[120px] shrink-0 text-xs text-foreground">
+                                      <div className="w-[130px] shrink-0 text-xs text-foreground">
                                         {policy.updatedOn ? formatDate(policy.updatedOn) : <span className="text-muted-foreground/50">-</span>}
                                       </div>
                                       
                                       {/* Policy Uploaded On */}
-                                      <div className="w-[120px] shrink-0 text-xs text-foreground">
+                                      <div className="w-[130px] shrink-0 text-xs text-foreground">
                                         {policy.policyUploadedOn ? formatDate(policy.policyUploadedOn) : <span className="text-muted-foreground/50">-</span>}
                                       </div>
                                       
                                       {/* Printing Preference */}
-                                      <div className="w-[100px] shrink-0 text-xs text-foreground">
+                                      <div className="w-[110px] shrink-0 text-xs text-foreground">
                                         {policy.shippingMethod ? getPrintingPreferenceLabel(policy.shippingMethod) : <span className="text-muted-foreground/50">-</span>}
                                       </div>
                                       
                                       {/* Policy Start Date */}
-                                      <div className="w-[90px] shrink-0 text-xs text-foreground">
+                                      <div className="w-[100px] shrink-0 text-xs text-foreground">
                                         {policy.policyStartDate ? formatDateOnly(policy.policyStartDate) : <span className="text-muted-foreground/50">-</span>}
                                       </div>
                                       
                                       {/* Policy Number */}
-                                      <div className="w-[100px] shrink-0 text-xs text-foreground font-mono">
+                                      <div className="w-[110px] shrink-0 text-xs text-foreground font-mono">
                                         {policy.policyNumber || <span className="text-muted-foreground/50">-</span>}
                                       </div>
                                       
@@ -1389,7 +1389,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                       </div>
                                       
                                       {/* Tracking */}
-                                      <div className="w-[100px] shrink-0">
+                                      <div className="w-[110px] shrink-0">
                                         {showTracking && policy.trackingNumber ? (
                                           <Button
                                             variant="outline"
@@ -1408,7 +1408,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                       </div>
                                       
                                       {/* Endorsement Type */}
-                                      <div className="w-[120px] shrink-0 text-xs text-foreground">
+                                      <div className="w-[130px] shrink-0 text-xs text-foreground">
                                         {policy.endorsementType ? (
                                           policy.endorsementType === 'policy_endorsement' 
                                             ? (language === 'th' ? 'สลักหลังกรมธรรม์' : 'Policy Endorsement')
@@ -1419,7 +1419,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                       </div>
                                       
                                       {/* Endorsement Status */}
-                                      <div className="w-[150px] shrink-0">
+                                      <div className="w-[160px] shrink-0">
                                         {policy.endorsementType ? (
                                           <Select
                                             value={policy.endorsementStatus || ''}
@@ -1449,7 +1449,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                       </div>
                                       
                                       {/* Remarks */}
-                                      <div className="w-[70px] shrink-0">
+                                      <div className="w-[80px] shrink-0">
                                         <Button
                                           variant="ghost"
                                           size="sm"
