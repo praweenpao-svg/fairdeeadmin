@@ -1,4 +1,4 @@
-import { Lead, ReworkConfig, HistoryLogEntry, PolicyType, PolicyRecord, PolicyStatus, PolicyReworkEntry, InsurerQuote, PriceListStatus, ETAStatus, PaymentMethod, EndorsementType, EndorsementStatus, LeadSource } from '@/types/pipeline';
+import { Lead, ReworkConfig, HistoryLogEntry, PolicyType, PolicyRecord, PolicyStatus, PolicyReworkEntry, InsurerQuote, PriceListStatus, ETAStatus, PaymentMethod, EndorsementType, EndorsementStatus, LeadSource, PolicyHistoryLogEntry } from '@/types/pipeline';
 
 const agents = [
   { id: 'FD-3460', name: 'Akshay Bazad' },
@@ -93,6 +93,54 @@ function isPolicyUploaded(status: PolicyStatus): boolean {
   return ['policy_issued', 'policy_shipped', 'policy_delivered', 'policy_cancelled'].includes(status);
 }
 
+// Status progression for policy history generation
+const policyStatusProgression: PolicyStatus[] = [
+  'pending_payment',
+  'pending_review', 
+  'pending_issuance',
+  'policy_issued',
+  'policy_shipped',
+  'policy_delivered',
+];
+
+// Helper to generate policy history log based on current status
+function generatePolicyHistoryLog(
+  policyId: string,
+  currentStatus: PolicyStatus,
+  baseDate: string
+): PolicyHistoryLogEntry[] {
+  const logs: PolicyHistoryLogEntry[] = [];
+  const currentIndex = policyStatusProgression.indexOf(currentStatus);
+  
+  if (currentIndex === -1) {
+    // Status not in progression (e.g., cancelled, rework_required)
+    return logs;
+  }
+  
+  const [datePart, timePart] = baseDate.split(' ');
+  const [day, month, year] = datePart.split('-').map(Number);
+  const [hours] = (timePart || '09:00').split(':').map(Number);
+  
+  // Generate history entries for each status transition up to current
+  for (let i = 0; i <= currentIndex; i++) {
+    if (i === 0) continue; // Skip first status (no "from" status)
+    
+    const entryDate = new Date(year, month - 1, day, hours + i * 2, Math.floor(Math.random() * 60));
+    const triggeredAt = `${String(entryDate.getDate()).padStart(2, '0')}-${String(entryDate.getMonth() + 1).padStart(2, '0')}-${entryDate.getFullYear()} ${String(entryDate.getHours()).padStart(2, '0')}:${String(entryDate.getMinutes()).padStart(2, '0')}`;
+    
+    logs.push({
+      id: `phl-${policyId}-${i}`,
+      action: 'status_changed',
+      triggeredBy: deStaff[i % deStaff.length],
+      triggeredAt,
+      fromStatus: policyStatusProgression[i - 1],
+      toStatus: policyStatusProgression[i],
+    });
+  }
+  
+  return logs;
+}
+
 // Helper to generate policy record with proper timestamps
 function generatePolicyRecord(
   id: string,
@@ -121,6 +169,9 @@ function generatePolicyRecord(
     policyUploadedOn = `${String(uploadDate.getDate()).padStart(2, '0')}-${String(uploadDate.getMonth() + 1).padStart(2, '0')}-${uploadDate.getFullYear()} ${String(uploadDate.getHours()).padStart(2, '0')}:${String(uploadDate.getMinutes()).padStart(2, '0')}`;
   }
 
+  // Generate policy history log
+  const historyLog = generatePolicyHistoryLog(id, status, baseDate);
+
   return {
     id,
     kind,
@@ -135,6 +186,7 @@ function generatePolicyRecord(
     trackingNumber: shippingMethod === 'print_by_fairdee' && hasUploadedPolicy ? `TH${Math.floor(Math.random() * 9000000000) + 1000000000}` : undefined,
     endorsementType,
     endorsementStatus,
+    historyLog,
   };
 }
 
