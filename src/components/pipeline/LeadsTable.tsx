@@ -1118,7 +1118,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
     setRemarksDialogOpen(true);
   };
 
-  const handleAddRemark = (comment: string) => {
+  const handleAddRemark = (comment: string, attachments?: ReworkAttachment[]) => {
     if (!selectedPolicyForRemarks) return;
 
     const lead = leads.find(l => l.id === selectedPolicyForRemarks.leadId);
@@ -1128,6 +1128,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
     const newRemark = {
       id: crypto.randomUUID(),
       comment,
+      attachments,
       createdBy: CURRENT_USER,
       createdAt: timestamp,
     };
@@ -1153,6 +1154,74 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
         ...record,
         remarks: [...(record.remarks || []), newRemark],
         historyLog: [...(record.historyLog || []), policyHistoryEntry],
+      };
+    });
+
+    onLeadUpdate?.(lead.id, { policyRecords: updatedRecords });
+  };
+
+  const handleAddRemarkReply = (remarkId: string, comment: string, attachments?: ReworkAttachment[]) => {
+    if (!selectedPolicyForRemarks) return;
+
+    const lead = leads.find(l => l.id === selectedPolicyForRemarks.leadId);
+    if (!lead || !lead.policyRecords) return;
+
+    const newReply = {
+      id: crypto.randomUUID(),
+      comment,
+      attachments,
+      createdBy: CURRENT_USER,
+      createdAt: new Date().toISOString(),
+    };
+
+    const updatedRecords = lead.policyRecords.map(record => {
+      if (record.id !== selectedPolicyForRemarks.policyId) return record;
+      
+      const updatedRemarks = record.remarks?.map(remark => {
+        if (remark.id !== remarkId) return remark;
+        return {
+          ...remark,
+          replies: [...(remark.replies || []), newReply],
+        };
+      });
+
+      return {
+        ...record,
+        remarks: updatedRemarks,
+      };
+    });
+
+    onLeadUpdate?.(lead.id, { policyRecords: updatedRecords });
+  };
+
+  const handleAddReworkReply = (entryId: string, comment: string, attachments?: ReworkAttachment[]) => {
+    if (!selectedPolicyForRemarks) return;
+
+    const lead = leads.find(l => l.id === selectedPolicyForRemarks.leadId);
+    if (!lead || !lead.policyRecords) return;
+
+    const newReply = {
+      id: crypto.randomUUID(),
+      comment,
+      attachments,
+      createdBy: CURRENT_USER,
+      createdAt: new Date().toISOString(),
+    };
+
+    const updatedRecords = lead.policyRecords.map(record => {
+      if (record.id !== selectedPolicyForRemarks.policyId) return record;
+      
+      const updatedReworkHistory = record.reworkHistory?.map(entry => {
+        if (entry.id !== entryId) return entry;
+        return {
+          ...entry,
+          replies: [...(entry.replies || []), newReply],
+        };
+      });
+
+      return {
+        ...record,
+        reworkHistory: updatedReworkHistory,
       };
     });
 
@@ -1220,26 +1289,33 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
     }
   };
 
-  // Get owner for a specific policy row (policy-level)
-  // When a policy is in rework, its owner is determined by the rework config
+  // Get owners for a specific policy row (policy-level)
+  // When a policy is in rework, returns all unique owners from active rework entries
   // When not in rework, it uses the stage-based owner (RF/SC or DE)
-  const getPolicyOwner = (lead: Lead, policy: PolicyRecord): string | undefined => {
-    // Check if this specific policy has an active rework
+  const getPolicyOwners = (lead: Lead, policy: PolicyRecord): string[] => {
+    // Check if this specific policy has active reworks
     if (policy.status === 'rework_required' && policy.reworkHistory) {
-      const activeRework = policy.reworkHistory.find(e => !e.resolved);
-      if (activeRework) {
-        return computeReworkOwner(lead, activeRework.reasonId);
+      const activeReworks = policy.reworkHistory.filter(e => !e.resolved);
+      if (activeReworks.length > 0) {
+        // Collect unique owners from all active reworks
+        const owners = activeReworks
+          .map(e => e.assignedTo || computeReworkOwner(lead, e.reasonId))
+          .filter((owner): owner is string => !!owner);
+        // Return unique owners preserving order
+        return [...new Set(owners)];
       }
     }
 
     // No active rework on this policy - use stage-based owner
+    let stageOwner: string | undefined;
     if (stage === 'all') {
-      return lead.deAssignee || lead.scAssignee || lead.rfAssignee;
+      stageOwner = lead.deAssignee || lead.scAssignee || lead.rfAssignee;
     } else if (stage === 'to_convert' || stage === 'to_pay') {
-      return lead.scAssignee || lead.rfAssignee;
+      stageOwner = lead.scAssignee || lead.rfAssignee;
     } else {
-      return lead.deAssignee;
+      stageOwner = lead.deAssignee;
     }
+    return stageOwner ? [stageOwner] : [];
   };
 
   return (
@@ -1818,21 +1894,39 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                         />
                                       </div>
                                       
-                                      {/* Policy Owner */}
+                                      {/* Policy Owners - supports multiple */}
                                       <div className="w-[100px] shrink-0 text-sm">
                                         {(() => {
-                                          const policyOwner = getPolicyOwner(lead, policy);
+                                          const policyOwners = getPolicyOwners(lead, policy);
                                           const isReworkOwner = policy.status === 'rework_required';
-                                          if (!policyOwner) {
+                                          if (policyOwners.length === 0) {
                                             return <span className="text-muted-foreground/50">-</span>;
                                           }
+                                          if (policyOwners.length === 1) {
+                                            return (
+                                              <span className={cn(
+                                                'font-medium',
+                                                isReworkOwner ? 'text-warning' : 'text-foreground'
+                                              )}>
+                                                {policyOwners[0]}
+                                              </span>
+                                            );
+                                          }
+                                          // Multiple owners - show stacked with tooltip-like display
                                           return (
-                                            <span className={cn(
-                                              'font-medium',
-                                              isReworkOwner ? 'text-warning' : 'text-foreground'
-                                            )}>
-                                              {policyOwner}
-                                            </span>
+                                            <div className="flex flex-col gap-0.5">
+                                              {policyOwners.map((owner, idx) => (
+                                                <span
+                                                  key={idx}
+                                                  className={cn(
+                                                    'text-xs font-medium leading-tight',
+                                                    isReworkOwner ? 'text-warning' : 'text-foreground'
+                                                  )}
+                                                >
+                                                  {owner}
+                                                </span>
+                                              ))}
+                                            </div>
                                           );
                                         })()}
                                       </div>
@@ -1927,6 +2021,8 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
         })()}
         reworkConfigs={stageReworkConfigs}
         onAddRemark={handleAddRemark}
+        onAddRemarkReply={handleAddRemarkReply}
+        onAddReworkReply={handleAddReworkReply}
         onReworkResolve={(entryId) => {
           if (!selectedPolicyForRemarks) return;
           const lead = leads.find(l => l.id === selectedPolicyForRemarks.leadId);

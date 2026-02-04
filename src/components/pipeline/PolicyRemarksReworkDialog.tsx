@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { MessageSquare, Send, CheckCircle, ArrowRightLeft, Upload, X, FileText, Image, AlertTriangle, User } from 'lucide-react';
+import { MessageSquare, Send, CheckCircle, ArrowRightLeft, Upload, X, FileText, Image, AlertTriangle, User, ChevronDown, ChevronRight, Reply, Paperclip } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -16,11 +16,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { PolicyRemark, PolicyReworkEntry, ReworkConfig, ReworkAttachment, PolicyStatus } from '@/types/pipeline';
+import { PolicyRemark, PolicyReworkEntry, ReworkConfig, ReworkAttachment, ThreadReply } from '@/types/pipeline';
 import { useLanguageStore } from '@/stores/languageStore';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 interface PolicyRemarksReworkDialogProps {
   open: boolean;
@@ -29,10 +29,16 @@ interface PolicyRemarksReworkDialogProps {
   remarks: PolicyRemark[];
   reworkHistory: PolicyReworkEntry[];
   reworkConfigs: ReworkConfig[];
-  onAddRemark: (comment: string) => void;
+  onAddRemark: (comment: string, attachments?: ReworkAttachment[]) => void;
+  onAddRemarkReply?: (remarkId: string, comment: string, attachments?: ReworkAttachment[]) => void;
+  onAddReworkReply?: (entryId: string, comment: string, attachments?: ReworkAttachment[]) => void;
   onReworkResolve: (entryId: string) => void;
   onReworkReassign: (entryId: string, newReasonId: string, details: string, attachments: ReworkAttachment[]) => void;
 }
+
+type ThreadItem = 
+  | { type: 'remark'; data: PolicyRemark; timestamp: Date }
+  | { type: 'rework'; data: PolicyReworkEntry; timestamp: Date };
 
 export function PolicyRemarksReworkDialog({
   open,
@@ -42,28 +48,77 @@ export function PolicyRemarksReworkDialog({
   reworkHistory,
   reworkConfigs,
   onAddRemark,
+  onAddRemarkReply,
+  onAddReworkReply,
   onReworkResolve,
   onReworkReassign,
 }: PolicyRemarksReworkDialogProps) {
   const { language } = useLanguageStore();
   const [newComment, setNewComment] = useState('');
-  const [activeTab, setActiveTab] = useState<'remarks' | 'rework'>('remarks');
+  const [newCommentAttachments, setNewCommentAttachments] = useState<ReworkAttachment[]>([]);
+  const [expandedThreads, setExpandedThreads] = useState<Set<string>>(new Set());
+  const [replyingTo, setReplyingTo] = useState<{ id: string; type: 'remark' | 'rework' } | null>(null);
+  const [replyComment, setReplyComment] = useState('');
+  const [replyAttachments, setReplyAttachments] = useState<ReworkAttachment[]>([]);
   
   // Reassign form state
   const [reassignEntryId, setReassignEntryId] = useState<string | null>(null);
   const [selectedNewReasonId, setSelectedNewReasonId] = useState<string>('');
   const [reassignDetails, setReassignDetails] = useState('');
   const [reassignAttachments, setReassignAttachments] = useState<ReworkAttachment[]>([]);
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const replyFileInputRef = useRef<HTMLInputElement>(null);
+  const newCommentFileInputRef = useRef<HTMLInputElement>(null);
 
   // Get unresolved rework entries
   const unresolvedEntries = reworkHistory.filter(e => !e.resolved);
-  const resolvedEntries = reworkHistory.filter(e => e.resolved);
+
+  // Merge remarks and rework into a single timeline
+  const buildTimeline = (): ThreadItem[] => {
+    const items: ThreadItem[] = [];
+    
+    remarks.forEach(remark => {
+      items.push({
+        type: 'remark',
+        data: remark,
+        timestamp: new Date(remark.createdAt),
+      });
+    });
+    
+    reworkHistory.forEach(entry => {
+      items.push({
+        type: 'rework',
+        data: entry,
+        timestamp: new Date(entry.savedAt),
+      });
+    });
+    
+    // Sort by timestamp descending (newest first)
+    return items.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+  };
+
+  const timeline = buildTimeline();
 
   const handleSubmitRemark = () => {
     if (!newComment.trim()) return;
-    onAddRemark(newComment.trim());
+    onAddRemark(newComment.trim(), newCommentAttachments.length > 0 ? newCommentAttachments : undefined);
     setNewComment('');
+    setNewCommentAttachments([]);
+  };
+
+  const handleSubmitReply = () => {
+    if (!replyComment.trim() || !replyingTo) return;
+    
+    if (replyingTo.type === 'remark' && onAddRemarkReply) {
+      onAddRemarkReply(replyingTo.id, replyComment.trim(), replyAttachments.length > 0 ? replyAttachments : undefined);
+    } else if (replyingTo.type === 'rework' && onAddReworkReply) {
+      onAddReworkReply(replyingTo.id, replyComment.trim(), replyAttachments.length > 0 ? replyAttachments : undefined);
+    }
+    
+    setReplyComment('');
+    setReplyAttachments([]);
+    setReplyingTo(null);
   };
 
   const formatDate = (dateStr: string) => {
@@ -77,10 +132,11 @@ export function PolicyRemarksReworkDialog({
     });
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>, target: 'reassign' | 'reply' | 'new') => {
     const files = e.target.files;
     if (!files) return;
 
+    const newAttachments: ReworkAttachment[] = [];
     Array.from(files).forEach((file) => {
       const ext = file.name.split('.').pop()?.toLowerCase();
       if (ext === 'png' || ext === 'jpg' || ext === 'jpeg' || ext === 'pdf') {
@@ -90,17 +146,30 @@ export function PolicyRemarksReworkDialog({
           type: ext === 'jpeg' ? 'jpg' : (ext as 'png' | 'jpg' | 'pdf'),
           url: URL.createObjectURL(file),
         };
-        setReassignAttachments((prev) => [...prev, attachment]);
+        newAttachments.push(attachment);
       }
     });
 
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+    if (target === 'reassign') {
+      setReassignAttachments(prev => [...prev, ...newAttachments]);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    } else if (target === 'reply') {
+      setReplyAttachments(prev => [...prev, ...newAttachments]);
+      if (replyFileInputRef.current) replyFileInputRef.current.value = '';
+    } else {
+      setNewCommentAttachments(prev => [...prev, ...newAttachments]);
+      if (newCommentFileInputRef.current) newCommentFileInputRef.current.value = '';
     }
   };
 
-  const removeAttachment = (id: string) => {
-    setReassignAttachments((prev) => prev.filter((a) => a.id !== id));
+  const removeAttachment = (id: string, target: 'reassign' | 'reply' | 'new') => {
+    if (target === 'reassign') {
+      setReassignAttachments(prev => prev.filter(a => a.id !== id));
+    } else if (target === 'reply') {
+      setReplyAttachments(prev => prev.filter(a => a.id !== id));
+    } else {
+      setNewCommentAttachments(prev => prev.filter(a => a.id !== id));
+    }
   };
 
   const handleReassignConfirm = () => {
@@ -117,8 +186,16 @@ export function PolicyRemarksReworkDialog({
     setReassignAttachments([]);
   };
 
-  const startReassign = (entryId: string) => {
-    setReassignEntryId(entryId);
+  const toggleThreadExpanded = (id: string) => {
+    setExpandedThreads(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
   };
 
   const getReasonLabel = (entry: PolicyReworkEntry) => {
@@ -128,17 +205,290 @@ export function PolicyRemarksReworkDialog({
       : (config?.descriptionEn || entry.reasonLabel);
   };
 
-  // Get the current entry being reassigned
   const currentReassignEntry = unresolvedEntries.find(e => e.id === reassignEntryId);
+
+  const renderAttachments = (attachments?: ReworkAttachment[]) => {
+    if (!attachments || attachments.length === 0) return null;
+    return (
+      <div className="flex flex-wrap gap-1.5 mt-2">
+        {attachments.map(att => (
+          <a
+            key={att.id}
+            href={att.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 bg-muted/50 px-2 py-1 rounded text-xs text-primary hover:bg-muted transition-colors"
+          >
+            {att.type === 'pdf' ? <FileText className="w-3 h-3" /> : <Image className="w-3 h-3" />}
+            <span className="max-w-[80px] truncate">{att.name}</span>
+          </a>
+        ))}
+      </div>
+    );
+  };
+
+  const renderReplies = (replies?: ThreadReply[]) => {
+    if (!replies || replies.length === 0) return null;
+    return (
+      <div className="mt-2 pl-3 border-l-2 border-muted space-y-2">
+        {replies.map(reply => (
+          <div key={reply.id} className="py-1.5">
+            <p className="text-xs text-foreground/90 whitespace-pre-wrap">{reply.comment}</p>
+            {renderAttachments(reply.attachments)}
+            <div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground">
+              <span className="font-medium">{reply.createdBy}</span>
+              <span>•</span>
+              <span>{formatDate(reply.createdAt)}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const renderRemarkThread = (remark: PolicyRemark) => {
+    const hasReplies = remark.replies && remark.replies.length > 0;
+    const isExpanded = expandedThreads.has(remark.id);
+    const isReplying = replyingTo?.id === remark.id && replyingTo?.type === 'remark';
+
+    return (
+      <div key={remark.id} className="p-3 bg-muted/30 rounded-lg border border-border">
+        {/* Main remark */}
+        <div className="flex items-start gap-2">
+          <MessageSquare className="w-4 h-4 mt-0.5 text-muted-foreground shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-foreground whitespace-pre-wrap">{remark.comment}</p>
+            {renderAttachments(remark.attachments)}
+            <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
+              <span className="font-medium">{remark.createdBy}</span>
+              <span>•</span>
+              <span>{formatDate(remark.createdAt)}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Thread controls */}
+        <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border/50">
+          {hasReplies && (
+            <button
+              onClick={() => toggleThreadExpanded(remark.id)}
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {isExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+              {remark.replies?.length} {language === 'th' ? 'ความคิดเห็น' : 'replies'}
+            </button>
+          )}
+          <button
+            onClick={() => setReplyingTo(isReplying ? null : { id: remark.id, type: 'remark' })}
+            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors ml-auto"
+          >
+            <Reply className="w-3 h-3" />
+            {language === 'th' ? 'ตอบกลับ' : 'Reply'}
+          </button>
+        </div>
+
+        {/* Expanded replies */}
+        {hasReplies && isExpanded && renderReplies(remark.replies)}
+
+        {/* Reply input */}
+        {isReplying && (
+          <div className="mt-3 pt-3 border-t border-border/50 space-y-2">
+            <Textarea
+              placeholder={language === 'th' ? 'เพิ่มความคิดเห็น...' : 'Add a reply...'}
+              value={replyComment}
+              onChange={(e) => setReplyComment(e.target.value)}
+              className="min-h-[60px] resize-none text-xs"
+            />
+            {replyAttachments.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {replyAttachments.map(att => (
+                  <div key={att.id} className="flex items-center gap-1.5 bg-muted px-2 py-1 rounded text-xs">
+                    {att.type === 'pdf' ? <FileText className="w-3 h-3 text-destructive" /> : <Image className="w-3 h-3 text-primary" />}
+                    <span className="max-w-[60px] truncate">{att.name}</span>
+                    <button onClick={() => removeAttachment(att.id, 'reply')} className="text-muted-foreground hover:text-foreground">
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="flex items-center justify-between">
+              <input ref={replyFileInputRef} type="file" accept=".png,.jpg,.jpeg,.pdf" multiple className="hidden" onChange={(e) => handleFileSelect(e, 'reply')} />
+              <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={() => replyFileInputRef.current?.click()}>
+                <Paperclip className="w-3 h-3 mr-1" />
+                {language === 'th' ? 'แนบ' : 'Attach'}
+              </Button>
+              <div className="flex gap-2">
+                <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={() => { setReplyingTo(null); setReplyComment(''); setReplyAttachments([]); }}>
+                  {language === 'th' ? 'ยกเลิก' : 'Cancel'}
+                </Button>
+                <Button size="sm" className="h-6 text-xs" onClick={handleSubmitReply} disabled={!replyComment.trim()}>
+                  <Send className="w-3 h-3 mr-1" />
+                  {language === 'th' ? 'ส่ง' : 'Send'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderReworkThread = (entry: PolicyReworkEntry) => {
+    const hasReplies = entry.replies && entry.replies.length > 0;
+    const isExpanded = expandedThreads.has(entry.id);
+    const isReplying = replyingTo?.id === entry.id && replyingTo?.type === 'rework';
+    const isActive = !entry.resolved;
+
+    return (
+      <div
+        key={entry.id}
+        className={cn(
+          'p-3 rounded-lg border',
+          isActive
+            ? 'bg-warning/10 border-warning/30'
+            : 'bg-muted/20 border-border opacity-70'
+        )}
+      >
+        {/* Main rework entry */}
+        <div className="flex items-start gap-2">
+          <AlertTriangle className={cn('w-4 h-4 mt-0.5 shrink-0', isActive ? 'text-warning' : 'text-muted-foreground')} />
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className={cn('text-sm font-medium', isActive ? 'text-warning' : 'text-muted-foreground line-through')}>
+                {getReasonLabel(entry)}
+              </p>
+              {isActive && entry.assignedTo && (
+                <Badge variant="outline" className="text-[10px] h-5 px-1.5 bg-primary/10 text-primary border-primary/30">
+                  <User className="w-2.5 h-2.5 mr-1" />
+                  {entry.assignedTo}
+                </Badge>
+              )}
+              {!isActive && (
+                <Badge variant="outline" className="text-[10px] h-5 px-1.5 bg-green-500/10 text-green-600 border-green-500/30">
+                  <CheckCircle className="w-2.5 h-2.5 mr-1" />
+                  {language === 'th' ? 'แก้ไขแล้ว' : 'Resolved'}
+                </Badge>
+              )}
+            </div>
+            {entry.details && (
+              <p className="text-xs text-muted-foreground mt-1 whitespace-pre-wrap">{entry.details}</p>
+            )}
+            {renderAttachments(entry.attachments)}
+            <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
+              <span>{language === 'th' ? 'โดย' : 'By'} {entry.savedBy}</span>
+              <span>•</span>
+              <span>{formatDate(entry.savedAt)}</span>
+            </div>
+            {!isActive && entry.resolvedBy && (
+              <div className="text-xs text-green-600 mt-1">
+                {language === 'th' ? 'แก้ไขโดย' : 'Resolved by'} {entry.resolvedBy} • {entry.resolvedAt}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Thread controls and actions */}
+        <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border/50 flex-wrap">
+          {hasReplies && (
+            <button
+              onClick={() => toggleThreadExpanded(entry.id)}
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {isExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+              {entry.replies?.length} {language === 'th' ? 'ความคิดเห็น' : 'replies'}
+            </button>
+          )}
+          <button
+            onClick={() => setReplyingTo(isReplying ? null : { id: entry.id, type: 'rework' })}
+            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Reply className="w-3 h-3" />
+            {language === 'th' ? 'ตอบกลับ' : 'Reply'}
+          </button>
+          
+          {/* Resolve/Reassign actions for active rework */}
+          {isActive && (
+            <div className="flex gap-2 ml-auto">
+              <Button
+                size="sm"
+                className="h-6 text-xs bg-green-600 hover:bg-green-700"
+                onClick={() => onReworkResolve(entry.id)}
+              >
+                <CheckCircle className="w-3 h-3 mr-1" />
+                {language === 'th' ? 'แก้ไขแล้ว' : 'Resolve'}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-6 text-xs"
+                onClick={() => setReassignEntryId(entry.id)}
+              >
+                <ArrowRightLeft className="w-3 h-3 mr-1" />
+                {language === 'th' ? 'มอบหมายใหม่' : 'Reassign'}
+              </Button>
+            </div>
+          )}
+        </div>
+
+        {/* Expanded replies */}
+        {hasReplies && isExpanded && renderReplies(entry.replies)}
+
+        {/* Reply input */}
+        {isReplying && (
+          <div className="mt-3 pt-3 border-t border-border/50 space-y-2">
+            <Textarea
+              placeholder={language === 'th' ? 'เพิ่มความคิดเห็น...' : 'Add a reply...'}
+              value={replyComment}
+              onChange={(e) => setReplyComment(e.target.value)}
+              className="min-h-[60px] resize-none text-xs"
+            />
+            {replyAttachments.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {replyAttachments.map(att => (
+                  <div key={att.id} className="flex items-center gap-1.5 bg-muted px-2 py-1 rounded text-xs">
+                    {att.type === 'pdf' ? <FileText className="w-3 h-3 text-destructive" /> : <Image className="w-3 h-3 text-primary" />}
+                    <span className="max-w-[60px] truncate">{att.name}</span>
+                    <button onClick={() => removeAttachment(att.id, 'reply')} className="text-muted-foreground hover:text-foreground">
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="flex items-center justify-between">
+              <input ref={replyFileInputRef} type="file" accept=".png,.jpg,.jpeg,.pdf" multiple className="hidden" onChange={(e) => handleFileSelect(e, 'reply')} />
+              <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={() => replyFileInputRef.current?.click()}>
+                <Paperclip className="w-3 h-3 mr-1" />
+                {language === 'th' ? 'แนบ' : 'Attach'}
+              </Button>
+              <div className="flex gap-2">
+                <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={() => { setReplyingTo(null); setReplyComment(''); setReplyAttachments([]); }}>
+                  {language === 'th' ? 'ยกเลิก' : 'Cancel'}
+                </Button>
+                <Button size="sm" className="h-6 text-xs" onClick={handleSubmitReply} disabled={!replyComment.trim()}>
+                  <Send className="w-3 h-3 mr-1" />
+                  {language === 'th' ? 'ส่ง' : 'Send'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => {
       onOpenChange(isOpen);
       if (!isOpen) {
         resetReassignForm();
+        setReplyingTo(null);
+        setReplyComment('');
+        setReplyAttachments([]);
       }
     }}>
-      <DialogContent className="sm:max-w-[550px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[85vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <MessageSquare className="w-5 h-5" />
@@ -152,302 +502,154 @@ export function PolicyRemarksReworkDialog({
           </DialogTitle>
         </DialogHeader>
 
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'remarks' | 'rework')}>
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="remarks" className="text-xs">
-              <MessageSquare className="w-3.5 h-3.5 mr-1.5" />
-              {language === 'th' ? 'หมายเหตุ' : 'Remarks'}
-              {remarks.length > 0 && <span className="ml-1.5 text-muted-foreground">({remarks.length})</span>}
-            </TabsTrigger>
-            <TabsTrigger value="rework" className="text-xs">
-              <AlertTriangle className="w-3.5 h-3.5 mr-1.5" />
-              {language === 'th' ? 'งานติดปัญหา' : 'Rework'}
-              {unresolvedEntries.length > 0 && (
-                <span className="ml-1.5 text-warning">({unresolvedEntries.length})</span>
-              )}
-            </TabsTrigger>
-          </TabsList>
+        {reassignEntryId ? (
+          // Reassign Form
+          <div className="space-y-4 py-2">
+            <div className="flex items-center justify-between">
+              <div className="text-sm font-medium">
+                {language === 'th' ? 'มอบหมายงานใหม่' : 'Reassign rework'}
+              </div>
+              <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={resetReassignForm}>
+                {language === 'th' ? 'กลับ' : 'Back'}
+              </Button>
+            </div>
 
-          {/* Remarks Tab */}
-          <TabsContent value="remarks" className="space-y-4 mt-4">
-            <ScrollArea className="h-[280px] pr-4">
-              {remarks.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  {language === 'th' ? 'ยังไม่มีหมายเหตุ' : 'No remarks yet'}
+            {currentReassignEntry && (
+              <div className="p-2 bg-muted/50 border rounded text-xs">
+                <span className="text-muted-foreground">{language === 'th' ? 'จาก:' : 'From:'}</span>
+                <span className="ml-1 font-medium">{getReasonLabel(currentReassignEntry)}</span>
+                {currentReassignEntry.assignedTo && (
+                  <span className="ml-2 text-muted-foreground">
+                    ({language === 'th' ? 'ผู้รับผิดชอบ:' : 'Owner:'} {currentReassignEntry.assignedTo})
+                  </span>
+                )}
+              </div>
+            )}
+            
+            <div className="space-y-2">
+              <Label className="text-xs">{language === 'th' ? 'เลือกเหตุผลใหม่' : 'Select new reason'}</Label>
+              <Select value={selectedNewReasonId} onValueChange={setSelectedNewReasonId}>
+                <SelectTrigger className="w-full h-8 text-xs">
+                  <SelectValue placeholder={language === 'th' ? 'เลือกเหตุผล' : 'Select reason'} />
+                </SelectTrigger>
+                <SelectContent className="bg-popover z-50">
+                  {reworkConfigs
+                    .filter(config => config.id !== currentReassignEntry?.reasonId)
+                    .map(config => (
+                      <SelectItem key={config.id} value={config.id} className="text-xs">
+                        {language === 'th' ? config.descriptionTh : config.descriptionEn}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs">{language === 'th' ? 'รายละเอียด (ไม่บังคับ)' : 'Details (optional)'}</Label>
+              <Textarea
+                placeholder={language === 'th' ? 'ใส่รายละเอียดเพิ่มเติม...' : 'Enter detailed reason...'}
+                value={reassignDetails}
+                onChange={(e) => setReassignDetails(e.target.value)}
+                className="min-h-[60px] resize-none text-xs"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs">{language === 'th' ? 'ไฟล์แนบ' : 'Attachments'}</Label>
+              <div className="flex flex-wrap gap-1.5">
+                {reassignAttachments.map(att => (
+                  <div key={att.id} className="flex items-center gap-1.5 bg-muted px-2 py-1 rounded text-xs">
+                    {att.type === 'pdf' ? <FileText className="w-3 h-3 text-destructive" /> : <Image className="w-3 h-3 text-primary" />}
+                    <span className="max-w-[80px] truncate">{att.name}</span>
+                    <button onClick={() => removeAttachment(att.id, 'reassign')} className="text-muted-foreground hover:text-foreground">
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <input ref={fileInputRef} type="file" accept=".png,.jpg,.jpeg,.pdf" multiple className="hidden" onChange={(e) => handleFileSelect(e, 'reassign')} />
+              <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} className="h-7 text-xs">
+                <Upload className="w-3 h-3 mr-1.5" />
+                {language === 'th' ? 'แนบไฟล์' : 'Attach files'}
+              </Button>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2 border-t">
+              <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={resetReassignForm}>
+                {language === 'th' ? 'ยกเลิก' : 'Cancel'}
+              </Button>
+              <Button size="sm" className="h-7 text-xs" onClick={handleReassignConfirm} disabled={!selectedNewReasonId}>
+                {language === 'th' ? 'มอบหมายใหม่' : 'Reassign'}
+              </Button>
+            </div>
+          </div>
+        ) : (
+          // Main timeline view
+          <>
+            <ScrollArea className="flex-1 min-h-0 pr-4">
+              {timeline.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  <MessageSquare className="w-10 h-10 mx-auto mb-2 opacity-30" />
+                  {language === 'th' ? 'ยังไม่มีหมายเหตุหรืองานติดปัญหา' : 'No remarks or rework issues yet'}
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {[...remarks].reverse().map((remark) => (
-                    <div
-                      key={remark.id}
-                      className="p-3 bg-muted/50 rounded-lg border border-border"
-                    >
-                      <p className="text-sm text-foreground whitespace-pre-wrap">
-                        {remark.comment}
-                      </p>
-                      <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
-                        <span className="font-medium">{remark.createdBy}</span>
-                        <span>•</span>
-                        <span>{formatDate(remark.createdAt)}</span>
-                      </div>
-                    </div>
-                  ))}
+                <div className="space-y-3 py-2">
+                  {timeline.map(item => 
+                    item.type === 'remark' 
+                      ? renderRemarkThread(item.data as PolicyRemark)
+                      : renderReworkThread(item.data as PolicyReworkEntry)
+                  )}
                 </div>
               )}
             </ScrollArea>
 
             {/* Add New Remark */}
-            <div className="border-t pt-4">
+            <div className="border-t pt-4 mt-2 shrink-0">
               <div className="space-y-2">
                 <Textarea
                   placeholder={language === 'th' ? 'เพิ่มหมายเหตุ...' : 'Add a remark...'}
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
-                  className="min-h-[80px] resize-none"
+                  className="min-h-[70px] resize-none"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
                       handleSubmitRemark();
                     }
                   }}
                 />
+                {newCommentAttachments.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {newCommentAttachments.map(att => (
+                      <div key={att.id} className="flex items-center gap-1.5 bg-muted px-2 py-1 rounded text-xs">
+                        {att.type === 'pdf' ? <FileText className="w-3 h-3 text-destructive" /> : <Image className="w-3 h-3 text-primary" />}
+                        <span className="max-w-[80px] truncate">{att.name}</span>
+                        <button onClick={() => removeAttachment(att.id, 'new')} className="text-muted-foreground hover:text-foreground">
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
                 <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">
-                    {language === 'th' ? 'Ctrl+Enter เพื่อส่ง' : 'Ctrl+Enter to send'}
-                  </span>
-                  <Button
-                    size="sm"
-                    onClick={handleSubmitRemark}
-                    disabled={!newComment.trim()}
-                  >
+                  <div className="flex items-center gap-2">
+                    <input ref={newCommentFileInputRef} type="file" accept=".png,.jpg,.jpeg,.pdf" multiple className="hidden" onChange={(e) => handleFileSelect(e, 'new')} />
+                    <Button variant="ghost" size="sm" className="h-8" onClick={() => newCommentFileInputRef.current?.click()}>
+                      <Paperclip className="w-4 h-4 mr-1" />
+                      {language === 'th' ? 'แนบไฟล์' : 'Attach'}
+                    </Button>
+                    <span className="text-xs text-muted-foreground">
+                      {language === 'th' ? 'Ctrl+Enter เพื่อส่ง' : 'Ctrl+Enter to send'}
+                    </span>
+                  </div>
+                  <Button size="sm" onClick={handleSubmitRemark} disabled={!newComment.trim()}>
                     <Send className="w-4 h-4 mr-1.5" />
                     {language === 'th' ? 'ส่ง' : 'Send'}
                   </Button>
                 </div>
               </div>
             </div>
-          </TabsContent>
-
-          {/* Rework Tab */}
-          <TabsContent value="rework" className="space-y-4 mt-4">
-            {reassignEntryId ? (
-              // Reassign Form
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="text-sm font-medium">
-                    {language === 'th' ? 'มอบหมายงานใหม่' : 'Reassign rework'}
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 text-xs"
-                    onClick={resetReassignForm}
-                  >
-                    {language === 'th' ? 'กลับ' : 'Back'}
-                  </Button>
-                </div>
-
-                {/* Show current reason being reassigned */}
-                {currentReassignEntry && (
-                  <div className="p-2 bg-muted/50 border rounded text-xs">
-                    <span className="text-muted-foreground">{language === 'th' ? 'จาก:' : 'From:'}</span>
-                    <span className="ml-1 font-medium">{getReasonLabel(currentReassignEntry)}</span>
-                    {currentReassignEntry.assignedTo && (
-                      <span className="ml-2 text-muted-foreground">
-                        ({language === 'th' ? 'ผู้รับผิดชอบ:' : 'Owner:'} {currentReassignEntry.assignedTo})
-                      </span>
-                    )}
-                  </div>
-                )}
-                
-                <div className="space-y-2">
-                  <Label className="text-xs">{language === 'th' ? 'เลือกเหตุผลใหม่' : 'Select new reason'}</Label>
-                  <Select value={selectedNewReasonId} onValueChange={setSelectedNewReasonId}>
-                    <SelectTrigger className="w-full h-8 text-xs">
-                      <SelectValue placeholder={language === 'th' ? 'เลือกเหตุผล' : 'Select reason'} />
-                    </SelectTrigger>
-                    <SelectContent className="bg-popover z-50">
-                      {reworkConfigs
-                        .filter((config) => config.id !== currentReassignEntry?.reasonId)
-                        .map((config) => (
-                          <SelectItem key={config.id} value={config.id} className="text-xs">
-                            {language === 'th' ? config.descriptionTh : config.descriptionEn}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-xs">{language === 'th' ? 'รายละเอียด (ไม่บังคับ)' : 'Details (optional)'}</Label>
-                  <Textarea
-                    placeholder={language === 'th' ? 'ใส่รายละเอียดเพิ่มเติม...' : 'Enter detailed reason...'}
-                    value={reassignDetails}
-                    onChange={(e) => setReassignDetails(e.target.value)}
-                    className="min-h-[60px] resize-none text-xs"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-xs">{language === 'th' ? 'ไฟล์แนบ' : 'Attachments'}</Label>
-                  <div className="flex flex-wrap gap-1.5">
-                    {reassignAttachments.map((attachment) => (
-                      <div
-                        key={attachment.id}
-                        className="flex items-center gap-1.5 bg-muted px-2 py-1 rounded text-xs"
-                      >
-                        {attachment.type === 'pdf' ? (
-                          <FileText className="w-3 h-3 text-destructive" />
-                        ) : (
-                          <Image className="w-3 h-3 text-primary" />
-                        )}
-                        <span className="max-w-[80px] truncate">{attachment.name}</span>
-                        <button
-                          type="button"
-                          onClick={() => removeAttachment(attachment.id)}
-                          className="text-muted-foreground hover:text-foreground"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".png,.jpg,.jpeg,.pdf"
-                    multiple
-                    className="hidden"
-                    onChange={handleFileSelect}
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="h-7 text-xs"
-                  >
-                    <Upload className="w-3 h-3 mr-1.5" />
-                    {language === 'th' ? 'แนบไฟล์' : 'Attach files'}
-                  </Button>
-                </div>
-
-                <div className="flex justify-end gap-2 pt-2 border-t">
-                  <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={resetReassignForm}>
-                    {language === 'th' ? 'ยกเลิก' : 'Cancel'}
-                  </Button>
-                  <Button
-                    size="sm"
-                    className="h-7 text-xs"
-                    onClick={handleReassignConfirm}
-                    disabled={!selectedNewReasonId}
-                  >
-                    {language === 'th' ? 'มอบหมายใหม่' : 'Reassign'}
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              // Rework List View
-              <ScrollArea className="h-[350px] pr-4">
-                {/* Active Rework Entries */}
-                {unresolvedEntries.length > 0 && (
-                  <div className="space-y-3 mb-4">
-                    <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                      {language === 'th' ? 'งานติดปัญหาที่ยังไม่แก้ไข' : 'Active Rework Issues'}
-                    </div>
-                    {unresolvedEntries.map((entry) => (
-                      <div key={entry.id} className="p-3 bg-warning/10 border border-warning/30 rounded-lg">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-warning truncate">
-                              {getReasonLabel(entry)}
-                            </p>
-                            {entry.details && (
-                              <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{entry.details}</p>
-                            )}
-                            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-2 text-xs text-muted-foreground">
-                              <span>{language === 'th' ? 'โดย' : 'By'} {entry.savedBy}</span>
-                              <span>•</span>
-                              <span>{entry.savedAt}</span>
-                            </div>
-                            {/* Owner display */}
-                            {entry.assignedTo && (
-                              <div className="flex items-center gap-1 mt-2">
-                                <User className="w-3 h-3 text-primary" />
-                                <span className="text-xs font-medium text-primary">
-                                  {language === 'th' ? 'ผู้รับผิดชอบ:' : 'Owner:'} {entry.assignedTo}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        
-                        {/* Actions for this entry */}
-                        <div className="flex gap-2 mt-3 pt-2 border-t border-warning/20">
-                          <Button
-                            size="sm"
-                            className="flex-1 h-7 text-xs bg-green-600 hover:bg-green-700"
-                            onClick={() => onReworkResolve(entry.id)}
-                          >
-                            <CheckCircle className="w-3 h-3 mr-1" />
-                            {language === 'th' ? 'แก้ไขแล้ว' : 'Resolve'}
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="flex-1 h-7 text-xs"
-                            onClick={() => startReassign(entry.id)}
-                          >
-                            <ArrowRightLeft className="w-3 h-3 mr-1" />
-                            {language === 'th' ? 'มอบหมายใหม่' : 'Reassign'}
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* No Active Rework */}
-                {unresolvedEntries.length === 0 && (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <AlertTriangle className="w-8 h-8 mx-auto mb-2 opacity-30" />
-                    {language === 'th' ? 'ไม่มีงานติดปัญหา' : 'No active rework issues'}
-                  </div>
-                )}
-
-                {/* Resolved Rework History */}
-                {resolvedEntries.length > 0 && (
-                  <div className="space-y-3 mt-4 pt-4 border-t">
-                    <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                      {language === 'th' ? 'ประวัติงานติดปัญหาที่แก้ไขแล้ว' : 'Resolved Rework History'}
-                    </div>
-                    {[...resolvedEntries].reverse().map((entry) => (
-                      <div key={entry.id} className="p-3 bg-muted/30 border border-border rounded-lg opacity-70">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <CheckCircle className="w-3.5 h-3.5 text-green-500" />
-                              <p className="text-sm font-medium text-muted-foreground line-through truncate">
-                                {getReasonLabel(entry)}
-                              </p>
-                            </div>
-                            {entry.details && (
-                              <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{entry.details}</p>
-                            )}
-                            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-2 text-xs text-muted-foreground">
-                              <span>{language === 'th' ? 'แก้ไขโดย' : 'Resolved by'} {entry.resolvedBy}</span>
-                              <span>•</span>
-                              <span>{entry.resolvedAt}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </ScrollArea>
-            )}
-          </TabsContent>
-        </Tabs>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );
