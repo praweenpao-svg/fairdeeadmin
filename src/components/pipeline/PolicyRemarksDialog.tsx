@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { cn } from '@/lib/utils';
 import { PolicyRemark, PolicyHistoryLogEntry } from '@/types/pipeline';
 import { useLanguageStore } from '@/stores/languageStore';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -53,7 +54,15 @@ export function PolicyRemarksDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <MessageSquare className="w-5 h-5" />
-            {policyKind.toUpperCase()} {language === 'th' ? 'หมายเหตุ' : 'Remarks'}
+            <span className={cn(
+              "text-[10px] px-1.5 py-0.5 rounded font-medium",
+              policyKind === 'vmi' 
+                ? "bg-blue-500/20 text-blue-600" 
+                : "bg-purple-500/20 text-purple-600"
+            )}>
+              {policyKind.toUpperCase()}
+            </span>
+            {language === 'th' ? 'หมายเหตุ' : 'Remarks'}
           </DialogTitle>
         </DialogHeader>
 
@@ -99,10 +108,7 @@ export function PolicyRemarksDialog({
                   }
                 }}
               />
-              <div className="flex justify-between items-center">
-                <span className="text-xs text-muted-foreground">
-                  {language === 'th' ? 'Ctrl+Enter เพื่อส่ง' : 'Ctrl+Enter to send'}
-                </span>
+              <div className="flex justify-end items-center">
                 <Button
                   size="sm"
                   onClick={handleSubmit}

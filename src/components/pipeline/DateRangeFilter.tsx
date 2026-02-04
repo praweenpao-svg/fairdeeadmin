@@ -10,6 +10,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { useLanguageStore } from '@/stores/languageStore';
 
 interface DateRangeFilterProps {
   dateRange: DateRange | undefined;
@@ -17,6 +18,8 @@ interface DateRangeFilterProps {
 }
 
 export function DateRangeFilter({ dateRange, onDateRangeChange }: DateRangeFilterProps) {
+  const { language } = useLanguageStore();
+  
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -31,13 +34,13 @@ export function DateRangeFilter({ dateRange, onDateRangeChange }: DateRangeFilte
           {dateRange?.from ? (
             dateRange.to ? (
               <>
-                Created On | {format(dateRange.from, "d MMM")} to {format(dateRange.to, "d MMM")}
+                {language === 'th' ? 'สร้างเมื่อ' : 'Created On'} | {format(dateRange.from, "d MMM")} to {format(dateRange.to, "d MMM")}
               </>
             ) : (
               format(dateRange.from, "d MMM yyyy")
             )
           ) : (
-            <span>Created On</span>
+            <span>{language === 'th' ? 'สร้างเมื่อ' : 'Created On'}</span>
           )}
         </Button>
       </PopoverTrigger>

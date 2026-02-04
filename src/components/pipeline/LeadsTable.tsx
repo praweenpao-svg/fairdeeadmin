@@ -1380,7 +1380,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
               <tr className="border-b border-border">
                 <th className="data-table-header px-4 py-3 text-left">ID</th>
                 <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'ตัวแทน' : 'Agent'}</th>
-                <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'วันที่สร้าง' : 'Created On'}</th>
+                <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'สร้างเมื่อ' : 'Created On'}</th>
                 <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'รายละเอียดรถ' : 'Vehicle details'}</th>
                 {isPostLeadStage && (
                   <>
@@ -1718,13 +1718,13 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                   {language === 'th' ? 'วันที่อัปโหลด' : 'Uploaded On'}
                                 </div>
                                 <div className="w-[100px] text-xs font-semibold text-muted-foreground uppercase tracking-wide shrink-0">
-                                  {language === 'th' ? 'รูปแบบพิมพ์' : 'Print Type'}
+                                  {language === 'th' ? 'รูปแบบการพิมพ์' : 'Print Type'}
                                 </div>
                                 <div className="w-[90px] text-xs font-semibold text-muted-foreground uppercase tracking-wide shrink-0">
                                   {language === 'th' ? 'วันเริ่มคุ้มครอง' : 'Start Date'}
                                 </div>
                                 <div className="w-[90px] text-xs font-semibold text-muted-foreground uppercase tracking-wide shrink-0">
-                                  {language === 'th' ? 'วันสิ้นสุด' : 'End Date'}
+                                  {language === 'th' ? 'วันสิ้นสุดคุ้มครอง' : 'End Date'}
                                 </div>
                                 <div className="w-[110px] text-xs font-semibold text-muted-foreground uppercase tracking-wide shrink-0">
                                   {language === 'th' ? 'เลขกรมธรรม์' : 'Policy No.'}
