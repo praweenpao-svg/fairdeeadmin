@@ -9,7 +9,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
+import { MentionTextarea } from '@/components/ui/mention-textarea';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -20,20 +20,39 @@ import {
 } from '@/components/ui/select';
 import { ReworkAttachment, ReworkConfig } from '@/types/pipeline';
 import { useLanguageStore } from '@/stores/languageStore';
+import { useMentionNotificationsStore, extractMentions } from '@/stores/mentionNotificationsStore';
+import { CURRENT_USER } from '@/data/mockLeads';
 
 interface ReworkDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   reworkConfigs: ReworkConfig[];
   onConfirm: (reasonId: string, details: string, attachments: ReworkAttachment[]) => void;
+  leadNumber?: string; // Sale ID for notification
+  policyKind?: 'vmi' | 'cmi';
 }
 
-export function ReworkDialog({ open, onOpenChange, reworkConfigs, onConfirm }: ReworkDialogProps) {
+export function ReworkDialog({ open, onOpenChange, reworkConfigs, onConfirm, leadNumber, policyKind }: ReworkDialogProps) {
   const { language } = useLanguageStore();
+  const { addNotification } = useMentionNotificationsStore();
   const [selectedReasonId, setSelectedReasonId] = useState<string>('');
   const [details, setDetails] = useState('');
   const [attachments, setAttachments] = useState<ReworkAttachment[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Helper to process mentions and create notifications
+  const processMentions = (comment: string) => {
+    const mentions = extractMentions(comment);
+    mentions.forEach(() => {
+      addNotification({
+        saleId: leadNumber || 'Unknown',
+        comment: comment,
+        mentionedBy: CURRENT_USER,
+        mentionedAt: new Date().toISOString(),
+        policyKind: policyKind,
+      });
+    });
+  };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -64,6 +83,10 @@ export function ReworkDialog({ open, onOpenChange, reworkConfigs, onConfirm }: R
 
   const handleConfirm = () => {
     if (!selectedReasonId) return;
+    // Process mentions in details before confirming
+    if (details.trim()) {
+      processMentions(details.trim());
+    }
     onConfirm(selectedReasonId, details, attachments);
     setSelectedReasonId('');
     setDetails('');
@@ -107,11 +130,10 @@ export function ReworkDialog({ open, onOpenChange, reworkConfigs, onConfirm }: R
 
           <div className="space-y-2">
             <Label htmlFor="details">{language === 'th' ? 'รายละเอียดเพิ่มเติม' : 'Rework reason details'}</Label>
-            <Textarea
-              id="details"
-              placeholder={language === 'th' ? 'ใส่รายละเอียดเพิ่มเติม...' : 'Enter detailed reason for rework...'}
+            <MentionTextarea
+              placeholder={language === 'th' ? 'ใส่รายละเอียดเพิ่มเติม... (พิมพ์ @ เพื่อ tag คน)' : 'Enter detailed reason for rework... (type @ to tag someone)'}
               value={details}
-              onChange={(e) => setDetails(e.target.value)}
+              onChange={setDetails}
               className="min-h-[120px] resize-none"
             />
           </div>

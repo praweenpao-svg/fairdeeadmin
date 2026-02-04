@@ -247,12 +247,14 @@ function getPolicyOwner(policy: PolicyRecord, lead: Lead, stage: PipelineStage):
   // Check for active rework assignment on this policy
   if (policy.status === 'rework_required' && policy.reworkHistory) {
     const activeRework = policy.reworkHistory.find(e => !e.resolved);
-    if (activeRework?.assignedTo) {
-      return activeRework.assignedTo;
+    if (activeRework) {
+      // If rework has explicit assignedTo, use it
+      // If no assignedTo, this policy is considered unassigned (no owner)
+      return activeRework.assignedTo || undefined;
     }
   }
   
-  // Default stage-based owner
+  // Default stage-based owner (only for non-rework policies)
   switch (stage) {
     case 'all':
       return lead.deAssignee || lead.scAssignee || lead.rfAssignee;

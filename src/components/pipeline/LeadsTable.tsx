@@ -2078,10 +2078,17 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
           setReworkDialogOpen(open);
           if (!open) {
             setSelectedLead(null);
+            setSelectedPolicyId(null);
           }
         }}
         reworkConfigs={stageReworkConfigs}
         onConfirm={handleReworkConfirm}
+        leadNumber={selectedLead?.leadNumber}
+        policyKind={(() => {
+          if (!selectedLead || !selectedPolicyId) return undefined;
+          const policy = selectedLead.policyRecords?.find(p => p.id === selectedPolicyId);
+          return policy?.kind;
+        })()}
       />
 
       {/* History Log Dialog */}
