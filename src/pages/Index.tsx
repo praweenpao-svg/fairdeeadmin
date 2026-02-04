@@ -140,10 +140,18 @@ const Index = () => {
         {/* Filters Row */}
         <div className="flex flex-wrap items-center gap-3 mb-6">
           {/* Search */}
+          {/* Lead Sub-tabs for Leads stage - moved before search */}
+          {activeStage === 'to_convert' && (
+            <LeadSubTabs
+              activeSubTab={leadSubTab}
+              onSubTabChange={setLeadSubTab}
+            />
+          )}
+
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder={language === 'th' ? 'ค้นหา...' : 'Search leads...'}
+              placeholder={language === 'th' ? 'ค้นหา' : 'Search'}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 w-[200px]"
@@ -188,14 +196,6 @@ const Index = () => {
               filters={toPayFilters}
               onRemoveDateRange={handleRemoveDateRange}
               onRemoveFilter={handleRemoveToPayFilter}
-            />
-          )}
-          
-          {/* Lead Sub-tabs for Leads stage */}
-          {activeStage === 'to_convert' && (
-            <LeadSubTabs
-              activeSubTab={leadSubTab}
-              onSubTabChange={setLeadSubTab}
             />
           )}
         </div>

@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/select';
 import { mockStaffMembers } from '@/data/mockStaff';
 import { SaleStatus } from '@/types/pipeline';
+import { useLanguageStore } from '@/stores/languageStore';
 
 export type SortField = 'createdOn' | 'updatedOn';
 export type SortDirection = 'asc' | 'desc';
@@ -124,6 +125,7 @@ interface AllFiltersPanelProps {
 }
 
 export function AllFiltersPanel({ stage, filters, onFiltersChange, onClear }: AllFiltersPanelProps) {
+  const { language } = useLanguageStore();
   const [open, setOpen] = React.useState(false);
   const [localFilters, setLocalFilters] = React.useState<FilterState>(filters);
 
@@ -177,7 +179,7 @@ export function AllFiltersPanel({ stage, filters, onFiltersChange, onClear }: Al
       <PopoverTrigger asChild>
         <Button variant="outline" className="gap-2">
           <Filter className="w-4 h-4" />
-          All Filters
+          {language === 'th' ? 'ตัวกรองทั้งหมด' : 'All Filters'}
           {hasActiveFilters && (
             <span className="ml-1 px-1.5 py-0.5 text-xs bg-primary text-primary-foreground rounded-full">
               !
