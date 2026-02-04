@@ -1,17 +1,12 @@
 import { 
-  FileText, 
-  Image, 
   Clock, 
   User, 
   ArrowRight,
-  CirclePlus,
-  CheckCircle,
-  RefreshCw,
-  UserPlus,
-  CreditCard,
-  Truck,
-  FileCheck,
   History,
+  CreditCard,
+  UserPlus,
+  RefreshCw,
+  FileCheck,
 } from 'lucide-react';
 import {
   Dialog,
@@ -21,7 +16,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { HistoryLogEntry, HistoryActionType, HistoryAttachment } from '@/types/pipeline';
+import { PolicyRecord, PolicyHistoryLogEntry, Lead } from '@/types/pipeline';
 import { cn } from '@/lib/utils';
 import { useLanguageStore } from '@/stores/languageStore';
 
@@ -29,215 +24,301 @@ interface HistoryLogDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   leadNumber: string;
-  historyLog: HistoryLogEntry[];
+  lead: Lead;
 }
 
-// Action type configuration for display
-const actionConfig: Record<HistoryActionType, { 
-  label: { en: string; th: string }; 
-  icon: typeof Clock; 
-  color: string;
-  bgColor: string;
-}> = {
-  lead_created: { 
-    label: { en: 'Lead Created', th: 'สร้างงานใหม่' }, 
-    icon: CirclePlus, 
-    color: 'text-green-600',
-    bgColor: 'bg-green-100 dark:bg-green-900/30',
-  },
-  status_changed: { 
-    label: { en: 'Status Changed', th: 'เปลี่ยนสถานะ' }, 
-    icon: RefreshCw, 
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-100 dark:bg-blue-900/30',
-  },
-  rework_created: { 
-    label: { en: 'Rework Created', th: 'สร้างงานติดปัญหา' }, 
-    icon: RefreshCw, 
-    color: 'text-orange-600',
-    bgColor: 'bg-orange-100 dark:bg-orange-900/30',
-  },
-  rework_resolved: { 
-    label: { en: 'Rework Resolved', th: 'แก้ไขงานติดปัญหาแล้ว' }, 
-    icon: CheckCircle, 
-    color: 'text-green-600',
-    bgColor: 'bg-green-100 dark:bg-green-900/30',
-  },
-  rework_reassigned: { 
-    label: { en: 'Rework Reassigned', th: 'มอบหมายงานติดปัญหาใหม่' }, 
-    icon: RefreshCw, 
-    color: 'text-purple-600',
-    bgColor: 'bg-purple-100 dark:bg-purple-900/30',
-  },
-  assignee_changed: { 
-    label: { en: 'Assignee Changed', th: 'เปลี่ยนผู้รับผิดชอบ' }, 
-    icon: UserPlus, 
-    color: 'text-indigo-600',
-    bgColor: 'bg-indigo-100 dark:bg-indigo-900/30',
-  },
-  payment_status_changed: { 
-    label: { en: 'Payment Updated', th: 'อัพเดทการชำระเงิน' }, 
-    icon: CreditCard, 
-    color: 'text-emerald-600',
-    bgColor: 'bg-emerald-100 dark:bg-emerald-900/30',
-  },
-  rf_status_changed: { 
-    label: { en: 'RF Status Changed', th: 'เปลี่ยนสถานะ RF' }, 
-    icon: RefreshCw, 
-    color: 'text-cyan-600',
-    bgColor: 'bg-cyan-100 dark:bg-cyan-900/30',
-  },
-  sc_status_changed: { 
-    label: { en: 'SC Status Changed', th: 'เปลี่ยนสถานะ SC' }, 
-    icon: RefreshCw, 
-    color: 'text-teal-600',
-    bgColor: 'bg-teal-100 dark:bg-teal-900/30',
-  },
-  policy_attached: { 
-    label: { en: 'Policy Attached', th: 'แนบกรมธรรม์' }, 
-    icon: FileCheck, 
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-100 dark:bg-blue-900/30',
-  },
-  shipping_updated: { 
-    label: { en: 'Shipping Updated', th: 'อัพเดทการจัดส่ง' }, 
-    icon: Truck, 
-    color: 'text-amber-600',
-    bgColor: 'bg-amber-100 dark:bg-amber-900/30',
-  },
-};
+// Types of history entries we want to show
+type DisplayableAction = 'status_changed' | 'payment_status_changed' | 'endorsement_status_changed' | 'assignee_changed';
 
-// Status translations for history log
+// Status translations
 const statusTranslations: Record<string, { en: string; th: string }> = {
-  pending: { en: 'Pending', th: 'รอดำเนินการ' },
-  docs_missing: { en: 'Docs Missing', th: 'ขอเอกสารเพิ่มเติม' },
-  waiting_for_insurer: { en: 'Waiting for Insurer', th: 'รอเบี้ยจากบริษัทประกัน' },
-  partially_added: { en: 'Partially Added', th: 'มีเบี้ยบางส่วนแล้ว' },
-  completed: { en: 'Completed', th: 'เสร็จแล้ว' },
-  quotation_shared: { en: 'Quotation Shared', th: 'ส่งเบี้ยให้ตัวแทนแล้ว' },
-  invalid: { en: 'Invalid', th: 'ปฎิเสธโดย Admin' },
-  price_pending: { en: 'Price Pending', th: 'ยังไม่ทราบเบี้ยต่ออายุ' },
-  revision_pending: { en: 'Revision Pending', th: 'กำลังต่อรองกับบริษัทประกัน' },
-  renewal_rejected: { en: 'Renewal Rejected', th: 'ปฎิเสธการต่ออายุ' },
-  price_ready: { en: 'Price Ready', th: 'ได้รับเบี้ยต่ออายุแล้ว' },
-  pending_payment: { en: 'Pending', th: 'รอชำระเงิน' },
+  // Policy statuses
+  pending_payment: { en: 'Pending Payment', th: 'รอชำระเงิน' },
   pending_review: { en: 'Pending Review', th: 'รอตรวจเอกสาร' },
-  under_review: { en: 'Under Review', th: 'กำลังตรวจเอกสาร' },
-  de_in_progress: { en: 'DE in Progress', th: 'DE กำลังดำเนินการ' },
-  ready_for_de: { en: 'Ready for DE', th: 'พร้อมส่ง DE' },
   pending_issuance: { en: 'Pending Issuance', th: 'รอออกกรมธรรม์' },
   policy_issued: { en: 'Policy Issued', th: 'กรมธรรม์ออกแล้ว' },
   policy_shipped: { en: 'Policy Shipped', th: 'กรมธรรม์ถูกจัดส่ง' },
   policy_delivered: { en: 'Policy Delivered', th: 'กรมธรรม์จัดส่งสำเร็จ' },
   policy_cancelled: { en: 'Policy Cancelled', th: 'กรมธรรม์ยกเลิก' },
+  rework_required: { en: 'Rework Required', th: 'ต้องแก้ไข' },
+  // Payment statuses
   unpaid: { en: 'Unpaid', th: 'ยังไม่ชำระ' },
   paid: { en: 'Paid', th: 'ชำระแล้ว' },
   partial: { en: 'Partial', th: 'ชำระบางส่วน' },
-  transferred: { en: 'Transferred', th: 'โอนแล้ว' },
-  claimed: { en: 'Claimed', th: 'รับงานแล้ว' },
+  // Endorsement statuses
+  request_created: { en: 'Request Created', th: 'สร้างคำขอ' },
+  request_submitted: { en: 'Request Submitted', th: 'ส่งคำขอแล้ว' },
+  request_approved: { en: 'Request Approved', th: 'คำขออนุมัติแล้ว' },
+  pending_on_ops: { en: 'Pending on OPS', th: 'รอ OPS' },
+  pending_finance: { en: 'Pending Finance', th: 'รอการเงิน' },
+  invalid: { en: 'Invalid', th: 'ไม่ถูกต้อง' },
 };
 
-// Format status label for display with language support
 function formatStatusLabel(status: string, language: 'en' | 'th'): string {
   const translation = statusTranslations[status];
-  if (translation) {
-    return translation[language];
-  }
-  // Fallback: format the status key
-  return status
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, l => l.toUpperCase());
+  if (translation) return translation[language];
+  return status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 }
 
-// Rework reason translations
-const reworkReasonTranslations: Record<string, { en: string; th: string }> = {
-  '1': { en: 'Missing Documents', th: 'เอกสารไม่ครบ' },
-  '2': { en: 'Pending Confirmation', th: 'รอยืนยันข้อมูล' },
-  '3': { en: 'Pending Verification', th: 'รอตรวจสอบ' },
-  '4': { en: 'Pending Initial Payment', th: 'รองวดแรก' },
-  '5': { en: 'Pre-submission: Return to AST', th: 'ตีกลับก่อนแจ้งงาน' },
-  '6': { en: 'Reverted by Insurer', th: 'บ.ประกันตีกลับ' },
-  '7': { en: 'Rejected by Insurer', th: 'บ.ประกันปฎิเสธ' },
-  '8': { en: 'Pending Re-submission', th: 'รอแจ้งงานอีกครั้ง' },
-  '9': { en: 'Return to OPS', th: 'ตีกลับให้ OPS' },
-  '10': { en: 'Submitted to Insurer: Under Review', th: 'แจ้งประกันแล้ว รอพิจารณา' },
-  '11': { en: 'Pending Cancellation: Awaiting Documents', th: 'รอแจ้งประกันยกเลิก รอเอกสาร' },
-  '12': { en: 'Pending Cancellation: Documents Complete', th: 'รอแจ้งประกันยกเลิก เอกสารครบ' },
-};
-
-// Get translated rework reason
-function getReworkReasonLabel(reasonId: string | undefined, fallbackLabel: string | undefined, language: 'en' | 'th'): string {
-  if (reasonId && reworkReasonTranslations[reasonId]) {
-    return reworkReasonTranslations[reasonId][language];
-  }
-  return fallbackLabel || 'Unknown';
-}
-
-// Format assignee type label
 function formatAssigneeType(type: string, language: 'en' | 'th'): string {
   const labels: Record<string, { en: string; th: string }> = {
-    rf: { en: 'RF Assignee', th: 'ผู้รับผิดชอบ RF' },
-    sc: { en: 'SC Assignee', th: 'ผู้รับผิดชอบ SC' },
-    de: { en: 'DE Assignee', th: 'ผู้รับผิดชอบ DE' },
-    owner: { en: 'Owner', th: 'ผู้รับผิดชอบ' },
+    rf: { en: 'RF', th: 'RF' },
+    sc: { en: 'SC', th: 'SC' },
+    de: { en: 'DE', th: 'DE' },
   };
   return labels[type]?.[language] || type.toUpperCase();
 }
 
-// Action description component with language support
-function ActionDescription({ entry, language }: { entry: HistoryLogEntry; language: 'en' | 'th' }) {
-  switch (entry.action) {
-    case 'lead_created':
-      return <span className="text-muted-foreground">{language === 'th' ? 'สร้างงานใหม่' : 'Lead was created'}</span>;
-    
+// Unified timeline entry for display
+interface TimelineEntry {
+  id: string;
+  timestamp: string;
+  action: DisplayableAction;
+  triggeredBy: string;
+  fromStatus?: string;
+  toStatus?: string;
+  assigneeType?: string;
+  fromAssignee?: string;
+  toAssignee?: string;
+  policyKind?: 'vmi' | 'cmi'; // undefined means it applies to the whole sale
+}
+
+// Get icon and colors for action type
+function getActionConfig(action: DisplayableAction) {
+  switch (action) {
     case 'status_changed':
-      return (
+      return { icon: RefreshCw, color: 'text-blue-600', bgColor: 'bg-blue-100 dark:bg-blue-900/30' };
+    case 'payment_status_changed':
+      return { icon: CreditCard, color: 'text-emerald-600', bgColor: 'bg-emerald-100 dark:bg-emerald-900/30' };
+    case 'endorsement_status_changed':
+      return { icon: FileCheck, color: 'text-purple-600', bgColor: 'bg-purple-100 dark:bg-purple-900/30' };
+    case 'assignee_changed':
+      return { icon: UserPlus, color: 'text-indigo-600', bgColor: 'bg-indigo-100 dark:bg-indigo-900/30' };
+  }
+}
+
+function getActionLabel(action: DisplayableAction, language: 'en' | 'th'): string {
+  const labels: Record<DisplayableAction, { en: string; th: string }> = {
+    status_changed: { en: 'Status Changed', th: 'เปลี่ยนสถานะ' },
+    payment_status_changed: { en: 'Payment Updated', th: 'อัพเดทการชำระเงิน' },
+    endorsement_status_changed: { en: 'Endorsement Updated', th: 'อัพเดทเอกสารแนบท้าย' },
+    assignee_changed: { en: 'Assignee Changed', th: 'เปลี่ยนผู้รับผิดชอบ' },
+  };
+  return labels[action][language];
+}
+
+// Extract timeline entries from a policy's history log
+function extractPolicyTimeline(policy: PolicyRecord): TimelineEntry[] {
+  const entries: TimelineEntry[] = [];
+  const historyLog = policy.historyLog || [];
+  
+  for (const entry of historyLog) {
+    // Only include displayable actions (exclude rework-related)
+    if (entry.action === 'status_changed' || entry.action === 'remark_added') {
+      if (entry.action === 'status_changed') {
+        entries.push({
+          id: entry.id,
+          timestamp: entry.triggeredAt,
+          action: 'status_changed',
+          triggeredBy: entry.triggeredBy,
+          fromStatus: entry.fromStatus,
+          toStatus: entry.toStatus,
+          policyKind: policy.kind,
+        });
+      }
+    }
+  }
+  
+  return entries;
+}
+
+// Build unified timeline from lead data
+function buildTimeline(lead: Lead): TimelineEntry[] {
+  const entries: TimelineEntry[] = [];
+  const vmiPolicy = lead.policyRecords?.find(p => p.kind === 'vmi');
+  const cmiPolicy = lead.policyRecords?.find(p => p.kind === 'cmi');
+  
+  // Add VMI history
+  if (vmiPolicy) {
+    entries.push(...extractPolicyTimeline(vmiPolicy));
+  }
+  
+  // Add CMI history
+  if (cmiPolicy) {
+    entries.push(...extractPolicyTimeline(cmiPolicy));
+  }
+  
+  // Add lead-level assignee changes (RF/SC/DE)
+  const leadHistory = lead.historyLog || [];
+  for (const entry of leadHistory) {
+    if (entry.action === 'assignee_changed' && entry.assigneeType) {
+      entries.push({
+        id: entry.id,
+        timestamp: entry.triggeredAt,
+        action: 'assignee_changed',
+        triggeredBy: entry.triggeredBy,
+        assigneeType: entry.assigneeType,
+        fromAssignee: entry.fromAssignee,
+        toAssignee: entry.toAssignee,
+        policyKind: undefined, // Applies to whole sale
+      });
+    }
+    
+    // Add payment status changes
+    if (entry.action === 'payment_status_changed') {
+      entries.push({
+        id: entry.id,
+        timestamp: entry.triggeredAt,
+        action: 'payment_status_changed',
+        triggeredBy: entry.triggeredBy,
+        fromStatus: entry.fromStatus,
+        toStatus: entry.toStatus,
+        policyKind: undefined, // Applies to whole sale
+      });
+    }
+  }
+  
+  // Sort by timestamp (oldest first)
+  entries.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+  
+  return entries;
+}
+
+// Group entries by timestamp for merging
+interface TimelineRow {
+  timestamp: string;
+  vmiEntry?: TimelineEntry;
+  cmiEntry?: TimelineEntry;
+  sharedEntry?: TimelineEntry; // For entries that apply to both or are merged
+}
+
+function buildTimelineRows(entries: TimelineEntry[], hasVmi: boolean, hasCmi: boolean): TimelineRow[] {
+  const rows: TimelineRow[] = [];
+  const timestampGroups = new Map<string, TimelineEntry[]>();
+  
+  // Group by timestamp
+  for (const entry of entries) {
+    const existing = timestampGroups.get(entry.timestamp) || [];
+    existing.push(entry);
+    timestampGroups.set(entry.timestamp, existing);
+  }
+  
+  // Process each timestamp group
+  const sortedTimestamps = Array.from(timestampGroups.keys()).sort(
+    (a, b) => new Date(a).getTime() - new Date(b).getTime()
+  );
+  
+  for (const timestamp of sortedTimestamps) {
+    const group = timestampGroups.get(timestamp)!;
+    const row: TimelineRow = { timestamp };
+    
+    // Check if entries should be merged (same action, same from/to status, same time)
+    const vmiEntries = group.filter(e => e.policyKind === 'vmi');
+    const cmiEntries = group.filter(e => e.policyKind === 'cmi');
+    const sharedEntries = group.filter(e => e.policyKind === undefined);
+    
+    // If there's a shared entry (payment, assignee), it spans both columns
+    if (sharedEntries.length > 0) {
+      row.sharedEntry = sharedEntries[0];
+    }
+    // Check if VMI and CMI have matching entries (merge them)
+    else if (vmiEntries.length > 0 && cmiEntries.length > 0) {
+      const vmi = vmiEntries[0];
+      const cmi = cmiEntries[0];
+      
+      // If both have same action and same status transition, merge
+      if (vmi.action === cmi.action && 
+          vmi.fromStatus === cmi.fromStatus && 
+          vmi.toStatus === cmi.toStatus) {
+        row.sharedEntry = { ...vmi, policyKind: undefined };
+      } else {
+        row.vmiEntry = vmi;
+        row.cmiEntry = cmi;
+      }
+    }
+    // Only VMI entry
+    else if (vmiEntries.length > 0) {
+      row.vmiEntry = vmiEntries[0];
+    }
+    // Only CMI entry
+    else if (cmiEntries.length > 0) {
+      row.cmiEntry = cmiEntries[0];
+    }
+    
+    rows.push(row);
+  }
+  
+  return rows;
+}
+
+// Timeline entry card component
+function EntryCard({ 
+  entry, 
+  language,
+  isFirst,
+}: { 
+  entry: TimelineEntry; 
+  language: 'en' | 'th';
+  isFirst?: boolean;
+}) {
+  const config = getActionConfig(entry.action);
+  const Icon = config.icon;
+  
+  return (
+    <div className={cn(
+      "rounded-lg border p-3 space-y-2",
+      isFirst && "border-primary/30 bg-primary/5"
+    )}>
+      {/* Action badge */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className={cn(
+          "text-xs font-semibold px-2 py-0.5 rounded flex items-center gap-1",
+          config.bgColor,
+          config.color
+        )}>
+          <Icon className="w-3 h-3" />
+          {getActionLabel(entry.action, language)}
+        </span>
+      </div>
+      
+      {/* Content based on action type */}
+      {entry.action === 'status_changed' && (
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-xs px-2 py-0.5 rounded bg-muted">
-            {formatStatusLabel(entry.fromStatus || 'Unknown', language)}
+            {formatStatusLabel(entry.fromStatus || '', language)}
           </span>
           <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
           <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary font-medium">
-            {formatStatusLabel(entry.toStatus || 'Unknown', language)}
+            {formatStatusLabel(entry.toStatus || '', language)}
           </span>
         </div>
-      );
-    
-    case 'rework_created':
-      return (
-        <div className="flex flex-col gap-1">
-          <span className="text-xs font-medium text-orange-600 dark:text-orange-400">
-            {language === 'th' ? 'เหตุผล:' : 'Reason:'} {getReworkReasonLabel(entry.reworkReasonId, entry.reworkReasonLabel, language)}
+      )}
+      
+      {entry.action === 'payment_status_changed' && (
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs px-2 py-0.5 rounded bg-muted">
+            {formatStatusLabel(entry.fromStatus || '', language)}
+          </span>
+          <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
+          <span className="text-xs px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-medium">
+            {formatStatusLabel(entry.toStatus || '', language)}
           </span>
         </div>
-      );
-    
-    case 'rework_resolved':
-      return (
-        <div className="flex items-center gap-2">
-          <CheckCircle className="w-3.5 h-3.5 text-green-600" />
-          <span className="text-xs text-green-600 dark:text-green-400">
-            {language === 'th' ? 'แก้ไขแล้ว:' : 'Resolved:'} {getReworkReasonLabel(entry.reworkReasonId, entry.reworkReasonLabel, language)}
+      )}
+      
+      {entry.action === 'endorsement_status_changed' && (
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs px-2 py-0.5 rounded bg-muted">
+            {formatStatusLabel(entry.fromStatus || '', language)}
+          </span>
+          <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
+          <span className="text-xs px-2 py-0.5 rounded bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 font-medium">
+            {formatStatusLabel(entry.toStatus || '', language)}
           </span>
         </div>
-      );
-    
-    case 'rework_reassigned':
-      return (
-        <div className="flex flex-col gap-1">
-          <span className="text-xs text-purple-600 dark:text-purple-400">
-            {language === 'th' ? 'เหตุผลใหม่:' : 'New Reason:'} {getReworkReasonLabel(entry.reworkReasonId, entry.reworkReasonLabel, language)}
-          </span>
-          {entry.toAssignee && (
-            <span className="text-xs text-muted-foreground">
-              {language === 'th' ? 'มอบหมายให้:' : 'Assigned to:'} {entry.toAssignee}
-            </span>
-          )}
-        </div>
-      );
-    
-    case 'assignee_changed':
-      return (
+      )}
+      
+      {entry.action === 'assignee_changed' && (
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-xs text-muted-foreground">
             {formatAssigneeType(entry.assigneeType || '', language)}:
@@ -250,72 +331,13 @@ function ActionDescription({ entry, language }: { entry: HistoryLogEntry; langua
             {entry.toAssignee || (language === 'th' ? 'ยังไม่มอบหมาย' : 'Unassigned')}
           </span>
         </div>
-      );
-    
-    case 'payment_status_changed':
-      return (
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs px-2 py-0.5 rounded bg-muted">
-            {formatStatusLabel(entry.fromStatus || 'Unknown', language)}
-          </span>
-          <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
-          <span className="text-xs px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-medium">
-            {formatStatusLabel(entry.toStatus || 'Unknown', language)}
-          </span>
-        </div>
-      );
-    
-    case 'rf_status_changed':
-    case 'sc_status_changed':
-      return (
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs px-2 py-0.5 rounded bg-muted">
-            {formatStatusLabel(entry.fromStatus || 'Unknown', language)}
-          </span>
-          <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
-          <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary font-medium">
-            {formatStatusLabel(entry.toStatus || 'Unknown', language)}
-          </span>
-        </div>
-      );
-    
-    case 'policy_attached':
-      return <span className="text-muted-foreground">{language === 'th' ? 'แนบกรมธรรม์แล้ว' : 'Policy document was attached'}</span>;
-    
-    case 'shipping_updated':
-      return (
-        <span className="text-muted-foreground">
-          {language === 'th' ? 'อัพเดทการจัดส่ง:' : 'Shipping updated:'} {formatStatusLabel(entry.toStatus || '', language)}
-        </span>
-      );
-    
-    default:
-      return null;
-  }
-}
-
-// Render attachments
-function AttachmentsList({ attachments }: { attachments: HistoryAttachment[] }) {
-  if (!attachments || attachments.length === 0) return null;
-  
-  return (
-    <div className="flex flex-wrap gap-2 mt-2">
-      {attachments.map((attachment) => (
-        <a
-          key={attachment.id}
-          href={attachment.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-2 bg-muted px-2.5 py-1.5 rounded text-xs hover:bg-muted/80 transition-colors"
-        >
-          {attachment.type === 'pdf' ? (
-            <FileText className="w-3.5 h-3.5 text-destructive" />
-          ) : (
-            <Image className="w-3.5 h-3.5 text-primary" />
-          )}
-          <span className="max-w-[100px] truncate">{attachment.name}</span>
-        </a>
-      ))}
+      )}
+      
+      {/* Triggered by */}
+      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <User className="w-3 h-3" />
+        <span>{language === 'th' ? 'โดย' : 'By'} {entry.triggeredBy}</span>
+      </div>
     </div>
   );
 }
@@ -324,20 +346,19 @@ export function HistoryLogDialog({
   open, 
   onOpenChange, 
   leadNumber, 
-  historyLog,
+  lead,
 }: HistoryLogDialogProps) {
   const { language } = useLanguageStore();
-
-  // Filter out rework-related entries (now tracked in Remarks dialog) and sort by date
-  const reworkActions: HistoryActionType[] = ['rework_created', 'rework_resolved', 'rework_reassigned'];
-  const filteredLog = historyLog.filter(entry => !reworkActions.includes(entry.action));
   
-  // Sort entries by date (oldest first - Previous -> Latest timeline)
-  const sortedLog = [...filteredLog].sort((a, b) => {
-    return new Date(a.triggeredAt).getTime() - new Date(b.triggeredAt).getTime();
-  });
-
-  if (filteredLog.length === 0) {
+  const hasVmi = lead.policyRecords?.some(p => p.kind === 'vmi') || false;
+  const hasCmi = lead.policyRecords?.some(p => p.kind === 'cmi') || false;
+  const isTwoColumn = hasVmi && hasCmi;
+  
+  // Build timeline
+  const entries = buildTimeline(lead);
+  const rows = buildTimelineRows(entries, hasVmi, hasCmi);
+  
+  if (rows.length === 0) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-[500px]">
@@ -360,89 +381,101 @@ export function HistoryLogDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[85vh]">
+      <DialogContent className={cn(
+        "max-h-[85vh]",
+        isTwoColumn ? "sm:max-w-[800px]" : "sm:max-w-[500px]"
+      )}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <History className="w-5 h-5" />
             {language === 'th' ? 'ประวัติการทำงาน' : 'History Log'}
           </DialogTitle>
           <DialogDescription>
-            {language === 'th' ? 'งาน' : 'Lead'} {leadNumber} — {filteredLog.length} {filteredLog.length === 1 ? (language === 'th' ? 'รายการ' : 'event') : (language === 'th' ? 'รายการ' : 'events')}
+            {language === 'th' ? 'งาน' : 'Lead'} {leadNumber} — {rows.length} {rows.length === 1 ? (language === 'th' ? 'รายการ' : 'event') : (language === 'th' ? 'รายการ' : 'events')}
           </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="max-h-[60vh] pr-4">
-          <div className="relative">
-            {/* Timeline line */}
-            <div className="absolute left-5 top-0 bottom-0 w-0.5 bg-border" />
-
-            {/* Timeline entries */}
-            <div className="space-y-4">
-              {sortedLog.map((entry, index) => {
-                const config = actionConfig[entry.action];
-                const Icon = config.icon;
-                
+        <ScrollArea className="max-h-[60vh]">
+          {/* Column headers for two-column layout */}
+          {isTwoColumn && (
+            <div className="grid grid-cols-[80px_1fr_1fr] gap-3 mb-3 sticky top-0 bg-background pb-2 border-b">
+              <div className="text-xs font-medium text-muted-foreground">
+                {language === 'th' ? 'เวลา' : 'Time'}
+              </div>
+              <div className="text-xs font-semibold text-center px-2 py-1 rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
+                VMI
+              </div>
+              <div className="text-xs font-semibold text-center px-2 py-1 rounded bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">
+                CMI
+              </div>
+            </div>
+          )}
+          
+          {/* Timeline rows */}
+          <div className="space-y-3 pr-4">
+            {rows.map((row, index) => {
+              const isFirst = index === rows.length - 1; // Most recent is last after sort
+              
+              // Format timestamp for display
+              const formattedTime = row.timestamp.split(' ')[1] || row.timestamp;
+              const formattedDate = row.timestamp.split(' ')[0] || '';
+              
+              if (isTwoColumn) {
                 return (
-                  <div key={entry.id} className="relative pl-12">
-                    {/* Timeline dot */}
-                    <div 
-                      className={cn(
-                        "absolute left-2.5 w-5 h-5 rounded-full flex items-center justify-center",
-                        config.bgColor
-                      )}
-                    >
-                      <Icon className={cn("w-3 h-3", config.color)} />
+                  <div key={row.timestamp + index} className="grid grid-cols-[80px_1fr_1fr] gap-3 items-start">
+                    {/* Timestamp column */}
+                    <div className="text-xs text-muted-foreground pt-3">
+                      <div className="font-medium">{formattedTime}</div>
+                      <div className="text-[10px]">{formattedDate}</div>
                     </div>
                     
-                    {/* Entry card */}
-                    <div 
-                      className={cn(
-                        "rounded-lg border p-3 space-y-2",
-                        index === 0 && "border-primary/30 bg-primary/5"
+                    {/* VMI column */}
+                    <div>
+                      {row.sharedEntry ? (
+                        <EntryCard entry={row.sharedEntry} language={language} isFirst={isFirst} />
+                      ) : row.vmiEntry ? (
+                        <EntryCard entry={row.vmiEntry} language={language} isFirst={isFirst} />
+                      ) : (
+                        <div className="h-full" />
                       )}
-                    >
-                      {/* Header */}
-                      <div className="flex items-start justify-between gap-2">
-                        <span className={cn(
-                          "text-xs font-semibold px-2 py-0.5 rounded",
-                          config.bgColor,
-                          config.color
-                        )}>
-                          {config.label[language]}
-                        </span>
-                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
-                          <Clock className="w-3 h-3" />
-                          <span>{entry.triggeredAt}</span>
-                        </div>
-                      </div>
-
-                      {/* Triggered by */}
-                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <User className="w-3 h-3" />
-                        <span>{language === 'th' ? 'โดย' : 'By'} {entry.triggeredBy}</span>
-                      </div>
-
-                      {/* Action description */}
-                      <div className="text-sm">
-                        <ActionDescription entry={entry} language={language} />
-                      </div>
-
-                      {/* Comment */}
-                      {entry.comment && (
-                        <div className="bg-muted/50 rounded-md p-2.5 text-xs text-muted-foreground">
-                          {entry.comment}
-                        </div>
-                      )}
-
-                      {/* Attachments */}
-                      {entry.attachments && entry.attachments.length > 0 && (
-                        <AttachmentsList attachments={entry.attachments} />
+                    </div>
+                    
+                    {/* CMI column */}
+                    <div>
+                      {row.sharedEntry ? (
+                        <EntryCard entry={row.sharedEntry} language={language} isFirst={isFirst} />
+                      ) : row.cmiEntry ? (
+                        <EntryCard entry={row.cmiEntry} language={language} isFirst={isFirst} />
+                      ) : (
+                        <div className="h-full" />
                       )}
                     </div>
                   </div>
                 );
-              })}
-            </div>
+              }
+              
+              // Single column layout (VMI only)
+              const entry = row.sharedEntry || row.vmiEntry || row.cmiEntry;
+              if (!entry) return null;
+              
+              return (
+                <div key={row.timestamp + index} className="flex gap-3 items-start">
+                  {/* Timestamp */}
+                  <div className="w-20 shrink-0 text-xs text-muted-foreground pt-3">
+                    <div className="flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      <span className="font-medium">{formattedTime}</span>
+                    </div>
+                    <div className="text-[10px] ml-4">{formattedDate}</div>
+                  </div>
+                  
+                  {/* Entry */}
+                  <div className="flex-1">
+                    <EntryCard entry={entry} language={language} isFirst={isFirst} />
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </ScrollArea>
       </DialogContent>

@@ -1670,10 +1670,12 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                               <Eye className="w-4 h-4 mr-2" />
                               {language === 'th' ? 'ดูรายละเอียด' : 'View Details'}
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleOpenHistoryLog(lead)}>
-                              <History className="w-4 h-4 mr-2" />
-                              {language === 'th' ? 'ประวัติการทำงาน' : 'History Log'}
-                            </DropdownMenuItem>
+                            {stage !== 'to_convert' && (
+                              <DropdownMenuItem onClick={() => handleOpenHistoryLog(lead)}>
+                                <History className="w-4 h-4 mr-2" />
+                                {language === 'th' ? 'ประวัติการทำงาน' : 'History Log'}
+                              </DropdownMenuItem>
+                            )}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </td>
@@ -2053,17 +2055,19 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
       />
 
       {/* History Log Dialog */}
-      <HistoryLogDialog
-        open={historyLogDialogOpen}
-        onOpenChange={(open) => {
-          setHistoryLogDialogOpen(open);
-          if (!open) {
-            setSelectedLead(null);
-          }
-        }}
-        leadNumber={selectedLead?.leadNumber || ''}
-        historyLog={selectedLead?.historyLog || []}
-      />
+      {selectedLead && (
+        <HistoryLogDialog
+          open={historyLogDialogOpen}
+          onOpenChange={(open) => {
+            setHistoryLogDialogOpen(open);
+            if (!open) {
+              setSelectedLead(null);
+            }
+          }}
+          leadNumber={selectedLead.leadNumber}
+          lead={selectedLead}
+        />
+      )}
 
       {/* Policy Remarks & Rework Dialog */}
       <PolicyRemarksReworkDialog
