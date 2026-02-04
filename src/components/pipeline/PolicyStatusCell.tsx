@@ -84,22 +84,24 @@ export function PolicyStatusCell({
     );
   }
 
+  // Determine effective stage: for 'all' tab, use the policy's actual stage
+  const effectiveStage = stage === 'all' 
+    ? (getPolicyStage(policy) || 'to_pay') // fallback to to_pay if null
+    : stage;
+
   // If policy is in rework_required state, show rework actions (status indicator + add button)
   if (policy.status === 'rework_required' && onReworkAdd && onOpenRemarks) {
     return (
       <PolicyReworkActions
         policy={policy}
         reworkConfigs={reworkConfigs}
+        currentStage={effectiveStage}
         onAddRework={onReworkAdd}
         onOpenRemarks={() => onOpenRemarks(policy.id)}
       />
     );
   }
 
-  // Determine effective stage: for 'all' tab, use the policy's actual stage
-  const effectiveStage = stage === 'all' 
-    ? (getPolicyStage(policy) || 'to_pay') // fallback to to_pay if null
-    : stage;
 
   // Get status options for the effective stage
   const statusOptions = policyStatusOptionsByStage[effectiveStage] || [];

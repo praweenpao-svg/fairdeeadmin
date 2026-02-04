@@ -1947,14 +1947,17 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                           const firstOwner = policyOwners[0];
                                           const remainingCount = policyOwners.length - 1;
                                           return (
-                                            <Tooltip>
+                                            <Tooltip delayDuration={0}>
                                               <TooltipTrigger asChild>
-                                                <span className={cn(
-                                                  'font-medium cursor-help',
-                                                  isReworkOwner ? 'text-warning' : 'text-foreground'
-                                                )}>
-                                                  {firstOwner} <span className="text-muted-foreground">+{remainingCount}</span>
-                                                </span>
+                                                <button 
+                                                  type="button"
+                                                  className={cn(
+                                                    'font-medium cursor-help text-left',
+                                                    isReworkOwner ? 'text-warning' : 'text-foreground'
+                                                  )}
+                                                >
+                                                  {firstOwner} <span className={isReworkOwner ? 'text-warning/70' : 'text-muted-foreground'}>+{remainingCount}</span>
+                                                </button>
                                               </TooltipTrigger>
                                               <TooltipContent side="top" className="max-w-xs">
                                                 <div className="flex flex-col gap-1">
@@ -2057,6 +2060,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
           return policy?.reworkHistory || [];
         })()}
         reworkConfigs={stageReworkConfigs}
+        currentStage={stage}
         onAddRemark={handleAddRemark}
         onAddRemarkReply={handleAddRemarkReply}
         onAddReworkReply={handleAddReworkReply}

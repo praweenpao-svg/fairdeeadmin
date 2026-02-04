@@ -15,12 +15,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { ReworkConfig, ReworkAttachment, PolicyRecord } from '@/types/pipeline';
+import { ReworkConfig, ReworkAttachment, PolicyRecord, PipelineStage } from '@/types/pipeline';
 import { useLanguageStore } from '@/stores/languageStore';
 
 interface PolicyReworkActionsProps {
   policy: PolicyRecord;
   reworkConfigs: ReworkConfig[];
+  currentStage: PipelineStage;
   onAddRework: (policyId: string, reasonId: string, details: string, attachments: ReworkAttachment[]) => void;
   onOpenRemarks: () => void;
 }
@@ -28,6 +29,7 @@ interface PolicyReworkActionsProps {
 export function PolicyReworkActions({
   policy,
   reworkConfigs,
+  currentStage,
   onAddRework,
   onOpenRemarks,
 }: PolicyReworkActionsProps) {
@@ -177,7 +179,10 @@ export function PolicyReworkActions({
                 </SelectTrigger>
                 <SelectContent className="bg-popover z-50">
                   {reworkConfigs
-                    .filter((config) => !existingReasonIds.includes(config.id))
+                    .filter((config) => 
+                      !existingReasonIds.includes(config.id) && 
+                      config.stages.includes(currentStage)
+                    )
                     .map((config) => (
                       <SelectItem key={config.id} value={config.id} className="text-xs">
                         {language === 'th' ? config.descriptionTh : config.descriptionEn}

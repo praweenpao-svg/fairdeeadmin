@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { PolicyRemark, PolicyReworkEntry, ReworkConfig, ReworkAttachment, ThreadReply } from '@/types/pipeline';
+import { PolicyRemark, PolicyReworkEntry, ReworkConfig, ReworkAttachment, ThreadReply, PipelineStage } from '@/types/pipeline';
 import { useLanguageStore } from '@/stores/languageStore';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
@@ -29,6 +29,7 @@ interface PolicyRemarksReworkDialogProps {
   remarks: PolicyRemark[];
   reworkHistory: PolicyReworkEntry[];
   reworkConfigs: ReworkConfig[];
+  currentStage: PipelineStage;
   onAddRemark: (comment: string, attachments?: ReworkAttachment[]) => void;
   onAddRemarkReply?: (remarkId: string, comment: string, attachments?: ReworkAttachment[]) => void;
   onAddReworkReply?: (entryId: string, comment: string, attachments?: ReworkAttachment[]) => void;
@@ -47,6 +48,7 @@ export function PolicyRemarksReworkDialog({
   remarks,
   reworkHistory,
   reworkConfigs,
+  currentStage,
   onAddRemark,
   onAddRemarkReply,
   onAddReworkReply,
@@ -538,7 +540,10 @@ export function PolicyRemarksReworkDialog({
                 </SelectTrigger>
                 <SelectContent className="bg-popover z-50">
                   {reworkConfigs
-                    .filter(config => config.id !== currentReassignEntry?.reasonId)
+                    .filter(config => 
+                      config.id !== currentReassignEntry?.reasonId && 
+                      config.stages.includes(currentStage)
+                    )
                     .map(config => (
                       <SelectItem key={config.id} value={config.id} className="text-xs">
                         {language === 'th' ? config.descriptionTh : config.descriptionEn}

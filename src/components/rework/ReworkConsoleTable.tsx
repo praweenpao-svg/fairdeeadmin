@@ -35,12 +35,12 @@ const assignmentOptions: { value: AssignmentType; label: string }[] = [
 ];
 
 const stageOptions: { value: PipelineStage; label: string }[] = [
-  { value: 'to_pay', label: 'To Pay' },
-  { value: 'to_report', label: 'To Report' },
-  { value: 'to_issue', label: 'To Issue' },
-  { value: 'to_deliver', label: 'To Deliver' },
+  { value: 'to_pay', label: 'To Pay Premium' },
+  { value: 'to_report', label: 'To Report Sale' },
+  { value: 'to_issue', label: 'To Issue Policy' },
+  { value: 'to_deliver', label: 'To Deliver Policy' },
   { value: 'completed', label: 'Completed' },
-  { value: 'cancelled', label: 'Cancelled' },
+  { value: 'cancelled', label: 'Cancellation' },
 ];
 
 // Helper function to check if a rework reason moves leads to Cancellation tab
@@ -72,6 +72,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
     automationEnabled: false,
     automationDays: undefined,
     targetReason: undefined,
+    movesToCancellation: false,
   });
 
   const openDialog = (config?: ReworkConfig) => {
@@ -89,6 +90,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
         automationEnabled: false,
         automationDays: undefined,
         targetReason: undefined,
+        movesToCancellation: false,
       });
     }
     setIsDialogOpen(true);
@@ -122,6 +124,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
         targetReason: formData.targetReason,
         assignment: formData.assignment || 'rf_sc',
         stages: formData.stages || [],
+        movesToCancellation: formData.movesToCancellation || false,
       };
       onUpdate([...reworkConfigs, newConfig]);
     }
@@ -293,7 +296,24 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                         <span className="text-sm">{stage.label}</span>
                       </div>
                     ))}
+                </div>
+
+                {/* Moves to Cancellation Section */}
+                <div className="border-t pt-4 mt-2">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="movesToCancellation">Moves to Cancellation</Label>
+                      <p className="text-xs text-muted-foreground">
+                        When selected, leads with this rework will move to Cancellation tab
+                      </p>
+                    </div>
+                    <Switch
+                      id="movesToCancellation"
+                      checked={formData.movesToCancellation || false}
+                      onCheckedChange={(checked) => setFormData({ ...formData, movesToCancellation: checked })}
+                    />
                   </div>
+                </div>
                 </div>
 
                 {/* Date Automation Section */}
@@ -399,6 +419,9 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                 <th className="data-table-header px-4 py-3 text-left">
                   Target Status
                 </th>
+                <th className="data-table-header px-4 py-3 text-center">
+                  Cancellation
+                </th>
                 <th className="data-table-header px-4 py-3 text-right">
                   Actions
                 </th>
@@ -428,6 +451,11 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                   </td>
                   <td className="px-4 py-3 text-sm">
                     {config.automationEnabled ? getTargetReasonLabel(config.targetReason) : '-'}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-center">
+                    <span className={config.movesToCancellation ? 'text-destructive' : 'text-muted-foreground'}>
+                      {config.movesToCancellation ? 'YES' : '-'}
+                    </span>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-1">
