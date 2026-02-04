@@ -255,116 +255,145 @@ function buildTimelineRows(entries: TimelineEntry[], hasVmi: boolean, hasCmi: bo
   return rows;
 }
 
-// Format timestamp to HH:MM
-function formatTime(timestamp: string): string {
-  const timePart = timestamp.split(' ')[1];
-  if (!timePart) return '';
-  return timePart; // Already in HH:MM format
-}
-
-// Format date to DD/MM
-function formatDate(timestamp: string): string {
-  const datePart = timestamp.split(' ')[0];
-  if (!datePart) return '';
-  const [day, month] = datePart.split('-');
-  return `${day}/${month}`;
+// Format timestamp to DD-MM-YYYY HH:MM
+function formatTimestamp(timestamp: string): string {
+  const [datePart, timePart] = timestamp.split(' ');
+  if (!datePart) return timestamp;
+  // datePart is already in DD-MM-YYYY format
+  return timePart ? `${datePart} ${timePart}` : datePart;
 }
 
 // Timeline entry card component with timestamp inside
 function EntryCard({ 
   entry, 
   language,
-  isFirst,
+  isLast,
+  columnType,
 }: { 
   entry: TimelineEntry; 
   language: 'en' | 'th';
-  isFirst?: boolean;
+  isLast?: boolean;
+  columnType?: 'vmi' | 'cmi' | 'shared';
 }) {
   const config = getActionConfig(entry.action);
   const Icon = config.icon;
   const showTriggeredBy = !isSystemTriggered(entry.triggeredBy);
   
+  // Determine border color based on column type
+  const getBorderClass = () => {
+    if (columnType === 'vmi') return 'border-l-2 border-l-blue-500';
+    if (columnType === 'cmi') return 'border-l-2 border-l-purple-500';
+    return 'border-l-2 border-l-primary';
+  };
+  
   return (
     <div className={cn(
-      "rounded-lg border p-3 space-y-2",
-      isFirst && "border-primary/30 bg-primary/5"
+      "rounded-r-lg border border-l-0 p-2.5 space-y-1.5 bg-card",
+      getBorderClass()
     )}>
-      {/* Header: Action badge + Timestamp */}
-      <div className="flex items-center justify-between gap-2">
+      {/* Timestamp */}
+      <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+        <Clock className="w-3 h-3" />
+        <span className="font-medium">{formatTimestamp(entry.timestamp)}</span>
+      </div>
+      
+      {/* Action badge */}
+      <div className="flex items-center gap-2">
         <span className={cn(
-          "text-xs font-semibold px-2 py-0.5 rounded flex items-center gap-1",
+          "text-[10px] font-semibold px-1.5 py-0.5 rounded flex items-center gap-1",
           config.bgColor,
           config.color
         )}>
-          <Icon className="w-3 h-3" />
+          <Icon className="w-2.5 h-2.5" />
           {getActionLabel(entry.action, language)}
         </span>
-        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-          <Clock className="w-3 h-3" />
-          <span className="font-medium">{formatTime(entry.timestamp)}</span>
-          <span className="text-[10px]">({formatDate(entry.timestamp)})</span>
-        </div>
       </div>
       
       {/* Content based on action type */}
       {entry.action === 'status_changed' && (
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs px-2 py-0.5 rounded bg-muted">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted">
             {formatStatusLabel(entry.fromStatus || '', language)}
           </span>
-          <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
-          <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary font-medium">
+          <ArrowRight className="w-3 h-3 text-muted-foreground" />
+          <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">
             {formatStatusLabel(entry.toStatus || '', language)}
           </span>
         </div>
       )}
       
       {entry.action === 'payment_status_changed' && (
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs px-2 py-0.5 rounded bg-muted">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted">
             {formatStatusLabel(entry.fromStatus || '', language)}
           </span>
-          <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
-          <span className="text-xs px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-medium">
+          <ArrowRight className="w-3 h-3 text-muted-foreground" />
+          <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-medium">
             {formatStatusLabel(entry.toStatus || '', language)}
           </span>
         </div>
       )}
       
       {entry.action === 'endorsement_status_changed' && (
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs px-2 py-0.5 rounded bg-muted">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted">
             {formatStatusLabel(entry.fromStatus || '', language)}
           </span>
-          <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
-          <span className="text-xs px-2 py-0.5 rounded bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 font-medium">
+          <ArrowRight className="w-3 h-3 text-muted-foreground" />
+          <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 font-medium">
             {formatStatusLabel(entry.toStatus || '', language)}
           </span>
         </div>
       )}
       
       {entry.action === 'assignee_changed' && (
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs text-muted-foreground">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="text-[10px] text-muted-foreground">
             {formatAssigneeType(entry.assigneeType || '', language)}:
           </span>
-          <span className="text-xs px-2 py-0.5 rounded bg-muted">
-            {entry.fromAssignee || (language === 'th' ? 'ยังไม่มอบหมาย' : 'Unassigned')}
+          <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted">
+            {entry.fromAssignee || (language === 'th' ? 'ไม่มี' : 'None')}
           </span>
-          <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
-          <span className="text-xs px-2 py-0.5 rounded bg-primary/10 text-primary font-medium">
-            {entry.toAssignee || (language === 'th' ? 'ยังไม่มอบหมาย' : 'Unassigned')}
+          <ArrowRight className="w-3 h-3 text-muted-foreground" />
+          <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">
+            {entry.toAssignee || (language === 'th' ? 'ไม่มี' : 'None')}
           </span>
         </div>
       )}
       
       {/* Triggered by - only show if not system */}
       {showTriggeredBy && (
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <User className="w-3 h-3" />
-          <span>{language === 'th' ? 'โดย' : 'By'} {entry.triggeredBy}</span>
+        <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+          <User className="w-2.5 h-2.5" />
+          <span>{entry.triggeredBy}</span>
         </div>
       )}
+    </div>
+  );
+}
+
+// Column with connecting line
+function TimelineColumn({ 
+  children, 
+  colorClass,
+  hasContent,
+  isLast,
+}: { 
+  children: React.ReactNode;
+  colorClass: string;
+  hasContent: boolean;
+  isLast: boolean;
+}) {
+  return (
+    <div className="relative flex-1">
+      {/* Vertical connecting line */}
+      {!isLast && (
+        <div className={cn(
+          "absolute left-0 top-full w-0.5 h-2",
+          colorClass
+        )} />
+      )}
+      {hasContent ? children : <div className="h-full min-h-[60px]" />}
     </div>
   );
 }
@@ -410,7 +439,7 @@ export function HistoryLogDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={cn(
         "max-h-[85vh]",
-        isTwoColumn ? "sm:max-w-[700px]" : "sm:max-w-[450px]"
+        isTwoColumn ? "sm:max-w-[650px]" : "sm:max-w-[400px]"
       )}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -425,51 +454,186 @@ export function HistoryLogDialog({
         <ScrollArea className="max-h-[60vh]">
           {/* Column headers for two-column layout */}
           {isTwoColumn && (
-            <div className="grid grid-cols-2 gap-3 mb-3 sticky top-0 bg-background pb-2 border-b">
-              <div className="text-xs font-semibold text-center px-2 py-1 rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
+            <div className="grid grid-cols-2 gap-2 mb-2 sticky top-0 bg-background pb-2 z-10">
+              <div className="text-xs font-semibold text-center px-2 py-1.5 rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
                 VMI
               </div>
-              <div className="text-xs font-semibold text-center px-2 py-1 rounded bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">
+              <div className="text-xs font-semibold text-center px-2 py-1.5 rounded bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-800">
                 CMI
               </div>
             </div>
           )}
           
-          {/* Timeline rows */}
-          <div className="space-y-3 pr-4">
+          {/* Timeline rows - no gap, connected */}
+          <div className="pr-4">
             {rows.map((row, index) => {
-              const isFirst = index === rows.length - 1; // Most recent is last after sort
+              const isLast = index === rows.length - 1;
               
               if (isTwoColumn) {
                 // Shared entry spans both columns
                 if (row.sharedEntry) {
                   return (
-                    <div key={row.timestamp + index} className="col-span-2">
-                      <EntryCard entry={row.sharedEntry} language={language} isFirst={isFirst} />
+                    <div key={row.timestamp + index} className="relative">
+                      {/* Connecting line from previous row */}
+                      {index > 0 && (
+                        <div className="absolute left-0 right-0 top-0 h-2 flex">
+                          <div className="flex-1 flex justify-center">
+                            <div className="w-0.5 h-full bg-blue-500" />
+                          </div>
+                          <div className="flex-1 flex justify-center">
+                            <div className="w-0.5 h-full bg-purple-500" />
+                          </div>
+                        </div>
+                      )}
+                      <div className={cn(index > 0 && "pt-2")}>
+                        <div className="border-l-2 border-l-primary rounded-r-lg border border-l-0 p-2.5 space-y-1.5 bg-gradient-to-r from-blue-50/50 via-background to-purple-50/50 dark:from-blue-950/20 dark:via-background dark:to-purple-950/20">
+                          {/* Timestamp */}
+                          <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                            <Clock className="w-3 h-3" />
+                            <span className="font-medium">{formatTimestamp(row.sharedEntry.timestamp)}</span>
+                          </div>
+                          
+                          {/* Action badge */}
+                          <div className="flex items-center gap-2">
+                            {(() => {
+                              const config = getActionConfig(row.sharedEntry.action);
+                              const Icon = config.icon;
+                              return (
+                                <span className={cn(
+                                  "text-[10px] font-semibold px-1.5 py-0.5 rounded flex items-center gap-1",
+                                  config.bgColor,
+                                  config.color
+                                )}>
+                                  <Icon className="w-2.5 h-2.5" />
+                                  {getActionLabel(row.sharedEntry.action, language)}
+                                </span>
+                              );
+                            })()}
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                              VMI + CMI
+                            </span>
+                          </div>
+                          
+                          {/* Content */}
+                          {row.sharedEntry.action === 'payment_status_changed' && (
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted">
+                                {formatStatusLabel(row.sharedEntry.fromStatus || '', language)}
+                              </span>
+                              <ArrowRight className="w-3 h-3 text-muted-foreground" />
+                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-medium">
+                                {formatStatusLabel(row.sharedEntry.toStatus || '', language)}
+                              </span>
+                            </div>
+                          )}
+                          
+                          {row.sharedEntry.action === 'assignee_changed' && (
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="text-[10px] text-muted-foreground">
+                                {formatAssigneeType(row.sharedEntry.assigneeType || '', language)}:
+                              </span>
+                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted">
+                                {row.sharedEntry.fromAssignee || (language === 'th' ? 'ไม่มี' : 'None')}
+                              </span>
+                              <ArrowRight className="w-3 h-3 text-muted-foreground" />
+                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">
+                                {row.sharedEntry.toAssignee || (language === 'th' ? 'ไม่มี' : 'None')}
+                              </span>
+                            </div>
+                          )}
+                          
+                          {row.sharedEntry.action === 'status_changed' && (
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted">
+                                {formatStatusLabel(row.sharedEntry.fromStatus || '', language)}
+                              </span>
+                              <ArrowRight className="w-3 h-3 text-muted-foreground" />
+                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">
+                                {formatStatusLabel(row.sharedEntry.toStatus || '', language)}
+                              </span>
+                            </div>
+                          )}
+                          
+                          {/* Triggered by - only show if not system */}
+                          {!isSystemTriggered(row.sharedEntry.triggeredBy) && (
+                            <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                              <User className="w-2.5 h-2.5" />
+                              <span>{row.sharedEntry.triggeredBy}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      {/* Connecting line to next row */}
+                      {!isLast && (
+                        <div className="h-2 flex">
+                          <div className="flex-1 flex justify-center">
+                            <div className="w-0.5 h-full bg-blue-500" />
+                          </div>
+                          <div className="flex-1 flex justify-center">
+                            <div className="w-0.5 h-full bg-purple-500" />
+                          </div>
+                        </div>
+                      )}
                     </div>
                   );
                 }
                 
                 // Separate VMI and CMI columns
                 return (
-                  <div key={row.timestamp + index} className="grid grid-cols-2 gap-3 items-start">
-                    {/* VMI column */}
-                    <div>
-                      {row.vmiEntry ? (
-                        <EntryCard entry={row.vmiEntry} language={language} isFirst={isFirst} />
-                      ) : (
-                        <div className="h-full" />
-                      )}
+                  <div key={row.timestamp + index} className="relative">
+                    {/* Connecting lines from previous row */}
+                    {index > 0 && (
+                      <div className="h-2 flex gap-2">
+                        <div className="flex-1 flex justify-start pl-0">
+                          <div className="w-0.5 h-full bg-blue-500" />
+                        </div>
+                        <div className="flex-1 flex justify-start pl-0">
+                          <div className="w-0.5 h-full bg-purple-500" />
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div className="grid grid-cols-2 gap-2">
+                      {/* VMI column */}
+                      <div className="relative">
+                        {row.vmiEntry ? (
+                          <EntryCard 
+                            entry={row.vmiEntry} 
+                            language={language} 
+                            isLast={isLast}
+                            columnType="vmi"
+                          />
+                        ) : (
+                          <div className="min-h-[60px] border-l-2 border-l-blue-200 dark:border-l-blue-800 border-dashed" />
+                        )}
+                      </div>
+                      
+                      {/* CMI column */}
+                      <div className="relative">
+                        {row.cmiEntry ? (
+                          <EntryCard 
+                            entry={row.cmiEntry} 
+                            language={language} 
+                            isLast={isLast}
+                            columnType="cmi"
+                          />
+                        ) : (
+                          <div className="min-h-[60px] border-l-2 border-l-purple-200 dark:border-l-purple-800 border-dashed" />
+                        )}
+                      </div>
                     </div>
                     
-                    {/* CMI column */}
-                    <div>
-                      {row.cmiEntry ? (
-                        <EntryCard entry={row.cmiEntry} language={language} isFirst={isFirst} />
-                      ) : (
-                        <div className="h-full" />
-                      )}
-                    </div>
+                    {/* Connecting lines to next row */}
+                    {!isLast && (
+                      <div className="h-2 flex gap-2">
+                        <div className="flex-1 flex justify-start pl-0">
+                          <div className="w-0.5 h-full bg-blue-500" />
+                        </div>
+                        <div className="flex-1 flex justify-start pl-0">
+                          <div className="w-0.5 h-full bg-purple-500" />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 );
               }
@@ -479,8 +643,25 @@ export function HistoryLogDialog({
               if (!entry) return null;
               
               return (
-                <div key={row.timestamp + index}>
-                  <EntryCard entry={entry} language={language} isFirst={isFirst} />
+                <div key={row.timestamp + index} className="relative">
+                  {/* Connecting line from previous */}
+                  {index > 0 && (
+                    <div className="h-2 flex justify-start">
+                      <div className="w-0.5 h-full bg-blue-500" />
+                    </div>
+                  )}
+                  <EntryCard 
+                    entry={entry} 
+                    language={language} 
+                    isLast={isLast}
+                    columnType="vmi"
+                  />
+                  {/* Connecting line to next */}
+                  {!isLast && (
+                    <div className="h-2 flex justify-start">
+                      <div className="w-0.5 h-full bg-blue-500" />
+                    </div>
+                  )}
                 </div>
               );
             })}
