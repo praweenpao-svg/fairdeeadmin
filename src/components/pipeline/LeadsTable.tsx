@@ -2110,6 +2110,11 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
         }}
         policyKind={selectedPolicyForRemarks?.kind || 'vmi'}
         policyId={selectedPolicyForRemarks?.policyId || ''}
+        leadNumber={(() => {
+          if (!selectedPolicyForRemarks) return undefined;
+          const lead = leads.find(l => l.id === selectedPolicyForRemarks.leadId);
+          return lead?.leadNumber;
+        })()}
         remarks={(() => {
           if (!selectedPolicyForRemarks) return [];
           const lead = leads.find(l => l.id === selectedPolicyForRemarks.leadId);

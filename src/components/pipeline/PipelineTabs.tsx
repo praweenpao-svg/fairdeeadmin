@@ -12,6 +12,7 @@ import {
   LayoutGrid,
   RefreshCw,
 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 
 interface PipelineTabsProps {
@@ -306,6 +307,52 @@ export function getLeadsOwnedByUser(leads: Lead[], stage: PipelineStage, user: s
   });
 }
 
+// Count policies owned by current user for a specific stage
+function countPoliciesOwnedByUser(leads: Lead[], stage: PipelineStage, user: string): number {
+  let count = 0;
+  
+  // For Leads stage, count leads where user is RF or SC
+  if (stage === 'to_convert') {
+    const stageLeads = getLeadsForStage(leads, stage);
+    return stageLeads.filter(lead => lead.rfAssignee === user || lead.scAssignee === user).length;
+  }
+  
+  // For other stages, count policies where user is owner
+  const stageLeads = getLeadsForStage(leads, stage);
+  
+  stageLeads.forEach(lead => {
+    if (lead.policyRecords && lead.policyRecords.length > 0) {
+      const policiesInStage = getPoliciesForStage(lead, stage);
+      policiesInStage.forEach(policy => {
+        if (getPolicyOwner(policy, lead, stage) === user) {
+          count++;
+        }
+      });
+    } else {
+      // Legacy lead without policy records - count as 1 if owned
+      const isOwned = (() => {
+        switch (stage) {
+          case 'all':
+            return lead.deAssignee === user || lead.scAssignee === user || lead.rfAssignee === user;
+          case 'to_pay':
+            return lead.scAssignee === user || lead.rfAssignee === user;
+          case 'to_report':
+          case 'to_issue':
+          case 'to_deliver':
+          case 'completed':
+          case 'cancelled':
+            return lead.deAssignee === user;
+          default:
+            return false;
+        }
+      })();
+      if (isOwned) count++;
+    }
+  });
+  
+  return count;
+}
+
 export function PipelineTabs({
   activeStage,
   onStageChange,
@@ -321,6 +368,7 @@ export function PipelineTabs({
           const isActive = activeStage === stage.id;
           const Icon = stage.icon;
           const label = stageTranslations[stage.id as StageKey][language];
+          const myCount = countPoliciesOwnedByUser(leads, stage.id, CURRENT_USER);
 
           return (
             <button
@@ -333,6 +381,14 @@ export function PipelineTabs({
             >
               <Icon className="w-4 h-4" />
               <span>{label}</span>
+              {myCount > 0 && (
+                <Badge 
+                  variant="secondary" 
+                  className="h-5 min-w-5 px-1.5 text-[10px] font-semibold bg-primary/15 text-primary border-none"
+                >
+                  {myCount}
+                </Badge>
+              )}
             </button>
           );
         })}

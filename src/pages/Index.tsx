@@ -15,6 +15,7 @@ import { useLanguageStore } from '@/stores/languageStore';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { applyAllFilters } from '@/utils/leadFilters';
+import { MentionNotificationBell } from '@/components/notifications/MentionNotificationBell';
 
 const Index = () => {
   const { language } = useLanguageStore();
@@ -123,7 +124,10 @@ const Index = () => {
             <Home className="w-4 h-4" />
             <span className="text-sm">{language === 'th' ? 'หน้าหลัก' : 'Home'}</span>
           </div>
-          <LanguageToggle />
+          <div className="flex items-center gap-2">
+            <MentionNotificationBell />
+            <LanguageToggle />
+          </div>
         </div>
 
         {/* Pipeline Tabs */}

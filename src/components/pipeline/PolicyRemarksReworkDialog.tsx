@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { MessageSquare, Send, CheckCircle, ArrowRightLeft, Upload, X, FileText, Image, AlertTriangle, User, ChevronDown, ChevronRight, Reply, Paperclip } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { MentionTextarea } from '@/components/ui/mention-textarea';
 import { Label } from '@/components/ui/label';
 import {
   Dialog,
@@ -21,12 +22,15 @@ import { useLanguageStore } from '@/stores/languageStore';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { useMentionNotificationsStore, extractMentions } from '@/stores/mentionNotificationsStore';
+import { CURRENT_USER } from '@/data/mockLeads';
 
 interface PolicyRemarksReworkDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   policyKind: 'vmi' | 'cmi';
   policyId: string;
+  leadNumber?: string; // Sale ID for notification
   remarks: PolicyRemark[];
   reworkHistory: PolicyReworkEntry[];
   reworkConfigs: ReworkConfig[];
@@ -48,6 +52,7 @@ export function PolicyRemarksReworkDialog({
   onOpenChange,
   policyKind,
   policyId,
+  leadNumber,
   remarks,
   reworkHistory,
   reworkConfigs,
@@ -60,6 +65,7 @@ export function PolicyRemarksReworkDialog({
   onAddRework,
 }: PolicyRemarksReworkDialogProps) {
   const { language } = useLanguageStore();
+  const { addNotification } = useMentionNotificationsStore();
   const [newComment, setNewComment] = useState('');
   const [newCommentAttachments, setNewCommentAttachments] = useState<ReworkAttachment[]>([]);
   const [expandedThreads, setExpandedThreads] = useState<Set<string>>(new Set());
@@ -106,8 +112,26 @@ export function PolicyRemarksReworkDialog({
 
   const timeline = buildTimeline();
 
+  // Helper to process mentions and create notifications
+  const processMentions = (comment: string) => {
+    const mentions = extractMentions(comment);
+    mentions.forEach(mentionedName => {
+      // Don't notify self
+      if (mentionedName !== CURRENT_USER) {
+        addNotification({
+          saleId: leadNumber || policyId,
+          comment: comment,
+          mentionedBy: CURRENT_USER,
+          mentionedAt: new Date().toISOString(),
+          policyKind: policyKind,
+        });
+      }
+    });
+  };
+
   const handleSubmitRemark = () => {
     if (!newComment.trim()) return;
+    processMentions(newComment.trim());
     onAddRemark(newComment.trim(), newCommentAttachments.length > 0 ? newCommentAttachments : undefined);
     setNewComment('');
     setNewCommentAttachments([]);
@@ -115,6 +139,8 @@ export function PolicyRemarksReworkDialog({
 
   const handleSubmitReply = () => {
     if (!replyComment.trim() || !replyingTo) return;
+    
+    processMentions(replyComment.trim());
     
     if (replyingTo.type === 'remark' && onAddRemarkReply) {
       onAddRemarkReply(replyingTo.id, replyComment.trim(), replyAttachments.length > 0 ? replyAttachments : undefined);
@@ -299,10 +325,10 @@ export function PolicyRemarksReworkDialog({
         {/* Reply input */}
         {isReplying && (
           <div className="mt-3 pt-3 border-t border-border/50 space-y-2">
-            <Textarea
-              placeholder={language === 'th' ? 'เพิ่มความคิดเห็น...' : 'Add a reply...'}
+            <MentionTextarea
+              placeholder={language === 'th' ? 'เพิ่มความคิดเห็น... (พิมพ์ @ เพื่อ tag คน)' : 'Add a reply... (type @ to tag someone)'}
               value={replyComment}
-              onChange={(e) => setReplyComment(e.target.value)}
+              onChange={setReplyComment}
               className="min-h-[60px] resize-none text-xs"
             />
             {replyAttachments.length > 0 && (
@@ -447,10 +473,10 @@ export function PolicyRemarksReworkDialog({
         {/* Reply input */}
         {isReplying && (
           <div className="mt-3 pt-3 border-t border-border/50 space-y-2">
-            <Textarea
-              placeholder={language === 'th' ? 'เพิ่มความคิดเห็น...' : 'Add a reply...'}
+            <MentionTextarea
+              placeholder={language === 'th' ? 'เพิ่มความคิดเห็น... (พิมพ์ @ เพื่อ tag คน)' : 'Add a reply... (type @ to tag someone)'}
               value={replyComment}
-              onChange={(e) => setReplyComment(e.target.value)}
+              onChange={setReplyComment}
               className="min-h-[60px] resize-none text-xs"
             />
             {replyAttachments.length > 0 && (
@@ -784,16 +810,11 @@ export function PolicyRemarksReworkDialog({
             {/* Add New Remark */}
             <div className="border-t pt-4 mt-2 shrink-0">
               <div className="space-y-2">
-                <Textarea
-                  placeholder={language === 'th' ? 'เพิ่มหมายเหตุ...' : 'Add a remark...'}
+                <MentionTextarea
+                  placeholder={language === 'th' ? 'เพิ่มหมายเหตุ... (พิมพ์ @ เพื่อ tag คน)' : 'Add a remark... (type @ to tag someone)'}
                   value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
+                  onChange={setNewComment}
                   className="min-h-[70px] resize-none"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-                      handleSubmitRemark();
-                    }
-                  }}
                 />
                 {newCommentAttachments.length > 0 && (
                   <div className="flex flex-wrap gap-1.5">
