@@ -229,29 +229,34 @@ export function getLeadsForStage(leads: Lead[], stage: PipelineStage): Lead[] {
   }
 }
 
-// Get the actual owner of a lead based on rework status and stage
-function getLeadOwner(lead: Lead, stage: PipelineStage): string | undefined {
-  // If any policy is in active rework, that takes priority (owner comes from assignedTo)
-  const hasActivePolicyRework = Boolean(
-    lead.policyRecords?.some(
-      (p) =>
-        p.status === 'rework_required' &&
-        (p.reworkHistory?.some((e) => !e.resolved) ?? false)
-    )
-  );
+// Check if a policy is in terminal state (owner should be cleared)
+function isPolicyTerminal(policy: PolicyRecord): boolean {
+  if (policy.status === 'policy_cancelled') return true;
+  if (policy.status === 'policy_issued') {
+    return policy.shippingMethod === 'e_policy' || policy.shippingMethod === 'print_by_myself';
+  }
+  return policy.status === 'policy_delivered';
+}
 
-  if ((hasActivePolicyRework || lead.reworkRequired) && lead.assignedTo) {
-    return lead.assignedTo;
+// Get the owner(s) of a specific policy based on rework status and stage
+function getPolicyOwner(policy: PolicyRecord, lead: Lead, stage: PipelineStage): string | undefined {
+  // Terminal policies have no owner
+  if (isPolicyTerminal(policy)) return undefined;
+  
+  // Check for active rework assignment on this policy
+  if (policy.status === 'rework_required' && policy.reworkHistory) {
+    const activeRework = policy.reworkHistory.find(e => !e.resolved);
+    if (activeRework?.assignedTo) {
+      return activeRework.assignedTo;
+    }
   }
   
-  // Otherwise, use the stage-based owner field
+  // Default stage-based owner
   switch (stage) {
     case 'all':
-      // For "All" tab, show SC/RF or DE based on what's assigned
       return lead.deAssignee || lead.scAssignee || lead.rfAssignee;
     case 'to_convert':
     case 'to_pay':
-      // To Convert and To Pay: SC if available, else RF (DE not assigned yet)
       return lead.scAssignee || lead.rfAssignee;
     case 'to_report':
     case 'to_issue':
@@ -264,10 +269,37 @@ function getLeadOwner(lead: Lead, stage: PipelineStage): string | undefined {
   }
 }
 
-// Get leads owned by current user for a stage
+// Get leads owned by current user for a stage (checks policy-level ownership)
 export function getLeadsOwnedByUser(leads: Lead[], stage: PipelineStage, user: string): Lead[] {
   const stageLeads = getLeadsForStage(leads, stage);
-  return stageLeads.filter(lead => getLeadOwner(lead, stage) === user);
+  
+  return stageLeads.filter(lead => {
+    // For leads with policy records, check if user owns any policy in current stage
+    if (lead.policyRecords && lead.policyRecords.length > 0) {
+      const policiesInStage = getPoliciesForStage(lead, stage);
+      
+      // User owns this lead if they own ANY policy in the current stage
+      return policiesInStage.some(policy => getPolicyOwner(policy, lead, stage) === user);
+    }
+    
+    // Legacy fallback for leads without policy records
+    // Check stage-based ownership
+    switch (stage) {
+      case 'all':
+        return lead.deAssignee === user || lead.scAssignee === user || lead.rfAssignee === user;
+      case 'to_convert':
+      case 'to_pay':
+        return lead.scAssignee === user || lead.rfAssignee === user;
+      case 'to_report':
+      case 'to_issue':
+      case 'to_deliver':
+      case 'completed':
+      case 'cancelled':
+        return lead.deAssignee === user;
+      default:
+        return false;
+    }
+  });
 }
 
 export function PipelineTabs({
