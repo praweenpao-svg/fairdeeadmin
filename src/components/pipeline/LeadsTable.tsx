@@ -1410,7 +1410,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
               {sortedLeads.length === 0 ? (
                 <tr>
                   <td colSpan={isPostLeadStage ? (showDEColumn ? 11 : 10) : 9} className="px-4 py-12 text-center text-muted-foreground">
-                    {language === 'th' ? 'ไม่พบ lead สำหรับ stage นี้' : 'No leads found for this stage'}
+                    {language === 'th' ? 'ไม่พบเคสของคุณ ณ ตอนนี้' : 'No cases found at the moment'}
                   </td>
                 </tr>
               ) : (
