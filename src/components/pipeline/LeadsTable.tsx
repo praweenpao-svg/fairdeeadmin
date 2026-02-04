@@ -1408,7 +1408,9 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                         'data-table-row',
                         lead.reworkRequired 
                           ? 'bg-warning/5 hover:bg-warning/[0.07]' 
-                          : ''
+                          : '',
+                        // Add bottom border when expanded to separate sale from policy rows
+                        isExpanded && isPostLeadStage && hasPolicies ? 'border-b border-border' : ''
                       )}
                     >
                       <td className="px-4 py-3">
