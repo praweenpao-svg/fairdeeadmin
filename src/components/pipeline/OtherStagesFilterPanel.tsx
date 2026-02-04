@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { mockStaffMembers } from '@/data/mockStaff';
+import { useLanguageStore } from '@/stores/languageStore';
 
 export interface OtherStagesFilterState {
   rfAssignee: string;
@@ -63,69 +64,69 @@ const mockInsurers = [
   { id: 'ins-3', name: 'Bangkok Insurance' },
 ];
 
-const policyStatusOptions = [
-  { value: 'all', label: 'All Policy Status' },
-  { value: 'pending', label: 'Pending' },
-  { value: 'issued', label: 'Issued' },
-  { value: 'cancelled', label: 'Cancelled' },
+const policyStatusOptions: { value: string; en: string; th: string }[] = [
+  { value: 'all', en: 'All Policy Status', th: 'สถานะกรมธรรม์ทั้งหมด' },
+  { value: 'pending', en: 'Pending', th: 'รอดำเนินการ' },
+  { value: 'issued', en: 'Issued', th: 'ออกแล้ว' },
+  { value: 'cancelled', en: 'Cancelled', th: 'ยกเลิก' },
 ];
 
-const paymentStatusOptions = [
-  { value: 'all', label: 'All Payment Status' },
-  { value: 'unpaid', label: 'Unpaid' },
-  { value: 'paid', label: 'Paid' },
-  { value: 'partial', label: 'Partial' },
+const paymentStatusOptions: { value: string; en: string; th: string }[] = [
+  { value: 'all', en: 'All Payment Status', th: 'สถานะการชำระทั้งหมด' },
+  { value: 'unpaid', en: 'Unpaid', th: 'ยังไม่ชำระ' },
+  { value: 'paid', en: 'Paid', th: 'ชำระแล้ว' },
+  { value: 'partial', en: 'Partial', th: 'ชำระบางส่วน' },
 ];
 
-const invoiceStatusOptions = [
-  { id: 'all', label: 'All Statuses' },
-  { id: 'unpaid', label: 'Unpaid' },
-  { id: 'underpaid', label: 'Underpaid' },
-  { id: 'overpaid', label: 'Overpaid' },
-  { id: 'fully_paid', label: 'Fully Paid' },
+const invoiceStatusOptions: { id: string; en: string; th: string }[] = [
+  { id: 'all', en: 'All Statuses', th: 'สถานะทั้งหมด' },
+  { id: 'unpaid', en: 'Unpaid', th: 'ยังไม่ชำระ' },
+  { id: 'underpaid', en: 'Underpaid', th: 'ชำระไม่ครบ' },
+  { id: 'overpaid', en: 'Overpaid', th: 'ชำระเกิน' },
+  { id: 'fully_paid', en: 'Fully Paid', th: 'ชำระครบแล้ว' },
 ];
 
-const insuranceClassOptions = [
-  { id: 'all', label: 'All Classes' },
-  { id: '1', label: '1' },
-  { id: '2+', label: '2+' },
-  { id: '2', label: '2' },
-  { id: '3+', label: '3+' },
-  { id: '3', label: '3' },
+const insuranceClassOptions: { id: string; en: string; th: string }[] = [
+  { id: 'all', en: 'All Classes', th: 'ชั้นทั้งหมด' },
+  { id: '1', en: '1', th: '1' },
+  { id: '2+', en: '2+', th: '2+' },
+  { id: '2', en: '2', th: '2' },
+  { id: '3+', en: '3+', th: '3+' },
+  { id: '3', en: '3', th: '3' },
 ];
 
-const saleTypeOptions = [
-  { id: 'all', label: 'All Sale Types' },
-  { id: 'cbc_fairdee', label: 'CBC to Fairdee' },
-  { id: 'cbc_insurer', label: 'CBC to Insurer' },
-  { id: 'credit', label: 'Credit' },
-  { id: 'credit_exceeded', label: 'Credit Exceeded' },
+const saleTypeOptions: { id: string; en: string; th: string }[] = [
+  { id: 'all', en: 'All Sale Types', th: 'ประเภทการขายทั้งหมด' },
+  { id: 'cbc_fairdee', en: 'CBC to Fairdee', th: 'จ่ายเข้าแฟร์ดี' },
+  { id: 'cbc_insurer', en: 'CBC to Insurer', th: 'จ่ายเข้าบ.ประกัน' },
+  { id: 'credit', en: 'Credit', th: 'เครดิต' },
+  { id: 'credit_exceeded', en: 'Credit Exceeded', th: 'เครดิตเกิน' },
 ];
 
-const paymentMethodOptions = [
-  { id: 'all', label: 'All Payment Methods' },
-  { id: 'bank', label: 'Bank Account' },
-  { id: 'credit_card', label: 'Credit Card' },
-  { id: 'qr', label: 'QR' },
+const paymentMethodOptions: { id: string; en: string; th: string }[] = [
+  { id: 'all', en: 'All Payment Methods', th: 'วิธีชำระทั้งหมด' },
+  { id: 'bank', en: 'Bank Account', th: 'บัญชีธนาคาร' },
+  { id: 'credit_card', en: 'Credit Card', th: 'บัตรเครดิต' },
+  { id: 'qr', en: 'QR', th: 'QR' },
 ];
 
-const carInspectionStatusOptions = [
-  { id: 'all', label: 'All Statuses' },
-  { id: 'confirmed', label: 'Confirmed' },
-  { id: 'not_confirmed', label: 'Not Yet Confirmed' },
+const carInspectionStatusOptions: { id: string; en: string; th: string }[] = [
+  { id: 'all', en: 'All Statuses', th: 'สถานะทั้งหมด' },
+  { id: 'confirmed', en: 'Confirmed', th: 'ยืนยันแล้ว' },
+  { id: 'not_confirmed', en: 'Not Yet Confirmed', th: 'ยังไม่ยืนยัน' },
 ];
 
-const leadTypeOptions = [
-  { id: 'all', label: 'All Lead Types' },
-  { id: 'new_leads', label: 'New Leads' },
-  { id: 'coa', label: 'COA' },
-  { id: 'renewals', label: 'Renewals' },
+const leadTypeOptions: { id: string; en: string; th: string }[] = [
+  { id: 'all', en: 'All Lead Types', th: 'ประเภท Lead ทั้งหมด' },
+  { id: 'new_leads', en: 'New Leads', th: 'งานใหม่' },
+  { id: 'coa', en: 'COA', th: 'COA' },
+  { id: 'renewals', en: 'Renewals', th: 'งานต่ออายุ' },
 ];
 
-const installmentOptions = [
-  { value: 'all', label: 'All' },
-  { value: 'installment', label: 'Installment' },
-  { value: 'non_installment', label: 'Non-Installment' },
+const installmentOptions: { value: string; en: string; th: string }[] = [
+  { value: 'all', en: 'All', th: 'ทั้งหมด' },
+  { value: 'installment', en: 'Installment', th: 'ผ่อนชำระ' },
+  { value: 'non_installment', en: 'Non-Installment', th: 'ชำระเต็มจำนวน' },
 ];
 
 interface OtherStagesFilterPanelProps {
@@ -135,6 +136,7 @@ interface OtherStagesFilterPanelProps {
 }
 
 export function OtherStagesFilterPanel({ filters, onFiltersChange, onClear }: OtherStagesFilterPanelProps) {
+  const { language } = useLanguageStore();
   const [open, setOpen] = React.useState(false);
   const [localFilters, setLocalFilters] = React.useState<OtherStagesFilterState>(filters);
 
@@ -184,7 +186,7 @@ export function OtherStagesFilterPanel({ filters, onFiltersChange, onClear }: Ot
 
   const renderCheckboxGroup = (
     field: keyof OtherStagesFilterState,
-    options: { id: string; label: string }[]
+    options: { id: string; en: string; th: string }[]
   ) => (
     <div className="flex flex-wrap gap-3">
       {options.map((option) => (
@@ -196,7 +198,7 @@ export function OtherStagesFilterPanel({ filters, onFiltersChange, onClear }: Ot
             className="border-primary data-[state=checked]:bg-primary"
           />
           <Label htmlFor={`${field}-${option.id}`} className="text-sm font-normal cursor-pointer">
-            {option.label}
+            {language === 'th' ? option.th : option.en}
           </Label>
         </div>
       ))}
@@ -208,14 +210,14 @@ export function OtherStagesFilterPanel({ filters, onFiltersChange, onClear }: Ot
       <PopoverTrigger asChild>
         <Button variant="outline" className="gap-2">
           <Filter className="w-4 h-4" />
-          All Filters
+          {language === 'th' ? 'ตัวกรองทั้งหมด' : 'All Filters'}
           {hasActiveFilters && (
             <span className="ml-1 px-1.5 py-0.5 text-xs bg-primary text-primary-foreground rounded-full">!</span>
           )}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[900px] p-6 bg-card z-50" align="start">
-        <h3 className="text-lg font-semibold mb-4">Filter By</h3>
+        <h3 className="text-lg font-semibold mb-4">{language === 'th' ? 'กรองตาม' : 'Filter By'}</h3>
         <div className="grid grid-cols-3 gap-6">
           {/* Column 1 */}
           <div className="space-y-4">
@@ -223,9 +225,9 @@ export function OtherStagesFilterPanel({ filters, onFiltersChange, onClear }: Ot
             <div className="space-y-2">
               <Label className="text-sm font-medium">RF</Label>
               <Select value={localFilters.rfAssignee} onValueChange={(v) => setLocalFilters({ ...localFilters, rfAssignee: v })}>
-                <SelectTrigger><SelectValue placeholder="Search RF" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={language === 'th' ? 'ค้นหา RF' : 'Search RF'} /></SelectTrigger>
                 <SelectContent className="bg-card z-50">
-                  <SelectItem value="all">All RF</SelectItem>
+                  <SelectItem value="all">{language === 'th' ? 'RF ทั้งหมด' : 'All RF'}</SelectItem>
                   {rfStaff.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
                 </SelectContent>
               </Select>
@@ -235,9 +237,9 @@ export function OtherStagesFilterPanel({ filters, onFiltersChange, onClear }: Ot
             <div className="space-y-2">
               <Label className="text-sm font-medium">SC</Label>
               <Select value={localFilters.scAssignee} onValueChange={(v) => setLocalFilters({ ...localFilters, scAssignee: v })}>
-                <SelectTrigger><SelectValue placeholder="Search SC" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={language === 'th' ? 'ค้นหา SC' : 'Search SC'} /></SelectTrigger>
                 <SelectContent className="bg-card z-50">
-                  <SelectItem value="all">All SC</SelectItem>
+                  <SelectItem value="all">{language === 'th' ? 'SC ทั้งหมด' : 'All SC'}</SelectItem>
                   {scStaff.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
                 </SelectContent>
               </Select>
@@ -247,9 +249,9 @@ export function OtherStagesFilterPanel({ filters, onFiltersChange, onClear }: Ot
             <div className="space-y-2">
               <Label className="text-sm font-medium">DE</Label>
               <Select value={localFilters.deAssignee} onValueChange={(v) => setLocalFilters({ ...localFilters, deAssignee: v })}>
-                <SelectTrigger><SelectValue placeholder="Search DE" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={language === 'th' ? 'ค้นหา DE' : 'Search DE'} /></SelectTrigger>
                 <SelectContent className="bg-card z-50">
-                  <SelectItem value="all">All DE</SelectItem>
+                  <SelectItem value="all">{language === 'th' ? 'DE ทั้งหมด' : 'All DE'}</SelectItem>
                   {deStaff.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
                 </SelectContent>
               </Select>
@@ -257,11 +259,11 @@ export function OtherStagesFilterPanel({ filters, onFiltersChange, onClear }: Ot
 
             {/* Agent */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Agent</Label>
+              <Label className="text-sm font-medium">{language === 'th' ? 'ตัวแทน' : 'Agent'}</Label>
               <Select value={localFilters.agent} onValueChange={(v) => setLocalFilters({ ...localFilters, agent: v })}>
-                <SelectTrigger><SelectValue placeholder="Search agents" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={language === 'th' ? 'ค้นหาตัวแทน' : 'Search agents'} /></SelectTrigger>
                 <SelectContent className="bg-card z-50">
-                  <SelectItem value="all">All Agents</SelectItem>
+                  <SelectItem value="all">{language === 'th' ? 'ตัวแทนทั้งหมด' : 'All Agents'}</SelectItem>
                   {mockAgents.map((a) => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}
                 </SelectContent>
               </Select>
@@ -269,11 +271,11 @@ export function OtherStagesFilterPanel({ filters, onFiltersChange, onClear }: Ot
 
             {/* Insurer */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Insurer</Label>
+              <Label className="text-sm font-medium">{language === 'th' ? 'บริษัทประกัน' : 'Insurer'}</Label>
               <Select value={localFilters.insurer} onValueChange={(v) => setLocalFilters({ ...localFilters, insurer: v })}>
-                <SelectTrigger><SelectValue placeholder="Search insurers" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={language === 'th' ? 'ค้นหาบริษัทประกัน' : 'Search insurers'} /></SelectTrigger>
                 <SelectContent className="bg-card z-50">
-                  <SelectItem value="all">All Insurers</SelectItem>
+                  <SelectItem value="all">{language === 'th' ? 'บริษัทประกันทั้งหมด' : 'All Insurers'}</SelectItem>
                   {mockInsurers.map((i) => <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>)}
                 </SelectContent>
               </Select>
@@ -284,45 +286,45 @@ export function OtherStagesFilterPanel({ filters, onFiltersChange, onClear }: Ot
           <div className="space-y-4">
             {/* Policy Status */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Policy Status</Label>
+              <Label className="text-sm font-medium">{language === 'th' ? 'สถานะกรมธรรม์' : 'Policy Status'}</Label>
               <Select value={localFilters.policyStatus} onValueChange={(v) => setLocalFilters({ ...localFilters, policyStatus: v })}>
-                <SelectTrigger><SelectValue placeholder="Search policy status" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={language === 'th' ? 'ค้นหาสถานะ' : 'Search policy status'} /></SelectTrigger>
                 <SelectContent className="bg-card z-50">
-                  {policyStatusOptions.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+                  {policyStatusOptions.map((o) => <SelectItem key={o.value} value={o.value}>{language === 'th' ? o.th : o.en}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
 
             {/* Payment Status */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Payment Status</Label>
+              <Label className="text-sm font-medium">{language === 'th' ? 'สถานะการชำระ' : 'Payment Status'}</Label>
               <Select value={localFilters.paymentStatus} onValueChange={(v) => setLocalFilters({ ...localFilters, paymentStatus: v })}>
-                <SelectTrigger><SelectValue placeholder="Search payment status" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={language === 'th' ? 'ค้นหาสถานะ' : 'Search payment status'} /></SelectTrigger>
                 <SelectContent className="bg-card z-50">
-                  {paymentStatusOptions.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+                  {paymentStatusOptions.map((o) => <SelectItem key={o.value} value={o.value}>{language === 'th' ? o.th : o.en}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
 
             {/* Invoice Status */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Invoice Status</Label>
+              <Label className="text-sm font-medium">{language === 'th' ? 'สถานะใบแจ้งหนี้' : 'Invoice Status'}</Label>
               {renderCheckboxGroup('invoiceStatuses', invoiceStatusOptions)}
             </div>
 
             {/* Insurance Class */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Insurance Class</Label>
+              <Label className="text-sm font-medium">{language === 'th' ? 'ชั้นประกัน' : 'Insurance Class'}</Label>
               {renderCheckboxGroup('insuranceClasses', insuranceClassOptions)}
             </div>
 
             {/* Installment Type */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Installment Type</Label>
+              <Label className="text-sm font-medium">{language === 'th' ? 'ประเภทการผ่อน' : 'Installment Type'}</Label>
               <Select value={localFilters.installmentType} onValueChange={(v) => setLocalFilters({ ...localFilters, installmentType: v })}>
-                <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={language === 'th' ? 'เลือกประเภท' : 'Select type'} /></SelectTrigger>
                 <SelectContent className="bg-card z-50">
-                  {installmentOptions.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+                  {installmentOptions.map((o) => <SelectItem key={o.value} value={o.value}>{language === 'th' ? o.th : o.en}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -332,25 +334,25 @@ export function OtherStagesFilterPanel({ filters, onFiltersChange, onClear }: Ot
           <div className="space-y-4">
             {/* Sale Type */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Sale Type</Label>
+              <Label className="text-sm font-medium">{language === 'th' ? 'ประเภทการขาย' : 'Sale Type'}</Label>
               {renderCheckboxGroup('saleTypes', saleTypeOptions)}
             </div>
 
             {/* Payment Method */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Payment Method</Label>
+              <Label className="text-sm font-medium">{language === 'th' ? 'วิธีชำระเงิน' : 'Payment Method'}</Label>
               {renderCheckboxGroup('paymentMethods', paymentMethodOptions)}
             </div>
 
             {/* Car Inspection Status */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Car Inspection Status</Label>
+              <Label className="text-sm font-medium">{language === 'th' ? 'สถานะตรวจสภาพรถ' : 'Car Inspection Status'}</Label>
               {renderCheckboxGroup('carInspectionStatuses', carInspectionStatusOptions)}
             </div>
 
             {/* Lead Types (Multi-select) */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Lead Type</Label>
+              <Label className="text-sm font-medium">{language === 'th' ? 'ประเภท Lead' : 'Lead Type'}</Label>
               {renderCheckboxGroup('leadTypes', leadTypeOptions)}
             </div>
           </div>
@@ -358,10 +360,10 @@ export function OtherStagesFilterPanel({ filters, onFiltersChange, onClear }: Ot
 
         {/* Footer */}
         <div className="flex justify-between mt-6 pt-4 border-t">
-          <Button variant="outline" onClick={handleCancel}>Cancel</Button>
+          <Button variant="outline" onClick={handleCancel}>{language === 'th' ? 'ยกเลิก' : 'Cancel'}</Button>
           <div className="flex gap-3">
-            <Button variant="outline" onClick={handleClear}>Clear</Button>
-            <Button onClick={handleApply} className="bg-primary text-primary-foreground hover:bg-primary/90">Apply Filters</Button>
+            <Button variant="outline" onClick={handleClear}>{language === 'th' ? 'ล้าง' : 'Clear'}</Button>
+            <Button onClick={handleApply} className="bg-primary text-primary-foreground hover:bg-primary/90">{language === 'th' ? 'ใช้ตัวกรอง' : 'Apply Filters'}</Button>
           </div>
         </div>
       </PopoverContent>
