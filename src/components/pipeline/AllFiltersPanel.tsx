@@ -55,57 +55,58 @@ export const defaultFilterState: FilterState = {
   installmentType: 'all',
 };
 
-const statusOptions: { value: SaleStatus | 'all'; label: string }[] = [
-  { value: 'all', label: 'All Status' },
-  { value: 'pending', label: 'Pending' },
-  { value: 'waiting_for_insurer', label: 'Waiting for Insurer' },
-  { value: 'partially_added', label: 'Partially Added' },
-  { value: 'completed', label: 'Completed' },
-  { value: 'quotation_shared', label: 'Quotation Shared' },
-  { value: 'invalid', label: 'Invalid' },
-  { value: 'pending_review', label: 'Pending Review' },
-  { value: 'under_review', label: 'Under Review' },
+// Post-lead status options (for All and To Pay stages)
+const postLeadStatusOptions: { value: string; en: string; th: string }[] = [
+  { value: 'all', en: 'All Status', th: 'สถานะทั้งหมด' },
+  { value: 'pending_payment', en: 'Pending', th: 'รอดำเนินการ' },
+  { value: 'pending_review', en: 'Pending Review', th: 'รอตรวจเอกสาร' },
+  { value: 'pending_issuance', en: 'Pending Issuance', th: 'รอออกกรมธรรม์' },
+  { value: 'policy_issued', en: 'Policy Uploaded', th: 'กรมธรรม์ออกแล้ว' },
+  { value: 'policy_shipped', en: 'Policy Shipped', th: 'กรมธรรม์ถูกจัดส่ง' },
+  { value: 'policy_delivered', en: 'Policy Delivered', th: 'กรมธรรม์จัดส่งสำเร็จ' },
+  { value: 'policy_cancelled', en: 'Policy Cancelled', th: 'กรมธรรม์ยกเลิก' },
+  { value: 'rework_required', en: 'Rework Required', th: 'งานติดปัญหา' },
 ];
 
-const agentTypeOptions = [
-  { id: 'all', label: 'All Agent Types' },
-  { id: 'direct', label: 'Direct Agent' },
-  { id: 'mlm', label: 'MLM Agent' },
-  { id: 'inspection', label: 'Inspection Garage' },
-  { id: 'office', label: 'Agent Office' },
+const agentTypeOptions: { id: string; en: string; th: string }[] = [
+  { id: 'all', en: 'All Agent Types', th: 'ประเภทตัวแทนทั้งหมด' },
+  { id: 'direct', en: 'Direct Agent', th: 'ตัวแทนตรง' },
+  { id: 'mlm', en: 'MLM Agent', th: 'ตัวแทน MLM' },
+  { id: 'inspection', en: 'Inspection Garage', th: 'อู่ตรวจสภาพ' },
+  { id: 'office', en: 'Agent Office', th: 'สำนักงานตัวแทน' },
 ];
 
-const leadsTypeOptions = [
-  { value: 'all', label: 'All Leads Type' },
-  { value: 'system', label: 'System' },
-  { value: 'custom', label: 'Custom' },
-  { value: 'brochure', label: 'Brochure' },
+const leadsTypeOptions: { value: string; en: string; th: string }[] = [
+  { value: 'all', en: 'All Leads Type', th: 'ประเภท Leads ทั้งหมด' },
+  { value: 'system', en: 'System', th: 'ระบบ' },
+  { value: 'custom', en: 'Custom', th: 'กำหนดเอง' },
+  { value: 'brochure', en: 'Brochure', th: 'โบรชัวร์' },
 ];
 
-const createdByOptions = [
-  { value: 'all', label: 'All Creator' },
-  { value: 'agent', label: 'Agent' },
-  { value: 'admin', label: 'Admin' },
+const createdByOptions: { value: string; en: string; th: string }[] = [
+  { value: 'all', en: 'All Creator', th: 'ผู้สร้างทั้งหมด' },
+  { value: 'agent', en: 'Agent', th: 'ตัวแทน' },
+  { value: 'admin', en: 'Admin', th: 'แอดมิน' },
 ];
 
 const leadTypeOptionsByStage = {
   to_pay: [
-    { value: 'new_leads', label: 'New Leads' },
-    { value: 'coa', label: 'COA' },
-    { value: 'renewals', label: 'Renewals' },
+    { value: 'new_leads', en: 'New Leads', th: 'งานใหม่' },
+    { value: 'coa', en: 'COA', th: 'COA' },
+    { value: 'renewals', en: 'Renewals', th: 'งานต่ออายุ' },
   ],
   all: [
-    { value: 'new_leads', label: 'New Leads' },
-    { value: 'coa', label: 'COA' },
-    { value: 'renewals', label: 'Renewals' },
-    { value: 'sales', label: 'Sales' },
+    { value: 'new_leads', en: 'New Leads', th: 'งานใหม่' },
+    { value: 'coa', en: 'COA', th: 'COA' },
+    { value: 'renewals', en: 'Renewals', th: 'งานต่ออายุ' },
+    { value: 'sales', en: 'Sales', th: 'งานขาย' },
   ],
 } as const;
 
-const installmentOptions = [
-  { value: 'all', label: 'All' },
-  { value: 'installment', label: 'Installment' },
-  { value: 'non_installment', label: 'Non-Installment' },
+const installmentOptions: { value: string; en: string; th: string }[] = [
+  { value: 'all', en: 'All', th: 'ทั้งหมด' },
+  { value: 'installment', en: 'Installment', th: 'ผ่อนชำระ' },
+  { value: 'non_installment', en: 'Non-Installment', th: 'ชำระเต็มจำนวน' },
 ];
 
 // Mock agents for demo
@@ -199,10 +200,10 @@ export function AllFiltersPanel({ stage, filters, onFiltersChange, onClear }: Al
                 onValueChange={(value) => setLocalFilters({ ...localFilters, rfAssignee: value })}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Search RF" />
+                  <SelectValue placeholder={language === 'th' ? 'ค้นหา RF' : 'Search RF'} />
                 </SelectTrigger>
                 <SelectContent className="bg-card z-50">
-                  <SelectItem value="all">All RF</SelectItem>
+                  <SelectItem value="all">{language === 'th' ? 'RF ทั้งหมด' : 'All RF'}</SelectItem>
                   {rfStaff.map((staff) => (
                     <SelectItem key={staff.id} value={staff.id}>
                       {staff.name}
@@ -220,10 +221,10 @@ export function AllFiltersPanel({ stage, filters, onFiltersChange, onClear }: Al
                 onValueChange={(value) => setLocalFilters({ ...localFilters, scAssignee: value })}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Search SC" />
+                  <SelectValue placeholder={language === 'th' ? 'ค้นหา SC' : 'Search SC'} />
                 </SelectTrigger>
                 <SelectContent className="bg-card z-50">
-                  <SelectItem value="all">All SC</SelectItem>
+                  <SelectItem value="all">{language === 'th' ? 'SC ทั้งหมด' : 'All SC'}</SelectItem>
                   {scStaff.map((staff) => (
                     <SelectItem key={staff.id} value={staff.id}>
                       {staff.name}
@@ -241,10 +242,10 @@ export function AllFiltersPanel({ stage, filters, onFiltersChange, onClear }: Al
                 onValueChange={(value) => setLocalFilters({ ...localFilters, deAssignee: value })}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Search DE" />
+                  <SelectValue placeholder={language === 'th' ? 'ค้นหา DE' : 'Search DE'} />
                 </SelectTrigger>
                 <SelectContent className="bg-card z-50">
-                  <SelectItem value="all">All DE</SelectItem>
+                  <SelectItem value="all">{language === 'th' ? 'DE ทั้งหมด' : 'All DE'}</SelectItem>
                   {deStaff.map((staff) => (
                     <SelectItem key={staff.id} value={staff.id}>
                       {staff.name}
@@ -256,16 +257,16 @@ export function AllFiltersPanel({ stage, filters, onFiltersChange, onClear }: Al
 
             {/* Agent */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Agent</Label>
+              <Label className="text-sm font-medium">{language === 'th' ? 'ตัวแทน' : 'Agent'}</Label>
               <Select
                 value={localFilters.agent}
                 onValueChange={(value) => setLocalFilters({ ...localFilters, agent: value })}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select Agent" />
+                  <SelectValue placeholder={language === 'th' ? 'เลือกตัวแทน' : 'Select Agent'} />
                 </SelectTrigger>
                 <SelectContent className="bg-card z-50">
-                  <SelectItem value="all">All Agents</SelectItem>
+                  <SelectItem value="all">{language === 'th' ? 'ตัวแทนทั้งหมด' : 'All Agents'}</SelectItem>
                   {mockAgents.map((agent) => (
                     <SelectItem key={agent.id} value={agent.id}>
                       {agent.id} - {agent.name}
@@ -280,18 +281,18 @@ export function AllFiltersPanel({ stage, filters, onFiltersChange, onClear }: Al
           <div className="space-y-4">
             {/* Status */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Status</Label>
+              <Label className="text-sm font-medium">{language === 'th' ? 'สถานะ' : 'Status'}</Label>
               <Select
                 value={localFilters.status}
                 onValueChange={(value) => setLocalFilters({ ...localFilters, status: value as SaleStatus | 'all' })}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Search status" />
+                  <SelectValue placeholder={language === 'th' ? 'ค้นหาสถานะ' : 'Search status'} />
                 </SelectTrigger>
                 <SelectContent className="bg-card z-50">
-                  {statusOptions.map((option) => (
+                  {postLeadStatusOptions.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
-                      {option.label}
+                      {language === 'th' ? option.th : option.en}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -300,7 +301,7 @@ export function AllFiltersPanel({ stage, filters, onFiltersChange, onClear }: Al
 
             {/* Installment Type */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Installment Type</Label>
+              <Label className="text-sm font-medium">{language === 'th' ? 'ประเภทการผ่อน' : 'Installment Type'}</Label>
               <RadioGroup
                 value={localFilters.installmentType}
                 onValueChange={(value) => setLocalFilters({ ...localFilters, installmentType: value })}
@@ -317,7 +318,7 @@ export function AllFiltersPanel({ stage, filters, onFiltersChange, onClear }: Al
                       htmlFor={`installment-${option.value}`}
                       className="text-sm font-normal cursor-pointer"
                     >
-                      {option.label}
+                      {language === 'th' ? option.th : option.en}
                     </Label>
                   </div>
                 ))}
@@ -326,7 +327,7 @@ export function AllFiltersPanel({ stage, filters, onFiltersChange, onClear }: Al
 
             {/* Agent Type */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Agent Type</Label>
+              <Label className="text-sm font-medium">{language === 'th' ? 'ประเภทตัวแทน' : 'Agent Type'}</Label>
               <div className="flex flex-wrap gap-2">
                 {agentTypeOptions.map((type) => (
                   <div key={type.id} className="flex items-center space-x-2">
@@ -340,7 +341,7 @@ export function AllFiltersPanel({ stage, filters, onFiltersChange, onClear }: Al
                       htmlFor={`agent-type-${type.id}`}
                       className="text-sm font-normal cursor-pointer"
                     >
-                      {type.label}
+                      {language === 'th' ? type.th : type.en}
                     </Label>
                   </div>
                 ))}
@@ -350,7 +351,7 @@ export function AllFiltersPanel({ stage, filters, onFiltersChange, onClear }: Al
             {/* Lead Type (stage-aware) */}
             {stage !== 'to_convert' && (
               <div className="space-y-2">
-                <Label className="text-sm font-medium">Lead Type</Label>
+                <Label className="text-sm font-medium">{language === 'th' ? 'ประเภท Lead' : 'Lead Type'}</Label>
                 <RadioGroup
                   value={localFilters.leadType}
                   onValueChange={(value) => setLocalFilters({ ...localFilters, leadType: value as FilterState['leadType'] })}
@@ -367,7 +368,7 @@ export function AllFiltersPanel({ stage, filters, onFiltersChange, onClear }: Al
                         htmlFor={`lead-type-${option.value}`}
                         className="text-sm font-normal cursor-pointer"
                       >
-                        {option.label}
+                        {language === 'th' ? option.th : option.en}
                       </Label>
                     </div>
                   ))}
@@ -380,7 +381,7 @@ export function AllFiltersPanel({ stage, filters, onFiltersChange, onClear }: Al
           <div className="space-y-4">
             {/* Leads Type */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Leads Type</Label>
+              <Label className="text-sm font-medium">{language === 'th' ? 'ประเภท Leads' : 'Leads Type'}</Label>
               <RadioGroup
                 value={localFilters.leadsType}
                 onValueChange={(value) => setLocalFilters({ ...localFilters, leadsType: value })}
@@ -397,7 +398,7 @@ export function AllFiltersPanel({ stage, filters, onFiltersChange, onClear }: Al
                       htmlFor={`leads-type-${option.value}`}
                       className="text-sm font-normal cursor-pointer"
                     >
-                      {option.label}
+                      {language === 'th' ? option.th : option.en}
                     </Label>
                   </div>
                 ))}
@@ -406,7 +407,7 @@ export function AllFiltersPanel({ stage, filters, onFiltersChange, onClear }: Al
 
             {/* Created By */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Created By</Label>
+              <Label className="text-sm font-medium">{language === 'th' ? 'สร้างโดย' : 'Created By'}</Label>
               <RadioGroup
                 value={localFilters.createdBy}
                 onValueChange={(value) => setLocalFilters({ ...localFilters, createdBy: value })}
@@ -423,7 +424,7 @@ export function AllFiltersPanel({ stage, filters, onFiltersChange, onClear }: Al
                       htmlFor={`created-by-${option.value}`}
                       className="text-sm font-normal cursor-pointer"
                     >
-                      {option.label}
+                      {language === 'th' ? option.th : option.en}
                     </Label>
                   </div>
                 ))}
@@ -435,14 +436,14 @@ export function AllFiltersPanel({ stage, filters, onFiltersChange, onClear }: Al
         {/* Footer */}
         <div className="flex justify-between mt-6 pt-4 border-t">
           <Button variant="outline" onClick={handleCancel}>
-            Cancel
+            {language === 'th' ? 'ยกเลิก' : 'Cancel'}
           </Button>
           <div className="flex gap-3">
             <Button variant="outline" onClick={handleClear}>
-              Clear
+              {language === 'th' ? 'ล้าง' : 'Clear'}
             </Button>
             <Button onClick={handleApply} className="bg-primary text-primary-foreground hover:bg-primary/90">
-              Apply Filters
+              {language === 'th' ? 'ใช้ตัวกรอง' : 'Apply Filters'}
             </Button>
           </div>
         </div>
