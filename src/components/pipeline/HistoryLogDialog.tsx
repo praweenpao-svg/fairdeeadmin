@@ -351,9 +351,9 @@ export function HistoryLogDialog({
               <History className="w-5 h-5" />
               {language === 'th' ? 'ประวัติการทำงาน' : 'History Log'}
             </DialogTitle>
-            <DialogDescription>
-              {language === 'th' ? 'งาน' : 'Lead'} {leadNumber}
-            </DialogDescription>
+          <DialogDescription>
+            {leadNumber}
+          </DialogDescription>
           </DialogHeader>
           <div className="py-12 text-center text-muted-foreground">
             {language === 'th' ? 'ไม่มีประวัติสำหรับงานนี้' : 'No history log for this lead'}
@@ -372,7 +372,7 @@ export function HistoryLogDialog({
             {language === 'th' ? 'ประวัติการทำงาน' : 'History Log'}
           </DialogTitle>
           <DialogDescription>
-            {language === 'th' ? 'งาน' : 'Lead'} {leadNumber}
+            {leadNumber}
           </DialogDescription>
         </DialogHeader>
 
@@ -384,18 +384,12 @@ export function HistoryLogDialog({
                 className="data-[state=active]:bg-blue-100 data-[state=active]:text-blue-700 dark:data-[state=active]:bg-blue-900/30 dark:data-[state=active]:text-blue-400"
               >
                 VMI
-                {vmiTimeline.length > 0 && (
-                  <span className="ml-1.5 text-xs opacity-70">({vmiTimeline.length})</span>
-                )}
               </TabsTrigger>
               <TabsTrigger 
                 value="cmi"
                 className="data-[state=active]:bg-purple-100 data-[state=active]:text-purple-700 dark:data-[state=active]:bg-purple-900/30 dark:data-[state=active]:text-purple-400"
               >
                 CMI
-                {cmiTimeline.length > 0 && (
-                  <span className="ml-1.5 text-xs opacity-70">({cmiTimeline.length})</span>
-                )}
               </TabsTrigger>
             </TabsList>
             
