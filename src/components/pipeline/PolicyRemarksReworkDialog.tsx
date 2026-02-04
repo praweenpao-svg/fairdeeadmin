@@ -94,8 +94,8 @@ export function PolicyRemarksReworkDialog({
       });
     });
     
-    // Sort by timestamp descending (newest first)
-    return items.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+    // Sort by timestamp ascending (oldest first, newest at bottom)
+    return items.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
   };
 
   const timeline = buildTimeline();
@@ -488,7 +488,7 @@ export function PolicyRemarksReworkDialog({
         setReplyAttachments([]);
       }
     }}>
-      <DialogContent className="sm:max-w-[600px] max-h-[85vh] flex flex-col">
+      <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <MessageSquare className="w-5 h-5" />
@@ -586,7 +586,7 @@ export function PolicyRemarksReworkDialog({
         ) : (
           // Main timeline view
           <>
-            <ScrollArea className="flex-1 min-h-0 pr-4">
+            <ScrollArea className="h-[350px] pr-4">
               {timeline.length === 0 ? (
                 <div className="text-center py-12 text-muted-foreground">
                   <MessageSquare className="w-10 h-10 mx-auto mb-2 opacity-30" />
