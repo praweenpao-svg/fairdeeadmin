@@ -69,6 +69,7 @@ export interface PolicyReworkEntry {
   attachments: ReworkAttachment[];
   savedBy: string;
   savedAt: string;
+  assignedTo?: string; // Owner for this specific rework entry
   resolved?: boolean;
   resolvedAt?: string;
   resolvedBy?: string;

@@ -37,7 +37,7 @@ import { InlineReworkActions } from './InlineReworkActions';
 import { PolicyStatusCell } from './PolicyStatusCell';
 import { getPoliciesForStage } from './PipelineTabs';
 import { InsurersExpandableRow } from './InsurersExpandableRow';
-import { PolicyRemarksDialog } from './PolicyRemarksDialog';
+import { PolicyRemarksReworkDialog } from './PolicyRemarksReworkDialog';
 
 interface LeadsTableProps {
   leads: Lead[];
@@ -591,7 +591,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
         return entry;
       });
 
-      // Add new rework entry
+      // Add new rework entry with its own owner
       const newEntry: PolicyReworkEntry = {
         id: crypto.randomUUID(),
         reasonId: newReasonId,
@@ -600,6 +600,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
         attachments,
         savedBy: CURRENT_USER,
         savedAt: timestamp,
+        assignedTo: newOwner, // Each rework entry has its own owner
         previousStatus,
       };
 
@@ -698,7 +699,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
       const existingUnresolved = reworkHistory.find(e => !e.resolved);
       const previousStatus = existingUnresolved?.previousStatus || (record.status as PolicyStatus);
 
-      // Add new rework entry
+      // Add new rework entry with its own owner
       const newEntry: PolicyReworkEntry = {
         id: crypto.randomUUID(),
         reasonId,
@@ -707,6 +708,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
         attachments,
         savedBy: CURRENT_USER,
         savedAt: timestamp,
+        assignedTo: newOwner, // Each rework entry has its own owner
         previousStatus,
       };
 
@@ -839,6 +841,8 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
 
       const previousStatus = policy.status as PolicyStatus;
 
+      const assignedOwner = computeReworkOwner(selectedLead, reasonId);
+
       const newPolicyReworkEntry: PolicyReworkEntry = {
         id: crypto.randomUUID(),
         reasonId,
@@ -847,6 +851,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
         attachments,
         savedBy: CURRENT_USER,
         savedAt: timestamp,
+        assignedTo: assignedOwner, // Each rework entry has its own owner
         previousStatus,
       };
 
@@ -860,7 +865,6 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
         };
       });
 
-      const assignedOwner = computeReworkOwner(selectedLead, reasonId);
 
       const historyLogEntry: HistoryLogEntry = {
         id: crypto.randomUUID(),
@@ -1803,15 +1807,14 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                       
                                       {/* Policy Status - moved to after Endorsement Status */}
                                       <div className="w-[150px] shrink-0">
-                                        <PolicyStatusCell
+                                      <PolicyStatusCell
                                           policy={policy}
                                           stage={stage}
                                           isEditable={isEditable}
                                           reworkConfigs={reworkConfigs}
                                           onStatusChange={(policyId, newStatus) => handlePolicyStatusChange(lead, policyId, newStatus)}
-                                          onReworkResolve={(policyId, entryId) => handlePolicyReworkResolve(lead, policyId, entryId)}
-                                          onReworkReassign={(policyId, entryId, reasonId, details, attachments) => handlePolicyReworkReassign(lead, policyId, entryId, reasonId, details, attachments)}
                                           onReworkAdd={(policyId, reasonId, details, attachments) => handlePolicyReworkAdd(lead, policyId, reasonId, details, attachments)}
+                                          onOpenRemarks={(policyId) => handleOpenRemarks(lead.id, policyId, policy.kind)}
                                         />
                                       </div>
                                       
@@ -1900,8 +1903,8 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
         historyLog={selectedLead?.historyLog || []}
       />
 
-      {/* Policy Remarks Dialog */}
-      <PolicyRemarksDialog
+      {/* Policy Remarks & Rework Dialog */}
+      <PolicyRemarksReworkDialog
         open={remarksDialogOpen}
         onOpenChange={(open) => {
           setRemarksDialogOpen(open);
@@ -1916,7 +1919,28 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
           const policy = lead?.policyRecords?.find(p => p.id === selectedPolicyForRemarks.policyId);
           return policy?.remarks || [];
         })()}
+        reworkHistory={(() => {
+          if (!selectedPolicyForRemarks) return [];
+          const lead = leads.find(l => l.id === selectedPolicyForRemarks.leadId);
+          const policy = lead?.policyRecords?.find(p => p.id === selectedPolicyForRemarks.policyId);
+          return policy?.reworkHistory || [];
+        })()}
+        reworkConfigs={stageReworkConfigs}
         onAddRemark={handleAddRemark}
+        onReworkResolve={(entryId) => {
+          if (!selectedPolicyForRemarks) return;
+          const lead = leads.find(l => l.id === selectedPolicyForRemarks.leadId);
+          if (lead) {
+            handlePolicyReworkResolve(lead, selectedPolicyForRemarks.policyId, entryId);
+          }
+        }}
+        onReworkReassign={(entryId, newReasonId, details, attachments) => {
+          if (!selectedPolicyForRemarks) return;
+          const lead = leads.find(l => l.id === selectedPolicyForRemarks.leadId);
+          if (lead) {
+            handlePolicyReworkReassign(lead, selectedPolicyForRemarks.policyId, entryId, newReasonId, details, attachments);
+          }
+        }}
       />
     </>
   );

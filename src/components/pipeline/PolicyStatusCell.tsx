@@ -16,9 +16,8 @@ interface PolicyStatusCellProps {
   isEditable?: boolean;
   reworkConfigs?: ReworkConfig[];
   onStatusChange?: (policyId: string, newStatus: PolicyStatus) => void;
-  onReworkResolve?: (policyId: string, entryId: string) => void;
-  onReworkReassign?: (policyId: string, entryId: string, newReasonId: string, details: string, attachments: ReworkAttachment[]) => void;
   onReworkAdd?: (policyId: string, reasonId: string, details: string, attachments: ReworkAttachment[]) => void;
+  onOpenRemarks?: (policyId: string) => void;
 }
 
 // Policy status translations
@@ -79,9 +78,8 @@ export function PolicyStatusCell({
   isEditable = false, 
   reworkConfigs = [],
   onStatusChange,
-  onReworkResolve,
-  onReworkReassign,
   onReworkAdd,
+  onOpenRemarks,
 }: PolicyStatusCellProps) {
   const { language } = useLanguageStore();
 
@@ -92,16 +90,14 @@ export function PolicyStatusCell({
     );
   }
 
-  // If policy is in rework_required state, ALWAYS show rework actions (regardless of isEditable)
-  // This allows resolve/reassign from any stage
-  if (policy.status === 'rework_required' && onReworkResolve && onReworkReassign && onReworkAdd) {
+  // If policy is in rework_required state, show rework actions (status indicator + add button)
+  if (policy.status === 'rework_required' && onReworkAdd && onOpenRemarks) {
     return (
       <PolicyReworkActions
         policy={policy}
         reworkConfigs={reworkConfigs}
-        onResolve={onReworkResolve}
-        onReassign={onReworkReassign}
         onAddRework={onReworkAdd}
+        onOpenRemarks={() => onOpenRemarks(policy.id)}
       />
     );
   }
