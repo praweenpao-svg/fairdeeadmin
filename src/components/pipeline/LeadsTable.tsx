@@ -2079,6 +2079,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
           }
         }}
         policyKind={selectedPolicyForRemarks?.kind || 'vmi'}
+        policyId={selectedPolicyForRemarks?.policyId || ''}
         remarks={(() => {
           if (!selectedPolicyForRemarks) return [];
           const lead = leads.find(l => l.id === selectedPolicyForRemarks.leadId);
@@ -2108,6 +2109,13 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
           const lead = leads.find(l => l.id === selectedPolicyForRemarks.leadId);
           if (lead) {
             handlePolicyReworkReassign(lead, selectedPolicyForRemarks.policyId, entryId, newReasonId, details, attachments);
+          }
+        }}
+        onAddRework={(policyId, reasonId, details, attachments) => {
+          if (!selectedPolicyForRemarks) return;
+          const lead = leads.find(l => l.id === selectedPolicyForRemarks.leadId);
+          if (lead) {
+            handlePolicyReworkAdd(lead, policyId, reasonId, details, attachments);
           }
         }}
       />
