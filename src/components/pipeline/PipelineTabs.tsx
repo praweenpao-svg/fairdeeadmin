@@ -120,8 +120,16 @@ function hasAnyPolicyInStage(lead: Lead, stage: PipelineStage): boolean {
 }
 
 // Get policy records that belong to a specific stage
+// For 'all' stage, returns all policies that are in post-lead stages
 export function getPoliciesForStage(lead: Lead, stage: PipelineStage): PolicyRecord[] {
   if (!lead.policyRecords) return [];
+  if (stage === 'all') {
+    // Return all policies in post-lead stages (not to_convert)
+    return lead.policyRecords.filter(policy => {
+      const policyStage = getPolicyStage(policy);
+      return policyStage && policyStage !== 'to_convert';
+    });
+  }
   return lead.policyRecords.filter(policy => getPolicyStage(policy) === stage);
 }
 

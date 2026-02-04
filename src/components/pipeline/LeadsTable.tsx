@@ -361,14 +361,16 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
     });
   };
 
-  // Check if current stage is a post-lead stage (To Pay onwards)
-  const isPostLeadStage = ['to_pay', 'to_report', 'to_issue', 'to_deliver', 'completed', 'cancelled'].includes(stage);
+  // Check if current stage is a post-lead stage (To Pay onwards) - 'all' uses same layout as post-lead stages
+  const isPostLeadStage = ['all', 'to_pay', 'to_report', 'to_issue', 'to_deliver', 'completed', 'cancelled'].includes(stage);
 
   // DE column is shown in all stages
   const showDEColumn = true;
 
-  // Filter rework configs by current stage
-  const stageReworkConfigs = reworkConfigs.filter(config => config.stages.includes(stage));
+  // Filter rework configs by current stage (for 'all' tab, include configs from all post-lead stages)
+  const stageReworkConfigs = stage === 'all' 
+    ? reworkConfigs.filter(config => config.stages.some(s => ['to_pay', 'to_report', 'to_issue', 'to_deliver', 'completed', 'cancelled'].includes(s)))
+    : reworkConfigs.filter(config => config.stages.includes(stage));
 
   const getActivePolicyRework = (policy: PolicyRecord | undefined): PolicyReworkEntry | undefined => {
     const history = policy?.reworkHistory;
