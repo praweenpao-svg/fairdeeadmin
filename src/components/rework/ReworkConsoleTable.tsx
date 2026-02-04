@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Pencil, Trash2, XCircle } from 'lucide-react';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { ReworkConfig, AssignmentType, PipelineStage } from '@/types/pipeline';
 import { useTeamsStore } from '@/stores/teamsStore';
 import { Button } from '@/components/ui/button';
@@ -72,7 +72,6 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
     automationEnabled: false,
     automationDays: undefined,
     targetReason: undefined,
-    movesToCancellation: false,
   });
 
   const openDialog = (config?: ReworkConfig) => {
@@ -90,7 +89,6 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
         automationEnabled: false,
         automationDays: undefined,
         targetReason: undefined,
-        movesToCancellation: false,
       });
     }
     setIsDialogOpen(true);
@@ -124,7 +122,6 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
         targetReason: formData.targetReason,
         assignment: formData.assignment || 'rf_sc',
         stages: formData.stages || [],
-        movesToCancellation: formData.movesToCancellation || false,
       };
       onUpdate([...reworkConfigs, newConfig]);
     }
@@ -299,24 +296,6 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                   </div>
                 </div>
 
-                {/* Moves to Cancellation Toggle */}
-                <div className="flex items-center justify-between py-3 border rounded-md px-3 bg-destructive/5">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="movesToCancellation" className="flex items-center gap-2">
-                      <XCircle className="w-4 h-4 text-destructive" />
-                      Moves to Cancellation
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Lead will appear in Cancellation tab when this reason is selected
-                    </p>
-                  </div>
-                  <Switch
-                    id="movesToCancellation"
-                    checked={formData.movesToCancellation || false}
-                    onCheckedChange={(checked) => setFormData({ ...formData, movesToCancellation: checked })}
-                  />
-                </div>
-
                 {/* Date Automation Section */}
                 <div className="border-t pt-4 mt-2">
                   
@@ -412,9 +391,6 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                   Stages
                 </th>
                 <th className="data-table-header px-4 py-3 text-center">
-                  → Cancellation
-                </th>
-                <th className="data-table-header px-4 py-3 text-center">
                   Auto-Move
                 </th>
                 <th className="data-table-header px-4 py-3 text-center">
@@ -429,9 +405,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
               </tr>
             </thead>
             <tbody>
-              {paginatedConfigs.map((config) => {
-                const isCancellationReason = config.movesToCancellation === true;
-                return (
+              {paginatedConfigs.map((config) => (
                 <tr key={config.id} className="data-table-row">
                   <td className="px-4 py-3 text-sm min-w-[280px]">
                     <div className="space-y-1">
@@ -444,16 +418,6 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                   </td>
                   <td className="px-4 py-3 text-sm">{getTeamDisplay(config)}</td>
                   <td className="px-4 py-3 text-sm">{getStageLabels(config.stages || [])}</td>
-                  <td className="px-4 py-3 text-sm text-center">
-                    {isCancellationReason ? (
-                      <span className="inline-flex items-center gap-1 text-xs bg-destructive/10 text-destructive px-2 py-1 rounded-full">
-                        <XCircle className="w-3 h-3" />
-                        Yes
-                      </span>
-                    ) : (
-                      <span className="text-muted-foreground">-</span>
-                    )}
-                  </td>
                   <td className="px-4 py-3 text-sm text-center">
                     <span className={config.automationEnabled ? 'text-green-500' : 'text-muted-foreground'}>
                       {config.automationEnabled ? 'ON' : 'OFF'}
@@ -486,8 +450,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                     </div>
                   </td>
                 </tr>
-              );
-              })}
+              ))}
             </tbody>
           </table>
         </div>

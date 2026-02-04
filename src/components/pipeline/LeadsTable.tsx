@@ -112,6 +112,7 @@ const statusOptionsByLeadType: Record<string, string[]> = {
 const statusOptionsByStage: Record<PipelineStage, string[]> = {
   all: [
     // Post-lead statuses only (no new_leads, coa, renewals statuses)
+    // rework_required is excluded - shown dynamically based on each sale's actual stage
     'pending_payment',
     'pending_review',
     // 'under_review', // Hidden for now
@@ -121,7 +122,6 @@ const statusOptionsByStage: Record<PipelineStage, string[]> = {
     'policy_shipped',
     'policy_delivered',
     'policy_cancelled',
-    'rework_required',
   ],
   to_convert: [
     'pending',
