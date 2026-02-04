@@ -411,6 +411,9 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                   Stages
                 </th>
                 <th className="data-table-header px-4 py-3 text-center">
+                  Cancellation
+                </th>
+                <th className="data-table-header px-4 py-3 text-center">
                   Auto-Move
                 </th>
                 <th className="data-table-header px-4 py-3 text-center">
@@ -418,9 +421,6 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                 </th>
                 <th className="data-table-header px-4 py-3 text-left">
                   Target Status
-                </th>
-                <th className="data-table-header px-4 py-3 text-center">
-                  Cancellation
                 </th>
                 <th className="data-table-header px-4 py-3 text-right">
                   Actions
@@ -442,6 +442,11 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                   <td className="px-4 py-3 text-sm">{getTeamDisplay(config)}</td>
                   <td className="px-4 py-3 text-sm">{getStageLabels(config.stages || [])}</td>
                   <td className="px-4 py-3 text-sm text-center">
+                    <span className={config.movesToCancellation ? 'text-destructive' : 'text-muted-foreground'}>
+                      {config.movesToCancellation ? 'YES' : '-'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-sm text-center">
                     <span className={config.automationEnabled ? 'text-green-500' : 'text-muted-foreground'}>
                       {config.automationEnabled ? 'ON' : 'OFF'}
                     </span>
@@ -451,11 +456,6 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                   </td>
                   <td className="px-4 py-3 text-sm">
                     {config.automationEnabled ? getTargetReasonLabel(config.targetReason) : '-'}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-center">
-                    <span className={config.movesToCancellation ? 'text-destructive' : 'text-muted-foreground'}>
-                      {config.movesToCancellation ? 'YES' : '-'}
-                    </span>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-1">
