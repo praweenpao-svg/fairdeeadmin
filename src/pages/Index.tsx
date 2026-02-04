@@ -88,7 +88,13 @@ const Index = () => {
   
   // Apply sub-tab filter for Leads stage
   if (activeStage === 'to_convert') {
-    stageLeads = stageLeads.filter(lead => lead.leadType === leadSubTab);
+    if (leadSubTab === 'new_leads') {
+      // 'New Leads' sub-tab includes both new_leads and coa lead types
+      stageLeads = stageLeads.filter(lead => lead.leadType === 'new_leads' || lead.leadType === 'coa');
+    } else {
+      // 'Renewals' sub-tab only includes renewals
+      stageLeads = stageLeads.filter(lead => lead.leadType === 'renewals');
+    }
   }
   
   // Apply My Cases filter

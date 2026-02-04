@@ -1,4 +1,4 @@
-import { Lead, ReworkConfig, HistoryLogEntry, PolicyType, PolicyRecord, PolicyStatus, PolicyReworkEntry, InsurerQuote, PriceListStatus, ETAStatus, PaymentMethod, EndorsementType, EndorsementStatus } from '@/types/pipeline';
+import { Lead, ReworkConfig, HistoryLogEntry, PolicyType, PolicyRecord, PolicyStatus, PolicyReworkEntry, InsurerQuote, PriceListStatus, ETAStatus, PaymentMethod, EndorsementType, EndorsementStatus, LeadSource } from '@/types/pipeline';
 
 const agents = [
   { id: 'FD-3460', name: 'Akshay Bazad' },
@@ -569,6 +569,7 @@ const generateLeads = (): Lead[] => {
       id: String(id),
       leadNumber: `#${200008 - i}`,
       leadType,
+      leadSource: leadType === 'new_leads' ? (i % 2 === 0 ? 'system' : 'manual') : undefined,
       paymentType: i % 2 === 0 ? 'full' : 'installment',
       agentId: agent.id,
       agentName: agent.name,
@@ -630,10 +631,12 @@ const generateLeads = (): Lead[] => {
         ];
 
     const vehicle = getRandomVehicle();
+    const leadType = i % 3 === 0 ? 'coa' : 'new_leads';
     const leadData: Partial<Lead> = {
       id: String(id),
       leadNumber: `#${10006 - i}`,
-      leadType: i % 3 === 0 ? 'coa' : 'new_leads',
+      leadType: leadType as 'new_leads' | 'coa' | 'renewals',
+      leadSource: leadType === 'new_leads' ? (i % 2 === 0 ? 'system' : 'manual') : undefined,
       paymentType: i % 2 === 0 ? 'full' : 'installment',
       agentId: agent.id,
       agentName: agent.name,
@@ -704,10 +707,12 @@ const generateLeads = (): Lead[] => {
         ];
 
     const vehicle = getRandomVehicle();
+    const leadType2 = i % 3 === 0 ? 'coa' : 'new_leads';
     const leadData: Partial<Lead> = {
       id: String(id),
       leadNumber: `#${10012 - i}`,
-      leadType: i % 3 === 0 ? 'coa' : 'new_leads',
+      leadType: leadType2 as 'new_leads' | 'coa' | 'renewals',
+      leadSource: leadType2 === 'new_leads' ? (i % 2 === 0 ? 'system' : 'manual') : undefined,
       paymentType: i % 2 === 0 ? 'full' : 'installment',
       agentId: agent.id,
       agentName: agent.name,
@@ -790,10 +795,12 @@ const generateLeads = (): Lead[] => {
     }
 
     const vehicle = getRandomVehicle();
+    const leadType3 = i % 3 === 0 ? 'coa' : 'new_leads';
     const leadData: Partial<Lead> = {
       id: String(id),
       leadNumber: `#${10018 - i}`,
-      leadType: i % 3 === 0 ? 'coa' : 'new_leads',
+      leadType: leadType3 as 'new_leads' | 'coa' | 'renewals',
+      leadSource: leadType3 === 'new_leads' ? (i % 2 === 0 ? 'manual' : 'system') : undefined,
       paymentType: i % 2 === 0 ? 'full' : 'installment',
       agentId: agent.id,
       agentName: agent.name,
@@ -858,10 +865,12 @@ const generateLeads = (): Lead[] => {
         ];
 
     const vehicle = getRandomVehicle();
+    const leadType4 = i % 3 === 0 ? 'coa' : 'new_leads';
     const leadData: Partial<Lead> = {
       id: String(id),
       leadNumber: `#${10024 - i}`,
-      leadType: i % 3 === 0 ? 'coa' : 'new_leads',
+      leadType: leadType4 as 'new_leads' | 'coa' | 'renewals',
+      leadSource: leadType4 === 'new_leads' ? (i % 2 === 0 ? 'system' : 'manual') : undefined,
       paymentType: i % 2 === 0 ? 'full' : 'installment',
       agentId: agent.id,
       agentName: agent.name,
@@ -945,10 +954,12 @@ const generateLeads = (): Lead[] => {
     const isShipped = scenario.vmiStatus === 'policy_shipped' || scenario.cmiStatus === 'policy_shipped';
     const saleStatus = isDelivered ? 'policy_delivered' : isShipped ? 'policy_shipped' : 'policy_issued';
     
+    const leadType5 = i % 3 === 0 ? 'coa' : 'new_leads';
     const leadData: Partial<Lead> = {
       id: String(id),
       leadNumber: `#${10030 - i}`,
-      leadType: i % 3 === 0 ? 'coa' : 'new_leads',
+      leadType: leadType5 as 'new_leads' | 'coa' | 'renewals',
+      leadSource: leadType5 === 'new_leads' ? (i % 2 === 0 ? 'manual' : 'system') : undefined,
       paymentType: i % 2 === 0 ? 'full' : 'installment',
       agentId: agent.id,
       agentName: agent.name,
@@ -1012,10 +1023,12 @@ const generateLeads = (): Lead[] => {
         ];
 
     const vehicle = getRandomVehicle();
+    const leadType6 = i % 2 === 0 ? 'coa' : 'new_leads';
     const leadData: Partial<Lead> = {
       id: String(id),
       leadNumber: `#${10036 - i}`,
-      leadType: i % 2 === 0 ? 'coa' : 'new_leads',
+      leadType: leadType6 as 'new_leads' | 'coa' | 'renewals',
+      leadSource: leadType6 === 'new_leads' ? (i % 2 === 0 ? 'system' : 'manual') : undefined,
       paymentType: i % 2 === 0 ? 'full' : 'installment',
       agentId: agent.id,
       agentName: agent.name,
