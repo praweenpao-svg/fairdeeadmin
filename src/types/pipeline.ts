@@ -60,6 +60,15 @@ export type PolicyStatus =
   | 'policy_cancelled'
   | 'rework_required';
 
+// Thread reply for comments on remarks or rework entries
+export interface ThreadReply {
+  id: string;
+  comment: string;
+  attachments?: ReworkAttachment[];
+  createdBy: string;
+  createdAt: string;
+}
+
 // Rework entry for policy-level rework
 export interface PolicyReworkEntry {
   id: string;
@@ -74,13 +83,16 @@ export interface PolicyReworkEntry {
   resolvedAt?: string;
   resolvedBy?: string;
   previousStatus: PolicyStatus; // Status before rework was triggered
+  replies?: ThreadReply[]; // Thread replies for this rework entry
 }
 
 export interface PolicyRemark {
   id: string;
   comment: string;
+  attachments?: ReworkAttachment[];
   createdBy: string;
   createdAt: string;
+  replies?: ThreadReply[]; // Thread replies for this remark
 }
 
 // Policy-level history log entry
