@@ -274,6 +274,11 @@ export function getLeadsOwnedByUser(leads: Lead[], stage: PipelineStage, user: s
   const stageLeads = getLeadsForStage(leads, stage);
   
   return stageLeads.filter(lead => {
+    // For Leads stage (to_convert), check if user is RF or SC
+    if (stage === 'to_convert') {
+      return lead.rfAssignee === user || lead.scAssignee === user;
+    }
+    
     // For leads with policy records, check if user owns any policy in current stage
     if (lead.policyRecords && lead.policyRecords.length > 0) {
       const policiesInStage = getPoliciesForStage(lead, stage);
@@ -287,7 +292,6 @@ export function getLeadsOwnedByUser(leads: Lead[], stage: PipelineStage, user: s
     switch (stage) {
       case 'all':
         return lead.deAssignee === user || lead.scAssignee === user || lead.rfAssignee === user;
-      case 'to_convert':
       case 'to_pay':
         return lead.scAssignee === user || lead.rfAssignee === user;
       case 'to_report':
