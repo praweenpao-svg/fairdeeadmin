@@ -33,17 +33,9 @@ const policyStatusTranslations: Record<string, { en: string; th: string }> = {
 };
 
 // Stage-specific policy status options (mirrors statusOptionsByStage but for policies)
-// rework_required is included for stages that have rework configs
+// rework_required is included for stages that have rework configs (except cancelled)
 const policyStatusOptionsByStage: Record<PipelineStage, PolicyStatus[]> = {
-  all: [
-    'pending_payment',
-    'pending_review',
-    'pending_issuance',
-    'policy_issued',
-    'policy_shipped',
-    'policy_delivered',
-    'policy_cancelled',
-  ],
+  all: [], // Empty - will be determined dynamically based on policy's actual stage
   to_convert: [], // No policy statuses in to_convert
   to_pay: [
     'pending_payment',
@@ -69,6 +61,7 @@ const policyStatusOptionsByStage: Record<PipelineStage, PolicyStatus[]> = {
   ],
   cancelled: [
     'policy_cancelled',
+    // No rework_required for cancelled stage
   ],
 };
 
