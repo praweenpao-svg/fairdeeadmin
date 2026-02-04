@@ -1432,7 +1432,10 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                             <span className="font-medium text-sm">{lead.leadNumber}</span>
                             <div className="flex items-center gap-1 flex-wrap">
                               <CreatedByBadge createdBy={lead.createdBy} />
-                              <LeadSourceBadge leadType={lead.leadType} leadSource={lead.leadSource} />
+                              {/* Only show lead source badge in Leads stage (to_convert) */}
+                              {stage === 'to_convert' && (
+                                <LeadSourceBadge leadType={lead.leadType} leadSource={lead.leadSource} />
+                              )}
                               {lead.policyType && (
                                 <>
                                   <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
@@ -1669,7 +1672,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                     
                     {/* Expanded Policy Rows */}
                     {isPostLeadStage && isExpanded && allPolicies.length > 0 && (
-                      <tr className="border-b-2 border-border">
+                      <tr className="border-b border-border">
                         <td colSpan={showDEColumn ? 10 : 9} className="p-0">
                           <div className="mx-4 my-2 rounded-lg border border-border overflow-hidden bg-card shadow-sm">
                             {/* Policy Sub-Table */}
