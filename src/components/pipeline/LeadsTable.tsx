@@ -1316,10 +1316,36 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
     }
   };
 
+  // Helper to check if a policy has reached terminal state (no owner needed)
+  const isPolicyTerminal = (policy: PolicyRecord): boolean => {
+    // Policy Cancelled is always terminal
+    if (policy.status === 'policy_cancelled') {
+      return true;
+    }
+    // Policy Issued is terminal for E-Policy and Print by Myself
+    if (policy.status === 'policy_issued') {
+      const shippingMethod = policy.shippingMethod;
+      if (shippingMethod === 'e_policy' || shippingMethod === 'print_by_myself') {
+        return true;
+      }
+    }
+    // Policy Delivered is terminal for Print by FairDee
+    if (policy.status === 'policy_delivered') {
+      return true;
+    }
+    return false;
+  };
+
   // Get owners for a specific policy row (policy-level)
   // When a policy is in rework, returns all unique owners from active rework entries
   // When not in rework, it uses the stage-based owner (RF/SC or DE)
+  // When policy reaches terminal state, returns empty (shows "-")
   const getPolicyOwners = (lead: Lead, policy: PolicyRecord): string[] => {
+    // Terminal state - no owner needed
+    if (isPolicyTerminal(policy)) {
+      return [];
+    }
+
     // Check if this specific policy has active reworks
     if (policy.status === 'rework_required' && policy.reworkHistory) {
       const activeReworks = policy.reworkHistory.filter(e => !e.resolved);
