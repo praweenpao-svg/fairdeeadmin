@@ -1789,6 +1789,8 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                   };
                                   
                                   const remarkCount = policy.remarks?.length || 0;
+                                  const reworkCount = policy.reworkHistory?.length || 0;
+                                  const totalCount = remarkCount + reworkCount;
                                   
                                   // Show tracking button when print_by_fairdee and policy shipped/delivered
                                   const showTracking = policy.shippingMethod === 'print_by_fairdee' && 
@@ -2006,7 +2008,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                           onClick={() => handleOpenRemarks(lead.id, policy.id, policy.kind)}
                                         >
                                           <MessageSquare className="w-4 h-4 mr-1" />
-                                          {remarkCount > 0 ? remarkCount : '0'}
+                                          {totalCount > 0 ? totalCount : '0'}
                                         </Button>
                                       </div>
                                     </div>
