@@ -328,12 +328,16 @@ export function HistoryLogDialog({
 }: HistoryLogDialogProps) {
   const { language } = useLanguageStore();
 
+  // Filter out rework-related entries (now tracked in Remarks dialog) and sort by date
+  const reworkActions: HistoryActionType[] = ['rework_created', 'rework_resolved', 'rework_reassigned'];
+  const filteredLog = historyLog.filter(entry => !reworkActions.includes(entry.action));
+  
   // Sort entries by date (oldest first - Previous -> Latest timeline)
-  const sortedLog = [...historyLog].sort((a, b) => {
+  const sortedLog = [...filteredLog].sort((a, b) => {
     return new Date(a.triggeredAt).getTime() - new Date(b.triggeredAt).getTime();
   });
 
-  if (historyLog.length === 0) {
+  if (filteredLog.length === 0) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-[500px]">
@@ -363,7 +367,7 @@ export function HistoryLogDialog({
             {language === 'th' ? 'ประวัติการทำงาน' : 'History Log'}
           </DialogTitle>
           <DialogDescription>
-            {language === 'th' ? 'งาน' : 'Lead'} {leadNumber} — {historyLog.length} {historyLog.length === 1 ? (language === 'th' ? 'รายการ' : 'event') : (language === 'th' ? 'รายการ' : 'events')}
+            {language === 'th' ? 'งาน' : 'Lead'} {leadNumber} — {filteredLog.length} {filteredLog.length === 1 ? (language === 'th' ? 'รายการ' : 'event') : (language === 'th' ? 'รายการ' : 'events')}
           </DialogDescription>
         </DialogHeader>
 
