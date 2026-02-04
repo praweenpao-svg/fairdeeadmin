@@ -347,15 +347,19 @@ export function PolicyRemarksReworkDialog({
           'p-3 rounded-lg border',
           isActive
             ? 'bg-warning/10 border-warning/30'
-            : 'bg-muted/20 border-border opacity-70'
+            : 'bg-green-500/10 border-green-500/30'
         )}
       >
         {/* Main rework entry */}
         <div className="flex items-start gap-2">
-          <AlertTriangle className={cn('w-4 h-4 mt-0.5 shrink-0', isActive ? 'text-warning' : 'text-muted-foreground')} />
+          {isActive ? (
+            <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0 text-warning" />
+          ) : (
+            <CheckCircle className="w-4 h-4 mt-0.5 shrink-0 text-green-600" />
+          )}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <p className={cn('text-sm font-medium', isActive ? 'text-warning' : 'text-muted-foreground line-through')}>
+              <p className={cn('text-sm font-medium', isActive ? 'text-warning' : 'text-green-700 dark:text-green-400')}>
                 {getReasonLabel(entry)}
               </p>
               {isActive && entry.assignedTo && (
