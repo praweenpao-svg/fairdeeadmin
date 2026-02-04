@@ -181,13 +181,22 @@ function CreatedByBadge({ createdBy }: { createdBy: CreatedByType }) {
   return <span className={cn('text-[10px] px-1.5 py-0.5 rounded font-medium', className)}>{label}</span>;
 }
 
-// Lead source badge: System / Manual / COA (shown in Leads stage for new_leads and coa)
+// Lead source badge: System / Manual / COA / Renewal
 function LeadSourceBadge({ leadType, leadSource }: { leadType: LeadType; leadSource?: LeadSource }) {
   // COA leads show "COA" badge
   if (leadType === 'coa') {
     return (
       <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
         COA
+      </span>
+    );
+  }
+  
+  // Renewals show "Renewal" badge
+  if (leadType === 'renewals') {
+    return (
+      <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+        Renewal
       </span>
     );
   }
@@ -202,7 +211,6 @@ function LeadSourceBadge({ leadType, leadSource }: { leadType: LeadType; leadSou
     );
   }
   
-  // Renewals don't show this badge
   return null;
 }
 
