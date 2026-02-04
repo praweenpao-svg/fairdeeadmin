@@ -38,6 +38,7 @@ import { PolicyStatusCell } from './PolicyStatusCell';
 import { getPoliciesForStage } from './PipelineTabs';
 import { InsurersExpandableRow } from './InsurersExpandableRow';
 import { PolicyRemarksReworkDialog } from './PolicyRemarksReworkDialog';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface LeadsTableProps {
   leads: Lead[];
@@ -1942,21 +1943,27 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                               </span>
                                             );
                                           }
-                                          // Multiple owners - show stacked with tooltip-like display
+                                          // Multiple owners - show "First +N" format with tooltip
+                                          const firstOwner = policyOwners[0];
+                                          const remainingCount = policyOwners.length - 1;
                                           return (
-                                            <div className="flex flex-col gap-0.5">
-                                              {policyOwners.map((owner, idx) => (
-                                                <span
-                                                  key={idx}
-                                                  className={cn(
-                                                    'text-xs font-medium leading-tight',
-                                                    isReworkOwner ? 'text-warning' : 'text-foreground'
-                                                  )}
-                                                >
-                                                  {owner}
+                                            <Tooltip>
+                                              <TooltipTrigger asChild>
+                                                <span className={cn(
+                                                  'font-medium cursor-help',
+                                                  isReworkOwner ? 'text-warning' : 'text-foreground'
+                                                )}>
+                                                  {firstOwner} <span className="text-muted-foreground">+{remainingCount}</span>
                                                 </span>
-                                              ))}
-                                            </div>
+                                              </TooltipTrigger>
+                                              <TooltipContent side="top" className="max-w-xs">
+                                                <div className="flex flex-col gap-1">
+                                                  {policyOwners.map((owner, idx) => (
+                                                    <span key={idx} className="text-sm">{owner}</span>
+                                                  ))}
+                                                </div>
+                                              </TooltipContent>
+                                            </Tooltip>
                                           );
                                         })()}
                                       </div>
