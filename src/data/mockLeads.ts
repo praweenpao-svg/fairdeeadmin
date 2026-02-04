@@ -199,6 +199,7 @@ function generatePolicyRecordWithRework(
   policyStartDate: string,
   reworkReasonIds: string[],
   shippingMethodOverride?: 'e_policy' | 'print_by_myself' | 'print_by_fairdee',
+  assignedTo?: string,
 ): PolicyRecord {
   const shippingMethod = shippingMethodOverride || printingPreferences[Math.floor(Math.random() * printingPreferences.length)];
   
@@ -222,6 +223,7 @@ function generatePolicyRecordWithRework(
       savedBy: deStaff[idx % deStaff.length],
       savedAt,
       previousStatus,
+      assignedTo: assignedTo, // Owner for this rework entry
     };
   });
 
@@ -826,14 +828,20 @@ const generateLeads = (): Lead[] => {
     const endorsementStatus: EndorsementStatus | undefined = i === 2 ? 'pending_on_ops' : i === 3 ? 'pending_finance' : undefined;
     
     // Generate policy records - some with rework status
+    // For rework records, assign different owners to test count logic
+    // Assign to SC/RF based on rework config (rf_sc assignment for reasons 5,6,7)
     let policyRecords: PolicyRecord[];
     if (scenario.hasRework) {
       const reworkReasonIds = scenario.multipleRework ? ['5', '6', '7'] : ['6'];
+      // For VMI rework, alternate between Pao and other staff to test count logic
+      const vmiReworkOwner = i % 2 === 0 ? 'Pao' : scStaff[i % scStaff.length];
+      const cmiReworkOwner = i % 2 === 0 ? scStaff[i % scStaff.length] : 'Pao'; // Opposite of VMI
+      
       if (scenario.policyType === 'vmi_only') {
-        policyRecords = [generatePolicyRecordWithRework(`pol-${id}-vmi`, 'vmi', 'pending_issuance', createdOnFull, policyStartDate, reworkReasonIds)];
+        policyRecords = [generatePolicyRecordWithRework(`pol-${id}-vmi`, 'vmi', 'pending_issuance', createdOnFull, policyStartDate, reworkReasonIds, undefined, vmiReworkOwner)];
       } else {
         policyRecords = [
-          generatePolicyRecordWithRework(`pol-${id}-vmi`, 'vmi', 'pending_issuance', createdOnFull, policyStartDate, reworkReasonIds),
+          generatePolicyRecordWithRework(`pol-${id}-vmi`, 'vmi', 'pending_issuance', createdOnFull, policyStartDate, reworkReasonIds, undefined, vmiReworkOwner),
           generatePolicyRecord(`pol-${id}-cmi`, 'cmi', scenario.cmiStatus!, createdOnFull, cmiPolicyStartDate),
         ];
       }
