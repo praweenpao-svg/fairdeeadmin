@@ -1,53 +1,50 @@
 // Status color configurations for dropdowns
-// Format: { bg: background color }
+// Format: { text: text color }
 
 export interface StatusColorConfig {
-  bg: string;
+  text: string;
 }
 
 // Lead status colors (new_leads, coa stages)
+// Using saturated text colors for clarity
 export const leadStatusColors: Record<string, StatusColorConfig> = {
-  pending: { bg: '#E7F1F9' }, // Light blue - pending
-  waiting_for_insurer: { bg: '#E7F1F9' },
-  docs_missing: { bg: '#FFFEF2' },
-  partially_added: { bg: '#E6F8F0' },
-  completed: { bg: '#E6F8F0' },
-  quotation_shared: { bg: '#E6F8F0' },
-  invalid: { bg: '#FFF5F5' },
+  pending: { text: '#2563EB' }, // Blue - pending
+  waiting_for_insurer: { text: '#2563EB' }, // Blue
+  docs_missing: { text: '#D97706' }, // Amber/Orange - warning
+  partially_added: { text: '#16A34A' }, // Green - partial progress
+  completed: { text: '#16A34A' }, // Green - success
+  quotation_shared: { text: '#16A34A' }, // Green - success
+  invalid: { text: '#DC2626' }, // Red - error
   // Renewal statuses
-  price_pending: { bg: '#E7F1F9' },
-  revision_pending: { bg: '#E7F1F9' },
-  renewal_rejected: { bg: '#FFF5F5' },
-  price_ready: { bg: '#E6F8F0' },
-  revision_required: { bg: '#E7F1F9' },
+  price_pending: { text: '#2563EB' }, // Blue - pending
+  revision_pending: { text: '#D97706' }, // Amber - needs attention
+  renewal_rejected: { text: '#DC2626' }, // Red - rejected
+  price_ready: { text: '#16A34A' }, // Green - ready
+  revision_required: { text: '#D97706' }, // Amber - needs revision
 };
 
 // Policy status colors (VMI/CMI)
 export const policyStatusColors: Record<string, StatusColorConfig> = {
-  pending_payment: { bg: '#E7F1F9' }, // Light blue - pending
-  pending_review: { bg: '#E7F1F9' },
-  pending_issuance: { bg: '#E7F1F9' },
-  policy_issued: { bg: '#E6F8F0' },
-  policy_shipped: { bg: '#E6F8F0' },
-  policy_delivered: { bg: '#E6F8F0' },
-  policy_cancelled: { bg: '#FFF5F5' },
-  rework_required: { bg: '#FDE68A' }, // Stronger amber - like hover state
+  pending_payment: { text: '#2563EB' }, // Blue - pending
+  pending_review: { text: '#2563EB' }, // Blue - pending
+  pending_issuance: { text: '#2563EB' }, // Blue - pending
+  policy_issued: { text: '#16A34A' }, // Green - success
+  policy_shipped: { text: '#16A34A' }, // Green - success
+  policy_delivered: { text: '#16A34A' }, // Green - success
+  policy_cancelled: { text: '#DC2626' }, // Red - cancelled
+  rework_required: { text: '#D97706' }, // Amber - needs attention
 };
 
-// Get inline styles for a status
-// NOTE: Colors temporarily disabled - to be brought back later
+// Get inline styles for a status - applies color to text with bold font
 export function getStatusStyles(status: string, colors: Record<string, StatusColorConfig>, disabled = false): React.CSSProperties {
-  // Temporarily return empty styles to hide colors
-  return {};
+  const config = colors[status];
+  if (!config || !config.text) {
+    return {}; // Return empty for default styling
+  }
   
-  // Original implementation (to be restored later):
-  // const config = colors[status];
-  // if (!config || !config.bg) {
-  //   return {}; // Return empty for default styling
-  // }
-  // const opacity = disabled ? 0.8 : 1;
-  // return {
-  //   backgroundColor: config.bg,
-  //   opacity,
-  // };
+  return {
+    color: config.text,
+    fontWeight: 600, // Semi-bold for better readability
+    opacity: disabled ? 0.7 : 1,
+  };
 }
