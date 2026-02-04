@@ -398,8 +398,8 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
   // Check if current stage is a post-lead stage (To Pay onwards) - 'all' uses same layout as post-lead stages
   const isPostLeadStage = ['all', 'to_pay', 'to_report', 'to_issue', 'to_deliver', 'completed', 'cancelled'].includes(stage);
 
-  // DE column is shown in all stages
-  const showDEColumn = true;
+  // DE column is shown in post-lead stages only (not in Leads stage)
+  const showDEColumn = isPostLeadStage;
 
   // Filter rework configs by current stage (for 'all' tab, include configs from all post-lead stages)
   const stageReworkConfigs = stage === 'all' 
@@ -1395,7 +1395,10 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                   <th className="data-table-header px-4 py-3 text-left">DE</th>
                 )}
                 {!isPostLeadStage && (
-                  <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'สถานะงาน' : 'Status'}</th>
+                  <>
+                    <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'สถานะ ETA' : 'ETA Status'}</th>
+                    <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'สถานะงาน' : 'Status'}</th>
+                  </>
                 )}
                 {/* Owner column hidden - now at policy row level. Uncomment to restore:
                 <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'ผู้รับผิดชอบ' : 'Owner'}</th>
@@ -1406,8 +1409,8 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
             <tbody>
               {sortedLeads.length === 0 ? (
                 <tr>
-                  <td colSpan={isPostLeadStage ? (showDEColumn ? 11 : 10) : (showDEColumn ? 9 : 8)} className="px-4 py-12 text-center text-muted-foreground">
-                    No leads found for this stage
+                  <td colSpan={isPostLeadStage ? (showDEColumn ? 11 : 10) : 9} className="px-4 py-12 text-center text-muted-foreground">
+                    {language === 'th' ? 'ไม่พบ lead สำหรับ stage นี้' : 'No leads found for this stage'}
                   </td>
                 </tr>
               ) : (
@@ -1609,39 +1612,66 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                         </td>
                       )}
                       {!isPostLeadStage && (
-                        <td className="px-4 py-3">
-                          {hasActiveRework ? (
-                            <InlineReworkActions
-                              lead={lead}
-                              latestEntry={latestReworkEntry}
-                              reworkConfigs={reworkConfigs}
-                              onResolve={handleResolveRework}
-                              onReassign={handleReassignRework}
-                            />
-                          ) : (
-                          <Select 
-                              value={lead.saleStatus || defaultStatusByStage[stage]}
-                              onValueChange={(value) => handleStatusChange(lead, value)}
-                            >
-                              <SelectTrigger 
-                                className="w-[200px] h-8 text-xs"
-                                style={getStatusStyles(lead.saleStatus || defaultStatusByStage[stage], leadStatusColors)}
+                        <>
+                          {/* ETA Status Cell */}
+                          <td className="px-4 py-3">
+                            {(() => {
+                              // Check if lead has any insurer quotes with ETA status
+                              const quotes = lead.insurerQuotes || [];
+                              const hasBreached = quotes.some(q => q.etaStatus === 'breached');
+                              const hasOnTime = quotes.some(q => q.etaStatus === 'on_time');
+                              
+                              if (hasBreached) {
+                                return (
+                                  <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-destructive/10 text-destructive">
+                                    {language === 'th' ? 'เกินกำหนด' : 'Breached'}
+                                  </span>
+                                );
+                              } else if (hasOnTime) {
+                                return (
+                                  <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-green-500/10 text-green-600">
+                                    {language === 'th' ? 'ตามกำหนด' : 'On Time'}
+                                  </span>
+                                );
+                              }
+                              return <span className="text-xs text-muted-foreground">-</span>;
+                            })()}
+                          </td>
+                          {/* Status Cell */}
+                          <td className="px-4 py-3">
+                            {hasActiveRework ? (
+                              <InlineReworkActions
+                                lead={lead}
+                                latestEntry={latestReworkEntry}
+                                reworkConfigs={reworkConfigs}
+                                onResolve={handleResolveRework}
+                                onReassign={handleReassignRework}
+                              />
+                            ) : (
+                            <Select 
+                                value={lead.saleStatus || defaultStatusByStage[stage]}
+                                onValueChange={(value) => handleStatusChange(lead, value)}
                               >
-                                <SelectValue placeholder={language === 'th' ? 'เลือกสถานะ' : 'Select status'} />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {(stage === 'to_convert' && lead.leadType 
-                                  ? statusOptionsByLeadType[lead.leadType] || statusOptionsByStage[stage]
-                                  : statusOptionsByStage[stage]
-                                ).map((statusValue) => (
-                                  <SelectItem key={statusValue} value={statusValue}>
-                                    {getStatusLabel(statusValue, language)}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          )}
-                        </td>
+                                <SelectTrigger 
+                                  className="w-[200px] h-8 text-xs"
+                                  style={getStatusStyles(lead.saleStatus || defaultStatusByStage[stage], leadStatusColors)}
+                                >
+                                  <SelectValue placeholder={language === 'th' ? 'เลือกสถานะ' : 'Select status'} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {(stage === 'to_convert' && lead.leadType 
+                                    ? statusOptionsByLeadType[lead.leadType] || statusOptionsByStage[stage]
+                                    : statusOptionsByStage[stage]
+                                  ).map((statusValue) => (
+                                    <SelectItem key={statusValue} value={statusValue}>
+                                      {getStatusLabel(statusValue, language)}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            )}
+                          </td>
+                        </>
                       )}
                       {/* Owner cell hidden - now at policy row level. Uncomment to restore:
                       <td className="px-4 py-3">
