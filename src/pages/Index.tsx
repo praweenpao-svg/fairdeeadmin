@@ -34,8 +34,8 @@ const Index = () => {
   // Filters for other stages (To Report, To Issue, To Deliver, Completed)
   const [otherStagesFilters, setOtherStagesFilters] = useState<OtherStagesFilterState>(defaultOtherStagesFilterState);
 
-  // "All", "To Convert", and "To Pay" stages use the full filter panel
-  const useAllFiltersPanel = activeStage === 'all' || activeStage === 'to_convert' || activeStage === 'to_pay';
+  // Only "To Convert" (Leads) stage uses the AllFiltersPanel; All and To Pay use post-lead filter panel
+  const useAllFiltersPanel = activeStage === 'to_convert';
   const isToPayStage = activeStage === 'to_pay';
 
   const handleLeadUpdate = (leadId: string, updates: Partial<Lead>) => {
