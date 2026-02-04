@@ -16,7 +16,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { PolicyRecord, PolicyHistoryLogEntry, Lead } from '@/types/pipeline';
+import { PolicyRecord, Lead } from '@/types/pipeline';
 import { cn } from '@/lib/utils';
 import { useLanguageStore } from '@/stores/languageStore';
 
@@ -69,6 +69,12 @@ function formatAssigneeType(type: string, language: 'en' | 'th'): string {
   return labels[type]?.[language] || type.toUpperCase();
 }
 
+// Check if triggeredBy is a system/automated action
+function isSystemTriggered(triggeredBy: string): boolean {
+  const systemTriggers = ['system', 'payment system', 'system (round robin)', 'auto'];
+  return systemTriggers.some(trigger => triggeredBy.toLowerCase().includes(trigger));
+}
+
 // Unified timeline entry for display
 interface TimelineEntry {
   id: string;
@@ -114,18 +120,16 @@ function extractPolicyTimeline(policy: PolicyRecord): TimelineEntry[] {
   
   for (const entry of historyLog) {
     // Only include displayable actions (exclude rework-related)
-    if (entry.action === 'status_changed' || entry.action === 'remark_added') {
-      if (entry.action === 'status_changed') {
-        entries.push({
-          id: entry.id,
-          timestamp: entry.triggeredAt,
-          action: 'status_changed',
-          triggeredBy: entry.triggeredBy,
-          fromStatus: entry.fromStatus,
-          toStatus: entry.toStatus,
-          policyKind: policy.kind,
-        });
-      }
+    if (entry.action === 'status_changed') {
+      entries.push({
+        id: entry.id,
+        timestamp: entry.triggeredAt,
+        action: 'status_changed',
+        triggeredBy: entry.triggeredBy,
+        fromStatus: entry.fromStatus,
+        toStatus: entry.toStatus,
+        policyKind: policy.kind,
+      });
     }
   }
   
@@ -251,7 +255,22 @@ function buildTimelineRows(entries: TimelineEntry[], hasVmi: boolean, hasCmi: bo
   return rows;
 }
 
-// Timeline entry card component
+// Format timestamp to HH:MM
+function formatTime(timestamp: string): string {
+  const timePart = timestamp.split(' ')[1];
+  if (!timePart) return '';
+  return timePart; // Already in HH:MM format
+}
+
+// Format date to DD/MM
+function formatDate(timestamp: string): string {
+  const datePart = timestamp.split(' ')[0];
+  if (!datePart) return '';
+  const [day, month] = datePart.split('-');
+  return `${day}/${month}`;
+}
+
+// Timeline entry card component with timestamp inside
 function EntryCard({ 
   entry, 
   language,
@@ -263,14 +282,15 @@ function EntryCard({
 }) {
   const config = getActionConfig(entry.action);
   const Icon = config.icon;
+  const showTriggeredBy = !isSystemTriggered(entry.triggeredBy);
   
   return (
     <div className={cn(
       "rounded-lg border p-3 space-y-2",
       isFirst && "border-primary/30 bg-primary/5"
     )}>
-      {/* Action badge */}
-      <div className="flex items-center gap-2 flex-wrap">
+      {/* Header: Action badge + Timestamp */}
+      <div className="flex items-center justify-between gap-2">
         <span className={cn(
           "text-xs font-semibold px-2 py-0.5 rounded flex items-center gap-1",
           config.bgColor,
@@ -279,6 +299,11 @@ function EntryCard({
           <Icon className="w-3 h-3" />
           {getActionLabel(entry.action, language)}
         </span>
+        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+          <Clock className="w-3 h-3" />
+          <span className="font-medium">{formatTime(entry.timestamp)}</span>
+          <span className="text-[10px]">({formatDate(entry.timestamp)})</span>
+        </div>
       </div>
       
       {/* Content based on action type */}
@@ -333,11 +358,13 @@ function EntryCard({
         </div>
       )}
       
-      {/* Triggered by */}
-      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-        <User className="w-3 h-3" />
-        <span>{language === 'th' ? 'โดย' : 'By'} {entry.triggeredBy}</span>
-      </div>
+      {/* Triggered by - only show if not system */}
+      {showTriggeredBy && (
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <User className="w-3 h-3" />
+          <span>{language === 'th' ? 'โดย' : 'By'} {entry.triggeredBy}</span>
+        </div>
+      )}
     </div>
   );
 }
@@ -383,7 +410,7 @@ export function HistoryLogDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={cn(
         "max-h-[85vh]",
-        isTwoColumn ? "sm:max-w-[800px]" : "sm:max-w-[500px]"
+        isTwoColumn ? "sm:max-w-[700px]" : "sm:max-w-[450px]"
       )}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -398,10 +425,7 @@ export function HistoryLogDialog({
         <ScrollArea className="max-h-[60vh]">
           {/* Column headers for two-column layout */}
           {isTwoColumn && (
-            <div className="grid grid-cols-[80px_1fr_1fr] gap-3 mb-3 sticky top-0 bg-background pb-2 border-b">
-              <div className="text-xs font-medium text-muted-foreground">
-                {language === 'th' ? 'เวลา' : 'Time'}
-              </div>
+            <div className="grid grid-cols-2 gap-3 mb-3 sticky top-0 bg-background pb-2 border-b">
               <div className="text-xs font-semibold text-center px-2 py-1 rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
                 VMI
               </div>
@@ -416,24 +440,22 @@ export function HistoryLogDialog({
             {rows.map((row, index) => {
               const isFirst = index === rows.length - 1; // Most recent is last after sort
               
-              // Format timestamp for display
-              const formattedTime = row.timestamp.split(' ')[1] || row.timestamp;
-              const formattedDate = row.timestamp.split(' ')[0] || '';
-              
               if (isTwoColumn) {
-                return (
-                  <div key={row.timestamp + index} className="grid grid-cols-[80px_1fr_1fr] gap-3 items-start">
-                    {/* Timestamp column */}
-                    <div className="text-xs text-muted-foreground pt-3">
-                      <div className="font-medium">{formattedTime}</div>
-                      <div className="text-[10px]">{formattedDate}</div>
+                // Shared entry spans both columns
+                if (row.sharedEntry) {
+                  return (
+                    <div key={row.timestamp + index} className="col-span-2">
+                      <EntryCard entry={row.sharedEntry} language={language} isFirst={isFirst} />
                     </div>
-                    
+                  );
+                }
+                
+                // Separate VMI and CMI columns
+                return (
+                  <div key={row.timestamp + index} className="grid grid-cols-2 gap-3 items-start">
                     {/* VMI column */}
                     <div>
-                      {row.sharedEntry ? (
-                        <EntryCard entry={row.sharedEntry} language={language} isFirst={isFirst} />
-                      ) : row.vmiEntry ? (
+                      {row.vmiEntry ? (
                         <EntryCard entry={row.vmiEntry} language={language} isFirst={isFirst} />
                       ) : (
                         <div className="h-full" />
@@ -442,9 +464,7 @@ export function HistoryLogDialog({
                     
                     {/* CMI column */}
                     <div>
-                      {row.sharedEntry ? (
-                        <EntryCard entry={row.sharedEntry} language={language} isFirst={isFirst} />
-                      ) : row.cmiEntry ? (
+                      {row.cmiEntry ? (
                         <EntryCard entry={row.cmiEntry} language={language} isFirst={isFirst} />
                       ) : (
                         <div className="h-full" />
@@ -459,20 +479,8 @@ export function HistoryLogDialog({
               if (!entry) return null;
               
               return (
-                <div key={row.timestamp + index} className="flex gap-3 items-start">
-                  {/* Timestamp */}
-                  <div className="w-20 shrink-0 text-xs text-muted-foreground pt-3">
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      <span className="font-medium">{formattedTime}</span>
-                    </div>
-                    <div className="text-[10px] ml-4">{formattedDate}</div>
-                  </div>
-                  
-                  {/* Entry */}
-                  <div className="flex-1">
-                    <EntryCard entry={entry} language={language} isFirst={isFirst} />
-                  </div>
+                <div key={row.timestamp + index}>
+                  <EntryCard entry={entry} language={language} isFirst={isFirst} />
                 </div>
               );
             })}
