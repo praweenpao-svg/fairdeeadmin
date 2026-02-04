@@ -10,7 +10,7 @@ import {
   MessageSquare,
   Truck,
 } from 'lucide-react';
-import { Lead, PipelineStage, LeadType, ReworkConfig, CreatedByType, ReworkAttachment, ReworkHistoryEntry, HistoryLogEntry, PolicyStatus, PolicyReworkEntry, PolicyRecord, PaymentMethod, PolicyHistoryLogEntry } from '@/types/pipeline';
+import { Lead, PipelineStage, LeadType, LeadSource, ReworkConfig, CreatedByType, ReworkAttachment, ReworkHistoryEntry, HistoryLogEntry, PolicyStatus, PolicyReworkEntry, PolicyRecord, PaymentMethod, PolicyHistoryLogEntry } from '@/types/pipeline';
 import { cn } from '@/lib/utils';
 import { useLanguageStore } from '@/stores/languageStore';
 import { toast } from 'sonner';
@@ -179,6 +179,31 @@ function CreatedByBadge({ createdBy }: { createdBy: CreatedByType }) {
   };
   const { label, className } = config[createdBy];
   return <span className={cn('text-[10px] px-1.5 py-0.5 rounded font-medium', className)}>{label}</span>;
+}
+
+// Lead source badge: System / Manual / COA (shown in Leads stage for new_leads and coa)
+function LeadSourceBadge({ leadType, leadSource }: { leadType: LeadType; leadSource?: LeadSource }) {
+  // COA leads show "COA" badge
+  if (leadType === 'coa') {
+    return (
+      <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+        COA
+      </span>
+    );
+  }
+  
+  // new_leads show System or Manual badge based on leadSource
+  if (leadType === 'new_leads') {
+    const label = leadSource === 'system' ? 'System' : 'Manual';
+    return (
+      <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+        {label}
+      </span>
+    );
+  }
+  
+  // Renewals don't show this badge
+  return null;
 }
 
 // Helper to format premium in THB
@@ -1397,8 +1422,9 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                           )}
                           <div className="flex flex-col gap-1">
                             <span className="font-medium text-sm">{lead.leadNumber}</span>
-                            <div className="flex items-center gap-1">
+                            <div className="flex items-center gap-1 flex-wrap">
                               <CreatedByBadge createdBy={lead.createdBy} />
+                              <LeadSourceBadge leadType={lead.leadType} leadSource={lead.leadSource} />
                               {lead.policyType && (
                                 <>
                                   <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">

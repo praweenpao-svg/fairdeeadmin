@@ -1,4 +1,5 @@
 export type LeadType = 'new_leads' | 'coa' | 'renewals';
+export type LeadSource = 'system' | 'manual'; // For new_leads: system-created or manually created
 export type PaymentType = 'full' | 'installment';
 export type PipelineStage = 'all' | 'to_convert' | 'to_pay' | 'to_report' | 'to_issue' | 'to_deliver' | 'completed' | 'cancelled';
 
@@ -201,6 +202,7 @@ export interface Lead {
   id: string;
   leadNumber: string;
   leadType: LeadType;
+  leadSource?: LeadSource; // For new_leads: 'system' or 'manual' (COA leads don't need this)
   paymentType: PaymentType;
   agentId: string;
   agentName: string;
