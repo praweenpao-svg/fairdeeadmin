@@ -46,10 +46,10 @@ export function PolicyRecordRow({
 
   return (
     <div className={cn(
-      'flex items-center gap-4 py-2 px-4 border-l-2',
+      'flex items-center gap-4 py-2 px-4 border-l-2 transition-colors',
       isStageRelevant 
-        ? 'bg-muted/30 border-primary/50' 
-        : 'bg-muted/10 border-muted-foreground/20'
+        ? 'bg-primary/[0.06] border-primary/60 hover:bg-primary/[0.1]' 
+        : 'bg-muted/10 border-muted-foreground/20 opacity-70'
     )}>
       {/* Policy Kind Badge */}
       <Badge 
