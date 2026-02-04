@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/select';
 import { PolicyReworkActions } from './PolicyReworkActions';
 import { policyStatusColors, getStatusStyles } from '@/utils/statusColors';
+import { getPolicyStage } from './PipelineTabs';
 
 interface PolicyStatusCellProps {
   policy: PolicyRecord | undefined;
@@ -95,8 +96,13 @@ export function PolicyStatusCell({
     );
   }
 
-  // Get status options for the current stage
-  const statusOptions = policyStatusOptionsByStage[stage] || [];
+  // Determine effective stage: for 'all' tab, use the policy's actual stage
+  const effectiveStage = stage === 'all' 
+    ? (getPolicyStage(policy) || 'to_pay') // fallback to to_pay if null
+    : stage;
+
+  // Get status options for the effective stage
+  const statusOptions = policyStatusOptionsByStage[effectiveStage] || [];
 
   // Get color styles for the status
   const statusStyles = getStatusStyles(policy.status, policyStatusColors);

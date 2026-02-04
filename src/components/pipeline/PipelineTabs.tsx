@@ -82,7 +82,7 @@ import { isCancellationReworkReason } from '@/components/rework/ReworkConsoleTab
 
 // Get the effective stage for a policy (considering rework and shipping method)
 // Uses mockReworkConfigs to check movesToCancellation property
-function getPolicyStage(policy: PolicyRecord, reworkConfigs: ReworkConfig[] = mockReworkConfigs): PipelineStage | null {
+export function getPolicyStage(policy: PolicyRecord, reworkConfigs: ReworkConfig[] = mockReworkConfigs): PipelineStage | null {
   if (policy.status === 'rework_required' && policy.reworkHistory && policy.reworkHistory.length > 0) {
     // Find the latest unresolved rework entry
     const latestRework = [...policy.reworkHistory].reverse().find(e => !e.resolved);
