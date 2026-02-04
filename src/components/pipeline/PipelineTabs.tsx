@@ -22,15 +22,15 @@ interface PipelineTabsProps {
 }
 
 const stageConfig = [
-  { 
-    id: 'all' as const, 
-    icon: LayoutGrid,
-    description: 'All leads'
-  },
   {
     id: 'to_convert' as const, 
     icon: RefreshCw,
     description: 'Awaiting conversion'
+  },
+  { 
+    id: 'all' as const, 
+    icon: LayoutGrid,
+    description: 'All post-lead stages'
   },
   { 
     id: 'to_pay' as const, 
@@ -128,7 +128,23 @@ export function getPoliciesForStage(lead: Lead, stage: PipelineStage): PolicyRec
 export function getLeadsForStage(leads: Lead[], stage: PipelineStage): Lead[] {
   switch (stage) {
     case 'all':
-      return leads;
+      // All: post-lead stages only (to_pay, to_report, to_issue, to_deliver, completed, cancelled)
+      // Excludes leads in to_convert stage
+      return leads.filter((lead) => {
+        // Include if has any policy records in post-lead stages
+        if (lead.policyRecords && lead.policyRecords.length > 0) {
+          return lead.policyRecords.some(policy => {
+            const policyStage = getPolicyStage(policy);
+            return policyStage && policyStage !== 'to_convert';
+          });
+        }
+        // Legacy: include if not in to_convert criteria
+        const isInToConvert = 
+          ['new_leads', 'coa', 'renewals'].includes(lead.leadType) &&
+          lead.paymentStatus === 'unpaid' &&
+          ['pending', 'docs_missing', 'waiting_for_insurer', 'partially_added', 'completed', 'quotation_shared', 'invalid', 'price_pending', 'revision_pending', 'renewal_rejected', 'price_ready'].includes(lead.saleStatus);
+        return !isInToConvert;
+      });
     case 'to_convert':
       // To Convert: leads with conversion statuses (unpaid, awaiting conversion)
       // Includes renewal-specific statuses: price_pending, revision_pending, renewal_rejected, price_ready
