@@ -139,17 +139,16 @@ const Index = () => {
       <div className="p-6">
         {/* Filters Row */}
         <div className="flex flex-wrap items-center gap-3 mb-6">
-          {/* Search - Hidden for now, to be brought back later
+          {/* Search */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Search leads..."
+              placeholder={language === 'th' ? 'ค้นหา...' : 'Search leads...'}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 w-[200px]"
             />
           </div>
-          */}
           
           <button
             onClick={() => setMyCasesOnly(!myCasesOnly)}
@@ -163,14 +162,11 @@ const Index = () => {
             {language === 'th' ? 'เคสของฉัน' : 'My Cases'}
           </button>
           
-          {/* DateRangeFilter - Hidden for now, to be brought back later
           <DateRangeFilter
             dateRange={dateRange}
             onDateRangeChange={setDateRange}
           />
-          */}
           
-          {/* All Filters Panel - Hidden for now, to be brought back later
           {useAllFiltersPanel ? (
             <AllFiltersPanel
               stage={activeStage}
@@ -185,9 +181,7 @@ const Index = () => {
               onClear={handleClearOtherStagesFilters}
             />
           )}
-          */}
 
-          {/* Filter Chips - Hidden for now, to be brought back later
           {useAllFiltersPanel && (
             <FilterChips
               dateRange={dateRange}
@@ -196,7 +190,6 @@ const Index = () => {
               onRemoveFilter={handleRemoveToPayFilter}
             />
           )}
-          */}
           
           {/* Lead Sub-tabs for Leads stage */}
           {activeStage === 'to_convert' && (
