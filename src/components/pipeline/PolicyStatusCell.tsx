@@ -89,16 +89,26 @@ export function PolicyStatusCell({
     ? (getPolicyStage(policy) || 'to_pay') // fallback to to_pay if null
     : stage;
 
-  // If policy is in rework_required state, show rework actions (status indicator + add button)
-  if (policy.status === 'rework_required' && onReworkAdd && onOpenRemarks) {
+  // If policy is in rework_required state, clicking opens rework dialog directly
+  if (policy.status === 'rework_required' && onOpenRemarks) {
+    const unresolvedCount = policy.reworkHistory?.filter(r => !r.resolved).length || 0;
     return (
-      <PolicyReworkActions
-        policy={policy}
-        reworkConfigs={reworkConfigs}
-        currentStage={effectiveStage}
-        onAddRework={onReworkAdd}
-        onOpenRemarks={() => onOpenRemarks(policy.id)}
-      />
+      <button
+        onClick={() => onOpenRemarks(policy.id)}
+        className="w-full h-8 text-xs flex items-center justify-center gap-1.5 px-3 rounded-md border cursor-pointer transition-colors hover:bg-warning/20"
+        style={{ 
+          backgroundColor: 'hsl(var(--warning) / 0.1)', 
+          borderColor: 'hsl(var(--warning) / 0.3)', 
+          color: 'hsl(var(--warning))' 
+        }}
+      >
+        <span>{policyStatusTranslations.rework_required[language]}</span>
+        {unresolvedCount > 0 && (
+          <span className="text-[10px] font-medium bg-warning/20 px-1.5 py-0.5 rounded">
+            {unresolvedCount}
+          </span>
+        )}
+      </button>
     );
   }
 

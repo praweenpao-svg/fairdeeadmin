@@ -80,7 +80,7 @@ export function ReworkDialog({ open, onOpenChange, reworkConfigs, onConfirm }: R
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[550px] max-h-[80vh]">
         <DialogHeader>
           <DialogTitle>{language === 'th' ? 'รายละเอียดงานติดปัญหา' : 'Rework Details'}</DialogTitle>
           <DialogDescription>

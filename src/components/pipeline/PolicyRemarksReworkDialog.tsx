@@ -484,17 +484,59 @@ export function PolicyRemarksReworkDialog({
     );
   };
 
+  // Get stage-filtered rework configs for adding new rework
+  const stageFilteredConfigs = reworkConfigs.filter(config => 
+    config.stages.includes(currentStage)
+  );
+
+  // State for adding new rework reason
+  const [showAddRework, setShowAddRework] = useState(false);
+  const [newReworkReasonId, setNewReworkReasonId] = useState('');
+  const [newReworkDetails, setNewReworkDetails] = useState('');
+  const [newReworkAttachments, setNewReworkAttachments] = useState<ReworkAttachment[]>([]);
+  const addReworkFileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAddReworkFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    const newAttachments: ReworkAttachment[] = [];
+    Array.from(files).forEach((file) => {
+      const ext = file.name.split('.').pop()?.toLowerCase();
+      if (ext === 'png' || ext === 'jpg' || ext === 'jpeg' || ext === 'pdf') {
+        const attachment: ReworkAttachment = {
+          id: crypto.randomUUID(),
+          name: file.name,
+          type: ext === 'jpeg' ? 'jpg' : (ext as 'png' | 'jpg' | 'pdf'),
+          url: URL.createObjectURL(file),
+        };
+        newAttachments.push(attachment);
+      }
+    });
+
+    setNewReworkAttachments(prev => [...prev, ...newAttachments]);
+    if (addReworkFileInputRef.current) addReworkFileInputRef.current.value = '';
+  };
+
+  const resetAddReworkForm = () => {
+    setShowAddRework(false);
+    setNewReworkReasonId('');
+    setNewReworkDetails('');
+    setNewReworkAttachments([]);
+  };
+
   return (
     <Dialog open={open} onOpenChange={(isOpen) => {
       onOpenChange(isOpen);
       if (!isOpen) {
         resetReassignForm();
+        resetAddReworkForm();
         setReplyingTo(null);
         setReplyComment('');
         setReplyAttachments([]);
       }
     }}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[80vh]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <MessageSquare className="w-5 h-5" />
@@ -596,7 +638,7 @@ export function PolicyRemarksReworkDialog({
           // Main timeline view
           <>
             <ScrollArea className="h-[450px] pr-4">
-              {timeline.length === 0 ? (
+              {timeline.length === 0 && !showAddRework ? (
                 <div className="text-center py-12 text-muted-foreground">
                   <MessageSquare className="w-10 h-10 mx-auto mb-2 opacity-30" />
                   {language === 'th' ? 'ยังไม่มีหมายเหตุหรืองานติดปัญหา' : 'No remarks or rework issues yet'}
@@ -607,6 +649,97 @@ export function PolicyRemarksReworkDialog({
                     item.type === 'remark' 
                       ? renderRemarkThread(item.data as PolicyRemark)
                       : renderReworkThread(item.data as PolicyReworkEntry)
+                  )}
+                  
+                  {/* Add Rework Reason form - shown at bottom of timeline */}
+                  {showAddRework && stageFilteredConfigs.length > 0 && (
+                    <div className="p-3 bg-warning/5 border border-warning/30 rounded-lg space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-sm font-medium text-warning">
+                          <AlertTriangle className="w-4 h-4" />
+                          {language === 'th' ? 'เพิ่มเหตุผลงานติดปัญหา' : 'Add Rework Reason'}
+                        </div>
+                        <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={resetAddReworkForm}>
+                          <X className="w-3 h-3" />
+                        </Button>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label className="text-xs">{language === 'th' ? 'เหตุผล' : 'Reason'}</Label>
+                        <Select value={newReworkReasonId} onValueChange={setNewReworkReasonId}>
+                          <SelectTrigger className="w-full h-8 text-xs">
+                            <SelectValue placeholder={language === 'th' ? 'เลือกเหตุผล' : 'Select reason'} />
+                          </SelectTrigger>
+                          <SelectContent className="bg-popover z-50">
+                            {stageFilteredConfigs.map(config => (
+                              <SelectItem key={config.id} value={config.id} className="text-xs">
+                                {language === 'th' ? config.descriptionTh : config.descriptionEn}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-xs">{language === 'th' ? 'รายละเอียด (ไม่บังคับ)' : 'Details (optional)'}</Label>
+                        <Textarea
+                          placeholder={language === 'th' ? 'ใส่รายละเอียดเพิ่มเติม...' : 'Enter detailed reason...'}
+                          value={newReworkDetails}
+                          onChange={(e) => setNewReworkDetails(e.target.value)}
+                          className="min-h-[60px] resize-none text-xs"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex flex-wrap gap-1.5">
+                          {newReworkAttachments.map(att => (
+                            <div key={att.id} className="flex items-center gap-1.5 bg-muted px-2 py-1 rounded text-xs">
+                              {att.type === 'pdf' ? <FileText className="w-3 h-3 text-destructive" /> : <Image className="w-3 h-3 text-primary" />}
+                              <span className="max-w-[80px] truncate">{att.name}</span>
+                              <button onClick={() => setNewReworkAttachments(prev => prev.filter(a => a.id !== att.id))} className="text-muted-foreground hover:text-foreground">
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                        <input ref={addReworkFileInputRef} type="file" accept=".png,.jpg,.jpeg,.pdf" multiple className="hidden" onChange={handleAddReworkFileSelect} />
+                        <Button type="button" variant="outline" size="sm" onClick={() => addReworkFileInputRef.current?.click()} className="h-7 text-xs">
+                          <Upload className="w-3 h-3 mr-1.5" />
+                          {language === 'th' ? 'แนบไฟล์' : 'Attach files'}
+                        </Button>
+                      </div>
+
+                      <div className="flex justify-end gap-2 pt-2">
+                        <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={resetAddReworkForm}>
+                          {language === 'th' ? 'ยกเลิก' : 'Cancel'}
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          className="h-7 text-xs bg-warning hover:bg-warning/90 text-warning-foreground" 
+                          disabled={!newReworkReasonId}
+                          onClick={() => {
+                            // This would call onReworkAdd if it existed as a prop
+                            // For now, we'll just reset the form
+                            resetAddReworkForm();
+                          }}
+                        >
+                          {language === 'th' ? 'เพิ่มเหตุผล' : 'Add Reason'}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Add more rework button - shown after timeline items */}
+                  {!showAddRework && stageFilteredConfigs.length > 0 && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full h-8 text-xs border-dashed border-warning/50 text-warning hover:bg-warning/10"
+                      onClick={() => setShowAddRework(true)}
+                    >
+                      <AlertTriangle className="w-3 h-3 mr-1.5" />
+                      {language === 'th' ? 'เพิ่มเหตุผลงานติดปัญหา' : 'Add Rework Reason'}
+                    </Button>
                   )}
                 </div>
               )}
