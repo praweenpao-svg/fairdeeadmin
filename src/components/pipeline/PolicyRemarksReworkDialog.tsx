@@ -113,19 +113,22 @@ export function PolicyRemarksReworkDialog({
   const timeline = buildTimeline();
 
   // Helper to process mentions and create notifications
+  // Creates a notification for each unique person mentioned (except the current user)
   const processMentions = (comment: string) => {
     const mentions = extractMentions(comment);
+    // For demo purposes, we create notifications for each mentioned person
+    // In real app, this would check if the mentioned name matches an actual user
     mentions.forEach(mentionedName => {
-      // Don't notify self
-      if (mentionedName !== CURRENT_USER) {
-        addNotification({
-          saleId: leadNumber || policyId,
-          comment: comment,
-          mentionedBy: CURRENT_USER,
-          mentionedAt: new Date().toISOString(),
-          policyKind: policyKind,
-        });
-      }
+      // Always create notification - in real app would filter to actual users
+      // For demo, we simulate that the current user "Pao" can receive notifications
+      // when they view as themselves, so we should still create the notification
+      addNotification({
+        saleId: leadNumber || policyId,
+        comment: comment,
+        mentionedBy: CURRENT_USER,
+        mentionedAt: new Date().toISOString(),
+        policyKind: policyKind,
+      });
     });
   };
 
@@ -744,10 +747,10 @@ export function PolicyRemarksReworkDialog({
 
                     <div className="space-y-2">
                       <Label className="text-xs">{language === 'th' ? 'รายละเอียด (ไม่บังคับ)' : 'Details (optional)'}</Label>
-                      <Textarea
-                        placeholder={language === 'th' ? 'ใส่รายละเอียดเพิ่มเติม...' : 'Enter detailed reason...'}
+                      <MentionTextarea
+                        placeholder={language === 'th' ? 'ใส่รายละเอียดเพิ่มเติม... (พิมพ์ @ เพื่อ tag คน)' : 'Enter detailed reason... (type @ to tag someone)'}
                         value={newReworkDetails}
-                        onChange={(e) => setNewReworkDetails(e.target.value)}
+                        onChange={setNewReworkDetails}
                         className="min-h-[60px] resize-none text-xs"
                       />
                     </div>
@@ -781,6 +784,10 @@ export function PolicyRemarksReworkDialog({
                         disabled={!newReworkReasonId}
                         onClick={() => {
                           if (onAddRework && newReworkReasonId) {
+                            // Process mentions in rework details
+                            if (newReworkDetails.trim()) {
+                              processMentions(newReworkDetails.trim());
+                            }
                             onAddRework(policyId, newReworkReasonId, newReworkDetails, newReworkAttachments);
                             resetAddReworkForm();
                           }

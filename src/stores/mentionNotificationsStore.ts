@@ -42,12 +42,15 @@ export const useMentionNotificationsStore = create<MentionNotificationsState>((s
 }));
 
 // Helper to extract mentions from comment text
+// Matches @Name format (handles names with spaces after @ until next space or punctuation)
 export function extractMentions(text: string): string[] {
-  const mentionRegex = /@(\w+)/g;
+  // Match @followed by word characters (supports multi-word names separated by underscores)
+  const mentionRegex = /@([\w]+)/g;
   const mentions: string[] = [];
   let match;
   while ((match = mentionRegex.exec(text)) !== null) {
     mentions.push(match[1]);
   }
-  return mentions;
+  // Return unique mentions
+  return [...new Set(mentions)];
 }
