@@ -26,9 +26,8 @@ interface PolicyRecordRowProps {
   stage: PipelineStage;
   reworkConfigs: ReworkConfig[];
   onStatusChange?: (policyId: string, newStatus: PolicyStatus) => void;
-  onReworkResolve?: (policyId: string, entryId: string) => void;
-  onReworkReassign?: (policyId: string, entryId: string, newReasonId: string, details: string, attachments: ReworkAttachment[]) => void;
   onReworkAdd?: (policyId: string, reasonId: string, details: string, attachments: ReworkAttachment[]) => void;
+  onOpenRemarks?: (policyId: string) => void;
 }
 
 export function PolicyRecordRow({ 
@@ -38,9 +37,8 @@ export function PolicyRecordRow({
   stage,
   reworkConfigs,
   onStatusChange,
-  onReworkResolve,
-  onReworkReassign,
   onReworkAdd,
+  onOpenRemarks,
 }: PolicyRecordRowProps) {
   const { language } = useLanguageStore();
 
@@ -67,9 +65,8 @@ export function PolicyRecordRow({
           isEditable={isEditable}
           reworkConfigs={reworkConfigs}
           onStatusChange={onStatusChange}
-          onReworkResolve={onReworkResolve}
-          onReworkReassign={onReworkReassign}
           onReworkAdd={onReworkAdd}
+          onOpenRemarks={onOpenRemarks}
         />
       </div>
 
@@ -98,9 +95,8 @@ interface ExpandablePolicyRowsProps {
   stage: PipelineStage;
   reworkConfigs: ReworkConfig[];
   onPolicyStatusChange?: (policyId: string, newStatus: PolicyStatus) => void;
-  onPolicyReworkResolve?: (policyId: string, entryId: string) => void;
-  onPolicyReworkReassign?: (policyId: string, entryId: string, newReasonId: string, details: string, attachments: ReworkAttachment[]) => void;
   onPolicyReworkAdd?: (policyId: string, reasonId: string, details: string, attachments: ReworkAttachment[]) => void;
+  onOpenRemarks?: (policyId: string) => void;
 }
 
 export function ExpandablePolicyRows({ 
@@ -109,9 +105,8 @@ export function ExpandablePolicyRows({
   stage,
   reworkConfigs,
   onPolicyStatusChange,
-  onPolicyReworkResolve,
-  onPolicyReworkReassign,
   onPolicyReworkAdd,
+  onOpenRemarks,
 }: ExpandablePolicyRowsProps) {
   const { language } = useLanguageStore();
   const [isExpanded, setIsExpanded] = useState(false);
@@ -179,9 +174,8 @@ export function ExpandablePolicyRows({
                   stage={stage}
                   reworkConfigs={reworkConfigs}
                   onStatusChange={onPolicyStatusChange}
-                  onReworkResolve={onPolicyReworkResolve}
-                  onReworkReassign={onPolicyReworkReassign}
                   onReworkAdd={onPolicyReworkAdd}
+                  onOpenRemarks={onOpenRemarks}
                 />
               );
             })}
