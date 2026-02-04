@@ -1408,9 +1408,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                         'data-table-row',
                         lead.reworkRequired 
                           ? 'bg-warning/5 hover:bg-warning/[0.07]' 
-                          : '',
-                        // Remove bottom border when expanded (divider is on the expanded section)
-                        isExpanded && isPostLeadStage && hasPolicies ? 'border-b-0' : ''
+                          : ''
                       )}
                     >
                       <td className="px-4 py-3">
@@ -1671,8 +1669,8 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                     
                     {/* Expanded Policy Rows */}
                     {isPostLeadStage && isExpanded && allPolicies.length > 0 && (
-                      <tr>
-                        <td colSpan={showDEColumn ? 10 : 9} className="p-0 border-t-2 border-border">
+                      <tr className="border-b-2 border-border">
+                        <td colSpan={showDEColumn ? 10 : 9} className="p-0">
                           <div className="mx-4 my-2 rounded-lg border border-border overflow-hidden bg-card shadow-sm">
                             {/* Policy Sub-Table */}
                             <div className="overflow-x-auto">
