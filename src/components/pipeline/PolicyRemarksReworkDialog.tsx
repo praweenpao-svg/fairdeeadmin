@@ -590,7 +590,7 @@ export function PolicyRemarksReworkDialog({
         ) : (
           // Main timeline view
           <>
-            <ScrollArea className="h-[350px] pr-4">
+            <ScrollArea className="h-[450px] pr-4">
               {timeline.length === 0 ? (
                 <div className="text-center py-12 text-muted-foreground">
                   <MessageSquare className="w-10 h-10 mx-auto mb-2 opacity-30" />
