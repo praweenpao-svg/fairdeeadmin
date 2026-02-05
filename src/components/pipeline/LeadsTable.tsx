@@ -35,7 +35,7 @@ import { ReworkDialog } from './ReworkDialog';
 import { HistoryLogDialog } from './HistoryLogDialog';
 import { InlineReworkActions } from './InlineReworkActions';
 import { PolicyStatusCell } from './PolicyStatusCell';
-import { getPoliciesForStage } from './PipelineTabs';
+import { getPoliciesForStage, getPolicyStage } from './PipelineTabs';
 import { InsurersExpandableRow } from './InsurersExpandableRow';
 import { PolicyRemarksReworkDialog } from './PolicyRemarksReworkDialog';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -1359,13 +1359,17 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
       }
     }
 
-    // No active rework on this policy - use stage-based owner
+   // No active rework on this policy - use stage-based owner
+   // IMPORTANT: Use the policy's actual stage, not the current tab's stage
+   // This ensures consistency across tabs (e.g., All tab vs To Pay tab)
+   const policyStage = getPolicyStage(policy);
+   const effectiveStage = policyStage || stage;
+   
     let stageOwner: string | undefined;
-    if (stage === 'all') {
-      stageOwner = lead.deAssignee || lead.scAssignee || lead.rfAssignee;
-    } else if (stage === 'to_convert' || stage === 'to_pay') {
+   if (effectiveStage === 'to_convert' || effectiveStage === 'to_pay') {
       stageOwner = lead.scAssignee || lead.rfAssignee;
     } else {
+     // to_report, to_issue, to_deliver, completed, cancelled use DE
       stageOwner = lead.deAssignee;
     }
     return stageOwner ? [stageOwner] : [];
