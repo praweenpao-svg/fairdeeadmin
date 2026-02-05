@@ -255,9 +255,12 @@ function getPolicyOwner(policy: PolicyRecord, lead: Lead, stage: PipelineStage):
   }
   
   // Default stage-based owner (only for non-rework policies)
-  switch (stage) {
-    case 'all':
-      return lead.deAssignee || lead.scAssignee || lead.rfAssignee;
+  // IMPORTANT: Use the policy's actual stage for owner determination
+  // This ensures consistency between count badges and displayed owners
+  const policyStage = getPolicyStage(policy);
+  const effectiveStage = policyStage || stage;
+  
+  switch (effectiveStage) {
     case 'to_convert':
     case 'to_pay':
       return lead.scAssignee || lead.rfAssignee;
