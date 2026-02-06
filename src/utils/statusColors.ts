@@ -11,7 +11,7 @@ export interface StatusColorConfig {
 export const leadStatusColors: Record<string, StatusColorConfig> = {
   pending: { text: '#2563EB', bg: 'rgba(37, 99, 235, 0.08)' }, // Blue
   waiting_for_insurer: { text: '#2563EB', bg: 'rgba(37, 99, 235, 0.08)' }, // Blue
-  docs_missing: { text: '#CA8A04', bg: 'rgba(202, 138, 4, 0.08)' }, // Yellow (yellow-600)
+  docs_missing: { text: '#F97316', bg: 'rgba(249, 115, 22, 0.12)' }, // Orange (primary)
   partially_added: { text: '#16A34A', bg: 'rgba(22, 163, 74, 0.08)' }, // Green
   completed: { text: '#16A34A', bg: 'rgba(22, 163, 74, 0.08)' }, // Green
   quotation_shared: { text: '#16A34A', bg: 'rgba(22, 163, 74, 0.08)' }, // Green

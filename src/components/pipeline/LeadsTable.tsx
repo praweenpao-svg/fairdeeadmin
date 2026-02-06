@@ -1999,7 +1999,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                             return (
                                               <span className={cn(
                                                 'font-medium',
-                                                isReworkOwner ? 'text-warning' : 'text-foreground'
+                                                isReworkOwner ? 'text-primary' : 'text-foreground'
                                               )}>
                                                 {policyOwners[0]}
                                               </span>
@@ -2015,10 +2015,10 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                                   type="button"
                                                   className={cn(
                                                     'font-medium cursor-help text-left',
-                                                    isReworkOwner ? 'text-warning' : 'text-foreground'
+                                                    isReworkOwner ? 'text-primary' : 'text-foreground'
                                                   )}
                                                 >
-                                                  {firstOwner} <span className={isReworkOwner ? 'text-warning/70' : 'text-muted-foreground'}>+{remainingCount}</span>
+                                                  {firstOwner} <span className={isReworkOwner ? 'text-primary/70' : 'text-muted-foreground'}>+{remainingCount}</span>
                                                 </button>
                                               </TooltipTrigger>
                                               <TooltipContent side="top" className="max-w-xs">
