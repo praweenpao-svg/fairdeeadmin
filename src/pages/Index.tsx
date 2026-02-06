@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Search, Home } from 'lucide-react';
 import { DateRange } from 'react-day-picker';
 import { PipelineStage, LeadType, Lead, ReworkConfig } from '@/types/pipeline';
@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { applyAllFilters } from '@/utils/leadFilters';
 import { MentionNotificationBell } from '@/components/notifications/MentionNotificationBell';
+import { mockStaffMembers } from '@/data/mockStaff';
 
 const Index = () => {
   const { language } = useLanguageStore();
@@ -25,6 +26,7 @@ const Index = () => {
   const [reworkConfigs, setReworkConfigs] = useState<ReworkConfig[]>(mockReworkConfigs);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [myCasesOnly, setMyCasesOnly] = useState(false);
+  const [myTeamOnly, setMyTeamOnly] = useState(false);
   
   // Sub-tab for Leads stage (New Leads / COA / Renewals)
   const [leadSubTab, setLeadSubTab] = useState<LeadSubTab>('new_leads');
@@ -34,6 +36,16 @@ const Index = () => {
 
   // Filters for other stages (To Report, To Issue, To Deliver, Completed)
   const [otherStagesFilters, setOtherStagesFilters] = useState<OtherStagesFilterState>(defaultOtherStagesFilterState);
+
+  // Get current user's team members
+  const currentUserStaff = mockStaffMembers.find(s => s.name === CURRENT_USER);
+  const currentUserTeam = currentUserStaff?.team;
+  const teamMembers = useMemo(() => {
+    if (!currentUserTeam) return [];
+    return mockStaffMembers
+      .filter(s => s.team === currentUserTeam)
+      .map(s => s.name);
+  }, [currentUserTeam]);
 
   // Only "To Convert" (Leads) stage uses the AllFiltersPanel; All and To Pay use post-lead filter panel
   const useAllFiltersPanel = activeStage === 'to_convert';
@@ -103,9 +115,24 @@ const Index = () => {
     ? getLeadsOwnedByUser(leads, activeStage, CURRENT_USER)
     : stageLeads;
   
+  // Apply My Team filter - filter by team members as owners
+  const teamFilteredLeads = myTeamOnly
+    ? casesFilteredLeads.filter(lead => {
+        // For Leads stage, owner is SC if exists, else RF
+        if (activeStage === 'to_convert') {
+          const owner = lead.scAssignee || lead.rfAssignee;
+          return owner && teamMembers.includes(owner);
+        }
+        // For post-lead stages, owner logic is different (handled in table)
+        // Here we filter by DE for post-lead stages
+        const owner = lead.deAssignee || lead.scAssignee || lead.rfAssignee;
+        return owner && teamMembers.includes(owner);
+      })
+    : casesFilteredLeads;
+  
   // Apply all filters (search, date, panel filters)
   const filteredLeads = applyAllFilters(
-    casesFilteredLeads,
+    teamFilteredLeads,
     searchQuery,
     dateRange,
     toPayFilters,
@@ -172,6 +199,18 @@ const Index = () => {
             )}
           >
             {language === 'th' ? 'เคสของฉัน' : 'My Cases'}
+          </button>
+          
+          <button
+            onClick={() => setMyTeamOnly(!myTeamOnly)}
+            className={cn(
+              'px-3 py-2 text-sm font-medium rounded-md transition-colors border',
+              myTeamOnly
+                ? 'bg-primary text-primary-foreground border-primary'
+                : 'bg-muted/50 text-foreground border-border hover:bg-muted hover:border-primary/50'
+            )}
+          >
+            {language === 'th' ? 'ทีมของฉัน' : 'My Team'}
           </button>
           
           <DateRangeFilter
