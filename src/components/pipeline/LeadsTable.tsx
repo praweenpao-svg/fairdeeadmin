@@ -1741,7 +1741,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                             {/* Policy Sub-Table */}
                             <div className="overflow-x-auto">
                               {/* Policy Sub-Table Header */}
-                              <div className="flex gap-6 px-4 py-3 bg-muted/80 border-b border-border min-w-max">
+                              <div className="flex gap-6 px-4 py-3 bg-muted border-b border-border min-w-max">
                                 <div className="w-[50px] text-xs font-semibold text-muted-foreground uppercase tracking-wide shrink-0">
                                   {language === 'th' ? 'ประเภท' : 'Type'}
                                 </div>
