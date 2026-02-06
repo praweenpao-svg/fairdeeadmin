@@ -3,7 +3,7 @@ import { Search, Home } from 'lucide-react';
 import { DateRange } from 'react-day-picker';
 import { PipelineStage, LeadType, Lead, ReworkConfig } from '@/types/pipeline';
 import { mockLeads, mockReworkConfigs, CURRENT_USER } from '@/data/mockLeads';
-import { PipelineTabs, getLeadsForStage, getLeadsOwnedByUser } from '@/components/pipeline/PipelineTabs';
+import { PipelineTabs, getLeadsForStage, getLeadsOwnedByUser, getLeadsOwnedByTeam } from '@/components/pipeline/PipelineTabs';
 import { LeadsTable } from '@/components/pipeline/LeadsTable';
 import { DateRangeFilter } from '@/components/pipeline/DateRangeFilter';
 import { AllFiltersPanel, FilterState, defaultFilterState } from '@/components/pipeline/AllFiltersPanel';
@@ -115,19 +115,9 @@ const Index = () => {
     ? getLeadsOwnedByUser(leads, activeStage, CURRENT_USER)
     : stageLeads;
   
-  // Apply My Team filter - filter by team members as owners
+  // Apply My Team filter - use proper owner logic from PipelineTabs
   const teamFilteredLeads = myTeamOnly
-    ? casesFilteredLeads.filter(lead => {
-        // For Leads stage, owner is SC if exists, else RF
-        if (activeStage === 'to_convert') {
-          const owner = lead.scAssignee || lead.rfAssignee;
-          return owner && teamMembers.includes(owner);
-        }
-        // For post-lead stages, owner logic is different (handled in table)
-        // Here we filter by DE for post-lead stages
-        const owner = lead.deAssignee || lead.scAssignee || lead.rfAssignee;
-        return owner && teamMembers.includes(owner);
-      })
+    ? getLeadsOwnedByTeam(casesFilteredLeads, activeStage, teamMembers)
     : casesFilteredLeads;
   
   // Apply all filters (search, date, panel filters)
