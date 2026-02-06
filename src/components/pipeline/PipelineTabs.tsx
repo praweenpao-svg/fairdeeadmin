@@ -312,6 +312,51 @@ export function getLeadsOwnedByUser(leads: Lead[], stage: PipelineStage, user: s
   });
 }
 
+// Get leads owned by any team member for a stage (checks policy-level ownership)
+export function getLeadsOwnedByTeam(leads: Lead[], stage: PipelineStage, teamMembers: string[]): Lead[] {
+  if (teamMembers.length === 0) return [];
+  
+  const stageLeads = getLeadsForStage(leads, stage);
+  
+  return stageLeads.filter(lead => {
+    // For Leads stage (to_convert), check if owner (SC || RF) is in team
+    if (stage === 'to_convert') {
+      const owner = lead.scAssignee || lead.rfAssignee;
+      return owner && teamMembers.includes(owner);
+    }
+    
+    // For leads with policy records, check if any policy owner is in team
+    if (lead.policyRecords && lead.policyRecords.length > 0) {
+      const policiesInStage = getPoliciesForStage(lead, stage);
+      
+      // Lead belongs to team if ANY policy in the current stage has an owner from the team
+      return policiesInStage.some(policy => {
+        const owner = getPolicyOwner(policy, lead, stage);
+        return owner && teamMembers.includes(owner);
+      });
+    }
+    
+    // Legacy fallback for leads without policy records
+    switch (stage) {
+      case 'all':
+        return (lead.deAssignee && teamMembers.includes(lead.deAssignee)) ||
+               (lead.scAssignee && teamMembers.includes(lead.scAssignee)) ||
+               (lead.rfAssignee && teamMembers.includes(lead.rfAssignee));
+      case 'to_pay':
+        return (lead.scAssignee && teamMembers.includes(lead.scAssignee)) ||
+               (lead.rfAssignee && teamMembers.includes(lead.rfAssignee));
+      case 'to_report':
+      case 'to_issue':
+      case 'to_deliver':
+      case 'completed':
+      case 'cancelled':
+        return lead.deAssignee && teamMembers.includes(lead.deAssignee);
+      default:
+        return false;
+    }
+  });
+}
+
 // Count policies owned by current user for a specific stage
 function countPoliciesOwnedByUser(leads: Lead[], stage: PipelineStage, user: string): number {
   let count = 0;
