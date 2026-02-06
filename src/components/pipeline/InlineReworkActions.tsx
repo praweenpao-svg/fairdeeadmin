@@ -195,7 +195,7 @@ export function InlineReworkActions({
                             </div>
                             {internal.map((config) => (
                               <SelectItem key={config.id} value={config.id} className="text-xs pl-4">
-                                {language === 'th' ? config.descriptionTh : config.descriptionEn}
+                                [Internal] {language === 'th' ? config.descriptionTh : config.descriptionEn}
                               </SelectItem>
                             ))}
                           </>
@@ -207,7 +207,7 @@ export function InlineReworkActions({
                             </div>
                             {external.map((config) => (
                               <SelectItem key={config.id} value={config.id} className="text-xs pl-4">
-                                {language === 'th' ? config.descriptionTh : config.descriptionEn}
+                                [External] {language === 'th' ? config.descriptionTh : config.descriptionEn}
                               </SelectItem>
                             ))}
                           </>
