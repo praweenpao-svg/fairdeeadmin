@@ -1831,7 +1831,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                         className={cn(
                                           "flex gap-6 px-4 py-3 items-center transition-colors min-w-max",
                                           policy.status === 'rework_required'
-                                            ? 'bg-warning/10 hover:bg-warning/[0.15]'
+                                            ? 'bg-warning/[0.06] hover:bg-warning/[0.10]'
                                             : 'bg-card hover:bg-muted/30'
                                         )}
                                       >
