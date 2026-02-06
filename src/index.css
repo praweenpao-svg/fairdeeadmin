@@ -136,7 +136,7 @@
   }
 
   .data-table-header {
-    @apply bg-muted/60 text-muted-foreground text-xs font-semibold uppercase tracking-wider;
+    @apply bg-muted text-muted-foreground text-xs font-semibold uppercase tracking-wider;
   }
 
   .data-table-row {
