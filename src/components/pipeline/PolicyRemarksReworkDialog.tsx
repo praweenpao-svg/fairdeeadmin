@@ -284,7 +284,7 @@ export function PolicyRemarksReworkDialog({
                 href={att.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 bg-muted/50 px-2 py-1.5 rounded text-xs text-primary hover:bg-muted transition-colors border border-border/50"
+                className="flex items-center gap-1.5 bg-muted/50 px-2 py-1.5 rounded text-xs text-foreground hover:bg-muted transition-colors border border-border/50"
               >
                 <FileText className="w-3.5 h-3.5 text-destructive" />
                 <span className="max-w-[100px] truncate">{att.name}</span>
