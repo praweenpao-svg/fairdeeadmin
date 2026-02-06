@@ -786,7 +786,7 @@ const generateLeads = (): Lead[] => {
       createdBy: i % 2 === 0 ? 'admin' : 'agent',
       rfAssignee: rfStaff[i % rfStaff.length],
       scAssignee: scStaff[i % scStaff.length],
-      deAssignee: deStaff[i % deStaff.length],
+      deAssignee: i === 4 ? 'Pao' : deStaff[i % deStaff.length], // Lead #10008 (i=4) assigned to Pao for testing
       policyType: scenario.policyType,
       policyRecords,
       premium: generatePremium(),
