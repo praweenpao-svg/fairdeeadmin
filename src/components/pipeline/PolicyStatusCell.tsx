@@ -95,10 +95,9 @@ export function PolicyStatusCell({
     return (
       <button
         onClick={() => onOpenRemarks(policy.id)}
-        className="w-full h-8 text-xs flex items-center justify-center gap-1.5 px-3 rounded-md border cursor-pointer transition-colors hover:bg-warning/20"
+        className="w-full h-8 text-xs font-semibold flex items-center justify-center gap-1.5 px-3 rounded-md border cursor-pointer transition-colors bg-background hover:bg-warning/20"
         style={{ 
-          backgroundColor: 'hsl(var(--warning) / 0.1)', 
-          borderColor: 'hsl(var(--warning) / 0.3)', 
+          borderColor: 'hsl(var(--warning) / 0.4)', 
           color: 'hsl(var(--warning))' 
         }}
       >
