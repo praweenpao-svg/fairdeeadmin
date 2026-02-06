@@ -296,7 +296,7 @@ export function PolicyRemarksReworkDialog({
     );
   };
 
-  const renderReplies = (replies?: ThreadReply[]) => {
+  const renderReplies = (replies?: ThreadReply[], variant: 'default' | 'success' | 'muted' = 'default') => {
     if (!replies || replies.length === 0) return null;
     return (
       <div className="mt-2 pl-3 border-l-2 border-muted space-y-2">
@@ -307,6 +307,7 @@ export function PolicyRemarksReworkDialog({
               className="text-xs text-foreground/90" 
               maxLines={3}
               lineHeight={16}
+              variant={variant}
             />
             {renderAttachments(reply.attachments)}
             <div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground">
@@ -331,7 +332,7 @@ export function PolicyRemarksReworkDialog({
         <div className="flex items-start gap-2">
           <MessageSquare className="w-4 h-4 mt-0.5 text-muted-foreground shrink-0" />
           <div className="flex-1 min-w-0">
-            <ExpandableText text={remark.comment} className="text-sm text-foreground" maxLines={4} />
+            <ExpandableText text={remark.comment} className="text-sm text-foreground" maxLines={4} variant="muted" />
             {renderAttachments(remark.attachments)}
             <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
               <span className="font-medium">{remark.createdBy}</span>
@@ -362,7 +363,7 @@ export function PolicyRemarksReworkDialog({
         </div>
 
         {/* Expanded replies */}
-        {hasReplies && isExpanded && renderReplies(remark.replies)}
+        {hasReplies && isExpanded && renderReplies(remark.replies, 'muted')}
 
         {/* Reply input */}
         {isReplying && (
@@ -516,7 +517,7 @@ export function PolicyRemarksReworkDialog({
         </div>
 
         {/* Expanded replies */}
-        {hasReplies && isExpanded && renderReplies(entry.replies)}
+        {hasReplies && isExpanded && renderReplies(entry.replies, isActive ? 'default' : 'success')}
 
         {/* Reply input */}
         {isReplying && (
