@@ -467,7 +467,7 @@ export function PolicyRemarksReworkDialog({
             </div>
             {!isActive && entry.resolvedBy && (
               <div className="text-xs text-green-600 mt-1">
-                {language === 'th' ? 'แก้ไขโดย' : 'Resolved by'} {entry.resolvedBy} • {entry.resolvedAt}
+                {language === 'th' ? 'แก้ไขโดย' : 'Resolved by'} {entry.resolvedBy.replace(' (Reassigned)', '')} • {entry.resolvedAt}
               </div>
             )}
           </div>
