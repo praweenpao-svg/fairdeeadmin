@@ -739,7 +739,7 @@ export function PolicyRemarksReworkDialog({
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      className="border-dashed border-warning/50 text-warning hover:bg-warning/10"
+                      className="border-dashed border-warning/50 text-warning hover:bg-warning/10 hover:text-warning"
                       onClick={() => setShowAddRework(true)}
                     >
                       <AlertTriangle className="w-3.5 h-3.5 mr-1.5" />
@@ -850,7 +850,7 @@ export function PolicyRemarksReworkDialog({
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="w-full h-8 text-xs border-dashed border-warning/50 text-warning hover:bg-warning/10"
+                    className="w-full h-8 text-xs border-dashed border-warning/50 text-warning hover:bg-warning/10 hover:text-warning"
                     onClick={() => setShowAddRework(true)}
                   >
                     <AlertTriangle className="w-3 h-3 mr-1.5" />
