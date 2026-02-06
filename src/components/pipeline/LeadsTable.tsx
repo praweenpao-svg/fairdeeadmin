@@ -1437,14 +1437,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                 
                 return (
                   <React.Fragment key={lead.id}>
-                    <tr 
-                      className={cn(
-                        'data-table-row',
-                        lead.reworkRequired 
-                          ? 'bg-warning/5 hover:bg-warning/[0.07]' 
-                          : ''
-                      )}
-                    >
+                    <tr className="data-table-row">
                       <td className="px-4 py-3">
                         <div className="flex items-start gap-2">
                           {/* Expand/Collapse chevron for post-lead stages only (insurer quotes hidden for now) */}
@@ -1832,11 +1825,16 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                   const showTracking = policy.shippingMethod === 'print_by_fairdee' && 
                                     (policy.status === 'policy_shipped' || policy.status === 'policy_delivered');
                                   
-                                  return (
-                                    <div 
-                                      key={policy.id}
-                                      className="flex gap-6 px-4 py-3 items-center transition-colors bg-card hover:bg-muted/30 min-w-max"
-                                    >
+                                    return (
+                                      <div 
+                                        key={policy.id}
+                                        className={cn(
+                                          "flex gap-6 px-4 py-3 items-center transition-colors min-w-max",
+                                          policy.status === 'rework_required'
+                                            ? 'bg-warning/10 hover:bg-warning/[0.15]'
+                                            : 'bg-card hover:bg-muted/30'
+                                        )}
+                                      >
                                       {/* Policy Kind Badge */}
                                       <div className="w-[50px] shrink-0">
                                         <span className={cn(
