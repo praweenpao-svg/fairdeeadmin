@@ -8,13 +8,15 @@ interface ExpandableTextProps {
   className?: string;
   maxLines?: number;
   lineHeight?: number; // in pixels, default ~20px for text-sm
+  variant?: 'default' | 'success'; // For different color themes
 }
 
 export function ExpandableText({ 
   text, 
   className, 
   maxLines = 3,
-  lineHeight = 20 
+  lineHeight = 20,
+  variant = 'default'
 }: ExpandableTextProps) {
   const { language } = useLanguageStore();
   const [isExpanded, setIsExpanded] = React.useState(false);
@@ -36,6 +38,10 @@ export function ExpandableText({
     setIsExpanded(!isExpanded);
   };
 
+  const buttonColorClass = variant === 'success' 
+    ? 'text-green-600 hover:text-green-700 dark:text-green-500 dark:hover:text-green-400'
+    : 'text-primary hover:text-primary/80';
+
   return (
     <div className="relative">
       <p
@@ -54,7 +60,7 @@ export function ExpandableText({
       {needsExpansion && (
         <button
           onClick={toggleExpand}
-          className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 mt-1 font-medium transition-colors"
+          className={cn("flex items-center gap-1 text-xs mt-1 font-medium transition-colors", buttonColorClass)}
         >
           {isExpanded ? (
             <>

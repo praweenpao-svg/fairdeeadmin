@@ -286,7 +286,7 @@ export function PolicyRemarksReworkDialog({
                 rel="noopener noreferrer"
                 className="flex items-center gap-1.5 bg-muted/50 px-2 py-1.5 rounded text-xs text-foreground hover:bg-muted transition-colors border border-border/50"
               >
-                <FileText className="w-3.5 h-3.5 text-destructive" />
+                <FileText className="w-3.5 h-3.5 text-muted-foreground" />
                 <span className="max-w-[100px] truncate">{att.name}</span>
               </a>
             ))}
@@ -450,7 +450,13 @@ export function PolicyRemarksReworkDialog({
               )}
             </div>
             {entry.details && (
-              <ExpandableText text={entry.details} className="text-xs text-muted-foreground mt-1" maxLines={3} lineHeight={16} />
+              <ExpandableText 
+                text={entry.details} 
+                className="text-xs text-muted-foreground mt-1" 
+                maxLines={3} 
+                lineHeight={16}
+                variant={isActive ? 'default' : 'success'}
+              />
             )}
             {renderAttachments(entry.attachments)}
             <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
