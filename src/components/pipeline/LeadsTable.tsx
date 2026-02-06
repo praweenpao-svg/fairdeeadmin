@@ -2085,7 +2085,18 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
             setSelectedPolicyId(null);
           }
         }}
-        reworkConfigs={stageReworkConfigs}
+        reworkConfigs={(() => {
+          // Filter rework configs by policy's actual stage for correct filtering in "All" tab
+          if (!selectedLead || !selectedPolicyId) return stageReworkConfigs;
+          const policy = selectedLead.policyRecords?.find(p => p.id === selectedPolicyId);
+          if (policy) {
+            const policyStage = getPolicyStage(policy);
+            if (policyStage) {
+              return reworkConfigs.filter(config => config.stages.includes(policyStage));
+            }
+          }
+          return stageReworkConfigs;
+        })()}
         onConfirm={handleReworkConfirm}
         leadNumber={selectedLead?.leadNumber}
         policyKind={(() => {
@@ -2138,8 +2149,18 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
           const policy = lead?.policyRecords?.find(p => p.id === selectedPolicyForRemarks.policyId);
           return policy?.reworkHistory || [];
         })()}
-        reworkConfigs={stageReworkConfigs}
-        currentStage={stage}
+        reworkConfigs={reworkConfigs}
+        currentStage={(() => {
+          // Use policy's actual stage, not the tab's stage (important for "All" tab)
+          if (!selectedPolicyForRemarks) return stage;
+          const lead = leads.find(l => l.id === selectedPolicyForRemarks.leadId);
+          const policy = lead?.policyRecords?.find(p => p.id === selectedPolicyForRemarks.policyId);
+          if (policy) {
+            const policyStage = getPolicyStage(policy);
+            if (policyStage) return policyStage;
+          }
+          return stage === 'all' ? 'to_pay' : stage; // Fallback for 'all' tab
+        })()}
         onAddRemark={handleAddRemark}
         onAddRemarkReply={handleAddRemarkReply}
         onAddReworkReply={handleAddReworkReply}
