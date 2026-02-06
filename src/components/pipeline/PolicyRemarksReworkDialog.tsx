@@ -24,6 +24,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useMentionNotificationsStore, extractMentions } from '@/stores/mentionNotificationsStore';
 import { CURRENT_USER } from '@/data/mockLeads';
+import { ExpandableText } from '@/components/ui/expandable-text';
 
 interface PolicyRemarksReworkDialogProps {
   open: boolean;
@@ -301,7 +302,12 @@ export function PolicyRemarksReworkDialog({
       <div className="mt-2 pl-3 border-l-2 border-muted space-y-2">
         {replies.map(reply => (
           <div key={reply.id} className="py-1.5">
-            <p className="text-xs text-foreground/90 whitespace-pre-wrap">{reply.comment}</p>
+            <ExpandableText 
+              text={reply.comment} 
+              className="text-xs text-foreground/90" 
+              maxLines={3}
+              lineHeight={16}
+            />
             {renderAttachments(reply.attachments)}
             <div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground">
               <span className="font-medium">{reply.createdBy}</span>
@@ -325,7 +331,7 @@ export function PolicyRemarksReworkDialog({
         <div className="flex items-start gap-2">
           <MessageSquare className="w-4 h-4 mt-0.5 text-muted-foreground shrink-0" />
           <div className="flex-1 min-w-0">
-            <p className="text-sm text-foreground whitespace-pre-wrap">{remark.comment}</p>
+            <ExpandableText text={remark.comment} className="text-sm text-foreground" maxLines={4} />
             {renderAttachments(remark.attachments)}
             <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
               <span className="font-medium">{remark.createdBy}</span>
@@ -444,7 +450,7 @@ export function PolicyRemarksReworkDialog({
               )}
             </div>
             {entry.details && (
-              <p className="text-xs text-muted-foreground mt-1 whitespace-pre-wrap">{entry.details}</p>
+              <ExpandableText text={entry.details} className="text-xs text-muted-foreground mt-1" maxLines={3} lineHeight={16} />
             )}
             {renderAttachments(entry.attachments)}
             <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
