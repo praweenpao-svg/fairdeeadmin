@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
-import { ReworkConfig, AssignmentType, PipelineStage } from '@/types/pipeline';
+import { ReworkConfig, AssignmentType, PipelineStage, ReworkPartyType } from '@/types/pipeline';
 import { useTeamsStore } from '@/stores/teamsStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -43,6 +43,11 @@ const stageOptions: { value: PipelineStage; label: string }[] = [
   { value: 'cancelled', label: 'Cancellation' },
 ];
 
+const partyTypeOptions: { value: ReworkPartyType; label: string }[] = [
+  { value: 'internal', label: 'Internal' },
+  { value: 'external', label: 'External' },
+];
+
 // Helper function to check if a rework reason moves leads to Cancellation tab
 // This checks the movesToCancellation property on the config
 export function isCancellationReworkReason(reasonId: string, reworkConfigs: ReworkConfig[]): boolean {
@@ -73,6 +78,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
     automationDays: undefined,
     targetReason: undefined,
     movesToCancellation: false,
+    partyType: 'internal',
   });
 
   const openDialog = (config?: ReworkConfig) => {
@@ -91,6 +97,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
         automationDays: undefined,
         targetReason: undefined,
         movesToCancellation: false,
+        partyType: 'internal',
       });
     }
     setIsDialogOpen(true);
@@ -125,6 +132,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
         assignment: formData.assignment || 'rf_sc',
         stages: formData.stages || [],
         movesToCancellation: formData.movesToCancellation || false,
+        partyType: formData.partyType || 'internal',
       };
       onUpdate([...reworkConfigs, newConfig]);
     }
@@ -229,6 +237,32 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                     onChange={(e) => setFormData({ ...formData, descriptionEn: e.target.value })}
                     placeholder="Enter English description"
                   />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="partyType">Party Type</Label>
+                  <Select 
+                    value={formData.partyType || 'internal'} 
+                    onValueChange={(value) => setFormData({ 
+                      ...formData, 
+                      partyType: value as ReworkPartyType
+                    })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select party type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {partyTypeOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    {formData.partyType === 'internal' 
+                      ? 'Issues handled within the organization (AST, OPS, etc.)'
+                      : 'Issues involving external parties (Insurers, Customers, etc.)'}
+                  </p>
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="assignment">Assignment Logic</Label>
@@ -411,6 +445,9 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                   Stages
                 </th>
                 <th className="data-table-header px-4 py-3 text-center">
+                  Party
+                </th>
+                <th className="data-table-header px-4 py-3 text-center">
                   Cancellation
                 </th>
                 <th className="data-table-header px-4 py-3 text-center">
@@ -441,6 +478,15 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                   </td>
                   <td className="px-4 py-3 text-sm">{getTeamDisplay(config)}</td>
                   <td className="px-4 py-3 text-sm">{getStageLabels(config.stages || [])}</td>
+                  <td className="px-4 py-3 text-sm text-center">
+                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                      config.partyType === 'external' 
+                        ? 'bg-blue-500/10 text-blue-600' 
+                        : 'bg-muted text-muted-foreground'
+                    }`}>
+                      {config.partyType === 'external' ? 'External' : 'Internal'}
+                    </span>
+                  </td>
                   <td className="px-4 py-3 text-sm text-center">
                     <span className={config.movesToCancellation ? 'text-destructive' : 'text-muted-foreground'}>
                       {config.movesToCancellation ? 'YES' : '-'}

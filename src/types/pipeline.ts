@@ -243,6 +243,9 @@ export interface Lead {
 
 export type AssignmentType = 'round_robin' | 'rf_sc' | 'none';
 
+// Party type for rework reasons - internal (within organization) or external (insurer, customer, etc.)
+export type ReworkPartyType = 'internal' | 'external';
+
 export interface ReworkConfig {
   id: string;
   descriptionTh: string;
@@ -255,6 +258,7 @@ export interface ReworkConfig {
   assignment: AssignmentType;
   stages: PipelineStage[];
   movesToCancellation?: boolean; // If true, selecting this rework moves the lead to Cancellation tab
+  partyType: ReworkPartyType; // Whether this is an internal or external rework reason
 }
 
 export interface PipelineTab {

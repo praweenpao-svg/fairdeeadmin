@@ -568,6 +568,28 @@ export function PolicyRemarksReworkDialog({
     config.stages.includes(currentStage)
   );
 
+  // Helper to get party type label with prefix
+  const getPartyTypeLabel = (partyType: 'internal' | 'external') => {
+    if (partyType === 'external') {
+      return language === 'th' ? '[ภายนอก]' : '[External]';
+    }
+    return language === 'th' ? '[ภายใน]' : '[Internal]';
+  };
+
+  // Helper to get config label with party type prefix
+  const getConfigLabelWithParty = (config: typeof reworkConfigs[0]) => {
+    const partyPrefix = getPartyTypeLabel(config.partyType);
+    const description = language === 'th' ? config.descriptionTh : config.descriptionEn;
+    return `${partyPrefix} ${description}`;
+  };
+
+  // Group configs by party type for better organization
+  const groupedConfigs = (configs: typeof reworkConfigs) => {
+    const internal = configs.filter(c => c.partyType === 'internal');
+    const external = configs.filter(c => c.partyType === 'external');
+    return { internal, external };
+  };
+
   // State for adding new rework reason
   const [showAddRework, setShowAddRework] = useState(false);
   const [newReworkReasonId, setNewReworkReasonId] = useState('');
@@ -670,16 +692,41 @@ export function PolicyRemarksReworkDialog({
                   <SelectValue placeholder={language === 'th' ? 'เลือกเหตุผล' : 'Select reason'} />
                 </SelectTrigger>
                 <SelectContent className="bg-popover z-50">
-                  {reworkConfigs
-                    .filter(config => 
+                  {(() => {
+                    const filteredConfigs = reworkConfigs.filter(config => 
                       config.id !== currentReassignEntry?.reasonId && 
                       config.stages.includes(currentStage)
-                    )
-                    .map(config => (
-                      <SelectItem key={config.id} value={config.id} className="text-xs">
-                        {language === 'th' ? config.descriptionTh : config.descriptionEn}
-                      </SelectItem>
-                    ))}
+                    );
+                    const { internal, external } = groupedConfigs(filteredConfigs);
+                    return (
+                      <>
+                        {internal.length > 0 && (
+                          <>
+                            <div className="px-2 py-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+                              {language === 'th' ? 'ภายใน' : 'Internal'}
+                            </div>
+                            {internal.map(config => (
+                              <SelectItem key={config.id} value={config.id} className="text-xs pl-4">
+                                {language === 'th' ? config.descriptionTh : config.descriptionEn}
+                              </SelectItem>
+                            ))}
+                          </>
+                        )}
+                        {external.length > 0 && (
+                          <>
+                            <div className="px-2 py-1.5 text-[10px] font-semibold text-blue-600 uppercase tracking-wide border-t mt-1">
+                              {language === 'th' ? 'ภายนอก' : 'External'}
+                            </div>
+                            {external.map(config => (
+                              <SelectItem key={config.id} value={config.id} className="text-xs pl-4">
+                                {language === 'th' ? config.descriptionTh : config.descriptionEn}
+                              </SelectItem>
+                            ))}
+                          </>
+                        )}
+                      </>
+                    );
+                  })()}
                 </SelectContent>
               </Select>
             </div>
@@ -782,11 +829,37 @@ export function PolicyRemarksReworkDialog({
                           <SelectValue placeholder={language === 'th' ? 'เลือกเหตุผล' : 'Select reason'} />
                         </SelectTrigger>
                         <SelectContent className="bg-popover z-50">
-                          {stageFilteredConfigs.map(config => (
-                            <SelectItem key={config.id} value={config.id} className="text-xs">
-                              {language === 'th' ? config.descriptionTh : config.descriptionEn}
-                            </SelectItem>
-                          ))}
+                          {(() => {
+                            const { internal, external } = groupedConfigs(stageFilteredConfigs);
+                            return (
+                              <>
+                                {internal.length > 0 && (
+                                  <>
+                                    <div className="px-2 py-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+                                      {language === 'th' ? 'ภายใน' : 'Internal'}
+                                    </div>
+                                    {internal.map(config => (
+                                      <SelectItem key={config.id} value={config.id} className="text-xs pl-4">
+                                        {language === 'th' ? config.descriptionTh : config.descriptionEn}
+                                      </SelectItem>
+                                    ))}
+                                  </>
+                                )}
+                                {external.length > 0 && (
+                                  <>
+                                    <div className="px-2 py-1.5 text-[10px] font-semibold text-blue-600 uppercase tracking-wide border-t mt-1">
+                                      {language === 'th' ? 'ภายนอก' : 'External'}
+                                    </div>
+                                    {external.map(config => (
+                                      <SelectItem key={config.id} value={config.id} className="text-xs pl-4">
+                                        {language === 'th' ? config.descriptionTh : config.descriptionEn}
+                                      </SelectItem>
+                                    ))}
+                                  </>
+                                )}
+                              </>
+                            );
+                          })()}
                         </SelectContent>
                       </Select>
                     </div>
