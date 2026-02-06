@@ -354,7 +354,7 @@ export function PolicyRemarksReworkDialog({
           )}
           <button
             onClick={() => setReplyingTo(isReplying ? null : { id: remark.id, type: 'remark' })}
-            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors ml-auto"
+            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
             <Reply className="w-3 h-3" />
             {language === 'th' ? 'ตอบกลับ' : 'Reply'}
@@ -477,40 +477,36 @@ export function PolicyRemarksReworkDialog({
               {entry.replies?.length} {language === 'th' ? 'ความคิดเห็น' : 'replies'}
             </button>
           )}
+          <button
+            onClick={() => setReplyingTo(isReplying ? null : { id: entry.id, type: 'rework' })}
+            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Reply className="w-3 h-3" />
+            {language === 'th' ? 'ตอบกลับ' : 'Reply'}
+          </button>
           
-          {/* Right-aligned actions */}
-          <div className="flex items-center gap-2 ml-auto">
-            <button
-              onClick={() => setReplyingTo(isReplying ? null : { id: entry.id, type: 'rework' })}
-              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <Reply className="w-3 h-3" />
-              {language === 'th' ? 'ตอบกลับ' : 'Reply'}
-            </button>
-            
-            {/* Resolve/Reassign actions for active rework */}
-            {isActive && (
-              <>
-                <Button
-                  size="sm"
-                  className="h-6 text-xs bg-green-600 hover:bg-green-700"
-                  onClick={() => onReworkResolve(entry.id)}
-                >
-                  <CheckCircle className="w-3 h-3 mr-1" />
-                  {language === 'th' ? 'แก้ไขแล้ว' : 'Resolve'}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-6 text-xs"
-                  onClick={() => setReassignEntryId(entry.id)}
-                >
-                  <ArrowRightLeft className="w-3 h-3 mr-1" />
-                  {language === 'th' ? 'มอบหมายใหม่' : 'Reassign'}
-                </Button>
-              </>
-            )}
-          </div>
+          {/* Resolve/Reassign actions for active rework */}
+          {isActive && (
+            <div className="flex items-center gap-2 ml-auto">
+              <Button
+                size="sm"
+                className="h-6 text-xs bg-green-600 hover:bg-green-700"
+                onClick={() => onReworkResolve(entry.id)}
+              >
+                <CheckCircle className="w-3 h-3 mr-1" />
+                {language === 'th' ? 'แก้ไขแล้ว' : 'Resolve'}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-6 text-xs"
+                onClick={() => setReassignEntryId(entry.id)}
+              >
+                <ArrowRightLeft className="w-3 h-3 mr-1" />
+                {language === 'th' ? 'มอบหมายใหม่' : 'Reassign'}
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Expanded replies */}
