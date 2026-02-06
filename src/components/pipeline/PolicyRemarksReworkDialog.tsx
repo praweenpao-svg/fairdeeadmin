@@ -421,20 +421,20 @@ export function PolicyRemarksReworkDialog({
         className={cn(
           'p-3 rounded-lg border',
           isActive
-            ? 'bg-warning/10 border-warning/30'
+            ? 'bg-warning/10 border-primary/40'
             : 'bg-green-500/10 border-green-500/30'
         )}
       >
         {/* Main rework entry */}
         <div className="flex items-start gap-2">
           {isActive ? (
-            <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0 text-warning" />
+            <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0 text-primary" />
           ) : (
             <CheckCircle className="w-4 h-4 mt-0.5 shrink-0 text-green-600" />
           )}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <p className={cn('text-sm font-medium', isActive ? 'text-warning' : 'text-green-700 dark:text-green-400')}>
+              <p className={cn('text-sm font-medium', isActive ? 'text-primary' : 'text-green-700 dark:text-green-400')}>
                 {getReasonLabel(entry)}
               </p>
               {isActive && entry.assignedTo && (
@@ -631,7 +631,7 @@ export function PolicyRemarksReworkDialog({
             </Badge>
             {language === 'th' ? 'หมายเหตุ & งานติดปัญหา' : 'Remarks & Rework'}
             {unresolvedEntries.length > 0 && (
-              <Badge variant="outline" className="ml-2 bg-warning/10 text-warning border-warning/30">
+              <Badge variant="outline" className="ml-2 bg-warning/10 text-primary border-primary/30">
                 <AlertTriangle className="w-3 h-3 mr-1" />
                 {unresolvedEntries.length} {language === 'th' ? 'งานติดปัญหา' : 'Active'}
               </Badge>
@@ -739,7 +739,7 @@ export function PolicyRemarksReworkDialog({
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      className="border-dashed border-warning/50 text-warning hover:bg-warning/10 hover:text-warning"
+                      className="border-primary/50 text-primary hover:bg-warning/10 hover:text-primary"
                       onClick={() => setShowAddRework(true)}
                     >
                       <AlertTriangle className="w-3.5 h-3.5 mr-1.5" />
@@ -764,9 +764,9 @@ export function PolicyRemarksReworkDialog({
                 
                 {/* Add Rework Reason form - shown at bottom of timeline */}
                 {showAddRework && stageFilteredConfigs.length > 0 && (
-                  <div className="p-3 bg-warning/5 border border-warning/30 rounded-lg space-y-3">
+                  <div className="p-3 bg-warning/5 border border-primary/40 rounded-lg space-y-3">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-sm font-medium text-warning">
+                      <div className="flex items-center gap-2 text-sm font-medium text-primary">
                         <AlertTriangle className="w-4 h-4" />
                         {language === 'th' ? 'เพิ่มเหตุผลงานติดปัญหา' : 'Add Rework Reason'}
                       </div>
@@ -850,7 +850,7 @@ export function PolicyRemarksReworkDialog({
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="w-full h-8 text-xs border-dashed border-warning/50 text-warning hover:bg-warning/10 hover:text-warning"
+                    className="w-full h-8 text-xs border-primary/50 text-primary hover:bg-warning/10 hover:text-primary"
                     onClick={() => setShowAddRework(true)}
                   >
                     <AlertTriangle className="w-3 h-3 mr-1.5" />
