@@ -140,7 +140,7 @@
   }
 
   .data-table-row {
-    @apply border-b border-border hover:bg-muted/30 transition-colors duration-150;
+    @apply border-b-2 border-border/60 hover:bg-muted/30 transition-colors duration-150 shadow-[0_1px_3px_-1px_rgba(0,0,0,0.1)];
   }
 
   .lead-badge {
