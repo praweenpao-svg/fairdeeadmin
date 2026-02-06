@@ -479,11 +479,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                   <td className="px-4 py-3 text-sm">{getTeamDisplay(config)}</td>
                   <td className="px-4 py-3 text-sm">{getStageLabels(config.stages || [])}</td>
                   <td className="px-4 py-3 text-sm text-center">
-                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                      config.partyType === 'external' 
-                        ? 'bg-blue-500/10 text-blue-600' 
-                        : 'bg-muted text-muted-foreground'
-                    }`}>
+                    <span className="px-2 py-0.5 rounded text-xs font-medium bg-muted text-muted-foreground">
                       {config.partyType === 'external' ? 'External' : 'Internal'}
                     </span>
                   </td>

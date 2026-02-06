@@ -703,7 +703,7 @@ export function PolicyRemarksReworkDialog({
                         {internal.length > 0 && (
                           <>
                             <div className="px-2 py-1.5 text-[10px] font-semibold text-muted-foreground tracking-wide">
-                              {language === 'th' ? 'ใช้สำหรับ OPS เท่านั้น (เมื่อเลือก ตัวแทนจะไม่เห็นข้อมูลดังกล่าว)' : 'OPS only (agent will not see this)'}
+                              {language === 'th' ? 'ใช้สำหรับ OPS เท่านั้น (ตัวแทนจะไม่เห็นข้อมูลดังกล่าว)' : 'OPS only (agent will not see this)'}
                             </div>
                             {internal.map(config => (
                               <SelectItem key={config.id} value={config.id} className="text-xs pl-4">
@@ -714,8 +714,8 @@ export function PolicyRemarksReworkDialog({
                         )}
                         {external.length > 0 && (
                           <>
-                            <div className="px-2 py-1.5 text-[10px] font-semibold text-blue-600 tracking-wide border-t mt-1">
-                              {language === 'th' ? 'ใช้สำหรับ OPS และตัวแทน (เมื่อเลือก ตัวแทนจะเห็นข้อมูลดังกล่าว)' : 'OPS and agent (agent will see this)'}
+                            <div className="px-2 py-1.5 text-[10px] font-semibold text-muted-foreground tracking-wide border-t mt-1">
+                              {language === 'th' ? 'ใช้สำหรับ OPS และตัวแทน (ตัวแทนจะเห็นข้อมูลดังกล่าว)' : 'OPS and agent (agent will see this)'}
                             </div>
                             {external.map(config => (
                               <SelectItem key={config.id} value={config.id} className="text-xs pl-4">
@@ -836,7 +836,7 @@ export function PolicyRemarksReworkDialog({
                                 {internal.length > 0 && (
                                   <>
                                     <div className="px-2 py-1.5 text-[10px] font-semibold text-muted-foreground tracking-wide">
-                                      {language === 'th' ? 'ใช้สำหรับ OPS เท่านั้น (เมื่อเลือก ตัวแทนจะไม่เห็นข้อมูลดังกล่าว)' : 'OPS only (agent will not see this)'}
+                                      {language === 'th' ? 'ใช้สำหรับ OPS เท่านั้น (ตัวแทนจะไม่เห็นข้อมูลดังกล่าว)' : 'OPS only (agent will not see this)'}
                                     </div>
                                     {internal.map(config => (
                                       <SelectItem key={config.id} value={config.id} className="text-xs pl-4">
@@ -847,8 +847,8 @@ export function PolicyRemarksReworkDialog({
                                 )}
                                 {external.length > 0 && (
                                   <>
-                                    <div className="px-2 py-1.5 text-[10px] font-semibold text-blue-600 tracking-wide border-t mt-1">
-                                      {language === 'th' ? 'ใช้สำหรับ OPS และตัวแทน (เมื่อเลือก ตัวแทนจะเห็นข้อมูลดังกล่าว)' : 'OPS and agent (agent will see this)'}
+                                    <div className="px-2 py-1.5 text-[10px] font-semibold text-muted-foreground tracking-wide border-t mt-1">
+                                      {language === 'th' ? 'ใช้สำหรับ OPS และตัวแทน (ตัวแทนจะเห็นข้อมูลดังกล่าว)' : 'OPS and agent (agent will see this)'}
                                     </div>
                                     {external.map(config => (
                                       <SelectItem key={config.id} value={config.id} className="text-xs pl-4">
