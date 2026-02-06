@@ -1382,7 +1382,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
           <table className="w-full">
             <thead>
               <tr className="border-b border-border">
-                <th className="data-table-header px-4 py-3 text-left">ID</th>
+                <th className="data-table-header px-4 py-3 text-left">{stage === 'to_convert' ? 'Lead ID' : 'Quotation ID'}</th>
                 <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'ตัวแทน' : 'Agent'}</th>
                 <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'สร้างเมื่อ' : 'Created On'}</th>
                 <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'รายละเอียดรถ' : 'Vehicle details'}</th>
