@@ -244,20 +244,53 @@ export function PolicyRemarksReworkDialog({
 
   const renderAttachments = (attachments?: ReworkAttachment[]) => {
     if (!attachments || attachments.length === 0) return null;
+    
+    const images = attachments.filter(att => att.type === 'png' || att.type === 'jpg');
+    const pdfs = attachments.filter(att => att.type === 'pdf');
+    
     return (
-      <div className="flex flex-wrap gap-1.5 mt-2">
-        {attachments.map(att => (
-          <a
-            key={att.id}
-            href={att.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1 bg-muted/50 px-2 py-1 rounded text-xs text-primary hover:bg-muted transition-colors"
-          >
-            {att.type === 'pdf' ? <FileText className="w-3 h-3" /> : <Image className="w-3 h-3" />}
-            <span className="max-w-[80px] truncate">{att.name}</span>
-          </a>
-        ))}
+      <div className="mt-2 space-y-2">
+        {/* Image previews grid */}
+        {images.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {images.map(att => (
+              <a
+                key={att.id}
+                href={att.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group relative block overflow-hidden rounded-md border border-border hover:border-primary transition-colors"
+              >
+                <img 
+                  src={att.url} 
+                  alt={att.name}
+                  className="w-16 h-16 object-cover"
+                />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                  <Image className="w-4 h-4 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+              </a>
+            ))}
+          </div>
+        )}
+        
+        {/* PDF links */}
+        {pdfs.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {pdfs.map(att => (
+              <a
+                key={att.id}
+                href={att.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 bg-muted/50 px-2 py-1.5 rounded text-xs text-primary hover:bg-muted transition-colors border border-border/50"
+              >
+                <FileText className="w-3.5 h-3.5 text-destructive" />
+                <span className="max-w-[100px] truncate">{att.name}</span>
+              </a>
+            ))}
+          </div>
+        )}
       </div>
     );
   };
