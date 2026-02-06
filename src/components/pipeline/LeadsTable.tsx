@@ -1400,6 +1400,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                 )}
                 {!isPostLeadStage && (
                   <>
+                    <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'ผู้รับผิดชอบ' : 'Owner'}</th>
                     <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'สถานะ ETA' : 'ETA Status'}</th>
                     <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'สถานะงาน' : 'Status'}</th>
                   </>
@@ -1413,7 +1414,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
             <tbody>
               {sortedLeads.length === 0 ? (
                 <tr>
-                  <td colSpan={isPostLeadStage ? (showDEColumn ? 11 : 10) : 9} className="px-4 py-12 text-center text-muted-foreground">
+                  <td colSpan={isPostLeadStage ? (showDEColumn ? 11 : 10) : 10} className="px-4 py-12 text-center text-muted-foreground">
                     {language === 'th' ? 'ไม่พบเคสของคุณ ณ ตอนนี้' : 'No cases found at the moment'}
                   </td>
                 </tr>
@@ -1610,6 +1611,16 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                       )}
                       {!isPostLeadStage && (
                         <>
+                          {/* Owner Cell - SC if exists, else RF */}
+                          <td className="px-4 py-3">
+                            {(() => {
+                              const owner = lead.scAssignee || lead.rfAssignee;
+                              if (owner) {
+                                return <span className="text-sm font-medium">{owner}</span>;
+                              }
+                              return <span className="text-xs text-muted-foreground">-</span>;
+                            })()}
+                          </td>
                           {/* ETA Status Cell */}
                           <td className="px-4 py-3">
                             {(() => {
