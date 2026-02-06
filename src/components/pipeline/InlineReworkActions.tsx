@@ -182,13 +182,39 @@ export function InlineReworkActions({
                   <SelectValue placeholder={language === 'th' ? 'เลือกเหตุผล' : 'Select reason'} />
                 </SelectTrigger>
                 <SelectContent className="bg-popover z-50">
-                  {reworkConfigs
-                    .filter((config) => config.id !== latestEntry.reasonId)
-                    .map((config) => (
-                      <SelectItem key={config.id} value={config.id} className="text-xs">
-                        {language === 'th' ? config.descriptionTh : config.descriptionEn}
-                      </SelectItem>
-                    ))}
+                  {(() => {
+                    const filteredConfigs = reworkConfigs.filter((config) => config.id !== latestEntry.reasonId);
+                    const internal = filteredConfigs.filter(c => c.partyType === 'internal');
+                    const external = filteredConfigs.filter(c => c.partyType === 'external');
+                    return (
+                      <>
+                        {internal.length > 0 && (
+                          <>
+                            <div className="px-2 py-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+                              {language === 'th' ? 'ภายใน' : 'Internal'}
+                            </div>
+                            {internal.map((config) => (
+                              <SelectItem key={config.id} value={config.id} className="text-xs pl-4">
+                                {language === 'th' ? config.descriptionTh : config.descriptionEn}
+                              </SelectItem>
+                            ))}
+                          </>
+                        )}
+                        {external.length > 0 && (
+                          <>
+                            <div className="px-2 py-1.5 text-[10px] font-semibold text-blue-600 uppercase tracking-wide border-t mt-1">
+                              {language === 'th' ? 'ภายนอก' : 'External'}
+                            </div>
+                            {external.map((config) => (
+                              <SelectItem key={config.id} value={config.id} className="text-xs pl-4">
+                                {language === 'th' ? config.descriptionTh : config.descriptionEn}
+                              </SelectItem>
+                            ))}
+                          </>
+                        )}
+                      </>
+                    );
+                  })()}
                 </SelectContent>
               </Select>
             </div>
