@@ -230,6 +230,11 @@ export interface Lead {
   vehicleBrand?: string;
   vehicleSubBrand?: string;
   vehicleYear?: number;
+  // Coverage details (post-lead stages)
+  insuranceClass?: string; // 1, 2, 2+, 3, 3+
+  garageType?: 'Dealer' | 'Garage';
+  insurerName?: string; // English insurer name
+  insurerNameTh?: string; // Thai insurer name
   rfStatus: 'pending' | 'transferred' | 'completed';
   scStatus: 'pending' | 'claimed' | 'completed';
   saleStatus: SaleStatus;

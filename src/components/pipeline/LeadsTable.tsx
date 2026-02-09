@@ -1408,6 +1408,9 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                 <th className="data-table-header px-4 py-3 text-left">{stage === 'to_convert' ? 'Lead ID' : 'Quotation ID'}</th>
                 <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'ตัวแทน' : 'Agent'}</th>
                 <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'สร้างเมื่อ' : 'Created On'}</th>
+                {isPostLeadStage && (
+                  <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'รายละเอียดคุ้มครอง' : 'Coverage Details'}</th>
+                )}
                 <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'รายละเอียดรถ' : 'Vehicle details'}</th>
                 {isPostLeadStage && (
                   <>
@@ -1438,7 +1441,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
             <tbody>
               {sortedLeads.length === 0 ? (
                 <tr>
-                  <td colSpan={isPostLeadStage ? (showDEColumn ? 12 : 11) : 10} className="px-4 py-12 text-center text-muted-foreground">
+                  <td colSpan={isPostLeadStage ? (showDEColumn ? 13 : 12) : 10} className="px-4 py-12 text-center text-muted-foreground">
                     {language === 'th' ? 'ไม่พบเคสของคุณ ณ ตอนนี้' : 'No cases found at the moment'}
                   </td>
                 </tr>
@@ -1517,6 +1520,18 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                         </div>
                       </td>
                       <td className="px-4 py-3 text-sm">{lead.createdOn}</td>
+                      {isPostLeadStage && (
+                        <td className="px-4 py-3">
+                          <div className="flex flex-col">
+                            <span className="text-sm font-medium">
+                              {lead.insuranceClass ? `${language === 'th' ? 'ชั้น' : 'Class'} ${lead.insuranceClass} · ${lead.garageType === 'Dealer' ? (language === 'th' ? 'ซ่อมห้าง' : 'Dealer') : (language === 'th' ? 'ซ่อมอู่' : 'Garage')}` : '-'}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              {lead.insurerName ? (language === 'th' ? lead.insurerNameTh : lead.insurerName) : '-'}
+                            </span>
+                          </div>
+                        </td>
+                      )}
                       <td className="px-4 py-3">
                         <div className="flex flex-col">
                           <span className="text-sm font-medium">{lead.vehicleDetails || '-'}</span>

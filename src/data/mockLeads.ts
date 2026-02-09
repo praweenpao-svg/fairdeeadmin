@@ -50,7 +50,18 @@ function getRandomVehicle() {
   return { brand: brandData.brand, subBrand, year, province };
 }
 
-// Insurer names for mock data
+// Helper to get random coverage details for post-lead stages
+function getRandomCoverage(index: number) {
+  const insurer = insurerNamePairs[index % insurerNamePairs.length];
+  return {
+    insuranceClass: coverageInsuranceClasses[index % coverageInsuranceClasses.length],
+    garageType: coverageGarageTypes[index % coverageGarageTypes.length],
+    insurerName: insurer.en,
+    insurerNameTh: insurer.th,
+  };
+}
+
+// Insurer names for mock data (EN only - used for insurer quotes)
 const insurerNames = [
   'Viriyah Insurance',
   'AXA Insurance',
@@ -61,6 +72,28 @@ const insurerNames = [
   'Thai Sri Insurance',
   'Tokio Marine',
 ];
+
+// Insurer names with TH/EN pairs for coverage details
+const insurerNamePairs: Array<{ en: string; th: string }> = [
+  { en: 'Viriyah Insurance', th: 'วิริยะประกันภัย' },
+  { en: 'Bangkok Insurance', th: 'กรุงเทพประกันภัย' },
+  { en: 'Dhipaya Insurance', th: 'ทิพยประกันภัย' },
+  { en: 'Muang Thai Insurance', th: 'เมืองไทยประกันภัย' },
+  { en: 'Sin Munkong Insurance', th: 'สินมั่นคงประกันภัย' },
+  { en: 'Thai Setakij Insurance (TSK)', th: 'ไทยเศรษฐกิจประกันภัย' },
+  { en: 'AIA Thailand', th: 'เอไอเอ ประเทศไทย' },
+  { en: 'Allianz Ayudhya', th: 'อลิอันซ์ อยุธยา' },
+  { en: 'Tokio Marine Safety Insurance', th: 'คุ้มภัยโตเกียวมารีนประกันภัย' },
+  { en: 'MSIG Insurance', th: 'เอ็ม เอส ไอ จี ประกันภัย' },
+  { en: 'Thaisri Insurance', th: 'ไทยศรีประกันภัย' },
+  { en: 'Chubb Samaggi Insurance', th: 'ชับบ์สามัคคีประกันภัย' },
+  { en: 'Falcon Insurance', th: 'ฟอลคอนประกันภัย' },
+  { en: 'Navakij Insurance', th: 'นวกิจประกันภัย' },
+];
+
+// Coverage detail values for post-lead stages
+const coverageInsuranceClasses = ['1', '2', '2+', '3', '3+'];
+const coverageGarageTypes: Array<'Dealer' | 'Garage'> = ['Dealer', 'Garage'];
 
 const insuranceClasses = ['type_1_insurance', 'type_2_insurance', 'type_3_insurance', 'type_2+_insurance'];
 const garageTypes: Array<'Dealer' | 'Garage' | 'Any'> = ['Dealer', 'Garage', 'Any'];
@@ -953,6 +986,7 @@ const generateLeads = (): Lead[] => {
       vehicleSubBrand: vehicle.subBrand,
       vehicleYear: vehicle.year,
       vehicleProvince: vehicle.province,
+      ...getRandomCoverage(i),
       rfStatus: 'transferred',
       scStatus: 'claimed',
       saleStatus: 'pending_payment',
@@ -1037,6 +1071,7 @@ const generateLeads = (): Lead[] => {
       vehicleSubBrand: vehicle.subBrand,
       vehicleYear: vehicle.year,
       vehicleProvince: vehicle.province,
+      ...getRandomCoverage(i + 6),
       rfStatus: 'transferred',
       scStatus: 'claimed',
       saleStatus: 'pending_review',
@@ -1142,6 +1177,7 @@ const generateLeads = (): Lead[] => {
       vehicleSubBrand: vehicle.subBrand,
       vehicleYear: vehicle.year,
       vehicleProvince: vehicle.province,
+      ...getRandomCoverage(i + 12),
       rfStatus: 'transferred',
       scStatus: 'claimed',
       saleStatus: scenario.hasRework ? 'pending_issuance' : 'pending_issuance',
@@ -1213,6 +1249,7 @@ const generateLeads = (): Lead[] => {
       vehicleSubBrand: vehicle.subBrand,
       vehicleYear: vehicle.year,
       vehicleProvince: vehicle.province,
+      ...getRandomCoverage(i + 18),
       rfStatus: 'transferred',
       scStatus: 'claimed',
       saleStatus: 'policy_issued',
@@ -1310,6 +1347,7 @@ const generateLeads = (): Lead[] => {
       vehicleSubBrand: vehicle.subBrand,
       vehicleYear: vehicle.year,
       vehicleProvince: vehicle.province,
+      ...getRandomCoverage(i + 24),
       rfStatus: 'completed',
       scStatus: 'completed',
       saleStatus: saleStatus as Lead['saleStatus'],
@@ -1380,6 +1418,7 @@ const generateLeads = (): Lead[] => {
       vehicleSubBrand: vehicle.subBrand,
       vehicleYear: vehicle.year,
       vehicleProvince: vehicle.province,
+      ...getRandomCoverage(i + 30),
       rfStatus: 'completed',
       scStatus: 'completed',
       saleStatus: 'policy_cancelled',
