@@ -103,38 +103,135 @@ const policyStatusProgression: PolicyStatus[] = [
   'policy_delivered',
 ];
 
-// Helper to generate policy history log based on current status
+// Lead status progression (pre-conversion)
+const leadStatusProgression = [
+  'pending',
+  'docs_missing',
+  'waiting_for_insurer',
+  'quotation_shared',
+];
+
+// Helper to generate rich policy history log with lead status, assignees, payment, endorsement
 function generatePolicyHistoryLog(
   policyId: string,
   currentStatus: PolicyStatus,
-  baseDate: string
+  baseDate: string,
+  options?: {
+    paymentMethod?: PaymentMethod;
+    endorsementType?: EndorsementType;
+    endorsementStatus?: EndorsementStatus;
+    rfAssignee?: string;
+    scAssignee?: string;
+    deAssignee?: string;
+  }
 ): PolicyHistoryLogEntry[] {
   const logs: PolicyHistoryLogEntry[] = [];
   const currentIndex = policyStatusProgression.indexOf(currentStatus);
   
-  if (currentIndex === -1) {
-    // Status not in progression (e.g., cancelled, rework_required)
-    return logs;
-  }
-  
   const [datePart, timePart] = baseDate.split(' ');
   const [day, month, year] = datePart.split('-').map(Number);
   const [hours] = (timePart || '09:00').split(':').map(Number);
+  let hourOffset = 0;
   
-  // Generate history entries for each status transition up to current
-  for (let i = 0; i <= currentIndex; i++) {
-    if (i === 0) continue; // Skip first status (no "from" status)
-    
-    const entryDate = new Date(year, month - 1, day, hours + i * 2, Math.floor(Math.random() * 60));
-    const triggeredAt = `${String(entryDate.getDate()).padStart(2, '0')}-${String(entryDate.getMonth() + 1).padStart(2, '0')}-${entryDate.getFullYear()} ${String(entryDate.getHours()).padStart(2, '0')}:${String(entryDate.getMinutes()).padStart(2, '0')}`;
-    
+  const getTime = () => {
+    hourOffset += 1;
+    const entryDate = new Date(year, month - 1, day, hours + hourOffset, Math.floor(Math.random() * 60));
+    return `${String(entryDate.getDate()).padStart(2, '0')}-${String(entryDate.getMonth() + 1).padStart(2, '0')}-${entryDate.getFullYear()} ${String(entryDate.getHours()).padStart(2, '0')}:${String(entryDate.getMinutes()).padStart(2, '0')}`;
+  };
+
+  // Add lead status changes (pre-conversion journey) - always add these first
+  // Simulate: pending -> docs_missing -> waiting_for_insurer -> quotation_shared
+  const leadSteps = Math.min(2 + Math.floor(Math.random() * 2), 3); // 2-3 steps
+  for (let i = 1; i <= leadSteps; i++) {
     logs.push({
-      id: `phl-${policyId}-${i}`,
-      action: 'status_changed',
-      triggeredBy: deStaff[i % deStaff.length],
-      triggeredAt,
-      fromStatus: policyStatusProgression[i - 1],
-      toStatus: policyStatusProgression[i],
+      id: `phl-${policyId}-lead-${i}`,
+      action: 'lead_status_changed',
+      triggeredBy: options?.scAssignee || options?.rfAssignee || scStaff[i % scStaff.length],
+      triggeredAt: getTime(),
+      fromStatus: leadStatusProgression[i - 1] as any,
+      toStatus: leadStatusProgression[i] as any,
+    });
+  }
+
+  // Add RF assignee change
+  if (options?.rfAssignee) {
+    logs.push({
+      id: `phl-${policyId}-rf`,
+      action: 'assignee_changed',
+      triggeredBy: 'System (Round Robin)',
+      triggeredAt: getTime(),
+      assigneeType: 'rf',
+      fromAssignee: undefined,
+      toAssignee: options.rfAssignee,
+    });
+  }
+
+  // Add SC assignee change
+  if (options?.scAssignee) {
+    logs.push({
+      id: `phl-${policyId}-sc`,
+      action: 'assignee_changed',
+      triggeredBy: options.scAssignee,
+      triggeredAt: getTime(),
+      assigneeType: 'sc',
+      fromAssignee: undefined,
+      toAssignee: options.scAssignee,
+    });
+  }
+
+  // Add payment status change (based on payment method)
+  if (options?.paymentMethod && currentIndex >= 1) {
+    const paymentStatusMap: Record<PaymentMethod, string> = {
+      cbc_to_fairdee: 'payment_verified',
+      cbc_to_insurer: 'insurer_notified',
+      credit: 'credit_approved',
+    };
+    logs.push({
+      id: `phl-${policyId}-payment`,
+      action: 'payment_status_changed',
+      triggeredBy: 'Payment System',
+      triggeredAt: getTime(),
+      fromStatus: 'unpaid' as any,
+      toStatus: paymentStatusMap[options.paymentMethod] as any,
+    });
+  }
+
+  // Add DE assignee change (for post to_pay stages)
+  if (options?.deAssignee && currentIndex >= 1) {
+    logs.push({
+      id: `phl-${policyId}-de`,
+      action: 'assignee_changed',
+      triggeredBy: 'System (Round Robin)',
+      triggeredAt: getTime(),
+      assigneeType: 'de',
+      fromAssignee: undefined,
+      toAssignee: options.deAssignee,
+    });
+  }
+  
+  // Generate policy status transition history entries
+  if (currentIndex !== -1) {
+    for (let i = 1; i <= currentIndex; i++) {
+      logs.push({
+        id: `phl-${policyId}-${i}`,
+        action: 'status_changed',
+        triggeredBy: options?.deAssignee || deStaff[i % deStaff.length],
+        triggeredAt: getTime(),
+        fromStatus: policyStatusProgression[i - 1],
+        toStatus: policyStatusProgression[i],
+      });
+    }
+  }
+
+  // Add endorsement status change if applicable
+  if (options?.endorsementType && options?.endorsementStatus) {
+    logs.push({
+      id: `phl-${policyId}-endorse`,
+      action: 'endorsement_status_changed',
+      triggeredBy: options?.deAssignee || deStaff[0],
+      triggeredAt: getTime(),
+      fromStatus: 'request_created' as any,
+      toStatus: options.endorsementStatus as any,
     });
   }
   
@@ -150,7 +247,13 @@ function generatePolicyRecord(
   policyStartDate: string,
   shippingMethodOverride?: 'e_policy' | 'print_by_myself' | 'print_by_fairdee',
   endorsementType?: EndorsementType,
-  endorsementStatus?: EndorsementStatus
+  endorsementStatus?: EndorsementStatus,
+  staffOptions?: {
+    paymentMethod?: PaymentMethod;
+    rfAssignee?: string;
+    scAssignee?: string;
+    deAssignee?: string;
+  }
 ): PolicyRecord {
   const hasUploadedPolicy = isPolicyUploaded(status);
   const shippingMethod = shippingMethodOverride || printingPreferences[Math.floor(Math.random() * printingPreferences.length)];
@@ -169,8 +272,15 @@ function generatePolicyRecord(
     policyUploadedOn = `${String(uploadDate.getDate()).padStart(2, '0')}-${String(uploadDate.getMonth() + 1).padStart(2, '0')}-${uploadDate.getFullYear()} ${String(uploadDate.getHours()).padStart(2, '0')}:${String(uploadDate.getMinutes()).padStart(2, '0')}`;
   }
 
-  // Generate policy history log
-  const historyLog = generatePolicyHistoryLog(id, status, baseDate);
+  // Generate policy history log with all context
+  const historyLog = generatePolicyHistoryLog(id, status, baseDate, {
+    paymentMethod: staffOptions?.paymentMethod,
+    endorsementType,
+    endorsementStatus,
+    rfAssignee: staffOptions?.rfAssignee,
+    scAssignee: staffOptions?.scAssignee,
+    deAssignee: staffOptions?.deAssignee,
+  });
 
   return {
     id,
@@ -753,11 +863,18 @@ const generateLeads = (): Lead[] => {
     const hasEndorsement = i < 2;
     const endorsementStatus = hasEndorsement ? endorsementStatuses[i % endorsementStatuses.length] : undefined;
     
+    const rfAssignee = rfStaff[i % rfStaff.length];
+    const scAssignee = scStaff[i % scStaff.length];
+    const deAssignee = i === 4 ? 'Pao' : deStaff[i % deStaff.length];
+    const paymentMethod = paymentMethods[i % paymentMethods.length];
+    
+    const staffOptions = { paymentMethod, rfAssignee, scAssignee, deAssignee };
+    
     const policyRecords: PolicyRecord[] = scenario.policyType === 'vmi_only'
-      ? [generatePolicyRecord(`pol-${id}-vmi`, 'vmi', scenario.vmiStatus, createdOnFull, policyStartDate, undefined, hasEndorsement ? 'policy_endorsement' : undefined, endorsementStatus)]
+      ? [generatePolicyRecord(`pol-${id}-vmi`, 'vmi', scenario.vmiStatus, createdOnFull, policyStartDate, undefined, hasEndorsement ? 'policy_endorsement' : undefined, endorsementStatus, staffOptions)]
       : [
-          generatePolicyRecord(`pol-${id}-vmi`, 'vmi', scenario.vmiStatus, createdOnFull, policyStartDate, undefined, hasEndorsement ? 'policy_endorsement' : undefined, endorsementStatus),
-          generatePolicyRecord(`pol-${id}-cmi`, 'cmi', scenario.cmiStatus!, createdOnFull, cmiPolicyStartDate),
+          generatePolicyRecord(`pol-${id}-vmi`, 'vmi', scenario.vmiStatus, createdOnFull, policyStartDate, undefined, hasEndorsement ? 'policy_endorsement' : undefined, endorsementStatus, staffOptions),
+          generatePolicyRecord(`pol-${id}-cmi`, 'cmi', scenario.cmiStatus!, createdOnFull, cmiPolicyStartDate, undefined, undefined, undefined, staffOptions),
         ];
 
     const vehicle = getRandomVehicle();
@@ -784,13 +901,13 @@ const generateLeads = (): Lead[] => {
       policyAttached: false,
       reworkRequired: false,
       createdBy: i % 2 === 0 ? 'admin' : 'agent',
-      rfAssignee: rfStaff[i % rfStaff.length],
-      scAssignee: scStaff[i % scStaff.length],
-      deAssignee: i === 4 ? 'Pao' : deStaff[i % deStaff.length], // Lead #10008 (i=4) assigned to Pao for testing
+      rfAssignee,
+      scAssignee,
+      deAssignee,
       policyType: scenario.policyType,
       policyRecords,
       premium: generatePremium(),
-      paymentMethod: paymentMethods[i % paymentMethods.length],
+      paymentMethod,
     };
 
     leads.push({
@@ -1000,11 +1117,18 @@ const generateLeads = (): Lead[] => {
       ? `${String(Math.max(1, parseInt(policyStartDate.split('-')[0]) + (Math.random() > 0.5 ? 1 : -1))).padStart(2, '0')}-09-2025`
       : policyStartDate;
     
+    const rfAssignee = rfStaff[i % rfStaff.length];
+    const scAssignee = scStaff[i % scStaff.length];
+    const deAssignee = deStaff[i % deStaff.length];
+    const paymentMethod = paymentMethods[i % paymentMethods.length];
+    
+    const staffOptions = { paymentMethod, rfAssignee, scAssignee, deAssignee };
+    
     const policyRecords: PolicyRecord[] = scenario.policyType === 'vmi_only'
-      ? [generatePolicyRecord(`pol-${id}-vmi`, 'vmi', scenario.vmiStatus, createdOnFull, policyStartDate, scenario.vmiShipping)]
+      ? [generatePolicyRecord(`pol-${id}-vmi`, 'vmi', scenario.vmiStatus, createdOnFull, policyStartDate, scenario.vmiShipping, undefined, undefined, staffOptions)]
       : [
-          generatePolicyRecord(`pol-${id}-vmi`, 'vmi', scenario.vmiStatus, createdOnFull, policyStartDate, scenario.vmiShipping),
-          generatePolicyRecord(`pol-${id}-cmi`, 'cmi', scenario.cmiStatus!, createdOnFull, cmiPolicyStartDate, scenario.cmiShipping!),
+          generatePolicyRecord(`pol-${id}-vmi`, 'vmi', scenario.vmiStatus, createdOnFull, policyStartDate, scenario.vmiShipping, undefined, undefined, staffOptions),
+          generatePolicyRecord(`pol-${id}-cmi`, 'cmi', scenario.cmiStatus!, createdOnFull, cmiPolicyStartDate, scenario.cmiShipping!, undefined, undefined, staffOptions),
         ];
 
     const vehicle = getRandomVehicle();
@@ -1039,13 +1163,13 @@ const generateLeads = (): Lead[] => {
       trackingNumber: scenario.vmiShipping === 'print_by_fairdee' ? `TH${100000000 + i * 12345}` : undefined,
       reworkRequired: false,
       createdBy: i % 2 === 0 ? 'agent' : 'admin',
-      rfAssignee: rfStaff[i % rfStaff.length],
-      scAssignee: scStaff[i % scStaff.length],
-      deAssignee: deStaff[i % deStaff.length],
+      rfAssignee,
+      scAssignee,
+      deAssignee,
       policyType: scenario.policyType,
       policyRecords,
       premium: generatePremium(),
-      paymentMethod: paymentMethods[i % paymentMethods.length],
+      paymentMethod,
     };
 
     leads.push({
