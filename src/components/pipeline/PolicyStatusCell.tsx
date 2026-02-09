@@ -148,7 +148,7 @@ export function PolicyStatusCell({
   return (
     <div 
       className="w-full h-8 text-xs flex items-center px-3 rounded-md border cursor-not-allowed"
-      style={hasCustomColor ? disabledStatusStyles : { backgroundColor: 'hsl(var(--muted) / 0.5)', borderColor: 'hsl(var(--input))', color: 'hsl(var(--muted-foreground))' }}
+      style={hasCustomColor ? disabledStatusStyles : { backgroundColor: 'hsl(var(--muted) / 0.8)', borderColor: 'hsl(var(--input))', color: 'hsl(var(--muted-foreground))' }}
     >
       {policyStatusTranslations[policy.status]?.[language] || policy.status}
     </div>
