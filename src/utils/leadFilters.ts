@@ -190,6 +190,16 @@ export function applyOtherStagesFilters(leads: Lead[], filters: OtherStagesFilte
       }
     }
     
+    // Policy Status filter (multi-select, for All tab)
+    if (!filters.policyStatuses?.includes('all') && filters.policyStatuses?.length > 0) {
+      const hasMatchingPolicy = lead.policyRecords?.some(p =>
+        filters.policyStatuses.includes(p.status)
+      );
+      if (!hasMatchingPolicy) {
+        return false;
+      }
+    }
+    
     // Payment Status filter
     if (filters.paymentStatus !== 'all' && lead.paymentStatus !== filters.paymentStatus) {
       return false;

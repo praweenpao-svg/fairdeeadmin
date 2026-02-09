@@ -257,12 +257,14 @@ const Index = () => {
                 filters={otherStagesFilters}
                 onFiltersChange={setOtherStagesFilters}
                 onClear={handleClearOtherStagesFilters}
+                activeStage={activeStage}
               />
             ) : (
               <OtherStagesFilterPanel
                 filters={otherStagesFilters}
                 onFiltersChange={setOtherStagesFilters}
                 onClear={handleClearOtherStagesFilters}
+                activeStage={activeStage}
               />
             )
           )}

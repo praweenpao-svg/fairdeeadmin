@@ -24,7 +24,7 @@ export interface OtherStagesFilterState {
   deAssignee: string;
   agent: string;
   insurers: string[];
-  policyStatus: string;
+  policyStatuses: string[];
   paymentStatus: string;
   invoiceStatuses: string[];
   insuranceClasses: string[];
@@ -41,7 +41,7 @@ export const defaultOtherStagesFilterState: OtherStagesFilterState = {
   deAssignee: 'all',
   agent: 'all',
   insurers: ['all'],
-  policyStatus: 'all',
+  policyStatuses: ['all'],
   paymentStatus: 'all',
   invoiceStatuses: ['all'],
   insuranceClasses: ['all'],
@@ -88,11 +88,16 @@ const insurerOptions: { id: string; en: string; th: string }[] = [
   { id: 'icare', en: 'ICARE Insurance', th: 'ไอแคร์ ประกันภัย' },
 ];
 
-const policyStatusOptions: { value: string; en: string; th: string }[] = [
-  { value: 'all', en: 'All Policy Status', th: 'สถานะกรมธรรม์ทั้งหมด' },
-  { value: 'pending', en: 'Pending', th: 'รอดำเนินการ' },
-  { value: 'issued', en: 'Issued', th: 'ออกแล้ว' },
-  { value: 'cancelled', en: 'Cancelled', th: 'ยกเลิก' },
+const policyStatusOptions: { id: string; en: string; th: string }[] = [
+  { id: 'all', en: 'All', th: 'ทั้งหมด' },
+  { id: 'pending_payment', en: 'Pending', th: 'รอดำเนินการ' },
+  { id: 'pending_review', en: 'Pending Review', th: 'รอตรวจเอกสาร' },
+  { id: 'pending_issuance', en: 'Pending Issuance', th: 'รอออกกรมธรรม์' },
+  { id: 'policy_issued', en: 'Policy Issued', th: 'กรมธรรม์ออกแล้ว' },
+  { id: 'policy_shipped', en: 'Policy Shipped', th: 'จัดส่งแล้ว' },
+  { id: 'policy_delivered', en: 'Policy Delivered', th: 'ส่งมอบแล้ว' },
+  { id: 'policy_cancelled', en: 'Policy Cancelled', th: 'ยกเลิก' },
+  { id: 'rework_required', en: 'Rework Required', th: 'ต้องแก้ไข' },
 ];
 
 const paymentStatusOptions: { value: string; en: string; th: string }[] = [
@@ -157,15 +162,17 @@ interface OtherStagesFilterPanelProps {
   filters: OtherStagesFilterState;
   onFiltersChange: (filters: OtherStagesFilterState) => void;
   onClear: () => void;
+  activeStage?: string;
 }
 
-export function OtherStagesFilterPanel({ filters, onFiltersChange, onClear }: OtherStagesFilterPanelProps) {
+export function OtherStagesFilterPanel({ filters, onFiltersChange, onClear, activeStage }: OtherStagesFilterPanelProps) {
   const { language } = useLanguageStore();
   const [open, setOpen] = React.useState(false);
   const [localFilters, setLocalFilters] = React.useState<OtherStagesFilterState>({
     ...defaultOtherStagesFilterState,
     ...filters,
     insurers: Array.isArray(filters.insurers) ? filters.insurers : defaultOtherStagesFilterState.insurers,
+    policyStatuses: Array.isArray((filters as any).policyStatuses) ? (filters as any).policyStatuses : defaultOtherStagesFilterState.policyStatuses,
   });
 
   const rfStaff = mockStaffMembers.filter(s => s.team === 'AST RF');
@@ -335,16 +342,42 @@ export function OtherStagesFilterPanel({ filters, onFiltersChange, onClear }: Ot
 
           {/* Column 2 */}
           <div className="space-y-4">
-            {/* Policy Status */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">{language === 'th' ? 'สถานะกรมธรรม์' : 'Policy Status'}</Label>
-              <Select value={localFilters.policyStatus} onValueChange={(v) => setLocalFilters({ ...localFilters, policyStatus: v })}>
-                <SelectTrigger><SelectValue placeholder={language === 'th' ? 'ค้นหาสถานะ' : 'Search policy status'} /></SelectTrigger>
-                <SelectContent className="bg-card z-50">
-                  {policyStatusOptions.map((o) => <SelectItem key={o.value} value={o.value}>{language === 'th' ? o.th : o.en}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
+            {/* Policy Status - only on All tab */}
+            {activeStage === 'all' && (
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">{language === 'th' ? 'สถานะกรมธรรม์' : 'Policy Status'}</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full justify-between text-xs font-normal h-9">
+                      {localFilters.policyStatuses.includes('all')
+                        ? (language === 'th' ? 'ทั้งหมด' : 'All')
+                        : localFilters.policyStatuses.length === 1
+                          ? (policyStatusOptions.find(o => o.id === localFilters.policyStatuses[0])?.[language === 'th' ? 'th' : 'en'] || localFilters.policyStatuses[0])
+                          : `${localFilters.policyStatuses.length} ${language === 'th' ? 'รายการ' : 'selected'}`
+                      }
+                      <span className="ml-auto opacity-50">▼</span>
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[260px] p-2 bg-card z-[60]" align="start">
+                    <div className="max-h-[250px] overflow-y-auto space-y-1">
+                      {policyStatusOptions.map((option) => (
+                        <div key={option.id} className="flex items-center space-x-2 px-2 py-1 rounded hover:bg-muted/50">
+                          <Checkbox
+                            id={`policyStatuses-${option.id}`}
+                            checked={localFilters.policyStatuses.includes(option.id)}
+                            onCheckedChange={(checked) => handleCheckboxChange('policyStatuses', option.id, checked as boolean)}
+                            className="border-primary data-[state=checked]:bg-primary"
+                          />
+                          <Label htmlFor={`policyStatuses-${option.id}`} className="text-xs font-normal cursor-pointer flex-1">
+                            {language === 'th' ? option.th : option.en}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+            )}
 
             {/* Payment Status */}
             <div className="space-y-2">
