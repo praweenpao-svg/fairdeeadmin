@@ -21,6 +21,7 @@ import { cn } from '@/lib/utils';
 
 export interface LeadsFilterState {
   leadStatuses: string[];
+  insurerStatuses: string[];
   createdBy: string[];
   agent: string;
   rfAssignee: string;
@@ -33,6 +34,7 @@ export interface LeadsFilterState {
 
 export const defaultLeadsFilterState: LeadsFilterState = {
   leadStatuses: ['all'],
+  insurerStatuses: ['all'],
   createdBy: ['all'],
   agent: 'all',
   rfAssignee: 'all',
@@ -86,6 +88,16 @@ const etaStatusOptions: { id: string; en: string; th: string }[] = [
   { id: 'all', en: 'All', th: 'ทั้งหมด' },
   { id: 'on_time', en: 'On Time', th: 'ตามกำหนด' },
   { id: 'breached', en: 'Breached', th: 'เกินกำหนด' },
+];
+
+const insurerStatusOptions: { id: string; en: string; th: string }[] = [
+  { id: 'all', en: 'All', th: 'ทั้งหมด' },
+  { id: 'pending', en: 'Pending', th: 'รอดำเนินการ' },
+  { id: 'request_sent', en: 'Request Sent To Insurer', th: 'ส่งคำขอไปยังบริษัทประกันแล้ว' },
+  { id: 'price_added', en: 'Price List Added', th: 'เพิ่มราคาจากบริษัทประกันแล้ว' },
+  { id: 'rejected', en: 'Rejected By Insurer', th: 'บริษัทประกันปฏิเสธ' },
+  { id: 'followed_up', en: 'Already Followed Up', th: 'มีการติดตามแล้ว' },
+  { id: 'expired', en: 'Price List Expired', th: 'ราคาหมดอายุแล้ว' },
 ];
 
 // Mock agents from leads data
@@ -304,7 +316,7 @@ export function LeadsStageFilters({
   }, [filters]);
 
   const handleMultiSelectChange = (
-    field: 'leadStatuses' | 'createdBy' | 'leadsTypes' | 'agentTypes' | 'etaStatuses',
+    field: 'leadStatuses' | 'insurerStatuses' | 'createdBy' | 'leadsTypes' | 'agentTypes' | 'etaStatuses',
     id: string,
     checked: boolean
   ) => {
@@ -384,13 +396,13 @@ export function LeadsStageFilters({
           </div>
 
           {/* Column 2 */}
-          {/* Created By */}
+          {/* Insurer Status */}
           <div className="space-y-2">
-            <Label className="text-sm font-medium">{language === 'th' ? 'สร้างโดย' : 'Created By'}</Label>
+            <Label className="text-sm font-medium">{language === 'th' ? 'สถานะเบี้ยประกัน' : 'Insurer Status'}</Label>
             <MultiSelectDropdown
-              options={createdByOptions}
-              selectedValues={localFilters.createdBy}
-              onChange={(id, checked) => handleMultiSelectChange('createdBy', id, checked)}
+              options={insurerStatusOptions}
+              selectedValues={localFilters.insurerStatuses}
+              onChange={(id, checked) => handleMultiSelectChange('insurerStatuses', id, checked)}
               maxVisibleItems={2}
             />
           </div>
@@ -406,13 +418,13 @@ export function LeadsStageFilters({
             />
           </div>
 
-          {/* Leads Type */}
+          {/* Created By */}
           <div className="space-y-2">
-            <Label className="text-sm font-medium">{language === 'th' ? 'ประเภท Lead' : 'Leads Type'}</Label>
+            <Label className="text-sm font-medium">{language === 'th' ? 'สร้างโดย' : 'Created By'}</Label>
             <MultiSelectDropdown
-              options={leadsTypeOptions}
-              selectedValues={localFilters.leadsTypes}
-              onChange={(id, checked) => handleMultiSelectChange('leadsTypes', id, checked)}
+              options={createdByOptions}
+              selectedValues={localFilters.createdBy}
+              onChange={(id, checked) => handleMultiSelectChange('createdBy', id, checked)}
               maxVisibleItems={2}
             />
           </div>
@@ -428,13 +440,13 @@ export function LeadsStageFilters({
             />
           </div>
 
-          {/* Agent Type */}
+          {/* Leads Type */}
           <div className="space-y-2">
-            <Label className="text-sm font-medium">{language === 'th' ? 'ประเภทตัวแทน' : 'Agent Type'}</Label>
+            <Label className="text-sm font-medium">{language === 'th' ? 'ประเภท Lead' : 'Leads Type'}</Label>
             <MultiSelectDropdown
-              options={agentTypeOptions}
-              selectedValues={localFilters.agentTypes}
-              onChange={(id, checked) => handleMultiSelectChange('agentTypes', id, checked)}
+              options={leadsTypeOptions}
+              selectedValues={localFilters.leadsTypes}
+              onChange={(id, checked) => handleMultiSelectChange('leadsTypes', id, checked)}
               maxVisibleItems={2}
             />
           </div>
@@ -450,13 +462,13 @@ export function LeadsStageFilters({
             />
           </div>
 
-          {/* ETA Status */}
+          {/* Agent Type */}
           <div className="space-y-2">
-            <Label className="text-sm font-medium">{language === 'th' ? 'สถานะ ETA' : 'ETA Status'}</Label>
+            <Label className="text-sm font-medium">{language === 'th' ? 'ประเภทตัวแทน' : 'Agent Type'}</Label>
             <MultiSelectDropdown
-              options={etaStatusOptions}
-              selectedValues={localFilters.etaStatuses}
-              onChange={(id, checked) => handleMultiSelectChange('etaStatuses', id, checked)}
+              options={agentTypeOptions}
+              selectedValues={localFilters.agentTypes}
+              onChange={(id, checked) => handleMultiSelectChange('agentTypes', id, checked)}
               maxVisibleItems={2}
             />
           </div>
@@ -481,8 +493,16 @@ export function LeadsStageFilters({
             </Select>
           </div>
 
-          {/* Empty cell for balance */}
-          <div />
+          {/* ETA Status */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">{language === 'th' ? 'สถานะ ETA' : 'ETA Status'}</Label>
+            <MultiSelectDropdown
+              options={etaStatusOptions}
+              selectedValues={localFilters.etaStatuses}
+              onChange={(id, checked) => handleMultiSelectChange('etaStatuses', id, checked)}
+              maxVisibleItems={2}
+            />
+          </div>
         </div>
 
         {/* Footer */}
