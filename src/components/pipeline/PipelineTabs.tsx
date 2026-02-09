@@ -1,6 +1,7 @@
 import { cn } from '@/lib/utils';
 import { PipelineStage, Lead, PolicyStatus, PolicyRecord, ReworkConfig } from '@/types/pipeline';
-import { CURRENT_USER, mockReworkConfigs } from '@/data/mockLeads';
+import { mockReworkConfigs } from '@/data/mockLeads';
+import { useCurrentUserStore } from '@/stores/currentUserStore';
 import { useLanguageStore, stageTranslations, StageKey } from '@/stores/languageStore';
 import { 
   CreditCard, 
@@ -410,6 +411,7 @@ export function PipelineTabs({
   myCasesOnly,
 }: PipelineTabsProps) {
   const { language } = useLanguageStore();
+  const { name: currentUser } = useCurrentUserStore();
 
   return (
     <div className="border-b border-border bg-card px-4">
@@ -418,7 +420,7 @@ export function PipelineTabs({
           const isActive = activeStage === stage.id;
           const Icon = stage.icon;
           const label = stageTranslations[stage.id as StageKey][language];
-          const myCount = countPoliciesOwnedByUser(leads, stage.id, CURRENT_USER);
+          const myCount = countPoliciesOwnedByUser(leads, stage.id, currentUser);
 
           return (
             <button

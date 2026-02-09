@@ -2,7 +2,8 @@ import { useState, useMemo } from 'react';
 import { Search } from 'lucide-react';
 import { DateRange } from 'react-day-picker';
 import { PipelineStage, LeadType, Lead, ReworkConfig } from '@/types/pipeline';
-import { mockLeads, mockReworkConfigs, CURRENT_USER } from '@/data/mockLeads';
+import { mockLeads, mockReworkConfigs } from '@/data/mockLeads';
+import { useCurrentUserStore } from '@/stores/currentUserStore';
 import { PipelineTabs, getLeadsForStage, getLeadsOwnedByUser, getLeadsOwnedByTeam } from '@/components/pipeline/PipelineTabs';
 import { LeadsTable } from '@/components/pipeline/LeadsTable';
 import { DateRangeFilter } from '@/components/pipeline/DateRangeFilter';
@@ -21,6 +22,7 @@ import { mockStaffMembers } from '@/data/mockStaff';
 
 const Index = () => {
   const { language } = useLanguageStore();
+  const { name: currentUser, team: currentUserTeam } = useCurrentUserStore();
   const [activeStage, setActiveStage] = useState<PipelineStage>('to_convert');
   const [searchQuery, setSearchQuery] = useState('');
   const [leads, setLeads] = useState<Lead[]>(mockLeads);
@@ -52,9 +54,6 @@ const Index = () => {
   // Filters for other stages (To Report, To Issue, To Deliver, Completed)
   const [otherStagesFilters, setOtherStagesFilters] = useState<OtherStagesFilterState>(defaultOtherStagesFilterState);
 
-  // Get current user's team members
-  const currentUserStaff = mockStaffMembers.find(s => s.name === CURRENT_USER);
-  const currentUserTeam = currentUserStaff?.team;
   const teamMembers = useMemo(() => {
     if (!currentUserTeam) return [];
     return mockStaffMembers
@@ -130,7 +129,7 @@ const Index = () => {
   
   // Apply My Cases filter
   const casesFilteredLeads = myCasesOnly
-    ? getLeadsOwnedByUser(leads, activeStage, CURRENT_USER)
+    ? getLeadsOwnedByUser(leads, activeStage, currentUser)
     : stageLeads;
   
   // Apply My Team filter - use proper owner logic from PipelineTabs
@@ -186,12 +185,21 @@ const Index = () => {
         {/* Filters Row */}
         <div className="flex flex-wrap items-center gap-3 mb-6">
           {/* Lead Sub-tabs for Leads stage */}
-          {activeStage === 'to_convert' && (
-            <LeadSubTabs
-              activeSubTab={leadSubTab}
-              onSubTabChange={setLeadSubTab}
-            />
-          )}
+          {activeStage === 'to_convert' && (() => {
+            const toConvertLeads = getLeadsForStage(leads, 'to_convert');
+            const newLeadsAll = toConvertLeads.filter(l => l.leadType === 'new_leads' || l.leadType === 'coa');
+            const renewalsAll = toConvertLeads.filter(l => l.leadType === 'renewals');
+            const newLeadsCount = newLeadsAll.filter(l => l.rfAssignee === currentUser || l.scAssignee === currentUser).length;
+            const renewalsCount = renewalsAll.filter(l => l.rfAssignee === currentUser || l.scAssignee === currentUser).length;
+            return (
+              <LeadSubTabs
+                activeSubTab={leadSubTab}
+                onSubTabChange={setLeadSubTab}
+                newLeadsCount={newLeadsCount}
+                renewalsCount={renewalsCount}
+              />
+            );
+          })()}
           
           {/* Date Range Filter - before All Filters for Leads stage */}
            {activeStage === 'to_convert' && (

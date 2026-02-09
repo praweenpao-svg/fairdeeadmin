@@ -368,11 +368,12 @@ function parseDateTime(dateStr: string): Date {
   return new Date(year, month - 1, day, hours, minutes);
 }
 
-// Current user - would come from auth context in production
-const CURRENT_USER = 'Pao';
+// Current user - from profile store
+import { useCurrentUserStore } from '@/stores/currentUserStore';
 
 export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsTableProps) {
   const { language } = useLanguageStore();
+  const CURRENT_USER = useCurrentUserStore(s => s.name);
   const [reworkDialogOpen, setReworkDialogOpen] = useState(false);
   const [historyLogDialogOpen, setHistoryLogDialogOpen] = useState(false);
   const [remarksDialogOpen, setRemarksDialogOpen] = useState(false);

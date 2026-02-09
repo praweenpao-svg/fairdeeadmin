@@ -5,9 +5,18 @@ import {
   PanelLeftClose,
   PanelLeft,
   Settings2,
+  Check,
+  ChevronUp,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguageStore } from '@/stores/languageStore';
+import { useCurrentUserStore } from '@/stores/currentUserStore';
+import { mockStaffMembers } from '@/data/mockStaff';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 
 interface AppSidebarProps {
   collapsed: boolean;
@@ -32,9 +41,13 @@ const navItems = [
   },
 ];
 
+// Group staff by team
+const teamGroups = ['AST RF', 'AST SC', 'DE', 'Admin'];
+
 export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
   const location = useLocation();
   const { language } = useLanguageStore();
+  const { name: currentUser, team: currentTeam, setUser } = useCurrentUserStore();
 
   return (
     <aside
@@ -89,19 +102,64 @@ export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
         ))}
       </nav>
 
-      {/* Footer */}
+      {/* Footer - Profile Switcher */}
       <div className="border-t border-sidebar-border p-3">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-sidebar-accent flex items-center justify-center">
-            <span className="text-xs font-medium">P</span>
-          </div>
-          {!collapsed && (
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">Pao</p>
-              <p className="text-xs text-sidebar-muted">admin</p>
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className={cn(
+              "flex items-center gap-3 w-full rounded-md p-1.5 hover:bg-sidebar-accent transition-colors cursor-pointer",
+              collapsed && "justify-center"
+            )}>
+              <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                <span className="text-xs font-semibold text-primary">{currentUser[0]}</span>
+              </div>
+              {!collapsed && (
+                <>
+                  <div className="flex-1 min-w-0 text-left">
+                    <p className="text-sm font-medium truncate">{currentUser}</p>
+                    <p className="text-xs text-sidebar-muted">{currentTeam || 'admin'}</p>
+                  </div>
+                  <ChevronUp className="w-4 h-4 text-sidebar-muted shrink-0" />
+                </>
+              )}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent 
+            className="w-[220px] p-2 bg-card z-50" 
+            align="start" 
+            side="top"
+            sideOffset={8}
+          >
+            <div className="text-xs font-semibold text-muted-foreground px-2 pb-1.5">
+              {language === 'th' ? 'เปลี่ยนโปรไฟล์' : 'Switch Profile'}
             </div>
-          )}
-        </div>
+            <div className="max-h-[320px] overflow-auto scrollbar-thin space-y-2">
+              {teamGroups.map((team) => {
+                const members = mockStaffMembers.filter(s => s.team === team);
+                return (
+                  <div key={team}>
+                    <div className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground px-2 py-1">
+                      {team}
+                    </div>
+                    {members.map((staff) => (
+                      <div
+                        key={staff.id}
+                        className={cn(
+                          "flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-accent hover:text-accent-foreground text-sm",
+                          currentUser === staff.name && "bg-primary/10"
+                        )}
+                        onClick={() => setUser(staff.name)}
+                      >
+                        <Check className={cn("mr-2 h-3.5 w-3.5 shrink-0", currentUser === staff.name ? "opacity-100" : "opacity-0")} />
+                        <span className="truncate">{staff.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })}
+            </div>
+          </PopoverContent>
+        </Popover>
       </div>
     </aside>
   );
