@@ -167,8 +167,8 @@ function SearchableSelect({
         <div className="max-h-[200px] overflow-auto p-1">
           <div
             className={cn(
-              "flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-muted text-sm",
-              value === 'all' && "bg-muted"
+              "flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-primary/20 text-sm",
+              value === 'all' && "bg-primary/10"
             )}
             onClick={() => {
               onChange('all');
@@ -183,8 +183,8 @@ function SearchableSelect({
             <div
               key={option.id}
               className={cn(
-                "flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-muted text-sm",
-                value === option.id && "bg-muted"
+                "flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-primary/20 text-sm",
+                value === option.id && "bg-primary/10"
               )}
               onClick={() => {
                 onChange(option.id);
@@ -260,8 +260,8 @@ function MultiSelectDropdown({
             <div
               key={option.id}
               className={cn(
-                "flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-muted text-sm",
-                safeSelectedValues.includes(option.id) && "bg-muted"
+                "flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-primary/20 text-sm",
+                safeSelectedValues.includes(option.id) && "bg-primary/10"
               )}
               onClick={() => onChange(option.id, !safeSelectedValues.includes(option.id))}
             >
@@ -630,8 +630,8 @@ export function LeadsStageFilters({
                     <div
                       key={option.id}
                       className={cn(
-                        "flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-muted text-sm",
-                        localFilters.owner === option.id && "bg-muted"
+                        "flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-primary/20 text-sm",
+                        localFilters.owner === option.id && "bg-primary/10"
                       )}
                       onClick={() => setLocalFilters({ ...localFilters, owner: option.id })}
                     >
