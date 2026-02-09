@@ -262,6 +262,9 @@ export interface Lead {
   policyRecords?: PolicyRecord[];
   // Insurer quotes for Leads stage (New Leads / COA)
   insurerQuotes?: InsurerQuote[];
+  // Sale-level ETA status (for post-lead stages)
+  etaStatus?: ETAStatus;
+  etaDaysOverdue?: number;
 }
 
 export type AssignmentType = 'round_robin' | 'rf_sc' | 'none';
