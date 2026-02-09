@@ -108,7 +108,7 @@ const insuranceClasses = ['type_1_insurance', 'type_2_insurance', 'type_3_insura
 const garageTypes: Array<'Dealer' | 'Garage' | 'Any'> = ['Dealer', 'Garage', 'Any'];
 const priceListStatuses: PriceListStatus[] = ['pending', 'price_list_added', 'rejected_by_insurer', 'email_sent'];
 const paymentMethods: PaymentMethod[] = ['credit', 'cbc_to_fairdee', 'cbc_to_insurer'];
-const installmentCounts: InstallmentCount[] = [3, 4, 5, 6, 8, 10];
+const installmentCounts: InstallmentCount[] = [3, 6, 10];
 const printingPreferences: Array<'e_policy' | 'print_by_myself' | 'print_by_fairdee'> = ['e_policy', 'print_by_myself', 'print_by_fairdee'];
 
 // Helper to get payment type and installment count based on payment method
