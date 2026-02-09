@@ -8,13 +8,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { mockStaffMembers } from '@/data/mockStaff';
 import { useLanguageStore } from '@/stores/languageStore';
 import { cn } from '@/lib/utils';
@@ -619,21 +612,36 @@ export function LeadsStageFilters({
           {/* Owner */}
           <div className="space-y-2">
             <Label className="text-sm font-medium">{language === 'th' ? 'ผู้รับผิดชอบ' : 'Owner'}</Label>
-            <Select
-              value={localFilters.owner}
-              onValueChange={(value) => setLocalFilters({ ...localFilters, owner: value as LeadsFilterState['owner'] })}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-card z-50">
-                {ownerOptions.map((option) => (
-                  <SelectItem key={option.id} value={option.id}>
-                    {language === 'th' ? option.th : option.en}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-full justify-between">
+                  <span className="truncate">
+                    {(() => {
+                      const opt = ownerOptions.find(o => o.id === localFilters.owner);
+                      return language === 'th' ? opt?.th : opt?.en;
+                    })()}
+                  </span>
+                  <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[280px] p-2 bg-card z-50" align="start">
+                <div className="space-y-1">
+                  {ownerOptions.map((option) => (
+                    <div
+                      key={option.id}
+                      className={cn(
+                        "flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-muted text-sm",
+                        localFilters.owner === option.id && "bg-muted"
+                      )}
+                      onClick={() => setLocalFilters({ ...localFilters, owner: option.id })}
+                    >
+                      <Check className={cn("mr-2 h-4 w-4", localFilters.owner === option.id ? "opacity-100" : "opacity-0")} />
+                      {language === 'th' ? option.th : option.en}
+                    </div>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
 
           {/* ETA Status */}
