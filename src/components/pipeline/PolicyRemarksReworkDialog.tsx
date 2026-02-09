@@ -23,7 +23,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useMentionNotificationsStore, extractMentions } from '@/stores/mentionNotificationsStore';
-import { CURRENT_USER } from '@/data/mockLeads';
+import { useCurrentUserStore } from '@/stores/currentUserStore';
 import { ExpandableText } from '@/components/ui/expandable-text';
 import { AttachmentThumbnails, AttachmentDisplay } from '@/components/ui/attachment-thumbnails';
 
@@ -67,6 +67,7 @@ export function PolicyRemarksReworkDialog({
   onAddRework,
 }: PolicyRemarksReworkDialogProps) {
   const { language } = useLanguageStore();
+  const CURRENT_USER = useCurrentUserStore(s => s.name);
   const { addNotification } = useMentionNotificationsStore();
   const [newComment, setNewComment] = useState('');
   const [newCommentAttachments, setNewCommentAttachments] = useState<ReworkAttachment[]>([]);
