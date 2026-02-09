@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { format } from 'date-fns';
+import { th as thLocale } from 'date-fns/locale';
 import { CalendarIcon } from 'lucide-react';
 import { DateRange } from 'react-day-picker';
 import { cn } from '@/lib/utils';
@@ -19,7 +20,11 @@ interface DateRangeFilterProps {
 
 export function DateRangeFilter({ dateRange, onDateRangeChange }: DateRangeFilterProps) {
   const { language } = useLanguageStore();
-  
+
+  const formatDate = (date: Date, fmt: string) => {
+    return format(date, fmt, language === 'th' ? { locale: thLocale } : undefined);
+  };
+
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -34,10 +39,10 @@ export function DateRangeFilter({ dateRange, onDateRangeChange }: DateRangeFilte
           {dateRange?.from ? (
             dateRange.to ? (
               <>
-                {language === 'th' ? 'สร้างเมื่อ' : 'Created On'} | {format(dateRange.from, "d MMM")} to {format(dateRange.to, "d MMM")}
+                {language === 'th' ? 'สร้างเมื่อ' : 'Created On'} | {formatDate(dateRange.from, "d MMM")} {language === 'th' ? 'ถึง' : 'to'} {formatDate(dateRange.to, "d MMM")}
               </>
             ) : (
-              format(dateRange.from, "d MMM yyyy")
+              formatDate(dateRange.from, "d MMM yyyy")
             )
           ) : (
             <span>{language === 'th' ? 'สร้างเมื่อ' : 'Created On'}</span>
