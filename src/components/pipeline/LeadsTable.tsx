@@ -889,6 +889,17 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
         previousStatus,
       };
 
+      // Create POLICY-LEVEL history entries (not lead-level)
+      // 1. Status change entry - from previous status to rework_required
+      const statusChangeEntry: PolicyHistoryLogEntry = {
+        id: crypto.randomUUID(),
+        action: 'status_changed',
+        triggeredBy: CURRENT_USER,
+        triggeredAt: timestamp,
+        fromStatus: previousStatus,
+        toStatus: 'rework_required',
+      };
+
       const updatedRecords = selectedLead.policyRecords.map(record => {
         if (record.id !== selectedPolicyId) return record;
         return {
@@ -896,45 +907,17 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
           status: 'rework_required' as PolicyStatus,
           reworkRequired: true,
           reworkHistory: [...(record.reworkHistory || []), newPolicyReworkEntry],
+          // Add status change to THIS POLICY's history log only
+          historyLog: [...(record.historyLog || []), statusChangeEntry],
         };
       });
-
-
-      const historyLogEntry: HistoryLogEntry = {
-        id: crypto.randomUUID(),
-        action: 'rework_created',
-        triggeredBy: CURRENT_USER,
-        triggeredAt: timestamp,
-        reworkReasonId: reasonId,
-        reworkReasonLabel: reasonLabel,
-        comment: `${policy.kind.toUpperCase()} policy: ${details || reasonLabel}`,
-        attachments: attachments.map(a => ({
-          id: a.id,
-          name: a.name,
-          type: a.type,
-          url: a.url,
-        })),
-      };
 
       const updates: Partial<Lead> = {
         policyRecords: updatedRecords,
         // Policy-level rework takes priority over normal ownership
         reworkRequired: true,
         assignedTo: assignedOwner,
-        historyLog: [...(selectedLead.historyLog || []), historyLogEntry],
       };
-
-      if (assignedOwner !== selectedLead.assignedTo) {
-        updates.historyLog = [...(updates.historyLog || []), {
-          id: crypto.randomUUID(),
-          action: 'assignee_changed',
-          triggeredBy: 'System',
-          triggeredAt: timestamp,
-          assigneeType: 'owner',
-          fromAssignee: selectedLead.assignedTo,
-          toAssignee: assignedOwner,
-        }];
-      }
 
       onLeadUpdate?.(selectedLead.id, updates);
 
