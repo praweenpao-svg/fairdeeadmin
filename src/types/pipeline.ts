@@ -121,7 +121,7 @@ export interface PolicyHistoryLogEntry {
   comment?: string;
   attachments?: HistoryAttachment[];
   // For assignee changes
-  assigneeType?: 'rf' | 'sc' | 'de';
+  assigneeType?: 'rf' | 'sc' | 'de' | 'owner';
   fromAssignee?: string;
   toAssignee?: string;
 }

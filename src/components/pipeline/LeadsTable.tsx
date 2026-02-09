@@ -769,7 +769,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
           action: 'assignee_changed',
           triggeredBy: CURRENT_USER,
           triggeredAt: timestamp,
-          assigneeType: 'de',
+          assigneeType: 'owner',
           fromAssignee: currentOwner,
           toAssignee: newOwner,
         });
@@ -920,7 +920,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
             action: 'assignee_changed',
             triggeredBy: CURRENT_USER,
             triggeredAt: timestamp,
-            assigneeType: 'de', // Rework typically goes to DE/ops
+            assigneeType: 'owner', // Rework owner change
             fromAssignee: currentPolicyOwner || undefined,
             toAssignee: assignedOwner,
           }
