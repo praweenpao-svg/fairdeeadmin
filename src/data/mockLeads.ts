@@ -310,6 +310,12 @@ function generatePolicyRecordWithRework(
   reworkReasonIds: string[],
   shippingMethodOverride?: 'e_policy' | 'print_by_myself' | 'print_by_fairdee',
   assignedTo?: string,
+  staffOptions?: {
+    paymentMethod?: PaymentMethod;
+    rfAssignee?: string;
+    scAssignee?: string;
+    deAssignee?: string;
+  }
 ): PolicyRecord {
   const shippingMethod = shippingMethodOverride || printingPreferences[Math.floor(Math.random() * printingPreferences.length)];
   
@@ -321,7 +327,7 @@ function generatePolicyRecordWithRework(
   
   // Generate rework history entries
   const reworkHistory: PolicyReworkEntry[] = reworkReasonIds.map((reasonId, idx) => {
-    const entryDate = new Date(year, month - 1, day, hours + idx * 2, Math.floor(Math.random() * 60));
+    const entryDate = new Date(year, month - 1, day, hours + 8 + idx * 2, Math.floor(Math.random() * 60));
     const savedAt = `${String(entryDate.getDate()).padStart(2, '0')}-${String(entryDate.getMonth() + 1).padStart(2, '0')}-${entryDate.getFullYear()} ${String(entryDate.getHours()).padStart(2, '0')}:${String(entryDate.getMinutes()).padStart(2, '0')}`;
     
     return {
@@ -337,13 +343,103 @@ function generatePolicyRecordWithRework(
     };
   });
 
-  // Generate history log with status change and owner change entries
+  // Generate history log with lead status (pre-conversion) first, then policy status progression
   const historyLog: PolicyHistoryLogEntry[] = [];
+  let hourOffset = 0;
   
-  // First rework entry triggers status change and owner change with same timestamp
+  const getTime = () => {
+    hourOffset += 1;
+    const entryDate = new Date(year, month - 1, day, hours + hourOffset, Math.floor(Math.random() * 60));
+    return `${String(entryDate.getDate()).padStart(2, '0')}-${String(entryDate.getMonth() + 1).padStart(2, '0')}-${entryDate.getFullYear()} ${String(entryDate.getHours()).padStart(2, '0')}:${String(entryDate.getMinutes()).padStart(2, '0')}`;
+  };
+
+  // 1. Lead status changes first (pre-conversion journey)
+  const leadSteps = 2 + Math.floor(Math.random() * 2); // 2-3 steps
+  for (let i = 1; i <= leadSteps; i++) {
+    historyLog.push({
+      id: `phl-${id}-lead-${i}`,
+      action: 'lead_status_changed',
+      triggeredBy: staffOptions?.scAssignee || staffOptions?.rfAssignee || scStaff[i % scStaff.length],
+      triggeredAt: getTime(),
+      fromStatus: leadStatusProgression[i - 1] as any,
+      toStatus: leadStatusProgression[i] as any,
+    });
+  }
+
+  // 2. RF assignee change
+  if (staffOptions?.rfAssignee) {
+    historyLog.push({
+      id: `phl-${id}-rf`,
+      action: 'assignee_changed',
+      triggeredBy: 'System (Round Robin)',
+      triggeredAt: getTime(),
+      assigneeType: 'rf',
+      fromAssignee: undefined,
+      toAssignee: staffOptions.rfAssignee,
+    });
+  }
+
+  // 3. SC assignee change
+  if (staffOptions?.scAssignee) {
+    historyLog.push({
+      id: `phl-${id}-sc`,
+      action: 'assignee_changed',
+      triggeredBy: staffOptions.scAssignee,
+      triggeredAt: getTime(),
+      assigneeType: 'sc',
+      fromAssignee: undefined,
+      toAssignee: staffOptions.scAssignee,
+    });
+  }
+
+  // 4. Payment status change
+  if (staffOptions?.paymentMethod) {
+    const paymentStatusMap: Record<PaymentMethod, string> = {
+      cbc_to_fairdee: 'payment_verified',
+      cbc_to_insurer: 'insurer_notified',
+      credit: 'credit_approved',
+    };
+    historyLog.push({
+      id: `phl-${id}-payment`,
+      action: 'payment_status_changed',
+      triggeredBy: 'Payment System',
+      triggeredAt: getTime(),
+      fromStatus: 'unpaid' as any,
+      toStatus: paymentStatusMap[staffOptions.paymentMethod] as any,
+    });
+  }
+
+  // 5. DE assignee change
+  if (staffOptions?.deAssignee) {
+    historyLog.push({
+      id: `phl-${id}-de`,
+      action: 'assignee_changed',
+      triggeredBy: 'System (Round Robin)',
+      triggeredAt: getTime(),
+      assigneeType: 'de',
+      fromAssignee: undefined,
+      toAssignee: staffOptions.deAssignee,
+    });
+  }
+
+  // 6. Policy status progression up to previousStatus
+  const currentIndex = policyStatusProgression.indexOf(previousStatus);
+  if (currentIndex !== -1) {
+    for (let i = 1; i <= currentIndex; i++) {
+      historyLog.push({
+        id: `phl-${id}-status-${i}`,
+        action: 'status_changed',
+        triggeredBy: staffOptions?.deAssignee || deStaff[i % deStaff.length],
+        triggeredAt: getTime(),
+        fromStatus: policyStatusProgression[i - 1],
+        toStatus: policyStatusProgression[i],
+      });
+    }
+  }
+
+  // 7. Rework status change and owner change (last entries)
   if (reworkReasonIds.length > 0) {
-    const firstEntryDate = new Date(year, month - 1, day, hours, Math.floor(Math.random() * 60));
-    const reworkTimestamp = `${String(firstEntryDate.getDate()).padStart(2, '0')}-${String(firstEntryDate.getMonth() + 1).padStart(2, '0')}-${firstEntryDate.getFullYear()} ${String(firstEntryDate.getHours()).padStart(2, '0')}:${String(firstEntryDate.getMinutes()).padStart(2, '0')}`;
+    const reworkTimestamp = getTime();
     
     // Status change: previousStatus -> rework_required
     historyLog.push({
@@ -988,10 +1084,20 @@ const generateLeads = (): Lead[] => {
       const cmiReworkOwner = i % 2 === 0 ? scStaff[i % scStaff.length] : 'Pao'; // Opposite of VMI
       
       if (scenario.policyType === 'vmi_only') {
-        policyRecords = [generatePolicyRecordWithRework(`pol-${id}-vmi`, 'vmi', 'pending_issuance', createdOnFull, policyStartDate, reworkReasonIds, undefined, vmiReworkOwner)];
+        policyRecords = [generatePolicyRecordWithRework(`pol-${id}-vmi`, 'vmi', 'pending_issuance', createdOnFull, policyStartDate, reworkReasonIds, undefined, vmiReworkOwner, {
+          paymentMethod: paymentMethods[i % paymentMethods.length],
+          rfAssignee: rfStaff[i % rfStaff.length],
+          scAssignee: scStaff[i % scStaff.length],
+          deAssignee: deStaff[i % deStaff.length],
+        })];
       } else {
         policyRecords = [
-          generatePolicyRecordWithRework(`pol-${id}-vmi`, 'vmi', 'pending_issuance', createdOnFull, policyStartDate, reworkReasonIds, undefined, vmiReworkOwner),
+          generatePolicyRecordWithRework(`pol-${id}-vmi`, 'vmi', 'pending_issuance', createdOnFull, policyStartDate, reworkReasonIds, undefined, vmiReworkOwner, {
+            paymentMethod: paymentMethods[i % paymentMethods.length],
+            rfAssignee: rfStaff[i % rfStaff.length],
+            scAssignee: scStaff[i % scStaff.length],
+            deAssignee: deStaff[i % deStaff.length],
+          }),
           generatePolicyRecord(`pol-${id}-cmi`, 'cmi', scenario.cmiStatus!, createdOnFull, cmiPolicyStartDate),
         ];
       }
