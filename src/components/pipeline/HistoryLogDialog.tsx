@@ -105,19 +105,24 @@ interface TimelineEntry {
   policyKind?: 'vmi' | 'cmi'; // undefined means it applies to the whole sale
 }
 
-// Get icon and colors for action type
-function getActionConfig(action: DisplayableAction) {
+// Get icon and colors for action type - unified blue color for all entries
+function getActionConfig(action: DisplayableAction, policyKind?: 'vmi' | 'cmi') {
+  // Use consistent blue for VMI tab and purple for CMI tab
+  const isVmi = policyKind === 'vmi';
+  const color = isVmi ? 'text-blue-600' : 'text-purple-600';
+  const bgColor = isVmi ? 'bg-blue-100 dark:bg-blue-900/30' : 'bg-purple-100 dark:bg-purple-900/30';
+  
   switch (action) {
     case 'status_changed':
-      return { icon: RefreshCw, color: 'text-blue-600', bgColor: 'bg-blue-100 dark:bg-blue-900/30' };
+      return { icon: RefreshCw, color, bgColor };
     case 'lead_status_changed':
-      return { icon: RefreshCw, color: 'text-amber-600', bgColor: 'bg-amber-100 dark:bg-amber-900/30' };
+      return { icon: RefreshCw, color, bgColor };
     case 'payment_status_changed':
-      return { icon: CreditCard, color: 'text-emerald-600', bgColor: 'bg-emerald-100 dark:bg-emerald-900/30' };
+      return { icon: CreditCard, color, bgColor };
     case 'endorsement_status_changed':
-      return { icon: FileCheck, color: 'text-purple-600', bgColor: 'bg-purple-100 dark:bg-purple-900/30' };
+      return { icon: FileCheck, color, bgColor };
     case 'assignee_changed':
-      return { icon: UserPlus, color: 'text-indigo-600', bgColor: 'bg-indigo-100 dark:bg-indigo-900/30' };
+      return { icon: UserPlus, color, bgColor };
   }
 }
 
@@ -273,7 +278,7 @@ function EntryCard({
   isLast?: boolean;
   colorClass: string;
 }) {
-  const config = getActionConfig(entry.action);
+  const config = getActionConfig(entry.action, entry.policyKind);
   const Icon = config.icon;
   const showTriggeredBy = !isSystemTriggered(entry.triggeredBy);
   
@@ -308,49 +313,19 @@ function EntryCard({
         </div>
         
         {/* Content based on action type */}
-        {entry.action === 'status_changed' && (
+        {/* Unified styling for all status changes - use policy kind color */}
+        {(entry.action === 'status_changed' || entry.action === 'lead_status_changed' || entry.action === 'payment_status_changed' || entry.action === 'endorsement_status_changed') && (
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs px-2 py-1 rounded bg-muted">
               {formatStatusLabel(entry.fromStatus || '', language)}
             </span>
             <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
-            <span className="text-xs px-2 py-1 rounded bg-primary/10 text-primary font-medium">
-              {formatStatusLabel(entry.toStatus || '', language)}
-            </span>
-          </div>
-        )}
-        
-        {entry.action === 'lead_status_changed' && (
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs px-2 py-1 rounded bg-muted">
-              {formatStatusLabel(entry.fromStatus || '', language)}
-            </span>
-            <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
-            <span className="text-xs px-2 py-1 rounded bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 font-medium">
-              {formatStatusLabel(entry.toStatus || '', language)}
-            </span>
-          </div>
-        )}
-        
-        {entry.action === 'payment_status_changed' && (
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs px-2 py-1 rounded bg-muted">
-              {formatStatusLabel(entry.fromStatus || '', language)}
-            </span>
-            <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
-            <span className="text-xs px-2 py-1 rounded bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-medium">
-              {formatStatusLabel(entry.toStatus || '', language)}
-            </span>
-          </div>
-        )}
-        
-        {entry.action === 'endorsement_status_changed' && (
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs px-2 py-1 rounded bg-muted">
-              {formatStatusLabel(entry.fromStatus || '', language)}
-            </span>
-            <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
-            <span className="text-xs px-2 py-1 rounded bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 font-medium">
+            <span className={cn(
+              "text-xs px-2 py-1 rounded font-medium",
+              entry.policyKind === 'vmi' 
+                ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
+                : "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400"
+            )}>
               {formatStatusLabel(entry.toStatus || '', language)}
             </span>
           </div>
@@ -365,7 +340,12 @@ function EntryCard({
               {entry.fromAssignee || (language === 'th' ? 'ไม่มี' : 'None')}
             </span>
             <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
-            <span className="text-xs px-2 py-1 rounded bg-primary/10 text-primary font-medium">
+            <span className={cn(
+              "text-xs px-2 py-1 rounded font-medium",
+              entry.policyKind === 'vmi' 
+                ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
+                : "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400"
+            )}>
               {entry.toAssignee || (language === 'th' ? 'ไม่มี' : 'None')}
             </span>
           </div>
