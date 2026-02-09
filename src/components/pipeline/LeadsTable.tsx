@@ -1678,14 +1678,14 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                             const eta = lead.etaStatus;
                             if (eta === 'breached') {
                               return (
-                                <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full bg-destructive text-destructive-foreground">
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full" style={{ color: '#DC2626', backgroundColor: 'rgba(220, 38, 38, 0.08)' }}>
                                   <CalendarClock className="w-3.5 h-3.5" />
                                   {lead.etaDaysOverdue || 0} {language === 'th' ? 'วัน' : 'Days'}
                                 </span>
                               );
                             } else if (eta === 'on_time') {
                               return (
-                                <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full bg-green-600 text-white">
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full" style={{ color: '#16A34A', backgroundColor: 'rgba(22, 163, 74, 0.08)' }}>
                                   <CalendarClock className="w-3.5 h-3.5" />
                                   {language === 'th' ? 'ตามกำหนด' : 'On Time'}
                                 </span>
@@ -1707,23 +1707,26 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                               return <span className="text-xs text-muted-foreground">-</span>;
                             })()}
                           </td>
-                          {/* ETA Status Cell */}
                           <td className="px-4 py-3">
                             {(() => {
-                              // Check if lead has any insurer quotes with ETA status
+                              // For Leads stage, use sale-level etaStatus if available, else derive from insurer quotes
+                              const eta = lead.etaStatus;
                               const quotes = lead.insurerQuotes || [];
-                              const hasBreached = quotes.some(q => q.etaStatus === 'breached');
-                              const hasOnTime = quotes.some(q => q.etaStatus === 'on_time');
+                              const hasBreached = eta === 'breached' || quotes.some(q => q.etaStatus === 'breached');
+                              const hasOnTime = eta === 'on_time' || quotes.some(q => q.etaStatus === 'on_time');
+                              const daysOverdue = lead.etaDaysOverdue || quotes.find(q => q.etaStatus === 'breached')?.daysOverdue || 0;
                               
                               if (hasBreached) {
                                 return (
-                                  <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-destructive/10 text-destructive">
-                                    {language === 'th' ? 'เกินกำหนด' : 'Breached'}
+                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full" style={{ color: '#DC2626', backgroundColor: 'rgba(220, 38, 38, 0.08)' }}>
+                                    <CalendarClock className="w-3.5 h-3.5" />
+                                    {daysOverdue} {language === 'th' ? 'วัน' : 'Days'}
                                   </span>
                                 );
                               } else if (hasOnTime) {
                                 return (
-                                  <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-green-500/10 text-green-600">
+                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full" style={{ color: '#16A34A', backgroundColor: 'rgba(22, 163, 74, 0.08)' }}>
+                                    <CalendarClock className="w-3.5 h-3.5" />
                                     {language === 'th' ? 'ตามกำหนด' : 'On Time'}
                                   </span>
                                 );
