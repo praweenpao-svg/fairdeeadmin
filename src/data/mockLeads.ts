@@ -70,7 +70,7 @@ const insurerNames = [
   'Dhipaya Insurance',
   'Muang Thai Insurance',
   'Thai Sri Insurance',
-  'Tokio Marine',
+  'MSIG Insurance',
 ];
 
 // Insurer names with TH/EN pairs for coverage details
@@ -80,10 +80,10 @@ const insurerNamePairs: Array<{ en: string; th: string }> = [
   { en: 'Dhipaya Insurance', th: 'ทิพยประกันภัย' },
   { en: 'Muang Thai Insurance', th: 'เมืองไทยประกันภัย' },
   { en: 'Sin Munkong Insurance', th: 'สินมั่นคงประกันภัย' },
-  { en: 'Thai Setakij Insurance (TSK)', th: 'ไทยเศรษฐกิจประกันภัย' },
+  { en: 'LMG Insurance', th: 'แอลเอ็มจีประกันภัย' },
   { en: 'AIA Thailand', th: 'เอไอเอ ประเทศไทย' },
   { en: 'Allianz Ayudhya', th: 'อลิอันซ์ อยุธยา' },
-  { en: 'Tokio Marine Safety Insurance', th: 'คุ้มภัยโตเกียวมารีนประกันภัย' },
+  { en: 'Deves Insurance', th: 'เทเวศประกันภัย' },
   { en: 'MSIG Insurance', th: 'เอ็ม เอส ไอ จี ประกันภัย' },
   { en: 'Thaisri Insurance', th: 'ไทยศรีประกันภัย' },
   { en: 'Chubb Samaggi Insurance', th: 'ชับบ์สามัคคีประกันภัย' },
