@@ -9,6 +9,7 @@ import {
   FileText,
   MessageSquare,
   Truck,
+  CalendarClock,
 } from 'lucide-react';
 import { Lead, PipelineStage, LeadType, LeadSource, ReworkConfig, CreatedByType, ReworkAttachment, ReworkHistoryEntry, HistoryLogEntry, PolicyStatus, PolicyReworkEntry, PolicyRecord, PaymentMethod, PolicyHistoryLogEntry, InstallmentCount } from '@/types/pipeline';
 import { cn } from '@/lib/utils';
@@ -1425,6 +1426,9 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                 {showDEColumn && (
                   <th className="data-table-header px-4 py-3 text-left">DE</th>
                 )}
+                {isPostLeadStage && (
+                  <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'สถานะ ETA' : 'ETA Status'}</th>
+                )}
                 {!isPostLeadStage && (
                   <>
                     <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'ผู้รับผิดชอบ' : 'Owner'}</th>
@@ -1441,7 +1445,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
             <tbody>
               {sortedLeads.length === 0 ? (
                 <tr>
-                  <td colSpan={isPostLeadStage ? (showDEColumn ? 13 : 12) : 10} className="px-4 py-12 text-center text-muted-foreground">
+                  <td colSpan={isPostLeadStage ? (showDEColumn ? 14 : 13) : 10} className="px-4 py-12 text-center text-muted-foreground">
                     {language === 'th' ? 'ไม่พบเคสของคุณ ณ ตอนนี้' : 'No cases found at the moment'}
                   </td>
                 </tr>
@@ -1667,6 +1671,30 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                           </Select>
                         </td>
                       )}
+                      {/* ETA Status Cell for post-lead stages */}
+                      {isPostLeadStage && (
+                        <td className="px-4 py-3">
+                          {(() => {
+                            const eta = lead.etaStatus;
+                            if (eta === 'breached') {
+                              return (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full bg-destructive text-destructive-foreground">
+                                  <CalendarClock className="w-3.5 h-3.5" />
+                                  {lead.etaDaysOverdue || 0} {language === 'th' ? 'วัน' : 'Days'}
+                                </span>
+                              );
+                            } else if (eta === 'on_time') {
+                              return (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full bg-green-600 text-white">
+                                  <CalendarClock className="w-3.5 h-3.5" />
+                                  {language === 'th' ? 'ตามกำหนด' : 'On Time'}
+                                </span>
+                              );
+                            }
+                            return <span className="text-xs text-muted-foreground">-</span>;
+                          })()}
+                        </td>
+                      )}
                       {!isPostLeadStage && (
                         <>
                           {/* Owner Cell - SC if exists, else RF */}
@@ -1798,7 +1826,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                     {/* Expanded Policy Rows */}
                     {isPostLeadStage && isExpanded && allPolicies.length > 0 && (
                       <tr className="border-b border-border">
-                        <td colSpan={showDEColumn ? 10 : 9} className="p-0">
+                         <td colSpan={showDEColumn ? 12 : 11} className="p-0">
                           <div className="mx-4 my-2 rounded-lg border border-border overflow-hidden bg-card shadow-sm">
                             {/* Policy Sub-Table */}
                             <div className="overflow-x-auto">

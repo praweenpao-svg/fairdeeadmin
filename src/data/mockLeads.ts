@@ -95,6 +95,15 @@ const insurerNamePairs: Array<{ en: string; th: string }> = [
 const coverageInsuranceClasses = ['1', '2', '2+', '3', '3+'];
 const coverageGarageTypes: Array<'Dealer' | 'Garage'> = ['Dealer', 'Garage'];
 
+// Helper to get random ETA status for post-lead stages
+function getRandomEtaStatus(index: number): { etaStatus: ETAStatus; etaDaysOverdue?: number } {
+  // ~40% breached, ~60% on_time
+  if (index % 5 < 2) {
+    return { etaStatus: 'breached', etaDaysOverdue: 1 + (index % 15) };
+  }
+  return { etaStatus: 'on_time' };
+}
+
 const insuranceClasses = ['type_1_insurance', 'type_2_insurance', 'type_3_insurance', 'type_2+_insurance'];
 const garageTypes: Array<'Dealer' | 'Garage' | 'Any'> = ['Dealer', 'Garage', 'Any'];
 const priceListStatuses: PriceListStatus[] = ['pending', 'price_list_added', 'rejected_by_insurer', 'email_sent'];
@@ -1001,7 +1010,7 @@ const generateLeads = (): Lead[] => {
       policyRecords,
       premium: generatePremium(),
       paymentMethod: paymentMethods[i % paymentMethods.length],
-      installmentCount: getPaymentTypeInfo(paymentMethods[i % paymentMethods.length], i).installmentCount,
+      ...getRandomEtaStatus(i),
     };
 
     leads.push({
@@ -1087,6 +1096,7 @@ const generateLeads = (): Lead[] => {
       premium: generatePremium(),
       paymentMethod,
       installmentCount: getPaymentTypeInfo(paymentMethod, i).installmentCount,
+      ...getRandomEtaStatus(i + 6),
     };
 
     leads.push({
@@ -1193,6 +1203,7 @@ const generateLeads = (): Lead[] => {
       premium: generatePremium(),
       paymentMethod: paymentMethods[i % paymentMethods.length],
       installmentCount: getPaymentTypeInfo(paymentMethods[i % paymentMethods.length], i).installmentCount,
+      ...getRandomEtaStatus(i + 12),
     };
 
     leads.push({
@@ -1266,6 +1277,7 @@ const generateLeads = (): Lead[] => {
       premium: generatePremium(),
       paymentMethod: paymentMethods[i % paymentMethods.length],
       installmentCount: getPaymentTypeInfo(paymentMethods[i % paymentMethods.length], i).installmentCount,
+      ...getRandomEtaStatus(i + 18),
     };
 
     leads.push({
@@ -1365,6 +1377,7 @@ const generateLeads = (): Lead[] => {
       premium: generatePremium(),
       paymentMethod,
       installmentCount: getPaymentTypeInfo(paymentMethod, i).installmentCount,
+      ...getRandomEtaStatus(i + 24),
     };
 
     leads.push({
@@ -1434,6 +1447,7 @@ const generateLeads = (): Lead[] => {
       premium: generatePremium(),
       paymentMethod: paymentMethods[i % paymentMethods.length],
       installmentCount: getPaymentTypeInfo(paymentMethods[i % paymentMethods.length], i).installmentCount,
+      ...getRandomEtaStatus(i + 30),
     };
 
     leads.push({
