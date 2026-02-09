@@ -28,7 +28,7 @@ export function LeadSubTabs({ activeSubTab, onSubTabChange }: LeadSubTabsProps) 
           className={cn(
             'px-3 py-1.5 text-sm font-medium rounded-md transition-colors',
             activeSubTab === subTab
-              ? 'bg-background text-foreground shadow-sm'
+              ? 'bg-primary text-primary-foreground shadow-sm'
               : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
           )}
         >
