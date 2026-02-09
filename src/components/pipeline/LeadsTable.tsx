@@ -1731,12 +1731,10 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                               <Eye className="w-4 h-4 mr-2" />
                               {language === 'th' ? 'ดูรายละเอียด' : 'View Details'}
                             </DropdownMenuItem>
-                            {stage !== 'to_convert' && (
-                              <DropdownMenuItem onClick={() => handleOpenHistoryLog(lead)}>
-                                <History className="w-4 h-4 mr-2" />
-                                {language === 'th' ? 'ประวัติการทำงาน' : 'History Log'}
-                              </DropdownMenuItem>
-                            )}
+                            <DropdownMenuItem onClick={() => handleOpenHistoryLog(lead)}>
+                              <History className="w-4 h-4 mr-2" />
+                              {language === 'th' ? 'ประวัติการทำงาน' : 'History Log'}
+                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </td>
