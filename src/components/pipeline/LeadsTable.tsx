@@ -1551,7 +1551,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                           </td>
                           <td className="px-4 py-3 text-sm">{getPaymentMethodLabel(lead, language)}</td>
                           <td className="px-4 py-3">
-                            {stage === 'to_pay' ? (
+                            {stage === 'to_pay' || areBothPoliciesPending(lead) ? (
                               <span className="text-sm">-</span>
                             ) : (
                               (() => {
