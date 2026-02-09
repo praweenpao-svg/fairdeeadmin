@@ -162,7 +162,11 @@ interface OtherStagesFilterPanelProps {
 export function OtherStagesFilterPanel({ filters, onFiltersChange, onClear }: OtherStagesFilterPanelProps) {
   const { language } = useLanguageStore();
   const [open, setOpen] = React.useState(false);
-  const [localFilters, setLocalFilters] = React.useState<OtherStagesFilterState>(filters);
+  const [localFilters, setLocalFilters] = React.useState<OtherStagesFilterState>({
+    ...defaultOtherStagesFilterState,
+    ...filters,
+    insurers: Array.isArray(filters.insurers) ? filters.insurers : defaultOtherStagesFilterState.insurers,
+  });
 
   const rfStaff = mockStaffMembers.filter(s => s.team === 'AST RF');
   const scStaff = mockStaffMembers.filter(s => s.team === 'AST SC');
