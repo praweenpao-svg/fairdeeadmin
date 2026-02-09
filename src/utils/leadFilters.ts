@@ -15,7 +15,9 @@ function getStaffNameById(id: string): string | undefined {
 // Parse date string (DD-MM-YYYY format) to Date
 function parseLeadDate(dateStr: string): Date | null {
   try {
-    return parse(dateStr, 'dd-MM-yyyy', new Date());
+    // Handle both "DD-MM-YYYY" and "DD-MM-YYYY HH:MM" formats
+    const datePart = dateStr.split(' ')[0];
+    return parse(datePart, 'dd-MM-yyyy', new Date());
   } catch {
     return null;
   }
