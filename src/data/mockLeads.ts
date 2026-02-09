@@ -362,7 +362,7 @@ function generatePolicyRecordWithRework(
         action: 'assignee_changed',
         triggeredBy: deStaff[0],
         triggeredAt: reworkTimestamp,
-        assigneeType: 'de',
+        assigneeType: 'owner',
         fromAssignee: undefined,
         toAssignee: assignedTo,
       });
