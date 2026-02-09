@@ -136,11 +136,19 @@
   }
 
   .data-table-header {
-    @apply bg-muted text-foreground/70 text-xs font-semibold uppercase tracking-wider;
+    @apply bg-muted-foreground/15 text-foreground/80 text-xs font-semibold uppercase tracking-wider;
   }
 
   .data-table-row {
-    @apply border-b-2 border-border/60 hover:bg-muted/30 transition-colors duration-150 shadow-[0_1px_3px_-1px_rgba(0,0,0,0.1)];
+    @apply bg-muted/40 border-b-2 border-border/60 hover:bg-muted/60 transition-colors duration-150 shadow-[0_1px_3px_-1px_rgba(0,0,0,0.1)];
+  }
+
+  .data-table-subheader {
+    @apply bg-muted/60 text-foreground/70 text-xs font-semibold uppercase tracking-wide;
+  }
+
+  .data-table-subrow {
+    @apply bg-card hover:bg-muted/30 transition-colors;
   }
 
   .lead-badge {
