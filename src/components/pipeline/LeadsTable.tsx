@@ -1727,10 +1727,12 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
+                            {/* View Details - Hidden for now
                             <DropdownMenuItem>
                               <Eye className="w-4 h-4 mr-2" />
                               {language === 'th' ? 'ดูรายละเอียด' : 'View Details'}
                             </DropdownMenuItem>
+                            */}
                             <DropdownMenuItem onClick={() => handleOpenHistoryLog(lead)}>
                               <History className="w-4 h-4 mr-2" />
                               {language === 'th' ? 'ประวัติการทำงาน' : 'History Log'}
