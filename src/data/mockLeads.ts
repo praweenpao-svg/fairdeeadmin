@@ -115,9 +115,11 @@ const printingPreferences: Array<'e_policy' | 'print_by_myself' | 'print_by_fair
 function getPaymentTypeInfo(paymentMethod: PaymentMethod, index: number): { paymentType: 'full' | 'installment'; installmentCount?: InstallmentCount } {
   // Installment is only possible with cbc_to_fairdee, and we randomly decide
   if (paymentMethod === 'cbc_to_fairdee' && index % 2 === 1) {
+    // Use a mix of multiplier to spread across [3, 6, 10]
+    const pick = ((index * 7) + 1) % installmentCounts.length;
     return { 
       paymentType: 'installment', 
-      installmentCount: installmentCounts[index % installmentCounts.length] 
+      installmentCount: installmentCounts[pick] 
     };
   }
   return { paymentType: 'full' };
