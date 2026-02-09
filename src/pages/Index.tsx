@@ -35,8 +35,19 @@ const Index = () => {
   // Filters for To Pay stage and All/To Convert (shared filter state + UI)
   const [toPayFilters, setToPayFilters] = useState<FilterState>(defaultFilterState);
 
-  // Filters specifically for Leads (to_convert) stage
-  const [leadsFilters, setLeadsFilters] = useState<LeadsFilterState>(defaultLeadsFilterState);
+  // Separate filters for each Leads sub-tab
+  const [newLeadsFilters, setNewLeadsFilters] = useState<LeadsFilterState>(defaultLeadsFilterState);
+  const [renewalsFilters, setRenewalsFilters] = useState<LeadsFilterState>(defaultLeadsFilterState);
+
+  // Separate date ranges for each Leads sub-tab
+  const [newLeadsDateRange, setNewLeadsDateRange] = useState<DateRange | undefined>();
+  const [renewalsDateRange, setRenewalsDateRange] = useState<DateRange | undefined>();
+
+  // Derived: current sub-tab's filters and date range
+  const leadsFilters = leadSubTab === 'new_leads' ? newLeadsFilters : renewalsFilters;
+  const setLeadsFilters = leadSubTab === 'new_leads' ? setNewLeadsFilters : setRenewalsFilters;
+  const leadsDateRange = leadSubTab === 'new_leads' ? newLeadsDateRange : renewalsDateRange;
+  const setLeadsDateRange = leadSubTab === 'new_leads' ? setNewLeadsDateRange : setRenewalsDateRange;
 
   // Filters for other stages (To Report, To Issue, To Deliver, Completed)
   const [otherStagesFilters, setOtherStagesFilters] = useState<OtherStagesFilterState>(defaultOtherStagesFilterState);
@@ -98,6 +109,11 @@ const Index = () => {
     setDateRange(undefined);
   };
 
+  const handleClearLeadsFilters = () => {
+    setLeadsFilters(defaultLeadsFilterState);
+    setLeadsDateRange(undefined);
+  };
+
   // Get stage leads first (by pipeline stage logic)
   let stageLeads = getLeadsForStage(leads, activeStage);
   
@@ -126,7 +142,7 @@ const Index = () => {
   const filteredLeads = applyAllFilters(
     teamFilteredLeads,
     searchQuery,
-    dateRange,
+    activeStage === 'to_convert' ? leadsDateRange : dateRange,
     toPayFilters,
     otherStagesFilters,
     isToPayStage,
@@ -178,19 +194,19 @@ const Index = () => {
           )}
           
           {/* Date Range Filter - before All Filters for Leads stage */}
-          {activeStage === 'to_convert' && (
-            <DateRangeFilter
-              dateRange={dateRange}
-              onDateRangeChange={setDateRange}
-            />
-          )}
+           {activeStage === 'to_convert' && (
+             <DateRangeFilter
+               dateRange={leadsDateRange}
+               onDateRangeChange={setLeadsDateRange}
+             />
+           )}
           
           {/* Leads stage specific inline filters */}
           {activeStage === 'to_convert' ? (
             <LeadsStageFilters
               filters={leadsFilters}
               onFiltersChange={setLeadsFilters}
-              onClear={() => setLeadsFilters(defaultLeadsFilterState)}
+              onClear={handleClearLeadsFilters}
               myCasesOnly={myCasesOnly}
               myTeamOnly={myTeamOnly}
               onMyCasesChange={setMyCasesOnly}
