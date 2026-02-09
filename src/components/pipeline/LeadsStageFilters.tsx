@@ -304,22 +304,37 @@ export function LeadsStageFilters({
     </div>
   );
 
-  // Multi-select dropdown component for lead status
+  // Multi-select dropdown component for lead status with truncation
   const renderMultiSelectDropdown = (
     field: 'leadStatuses',
     options: { id: string; en: string; th: string }[],
-    label: string
+    label: string,
+    maxVisibleItems: number = 2
   ) => {
     const selectedValues = localFilters[field];
     const isAllSelected = selectedValues.includes('all');
     const nonAllOptions = options.filter(o => o.id !== 'all');
     const selectedNonAll = nonAllOptions.filter(o => selectedValues.includes(o.id));
     
-    const displayText = isAllSelected
-      ? (language === 'th' ? 'ทั้งหมด' : 'All')
-      : selectedNonAll.length === 0
-        ? (language === 'th' ? 'ทั้งหมด' : 'All')
-        : selectedNonAll.map(o => language === 'th' ? o.th : o.en).join(', ');
+    let displayText: React.ReactNode;
+    if (isAllSelected || selectedNonAll.length === 0) {
+      displayText = language === 'th' ? 'ทั้งหมด' : 'All';
+    } else {
+      const visibleItems = selectedNonAll.slice(0, maxVisibleItems);
+      const remainingCount = selectedNonAll.length - maxVisibleItems;
+      const visibleText = visibleItems.map(o => language === 'th' ? o.th : o.en).join(', ');
+      
+      if (remainingCount > 0) {
+        displayText = (
+          <span className="flex items-center gap-1">
+            <span className="truncate">{visibleText}</span>
+            <span className="shrink-0 text-muted-foreground">+{remainingCount}</span>
+          </span>
+        );
+      } else {
+        displayText = visibleText;
+      }
+    }
 
     return (
       <Popover>
@@ -329,7 +344,7 @@ export function LeadsStageFilters({
             <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[250px] p-2 bg-card z-50" align="start">
+        <PopoverContent className="w-[300px] p-2 bg-card z-50" align="start">
           <div className="space-y-1">
             {options.map((option) => (
               <div
@@ -363,15 +378,20 @@ export function LeadsStageFilters({
       </PopoverTrigger>
       <PopoverContent className="w-[800px] p-6 bg-card z-50" align="start">
         <h3 className="text-lg font-semibold mb-4">{language === 'th' ? 'กรองตาม' : 'Filter By'}</h3>
-        <div className="grid grid-cols-3 gap-6">
-          {/* Column 1: Lead Status (multi-select dropdown), Agent, RF, SC */}
-          <div className="space-y-4">
-            {/* Lead Status - Multi-select dropdown */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">{language === 'th' ? 'สถานะงาน' : 'Lead Status'}</Label>
-              {renderMultiSelectDropdown('leadStatuses', leadStatusOptions, language === 'th' ? 'สถานะงาน' : 'Lead Status')}
+        
+        {/* Lead Status - Spans 2 columns */}
+        <div className="mb-4">
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">{language === 'th' ? 'สถานะงาน' : 'Lead Status'}</Label>
+            <div className="max-w-[520px]">
+              {renderMultiSelectDropdown('leadStatuses', leadStatusOptions, language === 'th' ? 'สถานะงาน' : 'Lead Status', 3)}
             </div>
+          </div>
+        </div>
 
+        <div className="grid grid-cols-3 gap-6">
+          {/* Column 1: Agent, RF, SC */}
+          <div className="space-y-4">
             {/* Agent - Searchable single-select */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">{language === 'th' ? 'ตัวแทน' : 'Agent'}</Label>
