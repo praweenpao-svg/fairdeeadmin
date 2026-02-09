@@ -136,7 +136,7 @@
   }
 
   .data-table-header {
-    @apply bg-foreground/10 text-foreground/90 text-xs font-semibold uppercase tracking-wider;
+    @apply bg-foreground text-background text-xs font-semibold uppercase tracking-wider;
   }
 
   .data-table-row {

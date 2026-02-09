@@ -1805,7 +1805,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                   {language === 'th' ? 'วันเริ่มคุ้มครอง' : 'Start Date'}
                                 </div>
                                 <div className="w-[90px] shrink-0">
-                                  {language === 'th' ? 'วันสิ้นสุดคุ้มครอง' : 'End Date'}
+                                  {language === 'th' ? 'วันสิ้นคุ้มครอง' : 'End Date'}
                                 </div>
                                 <div className="w-[110px] shrink-0">
                                   {language === 'th' ? 'เลขกรมธรรม์' : 'Policy No.'}
