@@ -147,7 +147,7 @@ const Index = () => {
               placeholder={language === 'th' ? 'ค้นหา' : 'Search'}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 w-[280px]"
+              className="pl-9 w-[200px]"
             />
           </div>
           <div className="flex items-center gap-3">
