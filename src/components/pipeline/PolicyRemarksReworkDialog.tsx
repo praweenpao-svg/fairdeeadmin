@@ -504,8 +504,10 @@ export function PolicyRemarksReworkDialog({
   };
 
   // Get stage-filtered rework configs for adding new rework
+  // Also filter by policy scope - show only configs that match this policy kind or 'both'
   const stageFilteredConfigs = reworkConfigs.filter(config => 
-    config.stages.includes(currentStage)
+    config.stages.includes(currentStage) && 
+    (config.policyScope === 'both' || config.policyScope === policyKind)
   );
 
   // Helper to get party type label with prefix
@@ -635,7 +637,8 @@ export function PolicyRemarksReworkDialog({
                   {(() => {
                     const filteredConfigs = reworkConfigs.filter(config => 
                       config.id !== currentReassignEntry?.reasonId && 
-                      config.stages.includes(currentStage)
+                      config.stages.includes(currentStage) &&
+                      (config.policyScope === 'both' || config.policyScope === policyKind)
                     );
                     const { internal, external } = groupedConfigs(filteredConfigs);
                     return (

@@ -121,8 +121,12 @@ export function ReworkDialog({ open, onOpenChange, reworkConfigs, onConfirm, lea
               </SelectTrigger>
               <SelectContent className="bg-popover z-50">
                 {(() => {
-                  const internal = reworkConfigs.filter(c => c.partyType === 'internal');
-                  const external = reworkConfigs.filter(c => c.partyType === 'external');
+                  // Filter by policy scope if policyKind is provided
+                  const scopeFiltered = policyKind 
+                    ? reworkConfigs.filter(c => c.policyScope === 'both' || c.policyScope === policyKind)
+                    : reworkConfigs;
+                  const internal = scopeFiltered.filter(c => c.partyType === 'internal');
+                  const external = scopeFiltered.filter(c => c.partyType === 'external');
                   return (
                     <>
                       {internal.length > 0 && (

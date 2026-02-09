@@ -261,6 +261,9 @@ export interface Lead {
 
 export type AssignmentType = 'round_robin' | 'rf_sc' | 'none';
 
+// Policy scope for rework reasons - which policy types this rework reason applies to
+export type PolicyScopeType = 'vmi' | 'cmi' | 'both';
+
 // Party type for rework reasons - internal (within organization) or external (insurer, customer, etc.)
 export type ReworkPartyType = 'internal' | 'external';
 
@@ -277,6 +280,7 @@ export interface ReworkConfig {
   stages: PipelineStage[];
   movesToCancellation?: boolean; // If true, selecting this rework moves the lead to Cancellation tab
   partyType: ReworkPartyType; // Whether this is an internal or external rework reason
+  policyScope: PolicyScopeType; // Whether this applies to VMI only, CMI only, or both
 }
 
 export interface PipelineTab {
