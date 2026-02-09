@@ -179,6 +179,17 @@ export function applyOtherStagesFilters(leads: Lead[], filters: OtherStagesFilte
       return false;
     }
     
+    // Insurer filter (multi-select)
+    if (!filters.insurers.includes('all') && filters.insurers.length > 0) {
+      // Check insurer quotes for matching insurer
+      const hasMatchingInsurer = lead.insurerQuotes?.some(q =>
+        filters.insurers.some(f => q.insurerName.toLowerCase().includes(f))
+      );
+      if (!hasMatchingInsurer) {
+        return false;
+      }
+    }
+    
     // Payment Status filter
     if (filters.paymentStatus !== 'all' && lead.paymentStatus !== filters.paymentStatus) {
       return false;
