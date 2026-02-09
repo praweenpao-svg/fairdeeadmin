@@ -1425,7 +1425,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                   <>
                     <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'ผู้รับผิดชอบ' : 'Owner'}</th>
                     <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'สถานะ ETA' : 'ETA Status'}</th>
-                    <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'สถานะงาน' : 'Status'}</th>
+                    <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'สถานะงาน' : 'Lead Status'}</th>
                   </>
                 )}
                 {/* Owner column hidden - now at policy row level. Uncomment to restore:
