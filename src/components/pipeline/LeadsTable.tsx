@@ -461,10 +461,6 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
       setReworkDialogOpen(true);
       return;
     }
-    
-    const updatedRecords = lead.policyRecords.map(record => 
-      record.id === policyId ? { ...record, status: newStatus } : record
-    );
 
     const timestamp = new Date().toLocaleString('en-US', {
       year: 'numeric',
@@ -474,21 +470,32 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
       minute: '2-digit',
     });
 
-    // Create history log entry for policy status change
+    // Find the policy and create POLICY-LEVEL history log entry (not lead-level)
     const policy = lead.policyRecords.find(r => r.id === policyId);
-    const historyLogEntry: HistoryLogEntry = {
+    
+    const policyHistoryEntry: PolicyHistoryLogEntry = {
       id: crypto.randomUUID(),
       action: 'status_changed',
       triggeredBy: CURRENT_USER,
       triggeredAt: timestamp,
       fromStatus: policy?.status,
       toStatus: newStatus,
-      comment: `${policy?.kind.toUpperCase()} policy status updated`,
     };
+
+    // Update ONLY the specific policy with the status change and history entry
+    const updatedRecords = lead.policyRecords.map(record => {
+      if (record.id === policyId) {
+        return {
+          ...record,
+          status: newStatus,
+          historyLog: [...(record.historyLog || []), policyHistoryEntry],
+        };
+      }
+      return record;
+    });
 
     onLeadUpdate?.(lead.id, {
       policyRecords: updatedRecords,
-      historyLog: [...(lead.historyLog || []), historyLogEntry],
     });
   };
 
