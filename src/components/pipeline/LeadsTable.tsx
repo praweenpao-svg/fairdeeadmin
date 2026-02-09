@@ -10,7 +10,7 @@ import {
   MessageSquare,
   Truck,
 } from 'lucide-react';
-import { Lead, PipelineStage, LeadType, LeadSource, ReworkConfig, CreatedByType, ReworkAttachment, ReworkHistoryEntry, HistoryLogEntry, PolicyStatus, PolicyReworkEntry, PolicyRecord, PaymentMethod, PolicyHistoryLogEntry } from '@/types/pipeline';
+import { Lead, PipelineStage, LeadType, LeadSource, ReworkConfig, CreatedByType, ReworkAttachment, ReworkHistoryEntry, HistoryLogEntry, PolicyStatus, PolicyReworkEntry, PolicyRecord, PaymentMethod, PolicyHistoryLogEntry, InstallmentCount } from '@/types/pipeline';
 import { cn } from '@/lib/utils';
 import { useLanguageStore } from '@/stores/languageStore';
 import { toast } from 'sonner';
@@ -1412,6 +1412,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                 {isPostLeadStage && (
                   <>
                     <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'เบี้ยประกัน' : 'Premium'}</th>
+                    <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'ประเภทชำระเงิน' : 'Payment Type'}</th>
                     <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'วิธีชำระเงิน' : 'Payment Method'}</th>
                     <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'สถานะการชำระเงิน' : 'Payment Status'}</th>
                   </>
@@ -1437,7 +1438,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
             <tbody>
               {sortedLeads.length === 0 ? (
                 <tr>
-                  <td colSpan={isPostLeadStage ? (showDEColumn ? 11 : 10) : 10} className="px-4 py-12 text-center text-muted-foreground">
+                  <td colSpan={isPostLeadStage ? (showDEColumn ? 12 : 11) : 10} className="px-4 py-12 text-center text-muted-foreground">
                     {language === 'th' ? 'ไม่พบเคสของคุณ ณ ตอนนี้' : 'No cases found at the moment'}
                   </td>
                 </tr>
@@ -1529,6 +1530,25 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                       {isPostLeadStage && (
                         <>
                           <td className="px-4 py-3 text-sm">{getPremiumDisplay(lead, stage)}</td>
+                          <td className="px-4 py-3">
+                            {stage === 'to_pay' ? (
+                              <span className="text-sm">-</span>
+                            ) : (
+                              <div className="flex flex-col gap-0.5">
+                                <span className="text-sm">
+                                  {lead.paymentType === 'installment' 
+                                    ? (language === 'th' ? 'งานเงินผ่อน' : 'Installment')
+                                    : (language === 'th' ? 'งานเงินสด' : 'Full Payment')
+                                  }
+                                </span>
+                                {lead.paymentType === 'installment' && lead.installmentCount && (
+                                  <span className="text-xs text-muted-foreground">
+                                    {lead.installmentCount} {language === 'th' ? 'งวดผ่อน' : 'installments'}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                          </td>
                           <td className="px-4 py-3 text-sm">{getPaymentMethodLabel(lead, language)}</td>
                           <td className="px-4 py-3">
                             {stage === 'to_pay' ? (
