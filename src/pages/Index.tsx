@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Search, Home } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { DateRange } from 'react-day-picker';
 import { PipelineStage, LeadType, Lead, ReworkConfig } from '@/types/pipeline';
 import { mockLeads, mockReworkConfigs, CURRENT_USER } from '@/data/mockLeads';
@@ -140,21 +140,17 @@ const Index = () => {
       {/* Header */}
       <header className="sticky top-0 z-30 bg-card border-b border-border">
         <div className="flex items-center justify-between px-6 py-3">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Home className="w-4 h-4" />
-            <span className="text-sm">{language === 'th' ? 'หน้าหลัก' : 'Home'}</span>
+          {/* Global Search - Left aligned */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder={language === 'th' ? 'ค้นหา' : 'Search'}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 w-[280px]"
+            />
           </div>
           <div className="flex items-center gap-3">
-            {/* Global Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder={language === 'th' ? 'ค้นหา' : 'Search'}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 w-[200px]"
-              />
-            </div>
             <MentionNotificationBell />
             <LanguageToggle />
           </div>
