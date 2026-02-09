@@ -367,17 +367,48 @@ export function LeadsStageFilters({
 
   const hasActiveFilters = JSON.stringify(filters) !== JSON.stringify(defaultLeadsFilterState);
 
-  // Calculate active filter chips with counts
+  // Helper to format multi-select values for display
+  const formatMultiSelectValues = (
+    selectedIds: string[],
+    options: { id: string; en: string; th: string }[],
+    maxVisible: number = 2
+  ): string => {
+    const selectedOptions = options.filter(o => o.id !== 'all' && selectedIds.includes(o.id));
+    if (selectedOptions.length === 0) return language === 'th' ? 'ทั้งหมด' : 'All';
+    
+    const visibleItems = selectedOptions.slice(0, maxVisible);
+    const remainingCount = selectedOptions.length - maxVisible;
+    const visibleText = visibleItems.map(o => language === 'th' ? o.th : o.en).join(', ');
+    
+    if (remainingCount > 0) {
+      return `${visibleText} +${remainingCount}`;
+    }
+    return visibleText;
+  };
+
+  // Calculate active filter chips showing exact values
   const getActiveFilterChips = () => {
-    const chips: { key: string; label: string; count: number; onClear: () => void }[] = [];
+    const chips: { key: string; label: string; values: string; count: number; onClear: () => void }[] = [];
     
     // Lead Status
     if (!filters.leadStatuses.includes('all') && filters.leadStatuses.length > 0) {
       chips.push({
         key: 'leadStatuses',
         label: language === 'th' ? 'สถานะงาน' : 'Lead Status',
+        values: formatMultiSelectValues(filters.leadStatuses, leadStatusOptions),
         count: filters.leadStatuses.length,
         onClear: () => onFiltersChange({ ...filters, leadStatuses: ['all'] }),
+      });
+    }
+    
+    // Insurer Status (showing values even though not functional yet)
+    if (!filters.insurerStatuses.includes('all') && filters.insurerStatuses.length > 0) {
+      chips.push({
+        key: 'insurerStatuses',
+        label: language === 'th' ? 'สถานะเบี้ยประกัน' : 'Insurer Status',
+        values: formatMultiSelectValues(filters.insurerStatuses, insurerStatusOptions),
+        count: filters.insurerStatuses.length,
+        onClear: () => onFiltersChange({ ...filters, insurerStatuses: ['all'] }),
       });
     }
     
@@ -386,7 +417,8 @@ export function LeadsStageFilters({
       const agent = mockAgents.find(a => a.id === filters.agent);
       chips.push({
         key: 'agent',
-        label: agent?.name || (language === 'th' ? 'ตัวแทน' : 'Agent'),
+        label: language === 'th' ? 'ตัวแทน' : 'Agent',
+        values: agent?.name || filters.agent,
         count: 1,
         onClear: () => onFiltersChange({ ...filters, agent: 'all' }),
       });
@@ -397,7 +429,8 @@ export function LeadsStageFilters({
       const rf = rfStaff.find(s => s.id === filters.rfAssignee);
       chips.push({
         key: 'rfAssignee',
-        label: `RF: ${rf?.name || filters.rfAssignee}`,
+        label: 'RF',
+        values: rf?.name || filters.rfAssignee,
         count: 1,
         onClear: () => onFiltersChange({ ...filters, rfAssignee: 'all' }),
       });
@@ -408,7 +441,8 @@ export function LeadsStageFilters({
       const sc = scStaff.find(s => s.id === filters.scAssignee);
       chips.push({
         key: 'scAssignee',
-        label: `SC: ${sc?.name || filters.scAssignee}`,
+        label: 'SC',
+        values: sc?.name || filters.scAssignee,
         count: 1,
         onClear: () => onFiltersChange({ ...filters, scAssignee: 'all' }),
       });
@@ -419,7 +453,8 @@ export function LeadsStageFilters({
       const ownerOption = ownerOptions.find(o => o.id === filters.owner);
       chips.push({
         key: 'owner',
-        label: language === 'th' ? ownerOption?.th || '' : ownerOption?.en || '',
+        label: language === 'th' ? 'เจ้าของ' : 'Owner',
+        values: language === 'th' ? ownerOption?.th || '' : ownerOption?.en || '',
         count: 1,
         onClear: () => {
           onFiltersChange({ ...filters, owner: 'all' });
@@ -434,6 +469,7 @@ export function LeadsStageFilters({
       chips.push({
         key: 'createdBy',
         label: language === 'th' ? 'สร้างโดย' : 'Created By',
+        values: formatMultiSelectValues(filters.createdBy, createdByOptions),
         count: filters.createdBy.length,
         onClear: () => onFiltersChange({ ...filters, createdBy: ['all'] }),
       });
@@ -444,8 +480,20 @@ export function LeadsStageFilters({
       chips.push({
         key: 'leadsTypes',
         label: language === 'th' ? 'ประเภทงาน' : 'Lead Type',
+        values: formatMultiSelectValues(filters.leadsTypes, leadTypeOptions),
         count: filters.leadsTypes.length,
         onClear: () => onFiltersChange({ ...filters, leadsTypes: ['all'] }),
+      });
+    }
+    
+    // Agent Type (showing values even though not functional yet)
+    if (!filters.agentTypes.includes('all') && filters.agentTypes.length > 0) {
+      chips.push({
+        key: 'agentTypes',
+        label: language === 'th' ? 'ประเภทตัวแทน' : 'Agent Type',
+        values: formatMultiSelectValues(filters.agentTypes, agentTypeOptions),
+        count: filters.agentTypes.length,
+        onClear: () => onFiltersChange({ ...filters, agentTypes: ['all'] }),
       });
     }
     
@@ -454,6 +502,7 @@ export function LeadsStageFilters({
       chips.push({
         key: 'etaStatuses',
         label: language === 'th' ? 'สถานะ ETA' : 'ETA Status',
+        values: formatMultiSelectValues(filters.etaStatuses, etaStatusOptions),
         count: filters.etaStatuses.length,
         onClear: () => onFiltersChange({ ...filters, etaStatuses: ['all'] }),
       });
@@ -616,18 +665,14 @@ export function LeadsStageFilters({
       </PopoverContent>
     </Popover>
     
-    {/* Active filter chips */}
+    {/* Active filter chips showing label: values */}
     {activeChips.map((chip) => (
       <div
         key={chip.key}
         className="flex items-center gap-1.5 px-2.5 py-1.5 bg-primary/10 text-primary rounded-md text-sm"
       >
-        <span>{chip.label}</span>
-        {chip.count > 1 && (
-          <span className="px-1.5 py-0.5 bg-primary text-primary-foreground rounded text-xs font-medium">
-            {chip.count}
-          </span>
-        )}
+        <span className="font-medium">{chip.label}:</span>
+        <span className="text-primary/80">{chip.values}</span>
         <button
           onClick={chip.onClear}
           className="ml-0.5 hover:bg-primary/20 rounded p-0.5"
