@@ -300,21 +300,36 @@ export function OtherStagesFilterPanel({ filters, onFiltersChange, onClear }: Ot
             {/* Insurer */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">{language === 'th' ? 'บริษัทประกัน' : 'Insurer'}</Label>
-              <div className="max-h-[200px] overflow-y-auto border rounded-md p-2 space-y-1">
-                {insurerOptions.map((option) => (
-                  <div key={option.id} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`insurers-${option.id}`}
-                      checked={localFilters.insurers.includes(option.id)}
-                      onCheckedChange={(checked) => handleCheckboxChange('insurers', option.id, checked as boolean)}
-                      className="border-primary data-[state=checked]:bg-primary"
-                    />
-                    <Label htmlFor={`insurers-${option.id}`} className="text-xs font-normal cursor-pointer">
-                      {language === 'th' ? option.th : option.en}
-                    </Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-full justify-between text-xs font-normal h-9">
+                    {localFilters.insurers.includes('all')
+                      ? (language === 'th' ? 'ทั้งหมด' : 'All')
+                      : localFilters.insurers.length === 1
+                        ? (insurerOptions.find(o => o.id === localFilters.insurers[0])?.[language === 'th' ? 'th' : 'en'] || localFilters.insurers[0])
+                        : `${localFilters.insurers.length} ${language === 'th' ? 'รายการ' : 'selected'}`
+                    }
+                    <span className="ml-auto opacity-50">▼</span>
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[260px] p-2 bg-card z-[60]" align="start">
+                  <div className="max-h-[250px] overflow-y-auto space-y-1">
+                    {insurerOptions.map((option) => (
+                      <div key={option.id} className="flex items-center space-x-2 px-2 py-1 rounded hover:bg-muted/50">
+                        <Checkbox
+                          id={`insurers-${option.id}`}
+                          checked={localFilters.insurers.includes(option.id)}
+                          onCheckedChange={(checked) => handleCheckboxChange('insurers', option.id, checked as boolean)}
+                          className="border-primary data-[state=checked]:bg-primary"
+                        />
+                        <Label htmlFor={`insurers-${option.id}`} className="text-xs font-normal cursor-pointer flex-1">
+                          {language === 'th' ? option.th : option.en}
+                        </Label>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
 
