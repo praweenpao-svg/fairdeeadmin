@@ -130,7 +130,8 @@ const Index = () => {
     toPayFilters,
     otherStagesFilters,
     isToPayStage,
-    activeStage
+    activeStage,
+    leadsFilters
   );
 
 

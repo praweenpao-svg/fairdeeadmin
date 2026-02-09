@@ -45,16 +45,16 @@ export const defaultLeadsFilterState: LeadsFilterState = {
   etaStatuses: ['all'],
 };
 
-// Lead status options matching the column statuses
+// Lead status options matching the column statuses (sync with LeadsTable.tsx)
 const leadStatusOptions: { id: string; en: string; th: string }[] = [
   { id: 'all', en: 'All', th: 'ทั้งหมด' },
   { id: 'pending', en: 'Pending', th: 'รอดำเนินการ' },
-  { id: 'docs_missing', en: 'Docs Missing', th: 'เอกสารไม่ครบ' },
-  { id: 'waiting_for_insurer', en: 'Waiting for Insurer', th: 'รอบริษัทประกัน' },
-  { id: 'quotation_shared', en: 'Quotation Shared', th: 'ส่งใบเสนอราคาแล้ว' },
-  { id: 'partially_added', en: 'Partially Added', th: 'เพิ่มบางส่วน' },
-  { id: 'completed', en: 'Completed', th: 'เสร็จสิ้น' },
-  { id: 'invalid', en: 'Invalid', th: 'ไม่ถูกต้อง' },
+  { id: 'docs_missing', en: 'Docs Missing', th: 'ขอเอกสารเพิ่มเติม' },
+  { id: 'waiting_for_insurer', en: 'Waiting for Insurer', th: 'รอเบี้ยจากบริษัทประกัน' },
+  { id: 'quotation_shared', en: 'Quotation Shared', th: 'ส่งเบี้ยให้ตัวแทนแล้ว' },
+  { id: 'partially_added', en: 'Partially Added', th: 'มีเบี้ยบางส่วนแล้ว' },
+  { id: 'completed', en: 'Completed', th: 'เสร็จแล้ว' },
+  { id: 'invalid', en: 'Invalid', th: 'ปฎิเสธโดย Admin' },
 ];
 
 const createdByOptions: { id: string; en: string; th: string }[] = [
@@ -442,7 +442,7 @@ export function LeadsStageFilters({
 
           {/* Leads Type */}
           <div className="space-y-2">
-            <Label className="text-sm font-medium">{language === 'th' ? 'ประเภท Lead' : 'Leads Type'}</Label>
+            <Label className="text-sm font-medium">{language === 'th' ? 'ประเภทงาน' : 'Leads Type'}</Label>
             <MultiSelectDropdown
               options={leadsTypeOptions}
               selectedValues={localFilters.leadsTypes}

@@ -1,6 +1,7 @@
 import { Lead } from '@/types/pipeline';
 import { FilterState } from '@/components/pipeline/AllFiltersPanel';
 import { OtherStagesFilterState } from '@/components/pipeline/OtherStagesFilterPanel';
+import { LeadsFilterState } from '@/components/pipeline/LeadsStageFilters';
 import { mockStaffMembers } from '@/data/mockStaff';
 import { DateRange } from 'react-day-picker';
 import { parse, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
@@ -203,6 +204,86 @@ export function applyOtherStagesFilters(leads: Lead[], filters: OtherStagesFilte
   });
 }
 
+// Apply Leads stage filters (to_convert)
+export function applyLeadsStageFilters(leads: Lead[], filters: LeadsFilterState): Lead[] {
+  return leads.filter(lead => {
+    // Lead Status filter (multi-select)
+    if (!filters.leadStatuses.includes('all') && filters.leadStatuses.length > 0) {
+      if (!filters.leadStatuses.includes(lead.saleStatus)) {
+        return false;
+      }
+    }
+
+    // Agent filter
+    if (filters.agent !== 'all' && lead.agentId !== filters.agent) {
+      return false;
+    }
+
+    // RF Assignee filter
+    if (filters.rfAssignee !== 'all') {
+      const staffName = getStaffNameById(filters.rfAssignee);
+      if (staffName && lead.rfAssignee !== staffName) {
+        return false;
+      }
+    }
+
+    // SC Assignee filter
+    if (filters.scAssignee !== 'all') {
+      const staffName = getStaffNameById(filters.scAssignee);
+      if (staffName && lead.scAssignee !== staffName) {
+        return false;
+      }
+    }
+
+    // Owner filter is handled separately via myCasesOnly/myTeamOnly props
+
+    // Created By filter (multi-select)
+    if (!filters.createdBy.includes('all') && filters.createdBy.length > 0) {
+      if (!filters.createdBy.includes(lead.createdBy)) {
+        return false;
+      }
+    }
+
+    // Leads Type filter (multi-select: system, custom, coa)
+    if (!filters.leadsTypes.includes('all') && filters.leadsTypes.length > 0) {
+      // Map lead properties to filter values
+      let leadTypeValue: string;
+      if (lead.leadType === 'coa') {
+        leadTypeValue = 'coa';
+      } else if (lead.leadSource === 'system') {
+        leadTypeValue = 'system';
+      } else if (lead.leadSource === 'custom') {
+        leadTypeValue = 'custom';
+      } else {
+        leadTypeValue = 'system'; // Default
+      }
+      
+      if (!filters.leadsTypes.includes(leadTypeValue)) {
+        return false;
+      }
+    }
+
+    // ETA Status filter (multi-select)
+    if (!filters.etaStatuses.includes('all') && filters.etaStatuses.length > 0) {
+      // Check if any insurer quote matches the ETA status filter
+      const hasMatchingEta = lead.insurerQuotes?.some(quote => {
+        if (filters.etaStatuses.includes('on_time') && quote.etaStatus === 'on_time') return true;
+        if (filters.etaStatuses.includes('breached') && quote.etaStatus === 'breached') return true;
+        return false;
+      });
+      
+      // If no insurer quotes or none match, filter out (unless lead has no quotes)
+      if (lead.insurerQuotes && lead.insurerQuotes.length > 0 && !hasMatchingEta) {
+        return false;
+      }
+    }
+
+    // Insurer Status and Agent Type are kept visible but not functional per user request
+
+    return true;
+  });
+}
+
 // Combined filter function
 export function applyAllFilters(
   leads: Lead[],
@@ -211,7 +292,8 @@ export function applyAllFilters(
   toPayFilters: FilterState,
   otherStagesFilters: OtherStagesFilterState,
   isToPayStage: boolean,
-  activeStage: 'all' | 'to_convert' | 'to_pay' | 'to_report' | 'to_issue' | 'to_deliver' | 'completed' | 'cancelled'
+  activeStage: 'all' | 'to_convert' | 'to_pay' | 'to_report' | 'to_issue' | 'to_deliver' | 'completed' | 'cancelled',
+  leadsFilters?: LeadsFilterState
 ): Lead[] {
   let result = leads;
   
@@ -222,7 +304,9 @@ export function applyAllFilters(
   result = applyDateRangeFilter(result, dateRange);
   
   // Apply stage-specific filters
-  if (activeStage === 'all' || activeStage === 'to_convert' || activeStage === 'to_pay') {
+  if (activeStage === 'to_convert' && leadsFilters) {
+    result = applyLeadsStageFilters(result, leadsFilters);
+  } else if (activeStage === 'all' || activeStage === 'to_pay') {
     result = applyToPayFilters(result, toPayFilters, activeStage);
   } else {
     result = applyOtherStagesFilters(result, otherStagesFilters);
