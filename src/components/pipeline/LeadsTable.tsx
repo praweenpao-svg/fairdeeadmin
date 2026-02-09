@@ -1531,7 +1531,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                         <>
                           <td className="px-4 py-3 text-sm">{getPremiumDisplay(lead, stage)}</td>
                           <td className="px-4 py-3">
-                            {stage === 'to_pay' ? (
+                            {stage === 'to_pay' || areBothPoliciesPending(lead) ? (
                               <span className="text-sm">-</span>
                             ) : (
                               <div className="flex flex-col gap-0.5">
