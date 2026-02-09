@@ -130,9 +130,9 @@ function getActionLabel(action: DisplayableAction, language: 'en' | 'th'): strin
   const labels: Record<DisplayableAction, { en: string; th: string }> = {
     status_changed: { en: 'Policy Status Changed', th: 'เปลี่ยนสถานะกรมธรรม์' },
     lead_status_changed: { en: 'Lead Status Changed', th: 'เปลี่ยนสถานะ Lead' },
-    payment_status_changed: { en: 'Payment Updated', th: 'อัพเดทการชำระเงิน' },
-    endorsement_status_changed: { en: 'Endorsement Updated', th: 'อัพเดทเอกสารแนบท้าย' },
-    assignee_changed: { en: 'Assignee Changed', th: 'เปลี่ยนผู้รับผิดชอบ' },
+    payment_status_changed: { en: 'Payment Status Changed', th: 'เปลี่ยนสถานะการชำระเงิน' },
+    endorsement_status_changed: { en: 'Endorsement Status Changed', th: 'เปลี่ยนสถานะเอกสารแนบท้าย' },
+    assignee_changed: { en: 'Owner Changed', th: 'เปลี่ยนผู้รับผิดชอบ' },
   };
   return labels[action][language];
 }
@@ -333,9 +333,6 @@ function EntryCard({
         
         {entry.action === 'assignee_changed' && (
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs text-muted-foreground">
-              {formatAssigneeType(entry.assigneeType || '', language)}:
-            </span>
             <span className="text-xs px-2 py-1 rounded bg-muted">
               {entry.fromAssignee || (language === 'th' ? 'ไม่มี' : 'None')}
             </span>
