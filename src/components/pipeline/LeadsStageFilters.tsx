@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Check, ChevronDown, Search } from 'lucide-react';
+import { Check, ChevronDown, Filter, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -10,13 +10,12 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command';
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { mockStaffMembers } from '@/data/mockStaff';
 import { useLanguageStore } from '@/stores/languageStore';
 import { cn } from '@/lib/utils';
@@ -45,7 +44,7 @@ export const defaultLeadsFilterState: LeadsFilterState = {
 
 // Lead status options for COA system manual style
 const leadStatusOptions: { id: string; en: string; th: string }[] = [
-  { id: 'all', en: 'All Status', th: 'สถานะทั้งหมด' },
+  { id: 'all', en: 'All', th: 'ทั้งหมด' },
   { id: 'pending', en: 'Pending', th: 'รอดำเนินการ' },
   { id: 'docs_missing', en: 'Docs Missing', th: 'เอกสารไม่ครบ' },
   { id: 'waiting_for_insurer', en: 'Waiting for Insurer', th: 'รอบริษัทประกัน' },
@@ -56,26 +55,26 @@ const leadStatusOptions: { id: string; en: string; th: string }[] = [
 ];
 
 const createdByOptions: { id: string; en: string; th: string }[] = [
-  { id: 'all', en: 'All Creator', th: 'ผู้สร้างทั้งหมด' },
+  { id: 'all', en: 'All', th: 'ทั้งหมด' },
   { id: 'agent', en: 'Agent', th: 'ตัวแทน' },
   { id: 'admin', en: 'Admin', th: 'แอดมิน' },
 ];
 
 const ownerOptions: { id: 'all' | 'my_team' | 'my_cases'; en: string; th: string }[] = [
-  { id: 'all', en: 'All Owners', th: 'ผู้รับผิดชอบทั้งหมด' },
+  { id: 'all', en: 'All', th: 'ทั้งหมด' },
   { id: 'my_team', en: 'My Team', th: 'ทีมของฉัน' },
   { id: 'my_cases', en: 'My Cases', th: 'เคสของฉัน' },
 ];
 
 const leadsTypeOptions: { id: string; en: string; th: string }[] = [
-  { id: 'all', en: 'All Lead Types', th: 'ประเภท Lead ทั้งหมด' },
+  { id: 'all', en: 'All', th: 'ทั้งหมด' },
   { id: 'system', en: 'System', th: 'ระบบ' },
   { id: 'manual', en: 'Manual', th: 'เพิ่มเอง' },
   { id: 'coa', en: 'COA', th: 'COA' },
 ];
 
 const agentTypeOptions: { id: string; en: string; th: string }[] = [
-  { id: 'all', en: 'All Agent Types', th: 'ประเภทตัวแทนทั้งหมด' },
+  { id: 'all', en: 'All', th: 'ทั้งหมด' },
   { id: 'direct', en: 'Direct Agent', th: 'ตัวแทนตรง' },
   { id: 'mlm', en: 'MLM Agent', th: 'ตัวแทน MLM' },
   { id: 'inspection', en: 'Inspection Garage', th: 'อู่ตรวจสภาพ' },
@@ -95,112 +94,30 @@ const mockAgents = [
 interface LeadsStageFiltersProps {
   filters: LeadsFilterState;
   onFiltersChange: (filters: LeadsFilterState) => void;
+  onClear: () => void;
   myCasesOnly: boolean;
   myTeamOnly: boolean;
   onMyCasesChange: (value: boolean) => void;
   onMyTeamChange: (value: boolean) => void;
 }
 
-// Multi-select dropdown component
-function MultiSelectDropdown({
+// Searchable select component for agents and staff
+function SearchableSelect({
   label,
   options,
-  selectedValues,
+  value,
   onChange,
-  allLabel,
-}: {
-  label: string;
-  options: { id: string; en: string; th: string }[];
-  selectedValues: string[];
-  onChange: (values: string[]) => void;
-  allLabel: { en: string; th: string };
-}) {
-  const { language } = useLanguageStore();
-  const [open, setOpen] = React.useState(false);
-
-  const handleToggle = (id: string) => {
-    let newValues: string[];
-    if (id === 'all') {
-      newValues = ['all'];
-    } else {
-      // Remove 'all' if present, toggle the id
-      newValues = selectedValues.filter(v => v !== 'all');
-      if (newValues.includes(id)) {
-        newValues = newValues.filter(v => v !== id);
-      } else {
-        newValues.push(id);
-      }
-      // If nothing selected, default to all
-      if (newValues.length === 0) {
-        newValues = ['all'];
-      }
-    }
-    onChange(newValues);
-  };
-
-  const isAllSelected = selectedValues.includes('all') || selectedValues.length === 0;
-  const displayText = isAllSelected
-    ? (language === 'th' ? allLabel.th : allLabel.en)
-    : options
-        .filter(o => o.id !== 'all' && selectedValues.includes(o.id))
-        .map(o => (language === 'th' ? o.th : o.en))
-        .join(', ');
-
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className="justify-between gap-2 min-w-[140px] max-w-[200px] h-9 text-sm"
-        >
-          <span className="truncate">{displayText}</span>
-          <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[220px] p-2 bg-card z-50" align="start">
-        <div className="space-y-1">
-          {options.map((option) => (
-            <div
-              key={option.id}
-              className="flex items-center space-x-2 px-2 py-1.5 rounded hover:bg-muted cursor-pointer"
-              onClick={() => handleToggle(option.id)}
-            >
-              <Checkbox
-                checked={option.id === 'all' ? isAllSelected : selectedValues.includes(option.id)}
-                className="border-primary data-[state=checked]:bg-primary"
-              />
-              <span className="text-sm">
-                {language === 'th' ? option.th : option.en}
-              </span>
-            </div>
-          ))}
-        </div>
-      </PopoverContent>
-    </Popover>
-  );
-}
-
-// Searchable single-select dropdown
-function SearchableSelectDropdown({
-  label,
-  options,
-  selectedValue,
-  onChange,
-  allLabel,
   placeholder,
 }: {
   label: string;
   options: { id: string; name: string }[];
-  selectedValue: string;
+  value: string;
   onChange: (value: string) => void;
-  allLabel: { en: string; th: string };
-  placeholder: { en: string; th: string };
+  placeholder: string;
 }) {
   const { language } = useLanguageStore();
-  const [open, setOpen] = React.useState(false);
   const [search, setSearch] = React.useState('');
+  const [open, setOpen] = React.useState(false);
 
   const filteredOptions = React.useMemo(() => {
     if (!search) return options;
@@ -210,10 +127,9 @@ function SearchableSelectDropdown({
     );
   }, [options, search]);
 
-  const displayText =
-    selectedValue === 'all'
-      ? (language === 'th' ? allLabel.th : allLabel.en)
-      : options.find(o => o.id === selectedValue)?.name || (language === 'th' ? allLabel.th : allLabel.en);
+  const displayValue = value === 'all' 
+    ? (language === 'th' ? 'ทั้งหมด' : 'All')
+    : options.find(o => o.id === value)?.name || (language === 'th' ? 'ทั้งหมด' : 'All');
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -221,19 +137,18 @@ function SearchableSelectDropdown({
         <Button
           variant="outline"
           role="combobox"
-          aria-expanded={open}
-          className="justify-between gap-2 min-w-[140px] max-w-[180px] h-9 text-sm"
+          className="w-full justify-between"
         >
-          <span className="truncate">{displayText}</span>
-          <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
+          <span className="truncate">{displayValue}</span>
+          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[240px] p-0 bg-card z-50" align="start">
+      <PopoverContent className="w-[250px] p-0 bg-card z-50" align="start">
         <div className="p-2 border-b">
           <div className="relative">
             <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder={language === 'th' ? placeholder.th : placeholder.en}
+              placeholder={placeholder}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-8 h-8"
@@ -243,8 +158,8 @@ function SearchableSelectDropdown({
         <div className="max-h-[200px] overflow-auto p-1">
           <div
             className={cn(
-              "flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-muted",
-              selectedValue === 'all' && "bg-muted"
+              "flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-muted text-sm",
+              value === 'all' && "bg-muted"
             )}
             onClick={() => {
               onChange('all');
@@ -252,15 +167,15 @@ function SearchableSelectDropdown({
               setSearch('');
             }}
           >
-            <Check className={cn("mr-2 h-4 w-4", selectedValue === 'all' ? "opacity-100" : "opacity-0")} />
-            <span className="text-sm">{language === 'th' ? allLabel.th : allLabel.en}</span>
+            <Check className={cn("mr-2 h-4 w-4", value === 'all' ? "opacity-100" : "opacity-0")} />
+            {language === 'th' ? 'ทั้งหมด' : 'All'}
           </div>
           {filteredOptions.map((option) => (
             <div
               key={option.id}
               className={cn(
-                "flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-muted",
-                selectedValue === option.id && "bg-muted"
+                "flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-muted text-sm",
+                value === option.id && "bg-muted"
               )}
               onClick={() => {
                 onChange(option.id);
@@ -268,8 +183,8 @@ function SearchableSelectDropdown({
                 setSearch('');
               }}
             >
-              <Check className={cn("mr-2 h-4 w-4", selectedValue === option.id ? "opacity-100" : "opacity-0")} />
-              <span className="text-sm">{option.id} - {option.name}</span>
+              <Check className={cn("mr-2 h-4 w-4", value === option.id ? "opacity-100" : "opacity-0")} />
+              {option.id} - {option.name}
             </div>
           ))}
           {filteredOptions.length === 0 && (
@@ -283,65 +198,18 @@ function SearchableSelectDropdown({
   );
 }
 
-// Single-select dropdown (simple)
-function SingleSelectDropdown({
-  options,
-  selectedValue,
-  onChange,
-}: {
-  options: { id: string; en: string; th: string }[];
-  selectedValue: string;
-  onChange: (value: string) => void;
-}) {
-  const { language } = useLanguageStore();
-  const [open, setOpen] = React.useState(false);
-
-  const displayText = options.find(o => o.id === selectedValue)?.[language === 'th' ? 'th' : 'en'] || '';
-
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className="justify-between gap-2 min-w-[120px] max-w-[160px] h-9 text-sm"
-        >
-          <span className="truncate">{displayText}</span>
-          <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[180px] p-1 bg-card z-50" align="start">
-        {options.map((option) => (
-          <div
-            key={option.id}
-            className={cn(
-              "flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-muted",
-              selectedValue === option.id && "bg-muted"
-            )}
-            onClick={() => {
-              onChange(option.id);
-              setOpen(false);
-            }}
-          >
-            <Check className={cn("mr-2 h-4 w-4", selectedValue === option.id ? "opacity-100" : "opacity-0")} />
-            <span className="text-sm">{language === 'th' ? option.th : option.en}</span>
-          </div>
-        ))}
-      </PopoverContent>
-    </Popover>
-  );
-}
-
 export function LeadsStageFilters({
   filters,
   onFiltersChange,
+  onClear,
   myCasesOnly,
   myTeamOnly,
   onMyCasesChange,
   onMyTeamChange,
 }: LeadsStageFiltersProps) {
   const { language } = useLanguageStore();
+  const [open, setOpen] = React.useState(false);
+  const [localFilters, setLocalFilters] = React.useState<LeadsFilterState>(filters);
 
   const rfStaff = mockStaffMembers.filter(s => s.team === 'AST RF').map(s => ({ id: s.id, name: s.name }));
   const scStaff = mockStaffMembers.filter(s => s.team === 'AST SC').map(s => ({ id: s.id, name: s.name }));
@@ -349,111 +217,212 @@ export function LeadsStageFilters({
   // Sync owner filter with myCasesOnly and myTeamOnly props
   React.useEffect(() => {
     if (myCasesOnly && !myTeamOnly) {
-      if (filters.owner !== 'my_cases') {
-        onFiltersChange({ ...filters, owner: 'my_cases' });
-      }
+      setLocalFilters(prev => ({ ...prev, owner: 'my_cases' }));
     } else if (myTeamOnly && !myCasesOnly) {
-      if (filters.owner !== 'my_team') {
-        onFiltersChange({ ...filters, owner: 'my_team' });
-      }
+      setLocalFilters(prev => ({ ...prev, owner: 'my_team' }));
     } else if (!myCasesOnly && !myTeamOnly) {
-      if (filters.owner !== 'all') {
-        onFiltersChange({ ...filters, owner: 'all' });
-      }
+      setLocalFilters(prev => ({ ...prev, owner: 'all' }));
     }
   }, [myCasesOnly, myTeamOnly]);
 
-  const handleOwnerChange = (value: string) => {
-    const ownerValue = value as 'all' | 'my_team' | 'my_cases';
-    onFiltersChange({ ...filters, owner: ownerValue });
+  // Sync local filters when props change
+  React.useEffect(() => {
+    setLocalFilters(filters);
+  }, [filters]);
+
+  const handleCheckboxChange = (
+    field: 'leadStatuses' | 'createdBy' | 'leadsTypes' | 'agentTypes',
+    id: string,
+    checked: boolean
+  ) => {
+    const currentValues = localFilters[field];
+    let newValues: string[];
+
+    if (id === 'all') {
+      newValues = checked ? ['all'] : [];
+    } else {
+      newValues = currentValues.filter(v => v !== 'all');
+      if (checked) {
+        newValues.push(id);
+      } else {
+        newValues = newValues.filter(v => v !== id);
+      }
+      if (newValues.length === 0) {
+        newValues = ['all'];
+      }
+    }
+    setLocalFilters({ ...localFilters, [field]: newValues });
+  };
+
+  const handleApply = () => {
+    onFiltersChange(localFilters);
     
-    // Sync with parent state
-    if (ownerValue === 'my_cases') {
+    // Sync owner state with parent
+    if (localFilters.owner === 'my_cases') {
       onMyCasesChange(true);
       onMyTeamChange(false);
-    } else if (ownerValue === 'my_team') {
+    } else if (localFilters.owner === 'my_team') {
       onMyCasesChange(false);
       onMyTeamChange(true);
     } else {
       onMyCasesChange(false);
       onMyTeamChange(false);
     }
+    
+    setOpen(false);
   };
 
-  return (
-    <div className="flex flex-wrap items-center gap-2">
-      {/* Lead Status - Multi-select */}
-      <MultiSelectDropdown
-        label={language === 'th' ? 'สถานะ Lead' : 'Lead Status'}
-        options={leadStatusOptions}
-        selectedValues={filters.leadStatuses}
-        onChange={(values) => onFiltersChange({ ...filters, leadStatuses: values })}
-        allLabel={{ en: 'All Status', th: 'สถานะทั้งหมด' }}
-      />
+  const handleClear = () => {
+    setLocalFilters(defaultLeadsFilterState);
+  };
 
-      {/* Created By - Multi-select */}
-      <MultiSelectDropdown
-        label={language === 'th' ? 'สร้างโดย' : 'Created By'}
-        options={createdByOptions}
-        selectedValues={filters.createdBy}
-        onChange={(values) => onFiltersChange({ ...filters, createdBy: values })}
-        allLabel={{ en: 'All Creator', th: 'ผู้สร้างทั้งหมด' }}
-      />
+  const handleCancel = () => {
+    setLocalFilters(filters);
+    setOpen(false);
+  };
 
-      {/* Agent - Searchable single-select */}
-      <SearchableSelectDropdown
-        label={language === 'th' ? 'ตัวแทน' : 'Agent'}
-        options={mockAgents}
-        selectedValue={filters.agent}
-        onChange={(value) => onFiltersChange({ ...filters, agent: value })}
-        allLabel={{ en: 'All Agents', th: 'ตัวแทนทั้งหมด' }}
-        placeholder={{ en: 'Search agent...', th: 'ค้นหาตัวแทน...' }}
-      />
+  const hasActiveFilters = JSON.stringify(filters) !== JSON.stringify(defaultLeadsFilterState);
 
-      {/* RF - Searchable single-select */}
-      <SearchableSelectDropdown
-        label="RF"
-        options={rfStaff}
-        selectedValue={filters.rfAssignee}
-        onChange={(value) => onFiltersChange({ ...filters, rfAssignee: value })}
-        allLabel={{ en: 'All RF', th: 'RF ทั้งหมด' }}
-        placeholder={{ en: 'Search RF...', th: 'ค้นหา RF...' }}
-      />
-
-      {/* SC - Searchable single-select */}
-      <SearchableSelectDropdown
-        label="SC"
-        options={scStaff}
-        selectedValue={filters.scAssignee}
-        onChange={(value) => onFiltersChange({ ...filters, scAssignee: value })}
-        allLabel={{ en: 'All SC', th: 'SC ทั้งหมด' }}
-        placeholder={{ en: 'Search SC...', th: 'ค้นหา SC...' }}
-      />
-
-      {/* Owner - Single-select */}
-      <SingleSelectDropdown
-        options={ownerOptions}
-        selectedValue={filters.owner}
-        onChange={handleOwnerChange}
-      />
-
-      {/* Leads Type - Multi-select */}
-      <MultiSelectDropdown
-        label={language === 'th' ? 'ประเภท Lead' : 'Leads Type'}
-        options={leadsTypeOptions}
-        selectedValues={filters.leadsTypes}
-        onChange={(values) => onFiltersChange({ ...filters, leadsTypes: values })}
-        allLabel={{ en: 'All Lead Types', th: 'ประเภท Lead ทั้งหมด' }}
-      />
-
-      {/* Agent Type - Multi-select */}
-      <MultiSelectDropdown
-        label={language === 'th' ? 'ประเภทตัวแทน' : 'Agent Type'}
-        options={agentTypeOptions}
-        selectedValues={filters.agentTypes}
-        onChange={(values) => onFiltersChange({ ...filters, agentTypes: values })}
-        allLabel={{ en: 'All Agent Types', th: 'ประเภทตัวแทนทั้งหมด' }}
-      />
+  const renderCheckboxGroup = (
+    field: 'leadStatuses' | 'createdBy' | 'leadsTypes' | 'agentTypes',
+    options: { id: string; en: string; th: string }[]
+  ) => (
+    <div className="flex flex-wrap gap-3">
+      {options.map((option) => (
+        <div key={option.id} className="flex items-center space-x-2">
+          <Checkbox
+            id={`${field}-${option.id}`}
+            checked={localFilters[field].includes(option.id)}
+            onCheckedChange={(checked) => handleCheckboxChange(field, option.id, checked as boolean)}
+            className="border-primary data-[state=checked]:bg-primary"
+          />
+          <Label htmlFor={`${field}-${option.id}`} className="text-sm font-normal cursor-pointer">
+            {language === 'th' ? option.th : option.en}
+          </Label>
+        </div>
+      ))}
     </div>
+  );
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="outline" className="gap-2">
+          <Filter className="w-4 h-4" />
+          {language === 'th' ? 'ตัวกรองทั้งหมด' : 'All Filters'}
+          {hasActiveFilters && (
+            <span className="ml-1 px-1.5 py-0.5 text-xs bg-primary text-primary-foreground rounded-full">!</span>
+          )}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[800px] p-6 bg-card z-50" align="start">
+        <h3 className="text-lg font-semibold mb-4">{language === 'th' ? 'กรองตาม' : 'Filter By'}</h3>
+        <div className="grid grid-cols-3 gap-6">
+          {/* Column 1 */}
+          <div className="space-y-4">
+            {/* Lead Status - Multi-select */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">{language === 'th' ? 'สถานะ Lead' : 'Lead Status'}</Label>
+              {renderCheckboxGroup('leadStatuses', leadStatusOptions)}
+            </div>
+
+            {/* Created By - Multi-select */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">{language === 'th' ? 'สร้างโดย' : 'Created By'}</Label>
+              {renderCheckboxGroup('createdBy', createdByOptions)}
+            </div>
+          </div>
+
+          {/* Column 2 */}
+          <div className="space-y-4">
+            {/* Agent - Searchable single-select */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">{language === 'th' ? 'ตัวแทน' : 'Agent'}</Label>
+              <SearchableSelect
+                label={language === 'th' ? 'ตัวแทน' : 'Agent'}
+                options={mockAgents}
+                value={localFilters.agent}
+                onChange={(value) => setLocalFilters({ ...localFilters, agent: value })}
+                placeholder={language === 'th' ? 'ค้นหาตัวแทน...' : 'Search agent...'}
+              />
+            </div>
+
+            {/* RF - Searchable single-select */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">RF</Label>
+              <SearchableSelect
+                label="RF"
+                options={rfStaff}
+                value={localFilters.rfAssignee}
+                onChange={(value) => setLocalFilters({ ...localFilters, rfAssignee: value })}
+                placeholder={language === 'th' ? 'ค้นหา RF...' : 'Search RF...'}
+              />
+            </div>
+
+            {/* SC - Searchable single-select */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">SC</Label>
+              <SearchableSelect
+                label="SC"
+                options={scStaff}
+                value={localFilters.scAssignee}
+                onChange={(value) => setLocalFilters({ ...localFilters, scAssignee: value })}
+                placeholder={language === 'th' ? 'ค้นหา SC...' : 'Search SC...'}
+              />
+            </div>
+
+            {/* Owner - Single-select */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">{language === 'th' ? 'ผู้รับผิดชอบ' : 'Owner'}</Label>
+              <Select
+                value={localFilters.owner}
+                onValueChange={(value) => setLocalFilters({ ...localFilters, owner: value as LeadsFilterState['owner'] })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-card z-50">
+                  {ownerOptions.map((option) => (
+                    <SelectItem key={option.id} value={option.id}>
+                      {language === 'th' ? option.th : option.en}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Column 3 */}
+          <div className="space-y-4">
+            {/* Leads Type - Multi-select */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">{language === 'th' ? 'ประเภท Lead' : 'Leads Type'}</Label>
+              {renderCheckboxGroup('leadsTypes', leadsTypeOptions)}
+            </div>
+
+            {/* Agent Type - Multi-select */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">{language === 'th' ? 'ประเภทตัวแทน' : 'Agent Type'}</Label>
+              {renderCheckboxGroup('agentTypes', agentTypeOptions)}
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="flex justify-between mt-6 pt-4 border-t">
+          <Button variant="outline" onClick={handleCancel}>
+            {language === 'th' ? 'ยกเลิก' : 'Cancel'}
+          </Button>
+          <div className="flex gap-3">
+            <Button variant="outline" onClick={handleClear}>
+              {language === 'th' ? 'ล้าง' : 'Clear'}
+            </Button>
+            <Button onClick={handleApply} className="bg-primary text-primary-foreground hover:bg-primary/90">
+              {language === 'th' ? 'ใช้ตัวกรอง' : 'Apply Filters'}
+            </Button>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }
