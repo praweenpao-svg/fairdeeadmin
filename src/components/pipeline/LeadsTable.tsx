@@ -732,6 +732,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
       // Get the previous status (either from existing unresolved entry or current status)
       const existingUnresolved = reworkHistory.find(e => !e.resolved);
       const previousStatus = existingUnresolved?.previousStatus || (record.status as PolicyStatus);
+      const currentOwner = existingUnresolved?.assignedTo;
 
       // Add new rework entry with its own owner
       const newEntry: PolicyReworkEntry = {
@@ -746,29 +747,40 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
         previousStatus,
       };
 
-      // Create policy-level history log entry
-      const policyHistoryEntry: PolicyHistoryLogEntry = {
-        id: crypto.randomUUID(),
-        action: 'rework_created',
-        triggeredBy: CURRENT_USER,
-        triggeredAt: timestamp,
-        reworkReasonId: reasonId,
-        reworkReasonLabel: reasonLabel,
-        comment: details || `Additional rework reason added: ${reasonLabel}`,
-        attachments: attachments.map(a => ({
-          id: a.id,
-          name: a.name,
-          type: a.type,
-          url: a.url,
-        })),
-      };
+      // Build policy-level history entries
+      const historyEntries: PolicyHistoryLogEntry[] = [];
+      
+      // 1. Status change entry (if status is changing to rework_required)
+      if (record.status !== 'rework_required') {
+        historyEntries.push({
+          id: crypto.randomUUID(),
+          action: 'status_changed',
+          triggeredBy: CURRENT_USER,
+          triggeredAt: timestamp,
+          fromStatus: record.status,
+          toStatus: 'rework_required',
+        });
+      }
+      
+      // 2. Owner change entry (if applicable) - same timestamp
+      if (newOwner && newOwner !== currentOwner) {
+        historyEntries.push({
+          id: crypto.randomUUID(),
+          action: 'assignee_changed',
+          triggeredBy: CURRENT_USER,
+          triggeredAt: timestamp,
+          assigneeType: 'de',
+          fromAssignee: currentOwner,
+          toAssignee: newOwner,
+        });
+      }
 
       return {
         ...record,
         status: 'rework_required' as PolicyStatus,
         reworkRequired: true,
         reworkHistory: [...reworkHistory, newEntry],
-        historyLog: [...(record.historyLog || []), policyHistoryEntry],
+        historyLog: [...(record.historyLog || []), ...historyEntries],
       };
     });
 
@@ -900,15 +912,36 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
         toStatus: 'rework_required',
       };
 
+      // 2. Owner change entry (if applicable) - same timestamp
+      const currentPolicyOwner = policy.reworkHistory?.find(e => !e.resolved)?.assignedTo;
+      const ownerChangeEntry: PolicyHistoryLogEntry | null = assignedOwner && assignedOwner !== currentPolicyOwner
+        ? {
+            id: crypto.randomUUID(),
+            action: 'assignee_changed',
+            triggeredBy: CURRENT_USER,
+            triggeredAt: timestamp,
+            assigneeType: 'de', // Rework typically goes to DE/ops
+            fromAssignee: currentPolicyOwner || undefined,
+            toAssignee: assignedOwner,
+          }
+        : null;
+
       const updatedRecords = selectedLead.policyRecords.map(record => {
         if (record.id !== selectedPolicyId) return record;
+        
+        // Build history log with status change and optional owner change
+        const newHistoryEntries: PolicyHistoryLogEntry[] = [statusChangeEntry];
+        if (ownerChangeEntry) {
+          newHistoryEntries.push(ownerChangeEntry);
+        }
+        
         return {
           ...record,
           status: 'rework_required' as PolicyStatus,
           reworkRequired: true,
           reworkHistory: [...(record.reworkHistory || []), newPolicyReworkEntry],
-          // Add status change to THIS POLICY's history log only
-          historyLog: [...(record.historyLog || []), statusChangeEntry],
+          // Add entries to THIS POLICY's history log only
+          historyLog: [...(record.historyLog || []), ...newHistoryEntries],
         };
       });
 
