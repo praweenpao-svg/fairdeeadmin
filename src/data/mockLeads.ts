@@ -549,7 +549,7 @@ function generateInsurerQuotes(leadId: string, numQuotes: number = 3): InsurerQu
 
     const status = priceListStatuses[i % priceListStatuses.length];
     const hasEmailSent = status === 'email_sent' || Math.random() > 0.6;
-    const isBreached = i === 0 && Math.random() > 0.5; // First quote has 50% chance of being breached
+    const isBreached = i % 3 === 0 || (i === 0 && Math.random() > 0.3); // More breached quotes
     
     quotes.push({
       id: `quote-${leadId}-${i + 1}`,
@@ -560,8 +560,8 @@ function generateInsurerQuotes(leadId: string, numQuotes: number = 3): InsurerQu
       emailSentAt: hasEmailSent ? `2569-01-15 21:13:19` : undefined,
       waitingTimeDays: hasEmailSent ? Math.floor(Math.random() * 30) : undefined,
       followUpDate: undefined,
-      etaStatus: status === 'price_list_added' ? (isBreached ? 'breached' : 'on_time') : undefined,
-      daysOverdue: isBreached ? Math.floor(Math.random() * 5) + 1 : undefined,
+      etaStatus: (status === 'price_list_added' || status === 'email_sent') ? (isBreached ? 'breached' : 'on_time') : undefined,
+      daysOverdue: isBreached ? Math.floor(Math.random() * 14) + 1 : undefined,
       etaRange: status === 'price_list_added' ? `${String(16 + i).padStart(2, '0')}/01/2026 ${10 + i}:00:00` : undefined,
       priceListAddedAt: status === 'price_list_added' ? `2569-01-16 ${13 + i}:02:04` : undefined,
     });
@@ -938,6 +938,7 @@ const generateLeads = (): Lead[] => {
       rfAssignee: rfStaff[i % rfStaff.length],
       scAssignee: hasSC ? scStaff[i % scStaff.length] : undefined,
       insurerQuotes,
+      ...getRandomEtaStatus(i + 40),
     };
 
     leads.push({
