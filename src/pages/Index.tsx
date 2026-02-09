@@ -8,6 +8,7 @@ import { LeadsTable } from '@/components/pipeline/LeadsTable';
 import { DateRangeFilter } from '@/components/pipeline/DateRangeFilter';
 import { AllFiltersPanel, FilterState, defaultFilterState } from '@/components/pipeline/AllFiltersPanel';
 import { OtherStagesFilterPanel, OtherStagesFilterState, defaultOtherStagesFilterState } from '@/components/pipeline/OtherStagesFilterPanel';
+import { LeadsStageFilters, LeadsFilterState, defaultLeadsFilterState } from '@/components/pipeline/LeadsStageFilters';
 import { FilterChips } from '@/components/pipeline/FilterChips';
 import { LeadSubTabs, LeadSubTab } from '@/components/pipeline/LeadSubTabs';
 import { LanguageToggle } from '@/components/LanguageToggle';
@@ -34,6 +35,9 @@ const Index = () => {
   // Filters for To Pay stage and All/To Convert (shared filter state + UI)
   const [toPayFilters, setToPayFilters] = useState<FilterState>(defaultFilterState);
 
+  // Filters specifically for Leads (to_convert) stage
+  const [leadsFilters, setLeadsFilters] = useState<LeadsFilterState>(defaultLeadsFilterState);
+
   // Filters for other stages (To Report, To Issue, To Deliver, Completed)
   const [otherStagesFilters, setOtherStagesFilters] = useState<OtherStagesFilterState>(defaultOtherStagesFilterState);
 
@@ -47,8 +51,6 @@ const Index = () => {
       .map(s => s.name);
   }, [currentUserTeam]);
 
-  // Only "To Convert" (Leads) stage uses the AllFiltersPanel; All and To Pay use post-lead filter panel
-  const useAllFiltersPanel = activeStage === 'to_convert';
   const isToPayStage = activeStage === 'to_pay';
 
   const handleLeadUpdate = (leadId: string, updates: Partial<Lead>) => {
@@ -178,57 +180,65 @@ const Index = () => {
             />
           )}
           
-          <button
-            onClick={() => setMyCasesOnly(!myCasesOnly)}
-            className={cn(
-              'px-3 py-2 text-sm font-medium rounded-md transition-colors border',
-              myCasesOnly
-                ? 'bg-primary text-primary-foreground border-primary'
-                : 'bg-muted/50 text-foreground border-border hover:bg-muted hover:border-primary/50'
-            )}
-          >
-            {language === 'th' ? 'เคสของฉัน' : 'My Cases'}
-          </button>
-          
-          <button
-            onClick={() => setMyTeamOnly(!myTeamOnly)}
-            className={cn(
-              'px-3 py-2 text-sm font-medium rounded-md transition-colors border',
-              myTeamOnly
-                ? 'bg-primary text-primary-foreground border-primary'
-                : 'bg-muted/50 text-foreground border-border hover:bg-muted hover:border-primary/50'
-            )}
-          >
-            {language === 'th' ? 'ทีมของฉัน' : 'My Team'}
-          </button>
+          {/* Leads stage specific inline filters */}
+          {activeStage === 'to_convert' ? (
+            <LeadsStageFilters
+              filters={leadsFilters}
+              onFiltersChange={setLeadsFilters}
+              myCasesOnly={myCasesOnly}
+              myTeamOnly={myTeamOnly}
+              onMyCasesChange={setMyCasesOnly}
+              onMyTeamChange={setMyTeamOnly}
+            />
+          ) : (
+            <>
+              {/* My Cases / My Team buttons for other stages */}
+              <button
+                onClick={() => setMyCasesOnly(!myCasesOnly)}
+                className={cn(
+                  'px-3 py-2 text-sm font-medium rounded-md transition-colors border',
+                  myCasesOnly
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-muted/50 text-foreground border-border hover:bg-muted hover:border-primary/50'
+                )}
+              >
+                {language === 'th' ? 'เคสของฉัน' : 'My Cases'}
+              </button>
+              
+              <button
+                onClick={() => setMyTeamOnly(!myTeamOnly)}
+                className={cn(
+                  'px-3 py-2 text-sm font-medium rounded-md transition-colors border',
+                  myTeamOnly
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-muted/50 text-foreground border-border hover:bg-muted hover:border-primary/50'
+                )}
+              >
+                {language === 'th' ? 'ทีมของฉัน' : 'My Team'}
+              </button>
+            </>
+          )}
           
           <DateRangeFilter
             dateRange={dateRange}
             onDateRangeChange={setDateRange}
           />
           
-          {useAllFiltersPanel ? (
-            <AllFiltersPanel
-              stage={activeStage}
-              filters={toPayFilters}
-              onFiltersChange={setToPayFilters}
-              onClear={handleClearToPayFilters}
-            />
-          ) : (
-            <OtherStagesFilterPanel
-              filters={otherStagesFilters}
-              onFiltersChange={setOtherStagesFilters}
-              onClear={handleClearOtherStagesFilters}
-            />
-          )}
-
-          {useAllFiltersPanel && (
-            <FilterChips
-              dateRange={dateRange}
-              filters={toPayFilters}
-              onRemoveDateRange={handleRemoveDateRange}
-              onRemoveFilter={handleRemoveToPayFilter}
-            />
+          {/* Filter panels for non-Leads stages */}
+          {activeStage !== 'to_convert' && (
+            activeStage === 'all' || activeStage === 'to_pay' ? (
+              <OtherStagesFilterPanel
+                filters={otherStagesFilters}
+                onFiltersChange={setOtherStagesFilters}
+                onClear={handleClearOtherStagesFilters}
+              />
+            ) : (
+              <OtherStagesFilterPanel
+                filters={otherStagesFilters}
+                onFiltersChange={setOtherStagesFilters}
+                onClear={handleClearOtherStagesFilters}
+              />
+            )
           )}
         </div>
 
