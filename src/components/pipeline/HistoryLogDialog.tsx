@@ -139,10 +139,10 @@ function getActionLabel(action: DisplayableAction, language: 'en' | 'th', assign
   }
 
   const labels: Record<DisplayableAction, { en: string; th: string }> = {
-    status_changed: { en: 'Status Changed', th: 'เปลี่ยนสถานะงาน' },
+    status_changed: { en: 'Policy Status Changed', th: 'เปลี่ยนสถานะกรมธรรม์' },
     lead_status_changed: { en: 'Status Changed', th: 'เปลี่ยนสถานะงาน' },
     payment_status_changed: { en: 'Payment Status Changed', th: 'เปลี่ยนสถานะการชำระเงิน' },
-    endorsement_status_changed: { en: 'Endorsement Status Changed', th: 'เปลี่ยนสถานะเอกสารแนบท้าย' },
+    endorsement_status_changed: { en: 'Endorsement Status Changed', th: 'เปลี่ยนสถานะสลักหลัง' },
     assignee_changed: { en: 'Owner Changed', th: 'เปลี่ยนผู้รับผิดชอบ' },
   };
   return labels[action][language];
