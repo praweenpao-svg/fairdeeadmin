@@ -1788,7 +1788,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                             {/* Policy Sub-Table */}
                             <div className="overflow-x-auto">
                               {/* Policy Sub-Table Header */}
-                              <div className="flex gap-6 px-4 py-3 bg-muted border-b border-border min-w-max">
+                              <div className="flex gap-6 px-4 py-3 data-table-subheader border-b border-border min-w-max">
                                 <div className="w-[50px] text-xs font-semibold text-foreground/70 uppercase tracking-wide shrink-0">
                                   {language === 'th' ? 'ประเภท' : 'Type'}
                                 </div>
@@ -1883,10 +1883,8 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                       <div 
                                         key={policy.id}
                                         className={cn(
-                                          "flex gap-6 px-4 py-3 items-center transition-colors min-w-max",
-                                          policy.status === 'rework_required'
-                                            ? 'bg-warning/[0.06] hover:bg-warning/[0.10]'
-                                            : 'bg-card hover:bg-muted/30'
+                                          "flex gap-6 px-4 py-3 items-center min-w-max data-table-subrow",
+                                          policy.status === 'rework_required' && 'bg-warning/[0.06] hover:bg-warning/[0.10]'
                                         )}
                                       >
                                       {/* Policy Kind Badge */}
