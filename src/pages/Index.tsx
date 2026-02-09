@@ -181,6 +181,14 @@ const Index = () => {
             />
           )}
           
+          {/* Date Range Filter - before All Filters for Leads stage */}
+          {activeStage === 'to_convert' && (
+            <DateRangeFilter
+              dateRange={dateRange}
+              onDateRangeChange={setDateRange}
+            />
+          )}
+          
           {/* Leads stage specific inline filters */}
           {activeStage === 'to_convert' ? (
             <LeadsStageFilters
@@ -221,10 +229,14 @@ const Index = () => {
             </>
           )}
           
-          <DateRangeFilter
-            dateRange={dateRange}
-            onDateRangeChange={setDateRange}
-          />
+          
+          {/* Date Range Filter - only for non-Leads stages */}
+          {activeStage !== 'to_convert' && (
+            <DateRangeFilter
+              dateRange={dateRange}
+              onDateRangeChange={setDateRange}
+            />
+          )}
           
           {/* Filter panels for non-Leads stages */}
           {activeStage !== 'to_convert' && (

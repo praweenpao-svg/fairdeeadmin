@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Check, ChevronDown, Filter, Search } from 'lucide-react';
+import { Check, ChevronDown, Filter, Search, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -18,7 +18,6 @@ import {
 import { mockStaffMembers } from '@/data/mockStaff';
 import { useLanguageStore } from '@/stores/languageStore';
 import { cn } from '@/lib/utils';
-
 export interface LeadsFilterState {
   leadStatuses: string[];
   insurerStatuses: string[];
@@ -69,7 +68,7 @@ const ownerOptions: { id: 'all' | 'my_team' | 'my_cases'; en: string; th: string
   { id: 'my_cases', en: 'My Cases', th: 'เคสของฉัน' },
 ];
 
-const leadsTypeOptions: { id: string; en: string; th: string }[] = [
+const leadTypeOptions: { id: string; en: string; th: string }[] = [
   { id: 'all', en: 'All', th: 'ทั้งหมด' },
   { id: 'system', en: 'System', th: 'เบี้ยบนระบบ' },
   { id: 'custom', en: 'Custom', th: 'เบี้ยนอกระบบ' },
@@ -368,16 +367,111 @@ export function LeadsStageFilters({
 
   const hasActiveFilters = JSON.stringify(filters) !== JSON.stringify(defaultLeadsFilterState);
 
+  // Calculate active filter chips with counts
+  const getActiveFilterChips = () => {
+    const chips: { key: string; label: string; count: number; onClear: () => void }[] = [];
+    
+    // Lead Status
+    if (!filters.leadStatuses.includes('all') && filters.leadStatuses.length > 0) {
+      chips.push({
+        key: 'leadStatuses',
+        label: language === 'th' ? 'สถานะงาน' : 'Lead Status',
+        count: filters.leadStatuses.length,
+        onClear: () => onFiltersChange({ ...filters, leadStatuses: ['all'] }),
+      });
+    }
+    
+    // Agent (single select)
+    if (filters.agent !== 'all') {
+      const agent = mockAgents.find(a => a.id === filters.agent);
+      chips.push({
+        key: 'agent',
+        label: agent?.name || (language === 'th' ? 'ตัวแทน' : 'Agent'),
+        count: 1,
+        onClear: () => onFiltersChange({ ...filters, agent: 'all' }),
+      });
+    }
+    
+    // RF (single select)
+    if (filters.rfAssignee !== 'all') {
+      const rf = rfStaff.find(s => s.id === filters.rfAssignee);
+      chips.push({
+        key: 'rfAssignee',
+        label: `RF: ${rf?.name || filters.rfAssignee}`,
+        count: 1,
+        onClear: () => onFiltersChange({ ...filters, rfAssignee: 'all' }),
+      });
+    }
+    
+    // SC (single select)
+    if (filters.scAssignee !== 'all') {
+      const sc = scStaff.find(s => s.id === filters.scAssignee);
+      chips.push({
+        key: 'scAssignee',
+        label: `SC: ${sc?.name || filters.scAssignee}`,
+        count: 1,
+        onClear: () => onFiltersChange({ ...filters, scAssignee: 'all' }),
+      });
+    }
+    
+    // Owner (single select but not 'all')
+    if (filters.owner !== 'all') {
+      const ownerOption = ownerOptions.find(o => o.id === filters.owner);
+      chips.push({
+        key: 'owner',
+        label: language === 'th' ? ownerOption?.th || '' : ownerOption?.en || '',
+        count: 1,
+        onClear: () => {
+          onFiltersChange({ ...filters, owner: 'all' });
+          onMyCasesChange(false);
+          onMyTeamChange(false);
+        },
+      });
+    }
+    
+    // Created By
+    if (!filters.createdBy.includes('all') && filters.createdBy.length > 0) {
+      chips.push({
+        key: 'createdBy',
+        label: language === 'th' ? 'สร้างโดย' : 'Created By',
+        count: filters.createdBy.length,
+        onClear: () => onFiltersChange({ ...filters, createdBy: ['all'] }),
+      });
+    }
+    
+    // Lead Type
+    if (!filters.leadsTypes.includes('all') && filters.leadsTypes.length > 0) {
+      chips.push({
+        key: 'leadsTypes',
+        label: language === 'th' ? 'ประเภทงาน' : 'Lead Type',
+        count: filters.leadsTypes.length,
+        onClear: () => onFiltersChange({ ...filters, leadsTypes: ['all'] }),
+      });
+    }
+    
+    // ETA Status
+    if (!filters.etaStatuses.includes('all') && filters.etaStatuses.length > 0) {
+      chips.push({
+        key: 'etaStatuses',
+        label: language === 'th' ? 'สถานะ ETA' : 'ETA Status',
+        count: filters.etaStatuses.length,
+        onClear: () => onFiltersChange({ ...filters, etaStatuses: ['all'] }),
+      });
+    }
+    
+    return chips;
+  };
+
+  const activeChips = getActiveFilterChips();
+
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button variant="outline" className="gap-2">
-          <Filter className="w-4 h-4" />
-          {language === 'th' ? 'ตัวกรองทั้งหมด' : 'All Filters'}
-          {hasActiveFilters && (
-            <span className="ml-1 px-1.5 py-0.5 text-xs bg-primary text-primary-foreground rounded-full">!</span>
-          )}
-        </Button>
+    <div className="flex items-center gap-2 flex-wrap">
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button variant="outline" className="gap-2">
+            <Filter className="w-4 h-4" />
+            {language === 'th' ? 'ตัวกรองทั้งหมด' : 'All Filters'}
+          </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[700px] p-6 bg-card z-50" align="start">
         <h3 className="text-lg font-semibold mb-4">{language === 'th' ? 'กรองตาม' : 'Filter By'}</h3>
@@ -440,11 +534,11 @@ export function LeadsStageFilters({
             />
           </div>
 
-          {/* Leads Type */}
+          {/* Lead Type */}
           <div className="space-y-2">
-            <Label className="text-sm font-medium">{language === 'th' ? 'ประเภทงาน' : 'Leads Type'}</Label>
+            <Label className="text-sm font-medium">{language === 'th' ? 'ประเภทงาน' : 'Lead Type'}</Label>
             <MultiSelectDropdown
-              options={leadsTypeOptions}
+              options={leadTypeOptions}
               selectedValues={localFilters.leadsTypes}
               onChange={(id, checked) => handleMultiSelectChange('leadsTypes', id, checked)}
               maxVisibleItems={2}
@@ -521,5 +615,39 @@ export function LeadsStageFilters({
         </div>
       </PopoverContent>
     </Popover>
+    
+    {/* Active filter chips */}
+    {activeChips.map((chip) => (
+      <div
+        key={chip.key}
+        className="flex items-center gap-1.5 px-2.5 py-1.5 bg-primary/10 text-primary rounded-md text-sm"
+      >
+        <span>{chip.label}</span>
+        {chip.count > 1 && (
+          <span className="px-1.5 py-0.5 bg-primary text-primary-foreground rounded text-xs font-medium">
+            {chip.count}
+          </span>
+        )}
+        <button
+          onClick={chip.onClear}
+          className="ml-0.5 hover:bg-primary/20 rounded p-0.5"
+        >
+          <X className="w-3 h-3" />
+        </button>
+      </div>
+    ))}
+    
+    {/* Clear all button when filters active */}
+    {hasActiveFilters && (
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={onClear}
+        className="text-muted-foreground hover:text-foreground"
+      >
+        {language === 'th' ? 'ล้างทั้งหมด' : 'Clear All'}
+      </Button>
+    )}
+  </div>
   );
 }
