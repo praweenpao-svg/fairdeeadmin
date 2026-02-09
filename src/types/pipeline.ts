@@ -1,6 +1,7 @@
 export type LeadType = 'new_leads' | 'coa' | 'renewals';
 export type LeadSource = 'system' | 'manual'; // For new_leads: system-created or manually created
 export type PaymentType = 'full' | 'installment';
+export type InstallmentCount = 3 | 4 | 5 | 6 | 8 | 10;
 export type PipelineStage = 'all' | 'to_convert' | 'to_pay' | 'to_report' | 'to_issue' | 'to_deliver' | 'completed' | 'cancelled';
 
 export type SaleStatus = 
@@ -240,6 +241,7 @@ export interface Lead {
   // Sale-level financial info (shown in post-lead stages)
   premium?: number; // Premium amount in THB
   paymentMethod?: PaymentMethod;
+  installmentCount?: InstallmentCount; // Only for installment payments (cbc_to_fairdee)
   reworkReasonId?: string;
   assignedTo?: string;
   createdBy: CreatedByType;

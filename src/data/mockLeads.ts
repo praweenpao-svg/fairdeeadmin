@@ -1,4 +1,4 @@
-import { Lead, ReworkConfig, HistoryLogEntry, PolicyType, PolicyRecord, PolicyStatus, PolicyReworkEntry, InsurerQuote, PriceListStatus, ETAStatus, PaymentMethod, EndorsementType, EndorsementStatus, LeadSource, PolicyHistoryLogEntry } from '@/types/pipeline';
+import { Lead, ReworkConfig, HistoryLogEntry, PolicyType, PolicyRecord, PolicyStatus, PolicyReworkEntry, InsurerQuote, PriceListStatus, ETAStatus, PaymentMethod, EndorsementType, EndorsementStatus, LeadSource, PolicyHistoryLogEntry, InstallmentCount } from '@/types/pipeline';
 
 const agents = [
   { id: 'FD-3460', name: 'Akshay Bazad' },
@@ -66,7 +66,20 @@ const insuranceClasses = ['type_1_insurance', 'type_2_insurance', 'type_3_insura
 const garageTypes: Array<'Dealer' | 'Garage' | 'Any'> = ['Dealer', 'Garage', 'Any'];
 const priceListStatuses: PriceListStatus[] = ['pending', 'price_list_added', 'rejected_by_insurer', 'email_sent'];
 const paymentMethods: PaymentMethod[] = ['credit', 'cbc_to_fairdee', 'cbc_to_insurer'];
+const installmentCounts: InstallmentCount[] = [3, 4, 5, 6, 8, 10];
 const printingPreferences: Array<'e_policy' | 'print_by_myself' | 'print_by_fairdee'> = ['e_policy', 'print_by_myself', 'print_by_fairdee'];
+
+// Helper to get payment type and installment count based on payment method
+function getPaymentTypeInfo(paymentMethod: PaymentMethod, index: number): { paymentType: 'full' | 'installment'; installmentCount?: InstallmentCount } {
+  // Installment is only possible with cbc_to_fairdee, and we randomly decide
+  if (paymentMethod === 'cbc_to_fairdee' && index % 2 === 1) {
+    return { 
+      paymentType: 'installment', 
+      installmentCount: installmentCounts[index % installmentCounts.length] 
+    };
+  }
+  return { paymentType: 'full' };
+}
 
 // Helper to generate random premium between 5000 and 20000
 function generatePremium(): number {
@@ -930,7 +943,7 @@ const generateLeads = (): Lead[] => {
       leadNumber: `#${10006 - i}`,
       leadType: leadType as 'new_leads' | 'coa' | 'renewals',
       leadSource: leadType === 'new_leads' ? (i % 2 === 0 ? 'system' : 'manual') : undefined,
-      paymentType: i % 2 === 0 ? 'full' : 'installment',
+      paymentType: getPaymentTypeInfo(paymentMethods[i % paymentMethods.length], i).paymentType,
       agentId: agent.id,
       agentName: agent.name,
       createdOn: createdOnFull,
@@ -954,6 +967,7 @@ const generateLeads = (): Lead[] => {
       policyRecords,
       premium: generatePremium(),
       paymentMethod: paymentMethods[i % paymentMethods.length],
+      installmentCount: getPaymentTypeInfo(paymentMethods[i % paymentMethods.length], i).installmentCount,
     };
 
     leads.push({
@@ -1013,7 +1027,7 @@ const generateLeads = (): Lead[] => {
       leadNumber: `#${10012 - i}`,
       leadType: leadType2 as 'new_leads' | 'coa' | 'renewals',
       leadSource: leadType2 === 'new_leads' ? (i % 2 === 0 ? 'system' : 'manual') : undefined,
-      paymentType: i % 2 === 0 ? 'full' : 'installment',
+      paymentType: getPaymentTypeInfo(paymentMethod, i).paymentType,
       agentId: agent.id,
       agentName: agent.name,
       createdOn: createdOnFull,
@@ -1037,6 +1051,7 @@ const generateLeads = (): Lead[] => {
       policyRecords,
       premium: generatePremium(),
       paymentMethod,
+      installmentCount: getPaymentTypeInfo(paymentMethod, i).installmentCount,
     };
 
     leads.push({
@@ -1117,7 +1132,7 @@ const generateLeads = (): Lead[] => {
       leadNumber: `#${10018 - i}`,
       leadType: leadType3 as 'new_leads' | 'coa' | 'renewals',
       leadSource: leadType3 === 'new_leads' ? (i % 2 === 0 ? 'manual' : 'system') : undefined,
-      paymentType: i % 2 === 0 ? 'full' : 'installment',
+      paymentType: getPaymentTypeInfo(paymentMethods[i % paymentMethods.length], i).paymentType,
       agentId: agent.id,
       agentName: agent.name,
       createdOn: createdOnFull,
@@ -1141,6 +1156,7 @@ const generateLeads = (): Lead[] => {
       policyRecords,
       premium: generatePremium(),
       paymentMethod: paymentMethods[i % paymentMethods.length],
+      installmentCount: getPaymentTypeInfo(paymentMethods[i % paymentMethods.length], i).installmentCount,
     };
 
     leads.push({
@@ -1187,7 +1203,7 @@ const generateLeads = (): Lead[] => {
       leadNumber: `#${10024 - i}`,
       leadType: leadType4 as 'new_leads' | 'coa' | 'renewals',
       leadSource: leadType4 === 'new_leads' ? (i % 2 === 0 ? 'system' : 'manual') : undefined,
-      paymentType: i % 2 === 0 ? 'full' : 'installment',
+      paymentType: getPaymentTypeInfo(paymentMethods[i % paymentMethods.length], i).paymentType,
       agentId: agent.id,
       agentName: agent.name,
       createdOn: createdOnFull,
@@ -1212,6 +1228,7 @@ const generateLeads = (): Lead[] => {
       policyRecords,
       premium: generatePremium(),
       paymentMethod: paymentMethods[i % paymentMethods.length],
+      installmentCount: getPaymentTypeInfo(paymentMethods[i % paymentMethods.length], i).installmentCount,
     };
 
     leads.push({
@@ -1283,7 +1300,7 @@ const generateLeads = (): Lead[] => {
       leadNumber: `#${10030 - i}`,
       leadType: leadType5 as 'new_leads' | 'coa' | 'renewals',
       leadSource: leadType5 === 'new_leads' ? (i % 2 === 0 ? 'manual' : 'system') : undefined,
-      paymentType: i % 2 === 0 ? 'full' : 'installment',
+      paymentType: getPaymentTypeInfo(paymentMethod, i).paymentType,
       agentId: agent.id,
       agentName: agent.name,
       createdOn: createdOnFull,
@@ -1309,6 +1326,7 @@ const generateLeads = (): Lead[] => {
       policyRecords,
       premium: generatePremium(),
       paymentMethod,
+      installmentCount: getPaymentTypeInfo(paymentMethod, i).installmentCount,
     };
 
     leads.push({
@@ -1352,7 +1370,7 @@ const generateLeads = (): Lead[] => {
       leadNumber: `#${10036 - i}`,
       leadType: leadType6 as 'new_leads' | 'coa' | 'renewals',
       leadSource: leadType6 === 'new_leads' ? (i % 2 === 0 ? 'system' : 'manual') : undefined,
-      paymentType: i % 2 === 0 ? 'full' : 'installment',
+      paymentType: getPaymentTypeInfo(paymentMethods[i % paymentMethods.length], i).paymentType,
       agentId: agent.id,
       agentName: agent.name,
       createdOn: createdOnFull,
@@ -1376,6 +1394,7 @@ const generateLeads = (): Lead[] => {
       policyRecords,
       premium: generatePremium(),
       paymentMethod: paymentMethods[i % paymentMethods.length],
+      installmentCount: getPaymentTypeInfo(paymentMethods[i % paymentMethods.length], i).installmentCount,
     };
 
     leads.push({
