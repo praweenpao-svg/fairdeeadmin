@@ -1522,7 +1522,12 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                           <span className="text-xs text-muted-foreground">{lead.agentName}</span>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-sm">{lead.createdOn}</td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium">{lead.createdOn.split(' ')[0]}</span>
+                          <span className="text-xs text-muted-foreground">{lead.createdOn.split(' ')[1] || ''}</span>
+                        </div>
+                      </td>
                       {isPostLeadStage && (
                         <td className="px-4 py-3">
                           <div className="flex flex-col">
