@@ -112,11 +112,12 @@ const installmentCounts: InstallmentCount[] = [3, 6, 10];
 const printingPreferences: Array<'e_policy' | 'print_by_myself' | 'print_by_fairdee'> = ['e_policy', 'print_by_myself', 'print_by_fairdee'];
 
 // Helper to get payment type and installment count based on payment method
+let installmentCounter = 0;
 function getPaymentTypeInfo(paymentMethod: PaymentMethod, index: number): { paymentType: 'full' | 'installment'; installmentCount?: InstallmentCount } {
   // Installment is only possible with cbc_to_fairdee, and we randomly decide
   if (paymentMethod === 'cbc_to_fairdee' && index % 2 === 1) {
-    // Use a mix of multiplier to spread across [3, 6, 10]
-    const pick = ((index * 7) + 1) % installmentCounts.length;
+    const pick = installmentCounter % installmentCounts.length;
+    installmentCounter++;
     return { 
       paymentType: 'installment', 
       installmentCount: installmentCounts[pick] 
