@@ -1416,7 +1416,6 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                 {isPostLeadStage && (
                   <>
                     <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'เบี้ยประกัน' : 'Premium'}</th>
-                    <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'ประเภทชำระเงิน' : 'Payment Type'}</th>
                     <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'วิธีชำระเงิน' : 'Payment Method'}</th>
                     <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'สถานะการชำระเงิน' : 'Payment Status'}</th>
                   </>
@@ -1445,7 +1444,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
             <tbody>
               {sortedLeads.length === 0 ? (
                 <tr>
-                  <td colSpan={isPostLeadStage ? (showDEColumn ? 14 : 13) : 10} className="px-4 py-12 text-center text-muted-foreground">
+                  <td colSpan={isPostLeadStage ? (showDEColumn ? 13 : 12) : 10} className="px-4 py-12 text-center text-muted-foreground">
                     {language === 'th' ? 'ไม่พบเคสของคุณ ณ ตอนนี้' : 'No cases found at the moment'}
                   </td>
                 </tr>
@@ -1554,21 +1553,16 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                               <span className="text-sm">-</span>
                             ) : (
                               <div className="flex flex-col gap-0.5">
-                                <span className="text-sm">
-                                  {lead.paymentType === 'installment' 
-                                    ? (language === 'th' ? 'งานเงินผ่อน' : 'Installment')
+                                <span className="text-sm font-medium">{getPaymentMethodLabel(lead, language)}</span>
+                                <span className="text-xs text-muted-foreground">
+                                  {lead.paymentType === 'installment' && lead.installmentCount
+                                    ? (language === 'th' ? `งานเงินผ่อน ${lead.installmentCount} งวด` : `Installment (${lead.installmentCount})`)
                                     : (language === 'th' ? 'งานเงินสด' : 'Full Payment')
                                   }
                                 </span>
-                                {lead.paymentType === 'installment' && lead.installmentCount && (
-                                  <span className="text-xs text-muted-foreground">
-                                    {lead.installmentCount} {language === 'th' ? 'งวดผ่อน' : 'installments'}
-                                  </span>
-                                )}
                               </div>
                             )}
                           </td>
-                          <td className="px-4 py-3 text-sm">{getPaymentMethodLabel(lead, language)}</td>
                           <td className="px-4 py-3">
                             {stage === 'to_pay' || areBothPoliciesPending(lead) ? (
                               <span className="text-sm">-</span>
@@ -1829,7 +1823,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                     {/* Expanded Policy Rows */}
                     {isPostLeadStage && isExpanded && allPolicies.length > 0 && (
                       <tr className="border-b border-border">
-                         <td colSpan={showDEColumn ? 12 : 11} className="p-0">
+                         <td colSpan={showDEColumn ? 11 : 10} className="p-0">
                           <div className="mx-4 my-2 rounded-lg border border-border overflow-hidden bg-card shadow-sm">
                             {/* Policy Sub-Table */}
                             <div className="overflow-x-auto">
