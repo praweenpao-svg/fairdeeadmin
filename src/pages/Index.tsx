@@ -141,7 +141,17 @@ const Index = () => {
             <Home className="w-4 h-4" />
             <span className="text-sm">{language === 'th' ? 'หน้าหลัก' : 'Home'}</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            {/* Global Search */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder={language === 'th' ? 'ค้นหา' : 'Search'}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 w-[200px]"
+              />
+            </div>
             <MentionNotificationBell />
             <LanguageToggle />
           </div>
@@ -160,24 +170,13 @@ const Index = () => {
       <div className="p-6">
         {/* Filters Row */}
         <div className="flex flex-wrap items-center gap-3 mb-6">
-          {/* Search */}
-          {/* Lead Sub-tabs for Leads stage - moved before search */}
+          {/* Lead Sub-tabs for Leads stage */}
           {activeStage === 'to_convert' && (
             <LeadSubTabs
               activeSubTab={leadSubTab}
               onSubTabChange={setLeadSubTab}
             />
           )}
-
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder={language === 'th' ? 'ค้นหา' : 'Search'}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 w-[200px]"
-            />
-          </div>
           
           <button
             onClick={() => setMyCasesOnly(!myCasesOnly)}
