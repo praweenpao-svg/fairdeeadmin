@@ -1788,47 +1788,47 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                             {/* Policy Sub-Table */}
                             <div className="overflow-x-auto">
                               {/* Policy Sub-Table Header */}
-                              <div className="flex gap-6 px-4 py-3 data-table-subheader border-b border-border min-w-max">
-                                <div className="w-[50px] text-xs font-semibold text-foreground/70 uppercase tracking-wide shrink-0">
+                              <div className="flex gap-6 px-4 py-3 data-table-header border-b border-border min-w-max">
+                                <div className="w-[50px] shrink-0">
                                   {language === 'th' ? 'ประเภท' : 'Type'}
                                 </div>
-                                <div className="w-[120px] text-xs font-semibold text-foreground/70 uppercase tracking-wide shrink-0">
+                                <div className="w-[120px] shrink-0">
                                   {language === 'th' ? 'วันที่อัปเดต' : 'Updated On'}
                                 </div>
-                                <div className="w-[120px] text-xs font-semibold text-foreground/70 uppercase tracking-wide shrink-0">
+                                <div className="w-[120px] shrink-0">
                                   {language === 'th' ? 'วันที่อัปโหลด' : 'Uploaded On'}
                                 </div>
-                                <div className="w-[100px] text-xs font-semibold text-foreground/70 uppercase tracking-wide shrink-0">
+                                <div className="w-[100px] shrink-0">
                                   {language === 'th' ? 'รูปแบบการพิมพ์' : 'Print Type'}
                                 </div>
-                                <div className="w-[90px] text-xs font-semibold text-foreground/70 uppercase tracking-wide shrink-0">
+                                <div className="w-[90px] shrink-0">
                                   {language === 'th' ? 'วันเริ่มคุ้มครอง' : 'Start Date'}
                                 </div>
-                                <div className="w-[90px] text-xs font-semibold text-foreground/70 uppercase tracking-wide shrink-0">
+                                <div className="w-[90px] shrink-0">
                                   {language === 'th' ? 'วันสิ้นสุดคุ้มครอง' : 'End Date'}
                                 </div>
-                                <div className="w-[110px] text-xs font-semibold text-foreground/70 uppercase tracking-wide shrink-0">
+                                <div className="w-[110px] shrink-0">
                                   {language === 'th' ? 'เลขกรมธรรม์' : 'Policy No.'}
                                 </div>
-                                <div className="w-[80px] text-xs font-semibold text-foreground/70 uppercase tracking-wide shrink-0">
+                                <div className="w-[80px] shrink-0">
                                   {language === 'th' ? 'ไฟล์กรมธรรม์' : 'Policy File'}
                                 </div>
-                                <div className="w-[80px] text-xs font-semibold text-foreground/70 uppercase tracking-wide shrink-0">
+                                <div className="w-[80px] shrink-0">
                                   {language === 'th' ? 'ติดตามพัสดุ' : 'Tracking'}
                                 </div>
-                                <div className="w-[120px] text-xs font-semibold text-foreground/70 uppercase tracking-wide shrink-0">
+                                <div className="w-[120px] shrink-0">
                                   {language === 'th' ? 'ประเภทสลักหลัง' : 'Endorse. Type'}
                                 </div>
-                                <div className="w-[160px] text-xs font-semibold text-foreground/70 uppercase tracking-wide shrink-0">
+                                <div className="w-[160px] shrink-0">
                                   {language === 'th' ? 'สถานะสลักหลัง' : 'Endorse. Status'}
                                 </div>
-                                <div className="w-[150px] text-xs font-semibold text-foreground/70 uppercase tracking-wide shrink-0">
+                                <div className="w-[150px] shrink-0">
                                   {language === 'th' ? 'สถานะกรมธรรม์' : 'Policy Status'}
                                 </div>
-                                <div className="w-[100px] text-xs font-semibold text-foreground/70 uppercase tracking-wide shrink-0">
+                                <div className="w-[100px] shrink-0">
                                   {language === 'th' ? 'ผู้รับผิดชอบ' : 'Owner'}
                                 </div>
-                                <div className="w-[70px] text-xs font-semibold text-foreground/70 uppercase tracking-wide shrink-0">
+                                <div className="w-[70px] shrink-0">
                                   {language === 'th' ? 'หมายเหตุ' : 'Remarks'}
                                 </div>
                               </div>
