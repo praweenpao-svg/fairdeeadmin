@@ -23,7 +23,7 @@ export interface OtherStagesFilterState {
   scAssignee: string;
   deAssignee: string;
   agent: string;
-  insurer: string;
+  insurers: string[];
   policyStatus: string;
   paymentStatus: string;
   invoiceStatuses: string[];
@@ -40,7 +40,7 @@ export const defaultOtherStagesFilterState: OtherStagesFilterState = {
   scAssignee: 'all',
   deAssignee: 'all',
   agent: 'all',
-  insurer: 'all',
+  insurers: ['all'],
   policyStatus: 'all',
   paymentStatus: 'all',
   invoiceStatuses: ['all'],
@@ -58,10 +58,34 @@ const mockAgents = [
   { id: 'FM-5390', name: 'Mary Collins abc' },
 ];
 
-const mockInsurers = [
-  { id: 'ins-1', name: 'Thai Paiboon Insurance' },
-  { id: 'ins-2', name: 'Viriyah Insurance' },
-  { id: 'ins-3', name: 'Bangkok Insurance' },
+const insurerOptions: { id: string; en: string; th: string }[] = [
+  { id: 'all', en: 'All', th: 'ทั้งหมด' },
+  { id: 'viriyah', en: 'Viriyah Insurance', th: 'วิริยะประกันภัย' },
+  { id: 'bangkok', en: 'Bangkok Insurance', th: 'กรุงเทพประกันภัย' },
+  { id: 'dhipaya', en: 'Dhipaya Insurance', th: 'ทิพยประกันภัย' },
+  { id: 'muangthai', en: 'Muang Thai Insurance', th: 'เมืองไทยประกันภัย' },
+  { id: 'sinmunkong', en: 'Sin Munkong Insurance', th: 'สินมั่นคงประกันภัย' },
+  { id: 'tsk', en: 'Thai Setakij Insurance (TSK)', th: 'ไทยเศรษฐกิจประกันภัย' },
+  { id: 'aia', en: 'AIA Thailand', th: 'เอไอเอ ประเทศไทย' },
+  { id: 'thailife', en: 'Thai Life Insurance', th: 'ไทยประกันชีวิต' },
+  { id: 'allianz', en: 'Allianz Ayudhya', th: 'อลิอันซ์ อยุธยา' },
+  { id: 'krungthai_axa', en: 'Krungthai-AXA Life', th: 'กรุงไทย-แอกซ่า ประกันชีวิต' },
+  { id: 'thanachart', en: 'Thanachart Insurance', th: 'ธนชาตประกันภัย' },
+  { id: 'tokiomarine', en: 'Tokio Marine Safety Insurance', th: 'คุ้มภัยโตเกียวมารีนประกันภัย' },
+  { id: 'msig', en: 'MSIG Insurance', th: 'เอ็ม เอส ไอ จี ประกันภัย' },
+  { id: 'deves', en: 'Deves Insurance', th: 'เทเวศประกันภัย' },
+  { id: 'navakij', en: 'Navakij Insurance', th: 'นวกิจประกันภัย' },
+  { id: 'thaisri', en: 'Thaisri Insurance', th: 'ไทยศรีประกันภัย' },
+  { id: 'chubb', en: 'Chubb Samaggi Insurance', th: 'ชับบ์สามัคคีประกันภัย' },
+  { id: 'falcon', en: 'Falcon Insurance', th: 'ฟอลคอนประกันภัย' },
+  { id: 'aioi', en: 'Aioi Bangkok Insurance', th: 'ไอโออิ กรุงเทพ ประกันภัย' },
+  { id: 'bui', en: 'Bangkok Union Insurance (BUI)', th: 'บางกอกสหประกันภัย' },
+  { id: 'asset', en: 'Asset Insurance', th: 'สินทรัพย์ประกันภัย' },
+  { id: 'thaipaiboon', en: 'Thai Paiboon Insurance', th: 'ไทยไพบูลย์ประกันภัย' },
+  { id: 'unionprospers', en: 'The Union Prospers Insurance', th: 'สหมงคลประกันภัย' },
+  { id: 'ergo', en: 'ERGO Insurance', th: 'เออร์โกประกันภัย' },
+  { id: 'indara', en: 'Indara Insurance', th: 'อินทรประกันภัย' },
+  { id: 'icare', en: 'ICARE Insurance', th: 'ไอแคร์ ประกันภัย' },
 ];
 
 const policyStatusOptions: { value: string; en: string; th: string }[] = [
@@ -272,13 +296,21 @@ export function OtherStagesFilterPanel({ filters, onFiltersChange, onClear }: Ot
             {/* Insurer */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">{language === 'th' ? 'บริษัทประกัน' : 'Insurer'}</Label>
-              <Select value={localFilters.insurer} onValueChange={(v) => setLocalFilters({ ...localFilters, insurer: v })}>
-                <SelectTrigger><SelectValue placeholder={language === 'th' ? 'ค้นหาบริษัทประกัน' : 'Search insurers'} /></SelectTrigger>
-                <SelectContent className="bg-card z-50">
-                  <SelectItem value="all">{language === 'th' ? 'บริษัทประกันทั้งหมด' : 'All Insurers'}</SelectItem>
-                  {mockInsurers.map((i) => <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <div className="max-h-[200px] overflow-y-auto border rounded-md p-2 space-y-1">
+                {insurerOptions.map((option) => (
+                  <div key={option.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`insurers-${option.id}`}
+                      checked={localFilters.insurers.includes(option.id)}
+                      onCheckedChange={(checked) => handleCheckboxChange('insurers', option.id, checked as boolean)}
+                      className="border-primary data-[state=checked]:bg-primary"
+                    />
+                    <Label htmlFor={`insurers-${option.id}`} className="text-xs font-normal cursor-pointer">
+                      {language === 'th' ? option.th : option.en}
+                    </Label>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
