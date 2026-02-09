@@ -182,13 +182,15 @@ function CreatedByBadge({ createdBy }: { createdBy: CreatedByType }) {
   return <span className={cn('text-[10px] px-1.5 py-0.5 rounded font-medium', className)}>{label}</span>;
 }
 
-// Lead source badge: System / Manual / COA / Renewal
+// Lead source badge: System / Custom / COA / Renewal
 function LeadSourceBadge({ leadType, leadSource }: { leadType: LeadType; leadSource?: LeadSource }) {
+  const { language } = useLanguageStore();
+  
   // COA leads show "COA" badge
   if (leadType === 'coa') {
     return (
       <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-        COA
+        {language === 'th' ? 'เบี้ยโอนโค้ด' : 'COA'}
       </span>
     );
   }
@@ -202,9 +204,11 @@ function LeadSourceBadge({ leadType, leadSource }: { leadType: LeadType; leadSou
     );
   }
   
-  // new_leads show System or Manual badge based on leadSource
+  // new_leads show System or Custom badge based on leadSource
   if (leadType === 'new_leads') {
-    const label = leadSource === 'system' ? 'System' : 'Manual';
+    const label = leadSource === 'system' 
+      ? (language === 'th' ? 'เบี้ยบนระบบ' : 'System')
+      : (language === 'th' ? 'เบี้ยนอกระบบ' : 'Custom');
     return (
       <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
         {label}
