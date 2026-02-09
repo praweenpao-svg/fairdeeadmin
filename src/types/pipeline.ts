@@ -97,17 +97,33 @@ export interface PolicyRemark {
 }
 
 // Policy-level history log entry
+// Policy-level history action types
+export type PolicyHistoryActionType = 
+  | 'rework_created' 
+  | 'rework_resolved' 
+  | 'rework_reassigned' 
+  | 'status_changed' 
+  | 'remark_added'
+  | 'lead_status_changed'    // Lead status changes (pre-conversion)
+  | 'payment_status_changed' // Payment status changes
+  | 'endorsement_status_changed' // Endorsement status changes
+  | 'assignee_changed';      // RF/SC/DE assignee changes
+
 export interface PolicyHistoryLogEntry {
   id: string;
-  action: 'rework_created' | 'rework_resolved' | 'rework_reassigned' | 'status_changed' | 'remark_added';
+  action: PolicyHistoryActionType;
   triggeredBy: string;
   triggeredAt: string;
-  fromStatus?: PolicyStatus;
-  toStatus?: PolicyStatus;
+  fromStatus?: PolicyStatus | SaleStatus | EndorsementStatus | string;
+  toStatus?: PolicyStatus | SaleStatus | EndorsementStatus | string;
   reworkReasonId?: string;
   reworkReasonLabel?: string;
   comment?: string;
   attachments?: HistoryAttachment[];
+  // For assignee changes
+  assigneeType?: 'rf' | 'sc' | 'de';
+  fromAssignee?: string;
+  toAssignee?: string;
 }
 
 export interface PolicyRecord {

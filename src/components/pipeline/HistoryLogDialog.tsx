@@ -30,7 +30,7 @@ interface HistoryLogDialogProps {
 }
 
 // Types of history entries we want to show
-type DisplayableAction = 'status_changed' | 'payment_status_changed' | 'endorsement_status_changed' | 'assignee_changed';
+type DisplayableAction = 'status_changed' | 'lead_status_changed' | 'payment_status_changed' | 'endorsement_status_changed' | 'assignee_changed';
 
 // Status translations
 const statusTranslations: Record<string, { en: string; th: string }> = {
@@ -43,10 +43,24 @@ const statusTranslations: Record<string, { en: string; th: string }> = {
   policy_delivered: { en: 'Policy Delivered', th: 'กรมธรรม์จัดส่งสำเร็จ' },
   policy_cancelled: { en: 'Policy Cancelled', th: 'กรมธรรม์ยกเลิก' },
   rework_required: { en: 'Rework Required', th: 'ต้องแก้ไข' },
-  // Payment statuses
+  // Lead (pre-conversion) statuses
+  pending: { en: 'Pending', th: 'รอดำเนินการ' },
+  docs_missing: { en: 'Docs Missing', th: 'ขอเอกสารเพิ่มเติม' },
+  waiting_for_insurer: { en: 'Waiting for Insurer', th: 'รอเบี้ยจากบริษัทประกัน' },
+  partially_added: { en: 'Partially Added', th: 'มีเบี้ยบางส่วนแล้ว' },
+  completed: { en: 'Completed', th: 'เสร็จแล้ว' },
+  quotation_shared: { en: 'Quotation Shared', th: 'ส่งเบี้ยให้ตัวแทนแล้ว' },
+  price_pending: { en: 'Price Pending', th: 'ยังไม่ทราบเบี้ยต่ออายุ' },
+  revision_pending: { en: 'Revision Pending', th: 'กำลังต่อรองกับบริษัทประกัน' },
+  renewal_rejected: { en: 'Renewal Rejected', th: 'ปฎิเสธการต่ออายุ' },
+  price_ready: { en: 'Price Ready', th: 'ได้รับเบี้ยต่ออายุแล้ว' },
+  // Payment statuses based on payment method
   unpaid: { en: 'Unpaid', th: 'ยังไม่ชำระ' },
   paid: { en: 'Paid', th: 'ชำระแล้ว' },
   partial: { en: 'Partial', th: 'ชำระบางส่วน' },
+  payment_verified: { en: 'Payment Verified', th: 'ยืนยันการชำระเงินแล้ว' },
+  insurer_notified: { en: 'Insurer Notified', th: 'แจ้งบริษัทประกันแล้ว' },
+  credit_approved: { en: 'Credit Approved', th: 'อนุมัติเครดิตแล้ว' },
   // Endorsement statuses
   request_created: { en: 'Request Created', th: 'สร้างคำขอ' },
   request_submitted: { en: 'Request Submitted', th: 'ส่งคำขอแล้ว' },
@@ -96,6 +110,8 @@ function getActionConfig(action: DisplayableAction) {
   switch (action) {
     case 'status_changed':
       return { icon: RefreshCw, color: 'text-blue-600', bgColor: 'bg-blue-100 dark:bg-blue-900/30' };
+    case 'lead_status_changed':
+      return { icon: RefreshCw, color: 'text-amber-600', bgColor: 'bg-amber-100 dark:bg-amber-900/30' };
     case 'payment_status_changed':
       return { icon: CreditCard, color: 'text-emerald-600', bgColor: 'bg-emerald-100 dark:bg-emerald-900/30' };
     case 'endorsement_status_changed':
@@ -107,7 +123,8 @@ function getActionConfig(action: DisplayableAction) {
 
 function getActionLabel(action: DisplayableAction, language: 'en' | 'th'): string {
   const labels: Record<DisplayableAction, { en: string; th: string }> = {
-    status_changed: { en: 'Status Changed', th: 'เปลี่ยนสถานะ' },
+    status_changed: { en: 'Policy Status Changed', th: 'เปลี่ยนสถานะกรมธรรม์' },
+    lead_status_changed: { en: 'Lead Status Changed', th: 'เปลี่ยนสถานะ Lead' },
     payment_status_changed: { en: 'Payment Updated', th: 'อัพเดทการชำระเงิน' },
     endorsement_status_changed: { en: 'Endorsement Updated', th: 'อัพเดทเอกสารแนบท้าย' },
     assignee_changed: { en: 'Assignee Changed', th: 'เปลี่ยนผู้รับผิดชอบ' },
@@ -121,15 +138,56 @@ function extractPolicyTimeline(policy: PolicyRecord): TimelineEntry[] {
   const historyLog = policy.historyLog || [];
   
   for (const entry of historyLog) {
-    // Only include displayable actions (exclude rework-related)
+    // Include displayable actions (exclude rework-related)
     if (entry.action === 'status_changed') {
       entries.push({
         id: entry.id,
         timestamp: entry.triggeredAt,
         action: 'status_changed',
         triggeredBy: entry.triggeredBy,
-        fromStatus: entry.fromStatus,
-        toStatus: entry.toStatus,
+        fromStatus: entry.fromStatus as string,
+        toStatus: entry.toStatus as string,
+        policyKind: policy.kind,
+      });
+    } else if (entry.action === 'lead_status_changed') {
+      entries.push({
+        id: entry.id,
+        timestamp: entry.triggeredAt,
+        action: 'lead_status_changed',
+        triggeredBy: entry.triggeredBy,
+        fromStatus: entry.fromStatus as string,
+        toStatus: entry.toStatus as string,
+        policyKind: policy.kind,
+      });
+    } else if (entry.action === 'payment_status_changed') {
+      entries.push({
+        id: entry.id,
+        timestamp: entry.triggeredAt,
+        action: 'payment_status_changed',
+        triggeredBy: entry.triggeredBy,
+        fromStatus: entry.fromStatus as string,
+        toStatus: entry.toStatus as string,
+        policyKind: policy.kind,
+      });
+    } else if (entry.action === 'endorsement_status_changed') {
+      entries.push({
+        id: entry.id,
+        timestamp: entry.triggeredAt,
+        action: 'endorsement_status_changed',
+        triggeredBy: entry.triggeredBy,
+        fromStatus: entry.fromStatus as string,
+        toStatus: entry.toStatus as string,
+        policyKind: policy.kind,
+      });
+    } else if (entry.action === 'assignee_changed' && entry.assigneeType) {
+      entries.push({
+        id: entry.id,
+        timestamp: entry.triggeredAt,
+        action: 'assignee_changed',
+        triggeredBy: entry.triggeredBy,
+        assigneeType: entry.assigneeType,
+        fromAssignee: entry.fromAssignee,
+        toAssignee: entry.toAssignee,
         policyKind: policy.kind,
       });
     }
@@ -257,6 +315,18 @@ function EntryCard({
             </span>
             <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
             <span className="text-xs px-2 py-1 rounded bg-primary/10 text-primary font-medium">
+              {formatStatusLabel(entry.toStatus || '', language)}
+            </span>
+          </div>
+        )}
+        
+        {entry.action === 'lead_status_changed' && (
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs px-2 py-1 rounded bg-muted">
+              {formatStatusLabel(entry.fromStatus || '', language)}
+            </span>
+            <ArrowRight className="w-3.5 h-3.5 text-muted-foreground" />
+            <span className="text-xs px-2 py-1 rounded bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 font-medium">
               {formatStatusLabel(entry.toStatus || '', language)}
             </span>
           </div>
