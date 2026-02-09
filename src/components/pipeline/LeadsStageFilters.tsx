@@ -453,7 +453,7 @@ export function LeadsStageFilters({
       const ownerOption = ownerOptions.find(o => o.id === filters.owner);
       chips.push({
         key: 'owner',
-        label: language === 'th' ? 'เจ้าของ' : 'Owner',
+        label: language === 'th' ? 'ผู้รับผิดชอบ' : 'Owner',
         values: language === 'th' ? ownerOption?.th || '' : ownerOption?.en || '',
         count: 1,
         onClear: () => {
