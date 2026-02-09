@@ -185,6 +185,7 @@ const Index = () => {
             <LeadsStageFilters
               filters={leadsFilters}
               onFiltersChange={setLeadsFilters}
+              onClear={() => setLeadsFilters(defaultLeadsFilterState)}
               myCasesOnly={myCasesOnly}
               myTeamOnly={myTeamOnly}
               onMyCasesChange={setMyCasesOnly}
