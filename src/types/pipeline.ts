@@ -1,5 +1,5 @@
 export type LeadType = 'new_leads' | 'coa' | 'renewals';
-export type LeadSource = 'system' | 'manual'; // For new_leads: system-created or manually created
+export type LeadSource = 'system' | 'custom'; // For new_leads: system-created or custom created
 export type PaymentType = 'full' | 'installment';
 export type InstallmentCount = 3 | 4 | 5 | 6 | 8 | 10;
 export type PipelineStage = 'all' | 'to_convert' | 'to_pay' | 'to_report' | 'to_issue' | 'to_deliver' | 'completed' | 'cancelled';

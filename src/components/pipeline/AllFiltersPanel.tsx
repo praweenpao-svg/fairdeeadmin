@@ -70,16 +70,16 @@ const postLeadStatusOptions: { value: string; en: string; th: string }[] = [
 
 const agentTypeOptions: { id: string; en: string; th: string }[] = [
   { id: 'all', en: 'All Agent Types', th: 'ประเภทตัวแทนทั้งหมด' },
-  { id: 'direct', en: 'Direct Agent', th: 'ตัวแทนตรง' },
-  { id: 'mlm', en: 'MLM Agent', th: 'ตัวแทน MLM' },
-  { id: 'inspection', en: 'Inspection Garage', th: 'อู่ตรวจสภาพ' },
-  { id: 'office', en: 'Agent Office', th: 'สำนักงานตัวแทน' },
+  { id: 'direct', en: 'Direct Agent', th: 'ตัวแทน FD' },
+  { id: 'mlm', en: 'MLM Agent', th: 'ตัวแทน FM' },
+  { id: 'inspection', en: 'Inspection Garage', th: 'ตัวแทน IG' },
+  { id: 'office', en: 'Agent Office', th: 'ตัวแทน AO' },
 ];
 
 const leadsTypeOptions: { value: string; en: string; th: string }[] = [
   { value: 'all', en: 'All Leads Type', th: 'ประเภท Leads ทั้งหมด' },
-  { value: 'system', en: 'System', th: 'ระบบ' },
-  { value: 'custom', en: 'Custom', th: 'กำหนดเอง' },
+  { value: 'system', en: 'System', th: 'เบี้ยบนระบบ' },
+  { value: 'custom', en: 'Custom', th: 'เบี้ยนอกระบบ' },
   { value: 'brochure', en: 'Brochure', th: 'โบรชัวร์' },
 ];
 

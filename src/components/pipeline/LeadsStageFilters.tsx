@@ -42,7 +42,7 @@ export const defaultLeadsFilterState: LeadsFilterState = {
   agentTypes: ['all'],
 };
 
-// Lead status options for COA system manual style
+// Lead status options matching the column statuses
 const leadStatusOptions: { id: string; en: string; th: string }[] = [
   { id: 'all', en: 'All', th: 'ทั้งหมด' },
   { id: 'pending', en: 'Pending', th: 'รอดำเนินการ' },
@@ -68,17 +68,17 @@ const ownerOptions: { id: 'all' | 'my_team' | 'my_cases'; en: string; th: string
 
 const leadsTypeOptions: { id: string; en: string; th: string }[] = [
   { id: 'all', en: 'All', th: 'ทั้งหมด' },
-  { id: 'system', en: 'System', th: 'ระบบ' },
-  { id: 'manual', en: 'Manual', th: 'เพิ่มเอง' },
-  { id: 'coa', en: 'COA', th: 'COA' },
+  { id: 'system', en: 'System', th: 'เบี้ยบนระบบ' },
+  { id: 'custom', en: 'Custom', th: 'เบี้ยนอกระบบ' },
+  { id: 'coa', en: 'COA', th: 'เบี้ยโอนโค้ด' },
 ];
 
 const agentTypeOptions: { id: string; en: string; th: string }[] = [
   { id: 'all', en: 'All', th: 'ทั้งหมด' },
-  { id: 'direct', en: 'Direct Agent', th: 'ตัวแทนตรง' },
-  { id: 'mlm', en: 'MLM Agent', th: 'ตัวแทน MLM' },
-  { id: 'inspection', en: 'Inspection Garage', th: 'อู่ตรวจสภาพ' },
-  { id: 'office', en: 'Agent Office', th: 'สำนักงานตัวแทน' },
+  { id: 'direct', en: 'Direct Agent', th: 'ตัวแทน FD' },
+  { id: 'mlm', en: 'MLM Agent', th: 'ตัวแทน FM' },
+  { id: 'inspection', en: 'Inspection Garage', th: 'ตัวแทน IG' },
+  { id: 'office', en: 'Agent Office', th: 'ตัวแทน AO' },
 ];
 
 // Mock agents from leads data
@@ -184,7 +184,7 @@ function SearchableSelect({
               }}
             >
               <Check className={cn("mr-2 h-4 w-4", value === option.id ? "opacity-100" : "opacity-0")} />
-              {option.id} - {option.name}
+              {option.name}
             </div>
           ))}
           {filteredOptions.length === 0 && (
@@ -304,6 +304,52 @@ export function LeadsStageFilters({
     </div>
   );
 
+  // Multi-select dropdown component for lead status
+  const renderMultiSelectDropdown = (
+    field: 'leadStatuses',
+    options: { id: string; en: string; th: string }[],
+    label: string
+  ) => {
+    const selectedValues = localFilters[field];
+    const isAllSelected = selectedValues.includes('all');
+    const nonAllOptions = options.filter(o => o.id !== 'all');
+    const selectedNonAll = nonAllOptions.filter(o => selectedValues.includes(o.id));
+    
+    const displayText = isAllSelected
+      ? (language === 'th' ? 'ทั้งหมด' : 'All')
+      : selectedNonAll.length === 0
+        ? (language === 'th' ? 'ทั้งหมด' : 'All')
+        : selectedNonAll.map(o => language === 'th' ? o.th : o.en).join(', ');
+
+    return (
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button variant="outline" className="w-full justify-between">
+            <span className="truncate text-left flex-1">{displayText}</span>
+            <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[250px] p-2 bg-card z-50" align="start">
+          <div className="space-y-1">
+            {options.map((option) => (
+              <div
+                key={option.id}
+                className={cn(
+                  "flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-muted text-sm",
+                  selectedValues.includes(option.id) && "bg-muted"
+                )}
+                onClick={() => handleCheckboxChange(field, option.id, !selectedValues.includes(option.id))}
+              >
+                <Check className={cn("mr-2 h-4 w-4", selectedValues.includes(option.id) ? "opacity-100" : "opacity-0")} />
+                {language === 'th' ? option.th : option.en}
+              </div>
+            ))}
+          </div>
+        </PopoverContent>
+      </Popover>
+    );
+  };
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -318,23 +364,14 @@ export function LeadsStageFilters({
       <PopoverContent className="w-[800px] p-6 bg-card z-50" align="start">
         <h3 className="text-lg font-semibold mb-4">{language === 'th' ? 'กรองตาม' : 'Filter By'}</h3>
         <div className="grid grid-cols-3 gap-6">
-          {/* Column 1 */}
+          {/* Column 1: Lead Status (multi-select dropdown), Agent, RF, SC */}
           <div className="space-y-4">
-            {/* Lead Status - Multi-select */}
+            {/* Lead Status - Multi-select dropdown */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium">{language === 'th' ? 'สถานะ Lead' : 'Lead Status'}</Label>
-              {renderCheckboxGroup('leadStatuses', leadStatusOptions)}
+              <Label className="text-sm font-medium">{language === 'th' ? 'สถานะงาน' : 'Lead Status'}</Label>
+              {renderMultiSelectDropdown('leadStatuses', leadStatusOptions, language === 'th' ? 'สถานะงาน' : 'Lead Status')}
             </div>
 
-            {/* Created By - Multi-select */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">{language === 'th' ? 'สร้างโดย' : 'Created By'}</Label>
-              {renderCheckboxGroup('createdBy', createdByOptions)}
-            </div>
-          </div>
-
-          {/* Column 2 */}
-          <div className="space-y-4">
             {/* Agent - Searchable single-select */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">{language === 'th' ? 'ตัวแทน' : 'Agent'}</Label>
@@ -370,7 +407,10 @@ export function LeadsStageFilters({
                 placeholder={language === 'th' ? 'ค้นหา SC...' : 'Search SC...'}
               />
             </div>
+          </div>
 
+          {/* Column 2: Owner only */}
+          <div className="space-y-4">
             {/* Owner - Single-select */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">{language === 'th' ? 'ผู้รับผิดชอบ' : 'Owner'}</Label>
@@ -392,15 +432,21 @@ export function LeadsStageFilters({
             </div>
           </div>
 
-          {/* Column 3 */}
+          {/* Column 3: Created By, Leads Type, Agent Type (all checkboxes) */}
           <div className="space-y-4">
-            {/* Leads Type - Multi-select */}
+            {/* Created By - Multi-select checkboxes */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">{language === 'th' ? 'สร้างโดย' : 'Created By'}</Label>
+              {renderCheckboxGroup('createdBy', createdByOptions)}
+            </div>
+
+            {/* Leads Type - Multi-select checkboxes */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">{language === 'th' ? 'ประเภท Lead' : 'Leads Type'}</Label>
               {renderCheckboxGroup('leadsTypes', leadsTypeOptions)}
             </div>
 
-            {/* Agent Type - Multi-select */}
+            {/* Agent Type - Multi-select checkboxes */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">{language === 'th' ? 'ประเภทตัวแทน' : 'Agent Type'}</Label>
               {renderCheckboxGroup('agentTypes', agentTypeOptions)}
