@@ -25,6 +25,7 @@ import { cn } from '@/lib/utils';
 import { useMentionNotificationsStore, extractMentions } from '@/stores/mentionNotificationsStore';
 import { CURRENT_USER } from '@/data/mockLeads';
 import { ExpandableText } from '@/components/ui/expandable-text';
+import { AttachmentThumbnails, AttachmentDisplay } from '@/components/ui/attachment-thumbnails';
 
 interface PolicyRemarksReworkDialogProps {
   open: boolean;
@@ -244,56 +245,7 @@ export function PolicyRemarksReworkDialog({
   const currentReassignEntry = unresolvedEntries.find(e => e.id === reassignEntryId);
 
   const renderAttachments = (attachments?: ReworkAttachment[]) => {
-    if (!attachments || attachments.length === 0) return null;
-    
-    const images = attachments.filter(att => att.type === 'png' || att.type === 'jpg');
-    const pdfs = attachments.filter(att => att.type === 'pdf');
-    
-    return (
-      <div className="mt-2 space-y-2">
-        {/* Image previews grid */}
-        {images.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {images.map(att => (
-              <a
-                key={att.id}
-                href={att.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group relative block overflow-hidden rounded-md border border-border hover:border-primary transition-colors"
-              >
-                <img 
-                  src={att.url} 
-                  alt={att.name}
-                  className="w-16 h-16 object-cover"
-                />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                  <Image className="w-4 h-4 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                </div>
-              </a>
-            ))}
-          </div>
-        )}
-        
-        {/* PDF links */}
-        {pdfs.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
-            {pdfs.map(att => (
-              <a
-                key={att.id}
-                href={att.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1.5 bg-muted/50 px-2 py-1.5 rounded text-xs text-foreground hover:bg-muted transition-colors border border-border/50"
-              >
-                <FileText className="w-3.5 h-3.5 text-muted-foreground" />
-                <span className="max-w-[100px] truncate">{att.name}</span>
-              </a>
-            ))}
-          </div>
-        )}
-      </div>
-    );
+    return <AttachmentDisplay attachments={attachments} size="md" />;
   };
 
   const renderReplies = (replies?: ThreadReply[], variant: 'default' | 'success' | 'muted' = 'default') => {
@@ -375,17 +327,11 @@ export function PolicyRemarksReworkDialog({
               className="min-h-[60px] resize-none text-xs"
             />
             {replyAttachments.length > 0 && (
-              <div className="flex flex-wrap gap-1.5">
-                {replyAttachments.map(att => (
-                  <div key={att.id} className="flex items-center gap-1.5 bg-muted px-2 py-1 rounded text-xs">
-                    {att.type === 'pdf' ? <FileText className="w-3 h-3 text-destructive" /> : <Image className="w-3 h-3 text-primary" />}
-                    <span className="max-w-[60px] truncate">{att.name}</span>
-                    <button onClick={() => removeAttachment(att.id, 'reply')} className="text-muted-foreground hover:text-foreground">
-                      <X className="w-3 h-3" />
-                    </button>
-                  </div>
-                ))}
-              </div>
+              <AttachmentThumbnails 
+                attachments={replyAttachments} 
+                onRemove={(id) => removeAttachment(id, 'reply')}
+                size="sm"
+              />
             )}
             <div className="flex items-center justify-between">
               <input ref={replyFileInputRef} type="file" accept=".png,.jpg,.jpeg,.pdf" multiple className="hidden" onChange={(e) => handleFileSelect(e, 'reply')} />
@@ -529,17 +475,11 @@ export function PolicyRemarksReworkDialog({
               className="min-h-[60px] resize-none text-xs"
             />
             {replyAttachments.length > 0 && (
-              <div className="flex flex-wrap gap-1.5">
-                {replyAttachments.map(att => (
-                  <div key={att.id} className="flex items-center gap-1.5 bg-muted px-2 py-1 rounded text-xs">
-                    {att.type === 'pdf' ? <FileText className="w-3 h-3 text-destructive" /> : <Image className="w-3 h-3 text-primary" />}
-                    <span className="max-w-[60px] truncate">{att.name}</span>
-                    <button onClick={() => removeAttachment(att.id, 'reply')} className="text-muted-foreground hover:text-foreground">
-                      <X className="w-3 h-3" />
-                    </button>
-                  </div>
-                ))}
-              </div>
+              <AttachmentThumbnails 
+                attachments={replyAttachments} 
+                onRemove={(id) => removeAttachment(id, 'reply')}
+                size="sm"
+              />
             )}
             <div className="flex items-center justify-between">
               <input ref={replyFileInputRef} type="file" accept=".png,.jpg,.jpeg,.pdf" multiple className="hidden" onChange={(e) => handleFileSelect(e, 'reply')} />
@@ -743,17 +683,11 @@ export function PolicyRemarksReworkDialog({
 
             <div className="space-y-2">
               <Label className="text-xs">{language === 'th' ? 'ไฟล์แนบ' : 'Attachments'}</Label>
-              <div className="flex flex-wrap gap-1.5">
-                {reassignAttachments.map(att => (
-                  <div key={att.id} className="flex items-center gap-1.5 bg-muted px-2 py-1 rounded text-xs">
-                    {att.type === 'pdf' ? <FileText className="w-3 h-3 text-destructive" /> : <Image className="w-3 h-3 text-primary" />}
-                    <span className="max-w-[80px] truncate">{att.name}</span>
-                    <button onClick={() => removeAttachment(att.id, 'reassign')} className="text-muted-foreground hover:text-foreground">
-                      <X className="w-3 h-3" />
-                    </button>
-                  </div>
-                ))}
-              </div>
+              <AttachmentThumbnails 
+                attachments={reassignAttachments} 
+                onRemove={(id) => removeAttachment(id, 'reassign')}
+                size="sm"
+              />
               <input ref={fileInputRef} type="file" accept=".png,.jpg,.jpeg,.pdf" multiple className="hidden" onChange={(e) => handleFileSelect(e, 'reassign')} />
               <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} className="h-7 text-xs">
                 <Upload className="w-3 h-3 mr-1.5" />
@@ -875,17 +809,11 @@ export function PolicyRemarksReworkDialog({
                     </div>
 
                     <div className="space-y-2">
-                      <div className="flex flex-wrap gap-1.5">
-                        {newReworkAttachments.map(att => (
-                          <div key={att.id} className="flex items-center gap-1.5 bg-muted px-2 py-1 rounded text-xs">
-                            {att.type === 'pdf' ? <FileText className="w-3 h-3 text-destructive" /> : <Image className="w-3 h-3 text-primary" />}
-                            <span className="max-w-[80px] truncate">{att.name}</span>
-                            <button onClick={() => setNewReworkAttachments(prev => prev.filter(a => a.id !== att.id))} className="text-muted-foreground hover:text-foreground">
-                              <X className="w-3 h-3" />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
+                      <AttachmentThumbnails 
+                        attachments={newReworkAttachments} 
+                        onRemove={(id) => setNewReworkAttachments(prev => prev.filter(a => a.id !== id))}
+                        size="sm"
+                      />
                       <input ref={addReworkFileInputRef} type="file" accept=".png,.jpg,.jpeg,.pdf" multiple className="hidden" onChange={handleAddReworkFileSelect} />
                       <Button type="button" variant="outline" size="sm" onClick={() => addReworkFileInputRef.current?.click()} className="h-7 text-xs">
                         <Upload className="w-3 h-3 mr-1.5" />
@@ -943,17 +871,11 @@ export function PolicyRemarksReworkDialog({
                   className="min-h-[70px] resize-none"
                 />
                 {newCommentAttachments.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5">
-                    {newCommentAttachments.map(att => (
-                      <div key={att.id} className="flex items-center gap-1.5 bg-muted px-2 py-1 rounded text-xs">
-                        {att.type === 'pdf' ? <FileText className="w-3 h-3 text-destructive" /> : <Image className="w-3 h-3 text-primary" />}
-                        <span className="max-w-[80px] truncate">{att.name}</span>
-                        <button onClick={() => removeAttachment(att.id, 'new')} className="text-muted-foreground hover:text-foreground">
-                          <X className="w-3 h-3" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
+                  <AttachmentThumbnails 
+                    attachments={newCommentAttachments} 
+                    onRemove={(id) => removeAttachment(id, 'new')}
+                    size="sm"
+                  />
                 )}
                 <div className="flex justify-end items-center">
                   <div className="flex items-center gap-2">

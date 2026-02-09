@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Upload, X, FileText, Image } from 'lucide-react';
+import { Upload } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -22,6 +22,7 @@ import { ReworkAttachment, ReworkConfig } from '@/types/pipeline';
 import { useLanguageStore } from '@/stores/languageStore';
 import { useMentionNotificationsStore, extractMentions } from '@/stores/mentionNotificationsStore';
 import { CURRENT_USER } from '@/data/mockLeads';
+import { AttachmentThumbnails } from '@/components/ui/attachment-thumbnails';
 
 interface ReworkDialogProps {
   open: boolean;
@@ -167,28 +168,11 @@ export function ReworkDialog({ open, onOpenChange, reworkConfigs, onConfirm, lea
 
           <div className="space-y-2">
             <Label>{language === 'th' ? 'ไฟล์แนบ' : 'Attachments'}</Label>
-            <div className="flex flex-wrap gap-2">
-              {attachments.map((attachment) => (
-                <div
-                  key={attachment.id}
-                  className="flex items-center gap-2 bg-muted px-3 py-2 rounded-md text-sm"
-                >
-                  {attachment.type === 'pdf' ? (
-                    <FileText className="w-4 h-4 text-destructive" />
-                  ) : (
-                    <Image className="w-4 h-4 text-primary" />
-                  )}
-                  <span className="max-w-[120px] truncate">{attachment.name}</span>
-                  <button
-                    type="button"
-                    onClick={() => removeAttachment(attachment.id)}
-                    className="text-muted-foreground hover:text-foreground"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              ))}
-            </div>
+            <AttachmentThumbnails 
+              attachments={attachments} 
+              onRemove={removeAttachment}
+              size="md"
+            />
             <input
               ref={fileInputRef}
               type="file"
