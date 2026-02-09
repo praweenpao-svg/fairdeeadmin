@@ -337,6 +337,38 @@ function generatePolicyRecordWithRework(
     };
   });
 
+  // Generate history log with status change and owner change entries
+  const historyLog: PolicyHistoryLogEntry[] = [];
+  
+  // First rework entry triggers status change and owner change with same timestamp
+  if (reworkReasonIds.length > 0) {
+    const firstEntryDate = new Date(year, month - 1, day, hours, Math.floor(Math.random() * 60));
+    const reworkTimestamp = `${String(firstEntryDate.getDate()).padStart(2, '0')}-${String(firstEntryDate.getMonth() + 1).padStart(2, '0')}-${firstEntryDate.getFullYear()} ${String(firstEntryDate.getHours()).padStart(2, '0')}:${String(firstEntryDate.getMinutes()).padStart(2, '0')}`;
+    
+    // Status change: previousStatus -> rework_required
+    historyLog.push({
+      id: `phl-${id}-status-rework`,
+      action: 'status_changed',
+      triggeredBy: deStaff[0],
+      triggeredAt: reworkTimestamp,
+      fromStatus: previousStatus,
+      toStatus: 'rework_required',
+    });
+    
+    // Owner change (if applicable) - same timestamp
+    if (assignedTo) {
+      historyLog.push({
+        id: `phl-${id}-owner-rework`,
+        action: 'assignee_changed',
+        triggeredBy: deStaff[0],
+        triggeredAt: reworkTimestamp,
+        assigneeType: 'de',
+        fromAssignee: undefined,
+        toAssignee: assignedTo,
+      });
+    }
+  }
+
   return {
     id,
     kind,
@@ -347,6 +379,7 @@ function generatePolicyRecordWithRework(
     policyStartDate,
     reworkRequired: true,
     reworkHistory,
+    historyLog,
   };
 }
 
