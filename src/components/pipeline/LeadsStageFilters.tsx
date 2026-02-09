@@ -206,7 +206,7 @@ function SearchableSelect({
 // Multi-select dropdown component
 function MultiSelectDropdown({
   options,
-  selectedValues,
+  selectedValues = ['all'],
   onChange,
   maxVisibleItems = 2,
 }: {
@@ -216,9 +216,11 @@ function MultiSelectDropdown({
   maxVisibleItems?: number;
 }) {
   const { language } = useLanguageStore();
-  const isAllSelected = selectedValues.includes('all');
+  // Defensive: ensure selectedValues is always an array
+  const safeSelectedValues = Array.isArray(selectedValues) ? selectedValues : ['all'];
+  const isAllSelected = safeSelectedValues.includes('all');
   const nonAllOptions = options.filter(o => o.id !== 'all');
-  const selectedNonAll = nonAllOptions.filter(o => selectedValues.includes(o.id));
+  const selectedNonAll = nonAllOptions.filter(o => safeSelectedValues.includes(o.id));
   
   let displayText: React.ReactNode;
   if (isAllSelected || selectedNonAll.length === 0) {
@@ -255,11 +257,11 @@ function MultiSelectDropdown({
               key={option.id}
               className={cn(
                 "flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-muted text-sm",
-                selectedValues.includes(option.id) && "bg-muted"
+                safeSelectedValues.includes(option.id) && "bg-muted"
               )}
-              onClick={() => onChange(option.id, !selectedValues.includes(option.id))}
+              onClick={() => onChange(option.id, !safeSelectedValues.includes(option.id))}
             >
-              <Check className={cn("mr-2 h-4 w-4", selectedValues.includes(option.id) ? "opacity-100" : "opacity-0")} />
+              <Check className={cn("mr-2 h-4 w-4", safeSelectedValues.includes(option.id) ? "opacity-100" : "opacity-0")} />
               {language === 'th' ? option.th : option.en}
             </div>
           ))}
