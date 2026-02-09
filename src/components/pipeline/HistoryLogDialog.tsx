@@ -258,6 +258,46 @@ function buildPolicyTimeline(lead: Lead, policyKind: 'vmi' | 'cmi'): TimelineEnt
   return entries;
 }
 
+// Build timeline for lead-level history (pre-conversion, no policy records)
+function buildLeadTimeline(lead: Lead): TimelineEntry[] {
+  const entries: TimelineEntry[] = [];
+  const leadHistory = lead.historyLog || [];
+  
+  for (const entry of leadHistory) {
+    // Lead status changes
+    if (entry.action === 'status_changed') {
+      entries.push({
+        id: entry.id,
+        timestamp: entry.triggeredAt,
+        action: 'lead_status_changed', // Map to lead_status_changed for proper labeling
+        triggeredBy: entry.triggeredBy,
+        fromStatus: entry.fromStatus,
+        toStatus: entry.toStatus,
+        policyKind: 'vmi', // Use VMI styling for lead-level entries
+      });
+    }
+    
+    // Assignee changes (RF/SC)
+    if (entry.action === 'assignee_changed' && entry.assigneeType) {
+      entries.push({
+        id: entry.id,
+        timestamp: entry.triggeredAt,
+        action: 'assignee_changed',
+        triggeredBy: entry.triggeredBy,
+        assigneeType: entry.assigneeType,
+        fromAssignee: entry.fromAssignee,
+        toAssignee: entry.toAssignee,
+        policyKind: 'vmi',
+      });
+    }
+  }
+  
+  // Sort by timestamp (oldest first)
+  entries.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+  
+  return entries;
+}
+
 // Format timestamp to DD-MM-YYYY HH:MM
 function formatTimestamp(timestamp: string): string {
   // Handle ISO format
@@ -387,10 +427,12 @@ export function HistoryLogDialog({
   const hasVmi = lead.policyRecords?.some(p => p.kind === 'vmi') || false;
   const hasCmi = lead.policyRecords?.some(p => p.kind === 'cmi') || false;
   const hasBoth = hasVmi && hasCmi;
+  const hasPolicyRecords = hasVmi || hasCmi;
   
-  // Build separate timelines
+  // Build separate timelines - for leads without policy records, use lead-level history
   const vmiTimeline = hasVmi ? buildPolicyTimeline(lead, 'vmi') : [];
   const cmiTimeline = hasCmi ? buildPolicyTimeline(lead, 'cmi') : [];
+  const leadTimeline = !hasPolicyRecords ? buildLeadTimeline(lead) : [];
   
   const [activeTab, setActiveTab] = useState<'vmi' | 'cmi'>(hasVmi ? 'vmi' : 'cmi');
   
@@ -398,7 +440,10 @@ export function HistoryLogDialog({
   const colorClass = activeTab === 'vmi' ? 'border-l-blue-500' : 'border-l-purple-500';
   const lineColorClass = activeTab === 'vmi' ? 'bg-blue-500' : 'bg-purple-500';
   
-  const isEmpty = (hasVmi ? vmiTimeline.length === 0 : true) && (hasCmi ? cmiTimeline.length === 0 : true);
+  // Check if empty based on whether we have policy records or not
+  const isEmpty = hasPolicyRecords 
+    ? ((hasVmi ? vmiTimeline.length === 0 : true) && (hasCmi ? cmiTimeline.length === 0 : true))
+    : leadTimeline.length === 0;
   
   if (isEmpty) {
     return (
@@ -416,6 +461,39 @@ export function HistoryLogDialog({
           <div className="py-12 text-center text-muted-foreground">
             {language === 'th' ? 'ไม่มีประวัติสำหรับงานนี้' : 'No history log for this lead'}
           </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  // For leads without policy records (pre-conversion), show VMI-only view
+  if (!hasPolicyRecords) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-[550px] max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <History className="w-5 h-5" />
+              {language === 'th' ? 'ประวัติการทำงาน' : 'History Log'}
+            </DialogTitle>
+            <DialogDescription>
+              {leadNumber}
+            </DialogDescription>
+          </DialogHeader>
+
+          <ScrollArea className="h-[450px] pr-4">
+            <div className="space-y-0 py-2">
+              {leadTimeline.map((entry, index) => (
+                <EntryCard
+                  key={entry.id}
+                  entry={entry}
+                  language={language}
+                  isLast={index === leadTimeline.length - 1}
+                  colorClass="border-l-blue-500"
+                />
+              ))}
+            </div>
+          </ScrollArea>
         </DialogContent>
       </Dialog>
     );
