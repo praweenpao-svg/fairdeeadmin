@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
-import { ReworkConfig, AssignmentType, PipelineStage, ReworkPartyType } from '@/types/pipeline';
+import { ReworkConfig, AssignmentType, PipelineStage, ReworkPartyType, PolicyScopeType } from '@/types/pipeline';
 import { useTeamsStore } from '@/stores/teamsStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -48,6 +48,12 @@ const partyTypeOptions: { value: ReworkPartyType; label: string }[] = [
   { value: 'external', label: 'External' },
 ];
 
+const policyScopeOptions: { value: PolicyScopeType; label: string }[] = [
+  { value: 'both', label: 'Both' },
+  { value: 'vmi', label: 'VMI Only' },
+  { value: 'cmi', label: 'CMI Only' },
+];
+
 // Helper function to check if a rework reason moves leads to Cancellation tab
 // This checks the movesToCancellation property on the config
 export function isCancellationReworkReason(reasonId: string, reworkConfigs: ReworkConfig[]): boolean {
@@ -79,6 +85,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
     targetReason: undefined,
     movesToCancellation: false,
     partyType: 'internal',
+    policyScope: 'both',
   });
 
   const openDialog = (config?: ReworkConfig) => {
@@ -98,6 +105,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
         targetReason: undefined,
         movesToCancellation: false,
         partyType: 'internal',
+        policyScope: 'both',
       });
     }
     setIsDialogOpen(true);
@@ -133,6 +141,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
         stages: formData.stages || [],
         movesToCancellation: formData.movesToCancellation || false,
         partyType: formData.partyType || 'internal',
+        policyScope: formData.policyScope || 'both',
       };
       onUpdate([...reworkConfigs, newConfig]);
     }
@@ -262,6 +271,34 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                     {formData.partyType === 'internal' 
                       ? 'Issues handled within the organization (AST, OPS, etc.)'
                       : 'Issues involving external parties (Insurers, Customers, etc.)'}
+                  </p>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="policyScope">Policy Scope</Label>
+                  <Select 
+                    value={formData.policyScope || 'both'} 
+                    onValueChange={(value) => setFormData({ 
+                      ...formData, 
+                      policyScope: value as PolicyScopeType
+                    })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select policy scope" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {policyScopeOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    {formData.policyScope === 'both' 
+                      ? 'This reason applies to both VMI and CMI policies'
+                      : formData.policyScope === 'vmi'
+                      ? 'This reason applies only to VMI policies'
+                      : 'This reason applies only to CMI policies'}
                   </p>
                 </div>
                 <div className="grid gap-2">
@@ -448,6 +485,9 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                   Party
                 </th>
                 <th className="data-table-header px-4 py-3 text-center">
+                  VMI/CMI
+                </th>
+                <th className="data-table-header px-4 py-3 text-center">
                   Cancellation
                 </th>
                 <th className="data-table-header px-4 py-3 text-center">
@@ -481,6 +521,17 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                   <td className="px-4 py-3 text-sm text-center">
                     <span className="px-2 py-0.5 rounded text-xs font-medium bg-muted text-muted-foreground">
                       {config.partyType === 'external' ? 'External' : 'Internal'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-sm text-center">
+                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                      config.policyScope === 'vmi' 
+                        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' 
+                        : config.policyScope === 'cmi'
+                        ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
+                        : 'bg-muted text-muted-foreground'
+                    }`}>
+                      {config.policyScope === 'vmi' ? 'VMI' : config.policyScope === 'cmi' ? 'CMI' : 'Both'}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-sm text-center">

@@ -2142,7 +2142,10 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
           if (policy) {
             const policyStage = getPolicyStage(policy);
             if (policyStage) {
-              return reworkConfigs.filter(config => config.stages.includes(policyStage));
+              return reworkConfigs.filter(config => 
+                config.stages.includes(policyStage) && 
+                (config.policyScope === 'both' || config.policyScope === policy.kind)
+              );
             }
           }
           return stageReworkConfigs;

@@ -181,7 +181,8 @@ export function PolicyReworkActions({
                   {(() => {
                     const filteredConfigs = reworkConfigs.filter((config) => 
                       !existingReasonIds.includes(config.id) && 
-                      config.stages.includes(currentStage)
+                      config.stages.includes(currentStage) &&
+                      (config.policyScope === 'both' || config.policyScope === policy.kind)
                     );
                     const internal = filteredConfigs.filter(c => c.partyType === 'internal');
                     const external = filteredConfigs.filter(c => c.partyType === 'external');
