@@ -126,9 +126,20 @@ function getActionConfig(action: DisplayableAction, policyKind?: 'vmi' | 'cmi') 
   }
 }
 
-function getActionLabel(action: DisplayableAction, language: 'en' | 'th'): string {
+function getActionLabel(action: DisplayableAction, language: 'en' | 'th', assigneeType?: string): string {
+  // For assignee changes, use specific type in the label
+  if (action === 'assignee_changed' && assigneeType) {
+    const typeLabels: Record<string, { en: string; th: string }> = {
+      rf: { en: 'RF Changed', th: 'เปลี่ยน RF' },
+      sc: { en: 'SC Changed', th: 'เปลี่ยน SC' },
+      de: { en: 'DE Changed', th: 'เปลี่ยน DE' },
+      owner: { en: 'Owner Changed', th: 'เปลี่ยนผู้รับผิดชอบ' },
+    };
+    return typeLabels[assigneeType]?.[language] || typeLabels.owner[language];
+  }
+
   const labels: Record<DisplayableAction, { en: string; th: string }> = {
-    status_changed: { en: 'Policy Status Changed', th: 'เปลี่ยนสถานะกรมธรรม์' },
+    status_changed: { en: 'Status Changed', th: 'เปลี่ยนสถานะงาน' },
     lead_status_changed: { en: 'Lead Status Changed', th: 'เปลี่ยนสถานะ Lead' },
     payment_status_changed: { en: 'Payment Status Changed', th: 'เปลี่ยนสถานะการชำระเงิน' },
     endorsement_status_changed: { en: 'Endorsement Status Changed', th: 'เปลี่ยนสถานะเอกสารแนบท้าย' },
@@ -308,7 +319,7 @@ function EntryCard({
             config.color
           )}>
             <Icon className="w-3 h-3" />
-            {getActionLabel(entry.action, language)}
+            {getActionLabel(entry.action, language, entry.assigneeType)}
           </span>
         </div>
         
