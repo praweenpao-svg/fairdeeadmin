@@ -137,8 +137,8 @@ const leadTypeOptions: { id: string; en: string; th: string }[] = [
   { id: 'all', en: 'All', th: 'ทั้งหมด' },
   { id: 'system', en: 'System', th: 'งานใหม่ (System)' },
   { id: 'custom', en: 'Custom', th: 'งานใหม่ (Custom)' },
-  { id: 'coa', en: 'COA', th: 'งานโอนโค้ด' },
-  { id: 'renewal', en: 'Renewal', th: 'งานต่ออายุ' },
+  { id: 'coa', en: 'COA', th: 'งานโอนโค้ด (COA)' },
+  { id: 'renewal', en: 'Renewal', th: 'งานต่ออายุ (Renewal)' },
 ];
 
 const installmentOptions: { id: string; en: string; th: string }[] = [
