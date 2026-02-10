@@ -222,59 +222,21 @@ const Index = () => {
             />
           ) : (
             <>
-              {/* My Cases / My Team buttons for other stages */}
-              <button
-                onClick={() => setMyCasesOnly(!myCasesOnly)}
-                className={cn(
-                  'px-3 py-2 text-sm font-medium rounded-md transition-colors border',
-                  myCasesOnly
-                    ? 'bg-primary text-primary-foreground border-primary'
-                    : 'bg-muted/50 text-foreground border-border hover:bg-muted hover:border-primary/50'
-                )}
-              >
-                {language === 'th' ? 'เคสของฉัน' : 'My Cases'}
-              </button>
-              
-              <button
-                onClick={() => setMyTeamOnly(!myTeamOnly)}
-                className={cn(
-                  'px-3 py-2 text-sm font-medium rounded-md transition-colors border',
-                  myTeamOnly
-                    ? 'bg-primary text-primary-foreground border-primary'
-                    : 'bg-muted/50 text-foreground border-border hover:bg-muted hover:border-primary/50'
-                )}
-              >
-                {language === 'th' ? 'ทีมของฉัน' : 'My Team'}
-              </button>
+              <DateRangeFilter
+                dateRange={dateRange}
+                onDateRangeChange={setDateRange}
+              />
+              <OtherStagesFilterPanel
+                filters={otherStagesFilters}
+                onFiltersChange={setOtherStagesFilters}
+                onClear={handleClearOtherStagesFilters}
+                activeStage={activeStage}
+                myCasesOnly={myCasesOnly}
+                myTeamOnly={myTeamOnly}
+                onMyCasesChange={setMyCasesOnly}
+                onMyTeamChange={setMyTeamOnly}
+              />
             </>
-          )}
-          
-          
-          {/* Date Range Filter - only for non-Leads stages */}
-          {activeStage !== 'to_convert' && (
-            <DateRangeFilter
-              dateRange={dateRange}
-              onDateRangeChange={setDateRange}
-            />
-          )}
-          
-          {/* Filter panels for non-Leads stages */}
-          {activeStage !== 'to_convert' && (
-            activeStage === 'all' || activeStage === 'to_pay' ? (
-              <OtherStagesFilterPanel
-                filters={otherStagesFilters}
-                onFiltersChange={setOtherStagesFilters}
-                onClear={handleClearOtherStagesFilters}
-                activeStage={activeStage}
-              />
-            ) : (
-              <OtherStagesFilterPanel
-                filters={otherStagesFilters}
-                onFiltersChange={setOtherStagesFilters}
-                onClear={handleClearOtherStagesFilters}
-                activeStage={activeStage}
-              />
-            )
           )}
         </div>
 
