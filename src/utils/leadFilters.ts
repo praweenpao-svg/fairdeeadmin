@@ -147,7 +147,7 @@ export function applyToPayFilters(
   });
 }
 
-// Apply Other Stages filters (To Report, To Issue, To Deliver, Completed)
+// Apply Other Stages filters (To Report, To Issue, To Deliver, Completed, All)
 export function applyOtherStagesFilters(leads: Lead[], filters: OtherStagesFilterState): Lead[] {
   return leads.filter(lead => {
     // RF Assignee filter
@@ -179,13 +179,16 @@ export function applyOtherStagesFilters(leads: Lead[], filters: OtherStagesFilte
       return false;
     }
     
-    // Insurer filter (multi-select)
+    // Insurer filter (multi-select) — match against lead's insurerName or policy records
     if (!filters.insurers.includes('all') && filters.insurers.length > 0) {
-      // Check insurer quotes for matching insurer
       const hasMatchingInsurer = lead.insurerQuotes?.some(q =>
         filters.insurers.some(f => q.insurerName.toLowerCase().includes(f))
       );
-      if (!hasMatchingInsurer) {
+      // Also check lead-level insurerName for post-lead stages
+      const leadInsurerMatch = lead.insurerName && filters.insurers.some(f => 
+        lead.insurerName!.toLowerCase().includes(f)
+      );
+      if (!hasMatchingInsurer && !leadInsurerMatch) {
         return false;
       }
     }
@@ -200,28 +203,70 @@ export function applyOtherStagesFilters(leads: Lead[], filters: OtherStagesFilte
       }
     }
     
-    // Payment Status filter
-    if (filters.paymentStatus !== 'all' && lead.paymentStatus !== filters.paymentStatus) {
-      return false;
-    }
-    
-    // Lead Types filter (multi-select)
-    if (!filters.leadTypes.includes('all') && filters.leadTypes.length > 0) {
-      if (!filters.leadTypes.includes(lead.leadType)) {
+    // Payment Status filter — map filter IDs to payment method
+    if (filters.paymentStatus !== 'all') {
+      // payment_verified = cbc_to_fairdee, insurer_notified = cbc_to_insurer, credit_approved = credit
+      const paymentMethodMap: Record<string, string> = {
+        payment_verified: 'cbc_to_fairdee',
+        insurer_notified: 'cbc_to_insurer',
+        credit_approved: 'credit',
+      };
+      const expectedMethod = paymentMethodMap[filters.paymentStatus];
+      if (expectedMethod && lead.paymentMethod !== expectedMethod) {
         return false;
       }
+    }
+    
+    // Insurance Class filter (multi-select)
+    if (!filters.insuranceClasses.includes('all') && filters.insuranceClasses.length > 0) {
+      if (!lead.insuranceClass || !filters.insuranceClasses.includes(lead.insuranceClass)) {
+        return false;
+      }
+    }
+    
+    // Sale Type filter (multi-select) — maps to paymentMethod
+    if (!filters.saleTypes.includes('all') && filters.saleTypes.length > 0) {
+      const saleTypeToPaymentMethod: Record<string, string> = {
+        cbc_fairdee: 'cbc_to_fairdee',
+        cbc_insurer: 'cbc_to_insurer',
+        credit: 'credit',
+      };
+      const allowedMethods = filters.saleTypes.map(st => saleTypeToPaymentMethod[st]).filter(Boolean);
+      if (!lead.paymentMethod || !allowedMethods.includes(lead.paymentMethod)) {
+        return false;
+      }
+    }
+    
+    // Lead Types filter (multi-select) — handle system/custom via leadSource
+    if (!filters.leadTypes.includes('all') && filters.leadTypes.length > 0) {
+      let matched = false;
+      for (const filterType of filters.leadTypes) {
+        if (filterType === 'system' && lead.leadType === 'new_leads' && lead.leadSource === 'system') matched = true;
+        else if (filterType === 'custom' && lead.leadType === 'new_leads' && lead.leadSource === 'custom') matched = true;
+        else if (filterType === 'coa' && lead.leadType === 'coa') matched = true;
+        else if (filterType === 'renewal' && lead.leadType === 'renewals') matched = true;
+      }
+      if (!matched) return false;
     }
     
     // Installment Type filter
     if (filters.installmentType !== 'all') {
-      const isInstallment = lead.paymentType === 'installment';
-      if (filters.installmentType === 'installment' && !isInstallment) {
+      if (filters.installmentType === 'installment' && lead.paymentType !== 'installment') {
         return false;
       }
-      if (filters.installmentType === 'non_installment' && isInstallment) {
+      if (filters.installmentType === 'full' && lead.paymentType !== 'full') {
         return false;
       }
     }
+    
+    // ETA Status filter
+    if (filters.etaStatus !== 'all') {
+      if (lead.etaStatus !== filters.etaStatus) {
+        return false;
+      }
+    }
+    
+    // Invoice Status and Car Inspection — no matching data fields on Lead, kept as UI placeholders
     
     return true;
   });
@@ -329,7 +374,7 @@ export function applyAllFilters(
   // Apply stage-specific filters
   if (activeStage === 'to_convert' && leadsFilters) {
     result = applyLeadsStageFilters(result, leadsFilters);
-  } else if (activeStage === 'all' || activeStage === 'to_pay') {
+  } else if (activeStage === 'to_pay') {
     result = applyToPayFilters(result, toPayFilters, activeStage);
   } else {
     result = applyOtherStagesFilters(result, otherStagesFilters);
