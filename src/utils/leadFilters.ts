@@ -265,6 +265,14 @@ export function applyOtherStagesFilters(leads: Lead[], filters: OtherStagesFilte
         return false;
       }
     }
+
+    // Owner filter — handle specific staff name (not preset values which are handled by parent)
+    if (filters.owner !== 'all' && filters.owner !== 'my_team' && filters.owner !== 'my_cases') {
+      const ownerName = filters.owner;
+      if (lead.rfAssignee !== ownerName && lead.scAssignee !== ownerName && lead.deAssignee !== ownerName) {
+        return false;
+      }
+    }
     
     // Invoice Status and Car Inspection — no matching data fields on Lead, kept as UI placeholders
     
@@ -303,7 +311,13 @@ export function applyLeadsStageFilters(leads: Lead[], filters: LeadsFilterState)
       }
     }
 
-    // Owner filter is handled separately via myCasesOnly/myTeamOnly props
+    // Owner filter — handle specific staff name (not preset values which are handled by parent)
+    if (filters.owner !== 'all' && filters.owner !== 'my_team' && filters.owner !== 'my_cases') {
+      const ownerName = filters.owner;
+      if (lead.rfAssignee !== ownerName && lead.scAssignee !== ownerName) {
+        return false;
+      }
+    }
 
     // Created By filter (multi-select)
     if (!filters.createdBy.includes('all') && filters.createdBy.length > 0) {
