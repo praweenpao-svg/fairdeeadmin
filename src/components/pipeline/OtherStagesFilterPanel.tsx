@@ -149,8 +149,8 @@ const leadTypeOptions: { id: string; en: string; th: string }[] = [
 
 const installmentOptions: { id: string; en: string; th: string }[] = [
   { id: 'all', en: 'All', th: 'ทั้งหมด' },
-  { id: 'installment', en: 'Installment', th: 'ผ่อนชำระ' },
-  { id: 'non_installment', en: 'Non-Installment', th: 'ชำระเต็มจำนวน' },
+  { id: 'full', en: 'Full Payment', th: 'งานเงินสด' },
+  { id: 'installment', en: 'Installment', th: 'งานเงินผ่อน' },
 ];
 
 const ownerOptions: { id: 'all' | 'my_team' | 'my_cases'; en: string; th: string }[] = [
@@ -472,7 +472,7 @@ export function OtherStagesFilterPanel({
     }
     if (filters.installmentType !== 'all') {
       const inst = installmentOptions.find(o => o.id === filters.installmentType);
-      chips.push({ key: 'installmentType', label: language === 'th' ? 'ผ่อนชำระ' : 'Installment', values: inst ? (language === 'th' ? inst.th : inst.en) : filters.installmentType, onClear: () => onFiltersChange({ ...filters, installmentType: 'all' }) });
+      chips.push({ key: 'installmentType', label: language === 'th' ? 'ประเภทการชำระ' : 'Payment Type', values: inst ? (language === 'th' ? inst.th : inst.en) : filters.installmentType, onClear: () => onFiltersChange({ ...filters, installmentType: 'all' }) });
     }
     if (filters.owner !== 'all') {
       const ownerOpt = ownerOptions.find(o => o.id === filters.owner);
@@ -642,7 +642,7 @@ export function OtherStagesFilterPanel({
             {/* ===== Column 3: Installment Type, Payment Status, Payment Method, Car Inspection ===== */}
             <div className="flex-1 space-y-4">
               <div className="space-y-2">
-                <Label className="text-sm font-medium">{language === 'th' ? 'ประเภทการผ่อน' : 'Installment Type'}</Label>
+                <Label className="text-sm font-medium">{language === 'th' ? 'ประเภทการชำระ' : 'Payment Type'}</Label>
                 <MultiSelectDropdown
                   options={installmentOptions}
                   selectedValues={[localFilters.installmentType]}
