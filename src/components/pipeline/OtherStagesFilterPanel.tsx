@@ -135,10 +135,10 @@ const carInspectionStatusOptions: { id: string; en: string; th: string }[] = [
 
 const leadTypeOptions: { id: string; en: string; th: string }[] = [
   { id: 'all', en: 'All', th: 'ทั้งหมด' },
-  { id: 'system', en: 'System', th: 'ระบบ' },
-  { id: 'custom', en: 'Custom', th: 'กำหนดเอง' },
-  { id: 'coa', en: 'COA', th: 'COA' },
-  { id: 'renewal', en: 'Renewal', th: 'ต่ออายุ' },
+  { id: 'system', en: 'System', th: 'งานใหม่ (System)' },
+  { id: 'custom', en: 'Custom', th: 'งานใหม่ (Custom)' },
+  { id: 'coa', en: 'COA', th: 'งานโอนโค้ด' },
+  { id: 'renewal', en: 'Renewal', th: 'งานต่ออายุ' },
 ];
 
 const installmentOptions: { id: string; en: string; th: string }[] = [
@@ -459,7 +459,7 @@ export function OtherStagesFilterPanel({
       chips.push({ key: 'carInspection', label: language === 'th' ? 'ตรวจสภาพ' : 'Inspection', values: formatMultiSelectValues(filters.carInspectionStatuses, carInspectionStatusOptions), onClear: () => onFiltersChange({ ...filters, carInspectionStatuses: ['all'] }) });
     }
     if (!filters.leadTypes.includes('all') && filters.leadTypes.length > 0) {
-      chips.push({ key: 'leadTypes', label: language === 'th' ? 'ประเภท Lead' : 'Lead Type', values: formatMultiSelectValues(filters.leadTypes, leadTypeOptions), onClear: () => onFiltersChange({ ...filters, leadTypes: ['all'] }) });
+      chips.push({ key: 'leadTypes', label: language === 'th' ? 'ประเภทงาน' : 'Lead Type', values: formatMultiSelectValues(filters.leadTypes, leadTypeOptions), onClear: () => onFiltersChange({ ...filters, leadTypes: ['all'] }) });
     }
     if (filters.installmentType !== 'all') {
       const inst = installmentOptions.find(o => o.id === filters.installmentType);
@@ -602,7 +602,7 @@ export function OtherStagesFilterPanel({
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-sm font-medium">{language === 'th' ? 'ประเภท Lead' : 'Lead Type'}</Label>
+                <Label className="text-sm font-medium">{language === 'th' ? 'ประเภทงาน' : 'Lead Type'}</Label>
                 <MultiSelectDropdown
                   options={leadTypeOptions}
                   selectedValues={localFilters.leadTypes}
