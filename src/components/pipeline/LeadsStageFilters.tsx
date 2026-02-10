@@ -18,7 +18,7 @@ export interface LeadsFilterState {
   agent: string;
   rfAssignee: string;
   scAssignee: string;
-  owner: 'all' | 'my_team' | 'my_cases';
+  owner: string;
   leadsTypes: string[];
   agentTypes: string[];
   etaStatuses: string[];
@@ -55,7 +55,7 @@ const createdByOptions: { id: string; en: string; th: string }[] = [
   { id: 'admin', en: 'Admin', th: 'แอดมิน' },
 ];
 
-const ownerOptions: { id: 'all' | 'my_team' | 'my_cases'; en: string; th: string }[] = [
+const ownerPresetOptions: { id: string; en: string; th: string }[] = [
   { id: 'all', en: 'All', th: 'ทั้งหมด' },
   { id: 'my_team', en: 'My Team', th: 'ทีมของฉัน' },
   { id: 'my_cases', en: 'My Cases', th: 'เคสของฉัน' },
@@ -197,6 +197,93 @@ function SearchableSelect({
             </div>
           ))}
           {filteredOptions.length === 0 && (
+            <div className="px-2 py-4 text-center text-sm text-muted-foreground">
+              {language === 'th' ? 'ไม่พบผลลัพธ์' : 'No results found'}
+            </div>
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+// Owner searchable select with preset options (All/My Team/My Cases) + all staff names
+function OwnerSearchableSelect({
+  value,
+  onChange,
+  language,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  language: string;
+}) {
+  const [search, setSearch] = React.useState('');
+  const [open, setOpen] = React.useState(false);
+
+  const allStaff = mockStaffMembers.map(s => ({ id: s.name, name: s.name }));
+
+  const filteredStaff = React.useMemo(() => {
+    if (!search) return allStaff;
+    const lowerSearch = search.toLowerCase();
+    return allStaff.filter(s => s.name.toLowerCase().includes(lowerSearch));
+  }, [search, allStaff]);
+
+  const presetMatch = ownerPresetOptions.find(o => o.id === value);
+  const displayValue = presetMatch
+    ? (language === 'th' ? presetMatch.th : presetMatch.en)
+    : value || (language === 'th' ? 'ทั้งหมด' : 'All');
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="outline" role="combobox" className="w-full justify-between">
+          <span className="truncate">{displayValue}</span>
+          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[280px] p-0 bg-card z-50" align="start">
+        <div className="p-2 border-b">
+          <div className="relative">
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder={language === 'th' ? 'ค้นหาผู้รับผิดชอบ...' : 'Search owner...'}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-8 h-8"
+            />
+          </div>
+        </div>
+        <div className="max-h-[250px] overflow-auto p-1">
+          {/* Preset options (only when not searching) */}
+          {!search && ownerPresetOptions.map((option) => (
+            <div
+              key={option.id}
+              className={cn(
+                "flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-accent hover:text-accent-foreground text-sm",
+                value === option.id && "bg-primary/10"
+              )}
+              onClick={() => { onChange(option.id); setOpen(false); setSearch(''); }}
+            >
+              <Check className={cn("mr-2 h-4 w-4", value === option.id ? "opacity-100" : "opacity-0")} />
+              {language === 'th' ? option.th : option.en}
+            </div>
+          ))}
+          {!search && <div className="border-t my-1" />}
+          {/* Staff members */}
+          {filteredStaff.map((staff) => (
+            <div
+              key={staff.id}
+              className={cn(
+                "flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-accent hover:text-accent-foreground text-sm",
+                value === staff.id && "bg-primary/10"
+              )}
+              onClick={() => { onChange(staff.id); setOpen(false); setSearch(''); }}
+            >
+              <Check className={cn("mr-2 h-4 w-4", value === staff.id ? "opacity-100" : "opacity-0")} />
+              {staff.name}
+            </div>
+          ))}
+          {filteredStaff.length === 0 && search && (
             <div className="px-2 py-4 text-center text-sm text-muted-foreground">
               {language === 'th' ? 'ไม่พบผลลัพธ์' : 'No results found'}
             </div>
@@ -443,11 +530,15 @@ export function LeadsStageFilters({
     
     // Owner (single select but not 'all')
     if (filters.owner !== 'all') {
-      const ownerOption = ownerOptions.find(o => o.id === filters.owner);
+      const presetOption = ownerPresetOptions.find(o => o.id === filters.owner);
+      const staffMember = mockStaffMembers.find(s => s.name === filters.owner);
+      const displayValue = presetOption
+        ? (language === 'th' ? presetOption.th : presetOption.en)
+        : staffMember?.name || filters.owner;
       chips.push({
         key: 'owner',
         label: language === 'th' ? 'ผู้รับผิดชอบ' : 'Owner',
-        values: language === 'th' ? ownerOption?.th || '' : ownerOption?.en || '',
+        values: displayValue,
         count: 1,
         onClear: () => {
           onFiltersChange({ ...filters, owner: 'all' });
@@ -612,36 +703,11 @@ export function LeadsStageFilters({
           {/* Owner */}
           <div className="space-y-2">
             <Label className="text-sm font-medium">{language === 'th' ? 'ผู้รับผิดชอบ' : 'Owner'}</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="w-full justify-between">
-                  <span className="truncate">
-                    {(() => {
-                      const opt = ownerOptions.find(o => o.id === localFilters.owner);
-                      return language === 'th' ? opt?.th : opt?.en;
-                    })()}
-                  </span>
-                  <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-[280px] p-2 bg-card z-50" align="start">
-                <div className="space-y-1">
-                  {ownerOptions.map((option) => (
-                    <div
-                      key={option.id}
-                      className={cn(
-                        "flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-accent hover:text-accent-foreground text-sm",
-                        localFilters.owner === option.id && "bg-primary/10"
-                      )}
-                      onClick={() => setLocalFilters({ ...localFilters, owner: option.id })}
-                    >
-                      <Check className={cn("mr-2 h-4 w-4", localFilters.owner === option.id ? "opacity-100" : "opacity-0")} />
-                      {language === 'th' ? option.th : option.en}
-                    </div>
-                  ))}
-                </div>
-              </PopoverContent>
-            </Popover>
+            <OwnerSearchableSelect
+              value={localFilters.owner}
+              onChange={(v) => setLocalFilters({ ...localFilters, owner: v })}
+              language={language}
+            />
           </div>
 
           {/* ETA Status */}
