@@ -52,12 +52,12 @@ export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
   return (
     <aside
       className={cn(
-        'fixed left-0 top-0 z-40 h-screen bg-sidebar text-sidebar-foreground transition-all duration-300 flex flex-col',
+        'fixed left-0 top-0 z-40 h-screen bg-foreground text-background transition-all duration-300 flex flex-col',
         collapsed ? 'w-16' : 'w-64'
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-sidebar-border">
+      <div className="flex items-center justify-between p-4 border-b border-background/20">
         {!collapsed && (
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
@@ -65,13 +65,13 @@ export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
             </div>
             <div>
               <h1 className="font-semibold text-sm">Admin</h1>
-              <p className="text-xs text-sidebar-muted">v2.0</p>
+              <p className="text-xs text-background/60">v2.0</p>
             </div>
           </div>
         )}
         <button
           onClick={onToggle}
-          className="p-1.5 rounded-md hover:bg-sidebar-accent transition-colors"
+          className="p-1.5 rounded-md hover:bg-background/10 transition-colors"
         >
           {collapsed ? (
             <PanelLeft className="w-5 h-5" />
@@ -91,8 +91,8 @@ export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
               cn(
                 'flex items-center gap-3 px-4 py-2.5 text-sm transition-colors',
                 isActive
-                  ? 'text-sidebar-foreground bg-sidebar-accent'
-                  : 'text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-accent/50'
+                  ? 'text-background bg-background/15'
+                  : 'text-background/60 hover:text-background hover:bg-background/10'
               )
             }
           >
@@ -103,11 +103,11 @@ export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
       </nav>
 
       {/* Footer - Profile Switcher */}
-      <div className="border-t border-sidebar-border p-3">
+      <div className="border-t border-background/20 p-3">
         <Popover>
           <PopoverTrigger asChild>
             <button className={cn(
-              "flex items-center gap-3 w-full rounded-md p-1.5 hover:bg-sidebar-accent transition-colors cursor-pointer",
+              "flex items-center gap-3 w-full rounded-md p-1.5 hover:bg-background/10 transition-colors cursor-pointer",
               collapsed && "justify-center"
             )}>
               <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
@@ -117,9 +117,9 @@ export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
                 <>
                   <div className="flex-1 min-w-0 text-left">
                     <p className="text-sm font-medium truncate">{currentUser}</p>
-                    <p className="text-xs text-sidebar-muted">{currentTeam || 'admin'}</p>
+                    <p className="text-xs text-background/60">{currentTeam || 'admin'}</p>
                   </div>
-                  <ChevronUp className="w-4 h-4 text-sidebar-muted shrink-0" />
+                  <ChevronUp className="w-4 h-4 text-background/60 shrink-0" />
                 </>
               )}
             </button>
