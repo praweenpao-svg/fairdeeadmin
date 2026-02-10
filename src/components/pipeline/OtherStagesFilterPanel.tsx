@@ -74,7 +74,7 @@ const insurerOptions: { id: string; en: string; th: string }[] = [
   { id: 'chubb', en: 'Chubb Samaggi Insurance', th: 'ชับบ์สามัคคีประกันภัย' },
   { id: 'falcon', en: 'Falcon Insurance', th: 'ฟอลคอนประกันภัย' },
   { id: 'aioi', en: 'Aioi Bangkok Insurance', th: 'ไอโออิ กรุงเทพ ประกันภัย' },
-  { id: 'bui', en: 'Bangkok Union Insurance (BUI)', th: 'บางกอกสหประกันภัย' },
+  
   { id: 'asset', en: 'Asset Insurance', th: 'สินทรัพย์ประกันภัย' },
   { id: 'thaipaiboon', en: 'Thai Paiboon Insurance', th: 'ไทยไพบูลย์ประกันภัย' },
   { id: 'unionprospers', en: 'The Union Prospers Insurance', th: 'สหมงคลประกันภัย' },
@@ -124,7 +124,6 @@ const saleTypeOptions: { id: string; en: string; th: string }[] = [
   { id: 'cbc_fairdee', en: 'CBC to Fairdee', th: 'จ่ายเข้าแฟร์ดี' },
   { id: 'cbc_insurer', en: 'CBC to Insurer', th: 'จ่ายเข้าบ.ประกัน' },
   { id: 'credit', en: 'Credit', th: 'เครดิต' },
-  { id: 'credit_exceeded', en: 'Credit Exceeded', th: 'เครดิตเกิน' },
 ];
 
 const paymentMethodOptions: { id: string; en: string; th: string }[] = [
@@ -142,9 +141,10 @@ const carInspectionStatusOptions: { id: string; en: string; th: string }[] = [
 
 const leadTypeOptions: { id: string; en: string; th: string }[] = [
   { id: 'all', en: 'All', th: 'ทั้งหมด' },
-  { id: 'new_leads', en: 'New Leads', th: 'งานใหม่' },
+  { id: 'system', en: 'System', th: 'ระบบ' },
+  { id: 'custom', en: 'Custom', th: 'กำหนดเอง' },
   { id: 'coa', en: 'COA', th: 'COA' },
-  { id: 'renewals', en: 'Renewals', th: 'งานต่ออายุ' },
+  { id: 'renewal', en: 'Renewal', th: 'ต่ออายุ' },
 ];
 
 const installmentOptions: { id: string; en: string; th: string }[] = [
