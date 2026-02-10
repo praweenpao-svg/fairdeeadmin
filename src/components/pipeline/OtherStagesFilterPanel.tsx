@@ -28,6 +28,7 @@ export interface OtherStagesFilterState {
   installmentType: string;
   etaStatus: string;
   owner: string;
+  createdBy: string[];
 }
 
 export const defaultOtherStagesFilterState: OtherStagesFilterState = {
@@ -46,6 +47,7 @@ export const defaultOtherStagesFilterState: OtherStagesFilterState = {
   installmentType: 'all',
   etaStatus: 'all',
   owner: 'all',
+  createdBy: ['all'],
 };
 
 const mockAgents = [
@@ -159,6 +161,12 @@ const ownerPresetOptions: { id: string; en: string; th: string }[] = [
   { id: 'all', en: 'All', th: 'ทั้งหมด' },
   { id: 'my_team', en: 'My Team', th: 'ทีมของฉัน' },
   { id: 'my_cases', en: 'My Cases', th: 'เคสของฉัน' },
+];
+
+const createdByOptions: { id: string; en: string; th: string }[] = [
+  { id: 'all', en: 'All', th: 'ทั้งหมด' },
+  { id: 'agent', en: 'Agent', th: 'ตัวแทน' },
+  { id: 'admin', en: 'Admin', th: 'แอดมิน' },
 ];
 
 // Searchable select component
@@ -579,6 +587,9 @@ export function OtherStagesFilterPanel({
         },
       });
     }
+    if (!filters.createdBy.includes('all') && filters.createdBy.length > 0) {
+      chips.push({ key: 'createdBy', label: language === 'th' ? 'สร้างโดย' : 'Created By', values: formatMultiSelectValues(filters.createdBy, createdByOptions), onClear: () => onFiltersChange({ ...filters, createdBy: ['all'] }) });
+    }
 
     return chips;
   };
@@ -645,6 +656,15 @@ export function OtherStagesFilterPanel({
                   value={localFilters.deAssignee}
                   onChange={(v) => setLocalFilters({ ...localFilters, deAssignee: v })}
                   placeholder={language === 'th' ? 'ค้นหา DE...' : 'Search DE...'}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">{language === 'th' ? 'สร้างโดย' : 'Created By'}</Label>
+                <MultiSelectDropdown
+                  options={createdByOptions}
+                  selectedValues={localFilters.createdBy}
+                  onChange={(id, checked) => handleMultiSelectChange('createdBy', id, checked)}
+                  maxVisibleItems={2}
                 />
               </div>
             </div>
