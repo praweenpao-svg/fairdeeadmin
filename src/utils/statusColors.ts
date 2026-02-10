@@ -11,7 +11,7 @@ export interface StatusColorConfig {
 export const leadStatusColors: Record<string, StatusColorConfig> = {
   pending: { text: '#2563EB', bg: 'rgba(37, 99, 235, 0.08)' }, // Blue
   waiting_for_insurer: { text: '#2563EB', bg: 'rgba(37, 99, 235, 0.08)' }, // Blue
-  docs_missing: { text: '#9A7B1A', bg: '#FFFEF2' }, // Amber-yellow
+  docs_missing: { text: '#C49000', bg: '#FFF9E6' }, // Amber
   partially_added: { text: '#16A34A', bg: 'rgba(22, 163, 74, 0.08)' }, // Green
   completed: { text: '#16A34A', bg: 'rgba(22, 163, 74, 0.08)' }, // Green
   quotation_shared: { text: '#16A34A', bg: 'rgba(22, 163, 74, 0.08)' }, // Green
@@ -33,7 +33,7 @@ export const policyStatusColors: Record<string, StatusColorConfig> = {
   policy_shipped: { text: '#16A34A', bg: 'rgba(22, 163, 74, 0.08)' }, // Green
   policy_delivered: { text: '#16A34A', bg: 'rgba(22, 163, 74, 0.08)' }, // Green
   policy_cancelled: { text: '#DC2626', bg: 'rgba(220, 38, 38, 0.08)' }, // Red
-  rework_required: { text: '#9A7B1A', bg: '#FFFEF2' }, // Amber-yellow
+  rework_required: { text: '#C49000', bg: '#FFF9E6' }, // Amber
 };
 
 // Get inline styles for a status - applies color to text with bold font and faded background
