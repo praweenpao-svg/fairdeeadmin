@@ -102,7 +102,8 @@ export function PolicyReworkActions({
     }}>
       <PopoverTrigger asChild>
         <div 
-          className="w-[160px] h-8 text-xs border border-warning text-warning rounded-md px-3 flex items-center gap-2 cursor-pointer bg-warning/10 hover:bg-warning/20 transition-colors"
+          className="w-[160px] h-8 text-xs rounded-md px-3 flex items-center gap-2 cursor-pointer transition-colors hover:brightness-95"
+          style={{ borderWidth: 1, borderStyle: 'solid', borderColor: 'hsl(var(--rework))', color: 'hsl(var(--rework))', backgroundColor: 'hsl(var(--rework-bg))' }}
         >
           <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
           <span className="truncate">
@@ -116,7 +117,7 @@ export function PolicyReworkActions({
           <div className="space-y-3">
             {/* Quick summary */}
             <div className="text-sm">
-              <span className="font-medium text-warning">
+              <span className="font-medium" style={{ color: 'hsl(var(--rework))' }}>
                 {unresolvedEntries.length}
               </span>
               <span className="text-muted-foreground ml-1">
@@ -135,7 +136,7 @@ export function PolicyReworkActions({
                   onOpenRemarks();
                 }}
               >
-                <AlertTriangle className="w-3.5 h-3.5 mr-2 text-warning" />
+                <AlertTriangle className="w-3.5 h-3.5 mr-2" style={{ color: 'hsl(var(--rework))' }} />
                 {language === 'th' ? 'ดู/แก้ไขงานติดปัญหา' : 'View/Manage Rework'}
               </Button>
               <Button
