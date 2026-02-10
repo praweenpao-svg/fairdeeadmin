@@ -97,9 +97,9 @@ const policyStatusOptions: { id: string; en: string; th: string }[] = [
 
 const paymentStatusOptions: { id: string; en: string; th: string }[] = [
   { id: 'all', en: 'All', th: 'ทั้งหมด' },
-  { id: 'unpaid', en: 'Unpaid', th: 'ยังไม่ชำระ' },
-  { id: 'paid', en: 'Paid', th: 'ชำระแล้ว' },
-  { id: 'partial', en: 'Partial', th: 'ชำระบางส่วน' },
+  { id: 'payment_verified', en: 'Payment Verified', th: 'ยืนยันการชำระเงินแล้ว' },
+  { id: 'insurer_notified', en: 'Insurer Notified', th: 'แจ้งบริษัทประกันแล้ว' },
+  { id: 'credit_approved', en: 'Credit Approved', th: 'อนุมัติเครดิตแล้ว' },
 ];
 
 const invoiceStatusOptions: { id: string; en: string; th: string }[] = [
