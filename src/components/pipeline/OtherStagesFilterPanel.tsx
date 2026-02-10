@@ -1,22 +1,16 @@
 import * as React from 'react';
-import { Filter } from 'lucide-react';
+import { Check, ChevronDown, Filter, Search, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { mockStaffMembers } from '@/data/mockStaff';
 import { useLanguageStore } from '@/stores/languageStore';
+import { cn } from '@/lib/utils';
 
 export interface OtherStagesFilterState {
   rfAssignee: string;
@@ -33,6 +27,7 @@ export interface OtherStagesFilterState {
   carInspectionStatuses: string[];
   leadTypes: string[];
   installmentType: string;
+  owner: 'all' | 'my_team' | 'my_cases';
 }
 
 export const defaultOtherStagesFilterState: OtherStagesFilterState = {
@@ -50,6 +45,7 @@ export const defaultOtherStagesFilterState: OtherStagesFilterState = {
   carInspectionStatuses: ['all'],
   leadTypes: ['all'],
   installmentType: 'all',
+  owner: 'all',
 };
 
 const mockAgents = [
@@ -73,7 +69,6 @@ const insurerOptions: { id: string; en: string; th: string }[] = [
   { id: 'thanachart', en: 'Thanachart Insurance', th: 'ธนชาตประกันภัย' },
   { id: 'deves', en: 'Deves Insurance', th: 'เทเวศประกันภัย' },
   { id: 'msig', en: 'MSIG Insurance', th: 'เอ็ม เอส ไอ จี ประกันภัย' },
-  { id: 'deves', en: 'Deves Insurance', th: 'เทเวศประกันภัย' },
   { id: 'navakij', en: 'Navakij Insurance', th: 'นวกิจประกันภัย' },
   { id: 'thaisri', en: 'Thaisri Insurance', th: 'ไทยศรีประกันภัย' },
   { id: 'chubb', en: 'Chubb Samaggi Insurance', th: 'ชับบ์สามัคคีประกันภัย' },
@@ -100,15 +95,15 @@ const policyStatusOptions: { id: string; en: string; th: string }[] = [
   { id: 'rework_required', en: 'Rework Required', th: 'ต้องแก้ไข' },
 ];
 
-const paymentStatusOptions: { value: string; en: string; th: string }[] = [
-  { value: 'all', en: 'All Payment Status', th: 'สถานะการชำระทั้งหมด' },
-  { value: 'unpaid', en: 'Unpaid', th: 'ยังไม่ชำระ' },
-  { value: 'paid', en: 'Paid', th: 'ชำระแล้ว' },
-  { value: 'partial', en: 'Partial', th: 'ชำระบางส่วน' },
+const paymentStatusOptions: { id: string; en: string; th: string }[] = [
+  { id: 'all', en: 'All', th: 'ทั้งหมด' },
+  { id: 'unpaid', en: 'Unpaid', th: 'ยังไม่ชำระ' },
+  { id: 'paid', en: 'Paid', th: 'ชำระแล้ว' },
+  { id: 'partial', en: 'Partial', th: 'ชำระบางส่วน' },
 ];
 
 const invoiceStatusOptions: { id: string; en: string; th: string }[] = [
-  { id: 'all', en: 'All Statuses', th: 'สถานะทั้งหมด' },
+  { id: 'all', en: 'All', th: 'ทั้งหมด' },
   { id: 'unpaid', en: 'Unpaid', th: 'ยังไม่ชำระ' },
   { id: 'underpaid', en: 'Underpaid', th: 'ชำระไม่ครบ' },
   { id: 'overpaid', en: 'Overpaid', th: 'ชำระเกิน' },
@@ -116,7 +111,7 @@ const invoiceStatusOptions: { id: string; en: string; th: string }[] = [
 ];
 
 const insuranceClassOptions: { id: string; en: string; th: string }[] = [
-  { id: 'all', en: 'All Classes', th: 'ชั้นทั้งหมด' },
+  { id: 'all', en: 'All', th: 'ทั้งหมด' },
   { id: '1', en: '1', th: '1' },
   { id: '2+', en: '2+', th: '2+' },
   { id: '2', en: '2', th: '2' },
@@ -125,7 +120,7 @@ const insuranceClassOptions: { id: string; en: string; th: string }[] = [
 ];
 
 const saleTypeOptions: { id: string; en: string; th: string }[] = [
-  { id: 'all', en: 'All Sale Types', th: 'ประเภทการขายทั้งหมด' },
+  { id: 'all', en: 'All', th: 'ทั้งหมด' },
   { id: 'cbc_fairdee', en: 'CBC to Fairdee', th: 'จ่ายเข้าแฟร์ดี' },
   { id: 'cbc_insurer', en: 'CBC to Insurer', th: 'จ่ายเข้าบ.ประกัน' },
   { id: 'credit', en: 'Credit', th: 'เครดิต' },
@@ -133,53 +128,230 @@ const saleTypeOptions: { id: string; en: string; th: string }[] = [
 ];
 
 const paymentMethodOptions: { id: string; en: string; th: string }[] = [
-  { id: 'all', en: 'All Payment Methods', th: 'วิธีชำระทั้งหมด' },
+  { id: 'all', en: 'All', th: 'ทั้งหมด' },
   { id: 'bank', en: 'Bank Account', th: 'บัญชีธนาคาร' },
   { id: 'credit_card', en: 'Credit Card', th: 'บัตรเครดิต' },
   { id: 'qr', en: 'QR', th: 'QR' },
 ];
 
 const carInspectionStatusOptions: { id: string; en: string; th: string }[] = [
-  { id: 'all', en: 'All Statuses', th: 'สถานะทั้งหมด' },
+  { id: 'all', en: 'All', th: 'ทั้งหมด' },
   { id: 'confirmed', en: 'Confirmed', th: 'ยืนยันแล้ว' },
   { id: 'not_confirmed', en: 'Not Yet Confirmed', th: 'ยังไม่ยืนยัน' },
 ];
 
 const leadTypeOptions: { id: string; en: string; th: string }[] = [
-  { id: 'all', en: 'All Lead Types', th: 'ประเภท Lead ทั้งหมด' },
+  { id: 'all', en: 'All', th: 'ทั้งหมด' },
   { id: 'new_leads', en: 'New Leads', th: 'งานใหม่' },
   { id: 'coa', en: 'COA', th: 'COA' },
   { id: 'renewals', en: 'Renewals', th: 'งานต่ออายุ' },
 ];
 
-const installmentOptions: { value: string; en: string; th: string }[] = [
-  { value: 'all', en: 'All', th: 'ทั้งหมด' },
-  { value: 'installment', en: 'Installment', th: 'ผ่อนชำระ' },
-  { value: 'non_installment', en: 'Non-Installment', th: 'ชำระเต็มจำนวน' },
+const installmentOptions: { id: string; en: string; th: string }[] = [
+  { id: 'all', en: 'All', th: 'ทั้งหมด' },
+  { id: 'installment', en: 'Installment', th: 'ผ่อนชำระ' },
+  { id: 'non_installment', en: 'Non-Installment', th: 'ชำระเต็มจำนวน' },
 ];
+
+const ownerOptions: { id: 'all' | 'my_team' | 'my_cases'; en: string; th: string }[] = [
+  { id: 'all', en: 'All', th: 'ทั้งหมด' },
+  { id: 'my_team', en: 'My Team', th: 'ทีมของฉัน' },
+  { id: 'my_cases', en: 'My Cases', th: 'เคสของฉัน' },
+];
+
+// Searchable select component
+function SearchableSelect({
+  options,
+  value,
+  onChange,
+  placeholder,
+}: {
+  options: { id: string; name: string }[];
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+}) {
+  const { language } = useLanguageStore();
+  const [search, setSearch] = React.useState('');
+  const [open, setOpen] = React.useState(false);
+
+  const filteredOptions = React.useMemo(() => {
+    if (!search) return options;
+    const lowerSearch = search.toLowerCase();
+    return options.filter(
+      o => o.id.toLowerCase().includes(lowerSearch) || o.name.toLowerCase().includes(lowerSearch)
+    );
+  }, [options, search]);
+
+  const displayValue = value === 'all' 
+    ? (language === 'th' ? 'ทั้งหมด' : 'All')
+    : options.find(o => o.id === value)?.name || (language === 'th' ? 'ทั้งหมด' : 'All');
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="outline" role="combobox" className="w-full justify-between">
+          <span className="truncate">{displayValue}</span>
+          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[250px] p-0 bg-card z-50" align="start">
+        <div className="p-2 border-b">
+          <div className="relative">
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input placeholder={placeholder} value={search} onChange={(e) => setSearch(e.target.value)} className="pl-8 h-8" />
+          </div>
+        </div>
+        <div className="max-h-[200px] overflow-auto p-1">
+          <div
+            className={cn("flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-accent hover:text-accent-foreground text-sm", value === 'all' && "bg-primary/10")}
+            onClick={() => { onChange('all'); setOpen(false); setSearch(''); }}
+          >
+            <Check className={cn("mr-2 h-4 w-4", value === 'all' ? "opacity-100" : "opacity-0")} />
+            {language === 'th' ? 'ทั้งหมด' : 'All'}
+          </div>
+          {filteredOptions.map((option) => (
+            <div
+              key={option.id}
+              className={cn("flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-accent hover:text-accent-foreground text-sm", value === option.id && "bg-primary/10")}
+              onClick={() => { onChange(option.id); setOpen(false); setSearch(''); }}
+            >
+              <Check className={cn("mr-2 h-4 w-4", value === option.id ? "opacity-100" : "opacity-0")} />
+              {option.name}
+            </div>
+          ))}
+          {filteredOptions.length === 0 && (
+            <div className="px-2 py-4 text-center text-sm text-muted-foreground">
+              {language === 'th' ? 'ไม่พบผลลัพธ์' : 'No results found'}
+            </div>
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+// Multi-select dropdown component
+function MultiSelectDropdown({
+  options,
+  selectedValues = ['all'],
+  onChange,
+  maxVisibleItems = 2,
+}: {
+  options: { id: string; en: string; th: string }[];
+  selectedValues: string[];
+  onChange: (id: string, checked: boolean) => void;
+  maxVisibleItems?: number;
+}) {
+  const { language } = useLanguageStore();
+  const safeSelectedValues = Array.isArray(selectedValues) ? selectedValues : ['all'];
+  const isAllSelected = safeSelectedValues.includes('all');
+  const nonAllOptions = options.filter(o => o.id !== 'all');
+  const selectedNonAll = nonAllOptions.filter(o => safeSelectedValues.includes(o.id));
+
+  let displayText: React.ReactNode;
+  if (isAllSelected || selectedNonAll.length === 0) {
+    displayText = language === 'th' ? 'ทั้งหมด' : 'All';
+  } else {
+    const visibleItems = selectedNonAll.slice(0, maxVisibleItems);
+    const remainingCount = selectedNonAll.length - maxVisibleItems;
+    const visibleText = visibleItems.map(o => language === 'th' ? o.th : o.en).join(', ');
+    if (remainingCount > 0) {
+      displayText = (
+        <span className="flex items-center gap-1">
+          <span className="truncate">{visibleText}</span>
+          <span className="shrink-0 text-muted-foreground">+{remainingCount}</span>
+        </span>
+      );
+    } else {
+      displayText = visibleText;
+    }
+  }
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button variant="outline" className="w-full justify-between">
+          <span className="truncate text-left flex-1">{displayText}</span>
+          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[280px] p-2 bg-card z-50" align="start">
+        <div className="space-y-1 max-h-[250px] overflow-auto">
+          {options.map((option) => (
+            <div
+              key={option.id}
+              className={cn(
+                "flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-accent hover:text-accent-foreground text-sm",
+                safeSelectedValues.includes(option.id) && "bg-primary/10"
+              )}
+              onClick={() => onChange(option.id, !safeSelectedValues.includes(option.id))}
+            >
+              <Check className={cn("mr-2 h-4 w-4", safeSelectedValues.includes(option.id) ? "opacity-100" : "opacity-0")} />
+              {language === 'th' ? option.th : option.en}
+            </div>
+          ))}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 interface OtherStagesFilterPanelProps {
   filters: OtherStagesFilterState;
   onFiltersChange: (filters: OtherStagesFilterState) => void;
   onClear: () => void;
   activeStage?: string;
+  myCasesOnly: boolean;
+  myTeamOnly: boolean;
+  onMyCasesChange: (value: boolean) => void;
+  onMyTeamChange: (value: boolean) => void;
 }
 
-export function OtherStagesFilterPanel({ filters, onFiltersChange, onClear, activeStage }: OtherStagesFilterPanelProps) {
+export function OtherStagesFilterPanel({
+  filters,
+  onFiltersChange,
+  onClear,
+  activeStage,
+  myCasesOnly,
+  myTeamOnly,
+  onMyCasesChange,
+  onMyTeamChange,
+}: OtherStagesFilterPanelProps) {
   const { language } = useLanguageStore();
   const [open, setOpen] = React.useState(false);
   const [localFilters, setLocalFilters] = React.useState<OtherStagesFilterState>({
     ...defaultOtherStagesFilterState,
     ...filters,
     insurers: Array.isArray(filters.insurers) ? filters.insurers : defaultOtherStagesFilterState.insurers,
-    policyStatuses: Array.isArray((filters as any).policyStatuses) ? (filters as any).policyStatuses : defaultOtherStagesFilterState.policyStatuses,
+    policyStatuses: Array.isArray(filters.policyStatuses) ? filters.policyStatuses : defaultOtherStagesFilterState.policyStatuses,
   });
 
-  const rfStaff = mockStaffMembers.filter(s => s.team === 'AST RF');
-  const scStaff = mockStaffMembers.filter(s => s.team === 'AST SC');
-  const deStaff = mockStaffMembers.filter(s => s.team === 'DE');
+  const rfStaff = mockStaffMembers.filter(s => s.team === 'AST RF').map(s => ({ id: s.id, name: s.name }));
+  const scStaff = mockStaffMembers.filter(s => s.team === 'AST SC').map(s => ({ id: s.id, name: s.name }));
+  const deStaff = mockStaffMembers.filter(s => s.team === 'DE').map(s => ({ id: s.id, name: s.name }));
 
-  const handleCheckboxChange = (
+  // Sync owner filter with myCasesOnly and myTeamOnly props
+  React.useEffect(() => {
+    if (myCasesOnly && !myTeamOnly) {
+      setLocalFilters(prev => ({ ...prev, owner: 'my_cases' }));
+    } else if (myTeamOnly && !myCasesOnly) {
+      setLocalFilters(prev => ({ ...prev, owner: 'my_team' }));
+    } else if (!myCasesOnly && !myTeamOnly) {
+      setLocalFilters(prev => ({ ...prev, owner: 'all' }));
+    }
+  }, [myCasesOnly, myTeamOnly]);
+
+  React.useEffect(() => {
+    setLocalFilters({
+      ...defaultOtherStagesFilterState,
+      ...filters,
+      insurers: Array.isArray(filters.insurers) ? filters.insurers : defaultOtherStagesFilterState.insurers,
+      policyStatuses: Array.isArray(filters.policyStatuses) ? filters.policyStatuses : defaultOtherStagesFilterState.policyStatuses,
+    });
+  }, [filters]);
+
+  const handleMultiSelectChange = (
     field: keyof OtherStagesFilterState,
     id: string,
     checked: boolean
@@ -205,6 +377,17 @@ export function OtherStagesFilterPanel({ filters, onFiltersChange, onClear, acti
 
   const handleApply = () => {
     onFiltersChange(localFilters);
+    // Sync owner state with parent
+    if (localFilters.owner === 'my_cases') {
+      onMyCasesChange(true);
+      onMyTeamChange(false);
+    } else if (localFilters.owner === 'my_team') {
+      onMyCasesChange(false);
+      onMyTeamChange(true);
+    } else {
+      onMyCasesChange(false);
+      onMyTeamChange(false);
+    }
     setOpen(false);
   };
 
@@ -213,244 +396,348 @@ export function OtherStagesFilterPanel({ filters, onFiltersChange, onClear, acti
   };
 
   const handleCancel = () => {
-    setLocalFilters(filters);
+    setLocalFilters({
+      ...defaultOtherStagesFilterState,
+      ...filters,
+      insurers: Array.isArray(filters.insurers) ? filters.insurers : defaultOtherStagesFilterState.insurers,
+      policyStatuses: Array.isArray(filters.policyStatuses) ? filters.policyStatuses : defaultOtherStagesFilterState.policyStatuses,
+    });
     setOpen(false);
   };
 
   const hasActiveFilters = JSON.stringify(filters) !== JSON.stringify(defaultOtherStagesFilterState);
 
-  const renderCheckboxGroup = (
-    field: keyof OtherStagesFilterState,
-    options: { id: string; en: string; th: string }[]
-  ) => (
-    <div className="flex flex-wrap gap-3">
-      {options.map((option) => (
-        <div key={option.id} className="flex items-center space-x-2">
-          <Checkbox
-            id={`${field}-${option.id}`}
-            checked={(localFilters[field] as string[]).includes(option.id)}
-            onCheckedChange={(checked) => handleCheckboxChange(field, option.id, checked as boolean)}
-            className="border-primary data-[state=checked]:bg-primary"
-          />
-          <Label htmlFor={`${field}-${option.id}`} className="text-sm font-normal cursor-pointer">
-            {language === 'th' ? option.th : option.en}
-          </Label>
-        </div>
-      ))}
-    </div>
-  );
+  // Helper to format multi-select values for chips
+  const formatMultiSelectValues = (
+    selectedIds: string[],
+    options: { id: string; en: string; th: string }[],
+    maxVisible: number = 2
+  ): string => {
+    const selectedOptions = options.filter(o => o.id !== 'all' && selectedIds.includes(o.id));
+    if (selectedOptions.length === 0) return language === 'th' ? 'ทั้งหมด' : 'All';
+    const visibleItems = selectedOptions.slice(0, maxVisible);
+    const remainingCount = selectedOptions.length - maxVisible;
+    const visibleText = visibleItems.map(o => language === 'th' ? o.th : o.en).join(', ');
+    if (remainingCount > 0) return `${visibleText} +${remainingCount}`;
+    return visibleText;
+  };
+
+  // Calculate active filter chips
+  const getActiveFilterChips = () => {
+    const chips: { key: string; label: string; values: string; onClear: () => void }[] = [];
+
+    if (filters.rfAssignee !== 'all') {
+      const rf = rfStaff.find(s => s.id === filters.rfAssignee);
+      chips.push({ key: 'rf', label: 'RF', values: rf?.name || filters.rfAssignee, onClear: () => onFiltersChange({ ...filters, rfAssignee: 'all' }) });
+    }
+    if (filters.scAssignee !== 'all') {
+      const sc = scStaff.find(s => s.id === filters.scAssignee);
+      chips.push({ key: 'sc', label: 'SC', values: sc?.name || filters.scAssignee, onClear: () => onFiltersChange({ ...filters, scAssignee: 'all' }) });
+    }
+    if (filters.deAssignee !== 'all') {
+      const de = deStaff.find(s => s.id === filters.deAssignee);
+      chips.push({ key: 'de', label: 'DE', values: de?.name || filters.deAssignee, onClear: () => onFiltersChange({ ...filters, deAssignee: 'all' }) });
+    }
+    if (filters.agent !== 'all') {
+      const agent = mockAgents.find(a => a.id === filters.agent);
+      chips.push({ key: 'agent', label: language === 'th' ? 'ตัวแทน' : 'Agent', values: agent?.name || filters.agent, onClear: () => onFiltersChange({ ...filters, agent: 'all' }) });
+    }
+    if (!filters.insurers.includes('all') && filters.insurers.length > 0) {
+      chips.push({ key: 'insurers', label: language === 'th' ? 'บริษัทประกัน' : 'Insurer', values: formatMultiSelectValues(filters.insurers, insurerOptions), onClear: () => onFiltersChange({ ...filters, insurers: ['all'] }) });
+    }
+    if (activeStage === 'all' && !filters.policyStatuses.includes('all') && filters.policyStatuses.length > 0) {
+      chips.push({ key: 'policyStatuses', label: language === 'th' ? 'สถานะกรมธรรม์' : 'Policy Status', values: formatMultiSelectValues(filters.policyStatuses, policyStatusOptions), onClear: () => onFiltersChange({ ...filters, policyStatuses: ['all'] }) });
+    }
+    if (filters.paymentStatus !== 'all') {
+      const ps = paymentStatusOptions.find(o => o.id === filters.paymentStatus);
+      chips.push({ key: 'paymentStatus', label: language === 'th' ? 'สถานะการชำระ' : 'Payment', values: ps ? (language === 'th' ? ps.th : ps.en) : filters.paymentStatus, onClear: () => onFiltersChange({ ...filters, paymentStatus: 'all' }) });
+    }
+    if (!filters.invoiceStatuses.includes('all') && filters.invoiceStatuses.length > 0) {
+      chips.push({ key: 'invoiceStatuses', label: language === 'th' ? 'ใบแจ้งหนี้' : 'Invoice', values: formatMultiSelectValues(filters.invoiceStatuses, invoiceStatusOptions), onClear: () => onFiltersChange({ ...filters, invoiceStatuses: ['all'] }) });
+    }
+    if (!filters.insuranceClasses.includes('all') && filters.insuranceClasses.length > 0) {
+      chips.push({ key: 'insuranceClasses', label: language === 'th' ? 'ชั้นประกัน' : 'Class', values: formatMultiSelectValues(filters.insuranceClasses, insuranceClassOptions), onClear: () => onFiltersChange({ ...filters, insuranceClasses: ['all'] }) });
+    }
+    if (!filters.saleTypes.includes('all') && filters.saleTypes.length > 0) {
+      chips.push({ key: 'saleTypes', label: language === 'th' ? 'ประเภทการขาย' : 'Sale Type', values: formatMultiSelectValues(filters.saleTypes, saleTypeOptions), onClear: () => onFiltersChange({ ...filters, saleTypes: ['all'] }) });
+    }
+    if (!filters.paymentMethods.includes('all') && filters.paymentMethods.length > 0) {
+      chips.push({ key: 'paymentMethods', label: language === 'th' ? 'วิธีชำระ' : 'Payment Method', values: formatMultiSelectValues(filters.paymentMethods, paymentMethodOptions), onClear: () => onFiltersChange({ ...filters, paymentMethods: ['all'] }) });
+    }
+    if (!filters.carInspectionStatuses.includes('all') && filters.carInspectionStatuses.length > 0) {
+      chips.push({ key: 'carInspection', label: language === 'th' ? 'ตรวจสภาพ' : 'Inspection', values: formatMultiSelectValues(filters.carInspectionStatuses, carInspectionStatusOptions), onClear: () => onFiltersChange({ ...filters, carInspectionStatuses: ['all'] }) });
+    }
+    if (!filters.leadTypes.includes('all') && filters.leadTypes.length > 0) {
+      chips.push({ key: 'leadTypes', label: language === 'th' ? 'ประเภท Lead' : 'Lead Type', values: formatMultiSelectValues(filters.leadTypes, leadTypeOptions), onClear: () => onFiltersChange({ ...filters, leadTypes: ['all'] }) });
+    }
+    if (filters.installmentType !== 'all') {
+      const inst = installmentOptions.find(o => o.id === filters.installmentType);
+      chips.push({ key: 'installmentType', label: language === 'th' ? 'ผ่อนชำระ' : 'Installment', values: inst ? (language === 'th' ? inst.th : inst.en) : filters.installmentType, onClear: () => onFiltersChange({ ...filters, installmentType: 'all' }) });
+    }
+    if (filters.owner !== 'all') {
+      const ownerOpt = ownerOptions.find(o => o.id === filters.owner);
+      chips.push({
+        key: 'owner',
+        label: language === 'th' ? 'ผู้รับผิดชอบ' : 'Owner',
+        values: language === 'th' ? ownerOpt?.th || '' : ownerOpt?.en || '',
+        onClear: () => {
+          onFiltersChange({ ...filters, owner: 'all' });
+          onMyCasesChange(false);
+          onMyTeamChange(false);
+        },
+      });
+    }
+
+    return chips;
+  };
+
+  const activeChips = getActiveFilterChips();
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button variant="outline" className="gap-2">
-          <Filter className="w-4 h-4" />
-          {language === 'th' ? 'ตัวกรองทั้งหมด' : 'All Filters'}
-          {hasActiveFilters && (
-            <span className="ml-1 px-1.5 py-0.5 text-xs bg-primary text-primary-foreground rounded-full">!</span>
-          )}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[900px] p-6 bg-card z-50" align="start">
-        <h3 className="text-lg font-semibold mb-4">{language === 'th' ? 'กรองตาม' : 'Filter By'}</h3>
-        <div className="grid grid-cols-3 gap-6">
-          {/* Column 1 */}
-          <div className="space-y-4">
+    <div className="flex items-center gap-2 flex-wrap">
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button variant="outline" className="gap-2">
+            <Filter className="w-4 h-4" />
+            {language === 'th' ? 'ตัวกรองทั้งหมด' : 'All Filters'}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[700px] p-6 bg-card z-50" align="start">
+          <h3 className="text-lg font-semibold mb-4">{language === 'th' ? 'กรองตาม' : 'Filter By'}</h3>
+
+          <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+            {/* Column 1 */}
             {/* RF */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">RF</Label>
-              <Select value={localFilters.rfAssignee} onValueChange={(v) => setLocalFilters({ ...localFilters, rfAssignee: v })}>
-                <SelectTrigger><SelectValue placeholder={language === 'th' ? 'ค้นหา RF' : 'Search RF'} /></SelectTrigger>
-                <SelectContent className="bg-card z-50">
-                  <SelectItem value="all">{language === 'th' ? 'RF ทั้งหมด' : 'All RF'}</SelectItem>
-                  {rfStaff.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <SearchableSelect
+                options={rfStaff}
+                value={localFilters.rfAssignee}
+                onChange={(v) => setLocalFilters({ ...localFilters, rfAssignee: v })}
+                placeholder={language === 'th' ? 'ค้นหา RF...' : 'Search RF...'}
+              />
             </div>
 
             {/* SC */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">SC</Label>
-              <Select value={localFilters.scAssignee} onValueChange={(v) => setLocalFilters({ ...localFilters, scAssignee: v })}>
-                <SelectTrigger><SelectValue placeholder={language === 'th' ? 'ค้นหา SC' : 'Search SC'} /></SelectTrigger>
-                <SelectContent className="bg-card z-50">
-                  <SelectItem value="all">{language === 'th' ? 'SC ทั้งหมด' : 'All SC'}</SelectItem>
-                  {scStaff.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <SearchableSelect
+                options={scStaff}
+                value={localFilters.scAssignee}
+                onChange={(v) => setLocalFilters({ ...localFilters, scAssignee: v })}
+                placeholder={language === 'th' ? 'ค้นหา SC...' : 'Search SC...'}
+              />
             </div>
 
             {/* DE */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">DE</Label>
-              <Select value={localFilters.deAssignee} onValueChange={(v) => setLocalFilters({ ...localFilters, deAssignee: v })}>
-                <SelectTrigger><SelectValue placeholder={language === 'th' ? 'ค้นหา DE' : 'Search DE'} /></SelectTrigger>
-                <SelectContent className="bg-card z-50">
-                  <SelectItem value="all">{language === 'th' ? 'DE ทั้งหมด' : 'All DE'}</SelectItem>
-                  {deStaff.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <SearchableSelect
+                options={deStaff}
+                value={localFilters.deAssignee}
+                onChange={(v) => setLocalFilters({ ...localFilters, deAssignee: v })}
+                placeholder={language === 'th' ? 'ค้นหา DE...' : 'Search DE...'}
+              />
             </div>
 
             {/* Agent */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">{language === 'th' ? 'ตัวแทน' : 'Agent'}</Label>
-              <Select value={localFilters.agent} onValueChange={(v) => setLocalFilters({ ...localFilters, agent: v })}>
-                <SelectTrigger><SelectValue placeholder={language === 'th' ? 'ค้นหาตัวแทน' : 'Search agents'} /></SelectTrigger>
-                <SelectContent className="bg-card z-50">
-                  <SelectItem value="all">{language === 'th' ? 'ตัวแทนทั้งหมด' : 'All Agents'}</SelectItem>
-                  {mockAgents.map((a) => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <SearchableSelect
+                options={mockAgents}
+                value={localFilters.agent}
+                onChange={(v) => setLocalFilters({ ...localFilters, agent: v })}
+                placeholder={language === 'th' ? 'ค้นหาตัวแทน...' : 'Search agent...'}
+              />
             </div>
 
             {/* Insurer */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">{language === 'th' ? 'บริษัทประกัน' : 'Insurer'}</Label>
+              <MultiSelectDropdown
+                options={insurerOptions}
+                selectedValues={localFilters.insurers}
+                onChange={(id, checked) => handleMultiSelectChange('insurers', id, checked)}
+                maxVisibleItems={2}
+              />
+            </div>
+
+            {/* Owner */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">{language === 'th' ? 'ผู้รับผิดชอบ' : 'Owner'}</Label>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full justify-between text-xs font-normal h-9">
-                    {localFilters.insurers.includes('all')
-                      ? (language === 'th' ? 'ทั้งหมด' : 'All')
-                      : localFilters.insurers.length === 1
-                        ? (insurerOptions.find(o => o.id === localFilters.insurers[0])?.[language === 'th' ? 'th' : 'en'] || localFilters.insurers[0])
-                        : `${localFilters.insurers.length} ${language === 'th' ? 'รายการ' : 'selected'}`
-                    }
-                    <span className="ml-auto opacity-50">▼</span>
+                  <Button variant="outline" className="w-full justify-between">
+                    <span className="truncate">
+                      {(() => {
+                        const opt = ownerOptions.find(o => o.id === localFilters.owner);
+                        return language === 'th' ? opt?.th : opt?.en;
+                      })()}
+                    </span>
+                    <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-[260px] p-2 bg-card z-[60]" align="start">
-                  <div className="max-h-[250px] overflow-y-auto space-y-1">
-                    {insurerOptions.map((option) => (
-                      <div key={option.id} className="flex items-center space-x-2 px-2 py-1 rounded hover:bg-muted/50">
-                        <Checkbox
-                          id={`insurers-${option.id}`}
-                          checked={localFilters.insurers.includes(option.id)}
-                          onCheckedChange={(checked) => handleCheckboxChange('insurers', option.id, checked as boolean)}
-                          className="border-primary data-[state=checked]:bg-primary"
-                        />
-                        <Label htmlFor={`insurers-${option.id}`} className="text-xs font-normal cursor-pointer flex-1">
-                          {language === 'th' ? option.th : option.en}
-                        </Label>
+                <PopoverContent className="w-[280px] p-2 bg-card z-50" align="start">
+                  <div className="space-y-1">
+                    {ownerOptions.map((option) => (
+                      <div
+                        key={option.id}
+                        className={cn(
+                          "flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-accent hover:text-accent-foreground text-sm",
+                          localFilters.owner === option.id && "bg-primary/10"
+                        )}
+                        onClick={() => setLocalFilters({ ...localFilters, owner: option.id })}
+                      >
+                        <Check className={cn("mr-2 h-4 w-4", localFilters.owner === option.id ? "opacity-100" : "opacity-0")} />
+                        {language === 'th' ? option.th : option.en}
                       </div>
                     ))}
                   </div>
                 </PopoverContent>
               </Popover>
             </div>
-          </div>
 
-          {/* Column 2 */}
-          <div className="space-y-4">
             {/* Policy Status - only on All tab */}
             {activeStage === 'all' && (
               <div className="space-y-2">
                 <Label className="text-sm font-medium">{language === 'th' ? 'สถานะกรมธรรม์' : 'Policy Status'}</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full justify-between text-xs font-normal h-9">
-                      {localFilters.policyStatuses.includes('all')
-                        ? (language === 'th' ? 'ทั้งหมด' : 'All')
-                        : localFilters.policyStatuses.length === 1
-                          ? (policyStatusOptions.find(o => o.id === localFilters.policyStatuses[0])?.[language === 'th' ? 'th' : 'en'] || localFilters.policyStatuses[0])
-                          : `${localFilters.policyStatuses.length} ${language === 'th' ? 'รายการ' : 'selected'}`
-                      }
-                      <span className="ml-auto opacity-50">▼</span>
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-[260px] p-2 bg-card z-[60]" align="start">
-                    <div className="max-h-[250px] overflow-y-auto space-y-1">
-                      {policyStatusOptions.map((option) => (
-                        <div key={option.id} className="flex items-center space-x-2 px-2 py-1 rounded hover:bg-muted/50">
-                          <Checkbox
-                            id={`policyStatuses-${option.id}`}
-                            checked={localFilters.policyStatuses.includes(option.id)}
-                            onCheckedChange={(checked) => handleCheckboxChange('policyStatuses', option.id, checked as boolean)}
-                            className="border-primary data-[state=checked]:bg-primary"
-                          />
-                          <Label htmlFor={`policyStatuses-${option.id}`} className="text-xs font-normal cursor-pointer flex-1">
-                            {language === 'th' ? option.th : option.en}
-                          </Label>
-                        </div>
-                      ))}
-                    </div>
-                  </PopoverContent>
-                </Popover>
+                <MultiSelectDropdown
+                  options={policyStatusOptions}
+                  selectedValues={localFilters.policyStatuses}
+                  onChange={(id, checked) => handleMultiSelectChange('policyStatuses', id, checked)}
+                  maxVisibleItems={2}
+                />
               </div>
             )}
 
             {/* Payment Status */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">{language === 'th' ? 'สถานะการชำระ' : 'Payment Status'}</Label>
-              <Select value={localFilters.paymentStatus} onValueChange={(v) => setLocalFilters({ ...localFilters, paymentStatus: v })}>
-                <SelectTrigger><SelectValue placeholder={language === 'th' ? 'ค้นหาสถานะ' : 'Search payment status'} /></SelectTrigger>
-                <SelectContent className="bg-card z-50">
-                  {paymentStatusOptions.map((o) => <SelectItem key={o.value} value={o.value}>{language === 'th' ? o.th : o.en}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <MultiSelectDropdown
+                options={paymentStatusOptions}
+                selectedValues={[localFilters.paymentStatus]}
+                onChange={(id, checked) => {
+                  if (checked) {
+                    setLocalFilters({ ...localFilters, paymentStatus: id });
+                  }
+                }}
+                maxVisibleItems={1}
+              />
             </div>
 
             {/* Invoice Status */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">{language === 'th' ? 'สถานะใบแจ้งหนี้' : 'Invoice Status'}</Label>
-              {renderCheckboxGroup('invoiceStatuses', invoiceStatusOptions)}
+              <MultiSelectDropdown
+                options={invoiceStatusOptions}
+                selectedValues={localFilters.invoiceStatuses}
+                onChange={(id, checked) => handleMultiSelectChange('invoiceStatuses', id, checked)}
+                maxVisibleItems={2}
+              />
             </div>
 
             {/* Insurance Class */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">{language === 'th' ? 'ชั้นประกัน' : 'Insurance Class'}</Label>
-              {renderCheckboxGroup('insuranceClasses', insuranceClassOptions)}
+              <MultiSelectDropdown
+                options={insuranceClassOptions}
+                selectedValues={localFilters.insuranceClasses}
+                onChange={(id, checked) => handleMultiSelectChange('insuranceClasses', id, checked)}
+                maxVisibleItems={3}
+              />
             </div>
 
             {/* Installment Type */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">{language === 'th' ? 'ประเภทการผ่อน' : 'Installment Type'}</Label>
-              <Select value={localFilters.installmentType} onValueChange={(v) => setLocalFilters({ ...localFilters, installmentType: v })}>
-                <SelectTrigger><SelectValue placeholder={language === 'th' ? 'เลือกประเภท' : 'Select type'} /></SelectTrigger>
-                <SelectContent className="bg-card z-50">
-                  {installmentOptions.map((o) => <SelectItem key={o.value} value={o.value}>{language === 'th' ? o.th : o.en}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <MultiSelectDropdown
+                options={installmentOptions}
+                selectedValues={[localFilters.installmentType]}
+                onChange={(id, checked) => {
+                  if (checked) {
+                    setLocalFilters({ ...localFilters, installmentType: id });
+                  }
+                }}
+                maxVisibleItems={1}
+              />
             </div>
-          </div>
 
-          {/* Column 3 */}
-          <div className="space-y-4">
             {/* Sale Type */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">{language === 'th' ? 'ประเภทการขาย' : 'Sale Type'}</Label>
-              {renderCheckboxGroup('saleTypes', saleTypeOptions)}
+              <MultiSelectDropdown
+                options={saleTypeOptions}
+                selectedValues={localFilters.saleTypes}
+                onChange={(id, checked) => handleMultiSelectChange('saleTypes', id, checked)}
+                maxVisibleItems={2}
+              />
             </div>
 
             {/* Payment Method */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">{language === 'th' ? 'วิธีชำระเงิน' : 'Payment Method'}</Label>
-              {renderCheckboxGroup('paymentMethods', paymentMethodOptions)}
+              <MultiSelectDropdown
+                options={paymentMethodOptions}
+                selectedValues={localFilters.paymentMethods}
+                onChange={(id, checked) => handleMultiSelectChange('paymentMethods', id, checked)}
+                maxVisibleItems={2}
+              />
             </div>
 
             {/* Car Inspection Status */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium">{language === 'th' ? 'สถานะตรวจสภาพรถ' : 'Car Inspection Status'}</Label>
-              {renderCheckboxGroup('carInspectionStatuses', carInspectionStatusOptions)}
+              <Label className="text-sm font-medium">{language === 'th' ? 'สถานะตรวจสภาพรถ' : 'Car Inspection'}</Label>
+              <MultiSelectDropdown
+                options={carInspectionStatusOptions}
+                selectedValues={localFilters.carInspectionStatuses}
+                onChange={(id, checked) => handleMultiSelectChange('carInspectionStatuses', id, checked)}
+                maxVisibleItems={2}
+              />
             </div>
 
-            {/* Lead Types (Multi-select) */}
+            {/* Lead Type */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">{language === 'th' ? 'ประเภท Lead' : 'Lead Type'}</Label>
-              {renderCheckboxGroup('leadTypes', leadTypeOptions)}
+              <MultiSelectDropdown
+                options={leadTypeOptions}
+                selectedValues={localFilters.leadTypes}
+                onChange={(id, checked) => handleMultiSelectChange('leadTypes', id, checked)}
+                maxVisibleItems={2}
+              />
             </div>
           </div>
-        </div>
 
-        {/* Footer */}
-        <div className="flex justify-between mt-6 pt-4 border-t">
-          <Button variant="outline" onClick={handleCancel}>{language === 'th' ? 'ยกเลิก' : 'Cancel'}</Button>
-          <div className="flex gap-3">
-            <Button variant="outline" onClick={handleClear}>{language === 'th' ? 'ล้าง' : 'Clear'}</Button>
-            <Button onClick={handleApply} className="bg-primary text-primary-foreground hover:bg-primary/90">{language === 'th' ? 'ใช้ตัวกรอง' : 'Apply Filters'}</Button>
+          {/* Footer */}
+          <div className="flex justify-between mt-6 pt-4 border-t">
+            <Button variant="outline" onClick={handleCancel}>{language === 'th' ? 'ยกเลิก' : 'Cancel'}</Button>
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={handleClear}>{language === 'th' ? 'ล้าง' : 'Clear'}</Button>
+              <Button onClick={handleApply} className="bg-primary text-primary-foreground hover:bg-primary/90">{language === 'th' ? 'ใช้ตัวกรอง' : 'Apply Filters'}</Button>
+            </div>
           </div>
+        </PopoverContent>
+      </Popover>
+
+      {/* Active filter chips */}
+      {activeChips.map((chip) => (
+        <div
+          key={chip.key}
+          className="flex items-center gap-1.5 px-2.5 py-1.5 bg-primary/10 text-primary rounded-md text-sm"
+        >
+          <span className="font-medium">{chip.label}:</span>
+          <span className="text-primary/80">{chip.values}</span>
+          <button onClick={chip.onClear} className="ml-0.5 hover:bg-primary/20 rounded p-0.5">
+            <X className="w-3 h-3" />
+          </button>
         </div>
-      </PopoverContent>
-    </Popover>
+      ))}
+
+      {/* Clear all */}
+      {hasActiveFilters && (
+        <Button variant="ghost" size="sm" onClick={onClear} className="text-muted-foreground hover:text-foreground">
+          {language === 'th' ? 'ล้างทั้งหมด' : 'Clear All'}
+        </Button>
+      )}
+    </div>
   );
 }
