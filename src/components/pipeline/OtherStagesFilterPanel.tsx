@@ -90,9 +90,9 @@ const policyStatusOptions: { id: string; en: string; th: string }[] = [
   { id: 'pending_issuance', en: 'Pending Issuance', th: 'รอออกกรมธรรม์' },
   { id: 'policy_issued', en: 'Policy Uploaded', th: 'กรมธรรม์ออกแล้ว' },
   { id: 'policy_shipped', en: 'Policy Shipped', th: 'กรมธรรม์ถูกจัดส่ง' },
-  { id: 'policy_delivered', en: 'Policy Delivered', th: 'ส่งมอบแล้ว' },
-  { id: 'policy_cancelled', en: 'Policy Cancelled', th: 'ยกเลิก' },
-  { id: 'rework_required', en: 'Rework Required', th: 'ต้องแก้ไข' },
+  { id: 'policy_delivered', en: 'Policy Delivered', th: 'กรมธรรม์จัดส่งสำเร็จ' },
+  { id: 'policy_cancelled', en: 'Policy Cancelled', th: 'กรมธรรม์ยกเลิก' },
+  { id: 'rework_required', en: 'Rework Required', th: 'งานติดปัญหา' },
 ];
 
 const paymentStatusOptions: { id: string; en: string; th: string }[] = [
