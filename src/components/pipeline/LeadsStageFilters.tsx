@@ -63,9 +63,9 @@ const ownerOptions: { id: 'all' | 'my_team' | 'my_cases'; en: string; th: string
 
 const leadTypeOptions: { id: string; en: string; th: string }[] = [
   { id: 'all', en: 'All', th: 'ทั้งหมด' },
-  { id: 'system', en: 'System', th: 'เบี้ยบนระบบ' },
-  { id: 'custom', en: 'Custom', th: 'เบี้ยนอกระบบ' },
-  { id: 'coa', en: 'COA', th: 'เบี้ยโอนโค้ด' },
+  { id: 'system', en: 'System', th: 'งานใหม่ (System)' },
+  { id: 'custom', en: 'Custom', th: 'งานใหม่ (Custom)' },
+  { id: 'coa', en: 'COA', th: 'งานโอนโค้ด' },
 ];
 
 const agentTypeOptions: { id: string; en: string; th: string }[] = [
