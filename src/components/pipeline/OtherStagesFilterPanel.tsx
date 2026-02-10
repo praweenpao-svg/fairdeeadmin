@@ -502,11 +502,36 @@ export function OtherStagesFilterPanel({
             {language === 'th' ? 'ตัวกรองทั้งหมด' : 'All Filters'}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[700px] p-6 bg-card z-50" align="start">
+        <PopoverContent className="w-[960px] p-6 bg-card z-50" align="start">
           <h3 className="text-lg font-semibold mb-4">{language === 'th' ? 'กรองตาม' : 'Filter By'}</h3>
 
-          <div className="grid grid-cols-2 gap-x-8 gap-y-4">
-            {/* Column 1 */}
+          <div className="grid grid-cols-3 gap-x-8 gap-y-4">
+            {/* ===== Column 1: Policy Status, Agent, RF, SC, DE, Owner ===== */}
+
+            {/* Policy Status - only on All tab */}
+            {activeStage === 'all' && (
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">{language === 'th' ? 'สถานะกรมธรรม์' : 'Policy Status'}</Label>
+                <MultiSelectDropdown
+                  options={policyStatusOptions}
+                  selectedValues={localFilters.policyStatuses}
+                  onChange={(id, checked) => handleMultiSelectChange('policyStatuses', id, checked)}
+                  maxVisibleItems={2}
+                />
+              </div>
+            )}
+
+            {/* Agent */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">{language === 'th' ? 'ตัวแทน' : 'Agent'}</Label>
+              <SearchableSelect
+                options={mockAgents}
+                value={localFilters.agent}
+                onChange={(v) => setLocalFilters({ ...localFilters, agent: v })}
+                placeholder={language === 'th' ? 'ค้นหาตัวแทน...' : 'Search agent...'}
+              />
+            </div>
+
             {/* RF */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">RF</Label>
@@ -537,28 +562,6 @@ export function OtherStagesFilterPanel({
                 value={localFilters.deAssignee}
                 onChange={(v) => setLocalFilters({ ...localFilters, deAssignee: v })}
                 placeholder={language === 'th' ? 'ค้นหา DE...' : 'Search DE...'}
-              />
-            </div>
-
-            {/* Agent */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">{language === 'th' ? 'ตัวแทน' : 'Agent'}</Label>
-              <SearchableSelect
-                options={mockAgents}
-                value={localFilters.agent}
-                onChange={(v) => setLocalFilters({ ...localFilters, agent: v })}
-                placeholder={language === 'th' ? 'ค้นหาตัวแทน...' : 'Search agent...'}
-              />
-            </div>
-
-            {/* Insurer */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">{language === 'th' ? 'บริษัทประกัน' : 'Insurer'}</Label>
-              <MultiSelectDropdown
-                options={insurerOptions}
-                selectedValues={localFilters.insurers}
-                onChange={(id, checked) => handleMultiSelectChange('insurers', id, checked)}
-                maxVisibleItems={2}
               />
             </div>
 
@@ -597,41 +600,15 @@ export function OtherStagesFilterPanel({
               </Popover>
             </div>
 
-            {/* Policy Status - only on All tab */}
-            {activeStage === 'all' && (
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">{language === 'th' ? 'สถานะกรมธรรม์' : 'Policy Status'}</Label>
-                <MultiSelectDropdown
-                  options={policyStatusOptions}
-                  selectedValues={localFilters.policyStatuses}
-                  onChange={(id, checked) => handleMultiSelectChange('policyStatuses', id, checked)}
-                  maxVisibleItems={2}
-                />
-              </div>
-            )}
+            {/* ===== Column 2: Insurer, Insurance Class, Lead Type, Sale Type, Invoice ===== */}
 
-            {/* Payment Status */}
+            {/* Insurer */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium">{language === 'th' ? 'สถานะการชำระ' : 'Payment Status'}</Label>
+              <Label className="text-sm font-medium">{language === 'th' ? 'บริษัทประกัน' : 'Insurer'}</Label>
               <MultiSelectDropdown
-                options={paymentStatusOptions}
-                selectedValues={[localFilters.paymentStatus]}
-                onChange={(id, checked) => {
-                  if (checked) {
-                    setLocalFilters({ ...localFilters, paymentStatus: id });
-                  }
-                }}
-                maxVisibleItems={1}
-              />
-            </div>
-
-            {/* Invoice Status */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">{language === 'th' ? 'สถานะใบแจ้งหนี้' : 'Invoice Status'}</Label>
-              <MultiSelectDropdown
-                options={invoiceStatusOptions}
-                selectedValues={localFilters.invoiceStatuses}
-                onChange={(id, checked) => handleMultiSelectChange('invoiceStatuses', id, checked)}
+                options={insurerOptions}
+                selectedValues={localFilters.insurers}
+                onChange={(id, checked) => handleMultiSelectChange('insurers', id, checked)}
                 maxVisibleItems={2}
               />
             </div>
@@ -646,6 +623,41 @@ export function OtherStagesFilterPanel({
                 maxVisibleItems={3}
               />
             </div>
+
+            {/* Lead Type */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">{language === 'th' ? 'ประเภท Lead' : 'Lead Type'}</Label>
+              <MultiSelectDropdown
+                options={leadTypeOptions}
+                selectedValues={localFilters.leadTypes}
+                onChange={(id, checked) => handleMultiSelectChange('leadTypes', id, checked)}
+                maxVisibleItems={2}
+              />
+            </div>
+
+            {/* Sale Type */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">{language === 'th' ? 'ประเภทการขาย' : 'Sale Type'}</Label>
+              <MultiSelectDropdown
+                options={saleTypeOptions}
+                selectedValues={localFilters.saleTypes}
+                onChange={(id, checked) => handleMultiSelectChange('saleTypes', id, checked)}
+                maxVisibleItems={2}
+              />
+            </div>
+
+            {/* Invoice Status */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">{language === 'th' ? 'สถานะใบแจ้งหนี้' : 'Invoice Status'}</Label>
+              <MultiSelectDropdown
+                options={invoiceStatusOptions}
+                selectedValues={localFilters.invoiceStatuses}
+                onChange={(id, checked) => handleMultiSelectChange('invoiceStatuses', id, checked)}
+                maxVisibleItems={2}
+              />
+            </div>
+
+            {/* ===== Column 3: Installment Type, Payment Status, Payment Method, Invoice Status, Car Inspection ===== */}
 
             {/* Installment Type */}
             <div className="space-y-2">
@@ -662,14 +674,18 @@ export function OtherStagesFilterPanel({
               />
             </div>
 
-            {/* Sale Type */}
+            {/* Payment Status */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium">{language === 'th' ? 'ประเภทการขาย' : 'Sale Type'}</Label>
+              <Label className="text-sm font-medium">{language === 'th' ? 'สถานะการชำระ' : 'Payment Status'}</Label>
               <MultiSelectDropdown
-                options={saleTypeOptions}
-                selectedValues={localFilters.saleTypes}
-                onChange={(id, checked) => handleMultiSelectChange('saleTypes', id, checked)}
-                maxVisibleItems={2}
+                options={paymentStatusOptions}
+                selectedValues={[localFilters.paymentStatus]}
+                onChange={(id, checked) => {
+                  if (checked) {
+                    setLocalFilters({ ...localFilters, paymentStatus: id });
+                  }
+                }}
+                maxVisibleItems={1}
               />
             </div>
 
@@ -684,24 +700,13 @@ export function OtherStagesFilterPanel({
               />
             </div>
 
-            {/* Car Inspection Status */}
+            {/* Car Inspection */}
             <div className="space-y-2">
               <Label className="text-sm font-medium">{language === 'th' ? 'สถานะตรวจสภาพรถ' : 'Car Inspection'}</Label>
               <MultiSelectDropdown
                 options={carInspectionStatusOptions}
                 selectedValues={localFilters.carInspectionStatuses}
                 onChange={(id, checked) => handleMultiSelectChange('carInspectionStatuses', id, checked)}
-                maxVisibleItems={2}
-              />
-            </div>
-
-            {/* Lead Type */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">{language === 'th' ? 'ประเภท Lead' : 'Lead Type'}</Label>
-              <MultiSelectDropdown
-                options={leadTypeOptions}
-                selectedValues={localFilters.leadTypes}
-                onChange={(id, checked) => handleMultiSelectChange('leadTypes', id, checked)}
                 maxVisibleItems={2}
               />
             </div>
