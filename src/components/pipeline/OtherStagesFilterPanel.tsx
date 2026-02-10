@@ -452,7 +452,7 @@ export function OtherStagesFilterPanel({
     }
     if (filters.paymentStatus !== 'all') {
       const ps = paymentStatusOptions.find(o => o.id === filters.paymentStatus);
-      chips.push({ key: 'paymentStatus', label: language === 'th' ? 'สถานะการชำระ' : 'Payment', values: ps ? (language === 'th' ? ps.th : ps.en) : filters.paymentStatus, onClear: () => onFiltersChange({ ...filters, paymentStatus: 'all' }) });
+      chips.push({ key: 'paymentStatus', label: language === 'th' ? 'สถานะการชำระเงิน' : 'Payment Status', values: ps ? (language === 'th' ? ps.th : ps.en) : filters.paymentStatus, onClear: () => onFiltersChange({ ...filters, paymentStatus: 'all' }) });
     }
     if (!filters.invoiceStatuses.includes('all') && filters.invoiceStatuses.length > 0) {
       chips.push({ key: 'invoiceStatuses', label: language === 'th' ? 'ใบแจ้งหนี้' : 'Invoice', values: formatMultiSelectValues(filters.invoiceStatuses, invoiceStatusOptions), onClear: () => onFiltersChange({ ...filters, invoiceStatuses: ['all'] }) });
@@ -461,7 +461,7 @@ export function OtherStagesFilterPanel({
       chips.push({ key: 'insuranceClasses', label: language === 'th' ? 'ชั้นประกัน' : 'Class', values: formatMultiSelectValues(filters.insuranceClasses, insuranceClassOptions), onClear: () => onFiltersChange({ ...filters, insuranceClasses: ['all'] }) });
     }
     if (!filters.saleTypes.includes('all') && filters.saleTypes.length > 0) {
-      chips.push({ key: 'saleTypes', label: language === 'th' ? 'ประเภทการขาย' : 'Sale Type', values: formatMultiSelectValues(filters.saleTypes, saleTypeOptions), onClear: () => onFiltersChange({ ...filters, saleTypes: ['all'] }) });
+      chips.push({ key: 'saleTypes', label: language === 'th' ? 'ประเภทการจ่าย' : 'Payment Method', values: formatMultiSelectValues(filters.saleTypes, saleTypeOptions), onClear: () => onFiltersChange({ ...filters, saleTypes: ['all'] }) });
     }
     if (!filters.carInspectionStatuses.includes('all') && filters.carInspectionStatuses.length > 0) {
       chips.push({ key: 'carInspection', label: language === 'th' ? 'ตรวจสภาพ' : 'Inspection', values: formatMultiSelectValues(filters.carInspectionStatuses, carInspectionStatusOptions), onClear: () => onFiltersChange({ ...filters, carInspectionStatuses: ['all'] }) });
@@ -471,7 +471,7 @@ export function OtherStagesFilterPanel({
     }
     if (filters.installmentType !== 'all') {
       const inst = installmentOptions.find(o => o.id === filters.installmentType);
-      chips.push({ key: 'installmentType', label: language === 'th' ? 'ประเภทการชำระ' : 'Payment Type', values: inst ? (language === 'th' ? inst.th : inst.en) : filters.installmentType, onClear: () => onFiltersChange({ ...filters, installmentType: 'all' }) });
+      chips.push({ key: 'installmentType', label: language === 'th' ? 'ประเภทการชำระเงิน' : 'Payment Type', values: inst ? (language === 'th' ? inst.th : inst.en) : filters.installmentType, onClear: () => onFiltersChange({ ...filters, installmentType: 'all' }) });
     }
     if (filters.etaStatus !== 'all') {
       const eta = etaStatusOptions.find(o => o.id === filters.etaStatus);
@@ -623,7 +623,7 @@ export function OtherStagesFilterPanel({
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-sm font-medium">{language === 'th' ? 'ประเภทการขาย' : 'Sale Type'}</Label>
+                <Label className="text-sm font-medium">{language === 'th' ? 'ประเภทการจ่าย' : 'Payment Method'}</Label>
                 <MultiSelectDropdown
                   options={saleTypeOptions}
                   selectedValues={localFilters.saleTypes}
@@ -645,7 +645,7 @@ export function OtherStagesFilterPanel({
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-sm font-medium">{language === 'th' ? 'ประเภทการชำระ' : 'Payment Type'}</Label>
+                <Label className="text-sm font-medium">{language === 'th' ? 'ประเภทการชำระเงิน' : 'Payment Type'}</Label>
                 <MultiSelectDropdown
                   options={installmentOptions}
                   selectedValues={[localFilters.installmentType]}
@@ -658,7 +658,7 @@ export function OtherStagesFilterPanel({
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-sm font-medium">{language === 'th' ? 'สถานะการชำระ' : 'Payment Status'}</Label>
+                <Label className="text-sm font-medium">{language === 'th' ? 'สถานะการชำระเงิน' : 'Payment Status'}</Label>
                 <MultiSelectDropdown
                   options={paymentStatusOptions}
                   selectedValues={[localFilters.paymentStatus]}
