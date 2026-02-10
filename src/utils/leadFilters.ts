@@ -273,6 +273,13 @@ export function applyOtherStagesFilters(leads: Lead[], filters: OtherStagesFilte
       }
     }
     
+    // Created By filter (multi-select: agent/admin)
+    if (!filters.createdBy.includes('all') && filters.createdBy.length > 0) {
+      if (!filters.createdBy.includes(lead.createdBy)) {
+        return false;
+      }
+    }
+
     // Invoice Status and Car Inspection — no matching data fields on Lead, kept as UI placeholders
     
     return true;
