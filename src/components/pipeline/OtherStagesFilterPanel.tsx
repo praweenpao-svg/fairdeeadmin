@@ -23,10 +23,10 @@ export interface OtherStagesFilterState {
   invoiceStatuses: string[];
   insuranceClasses: string[];
   saleTypes: string[];
-  
   carInspectionStatuses: string[];
   leadTypes: string[];
   installmentType: string;
+  etaStatus: string;
   owner: 'all' | 'my_team' | 'my_cases';
 }
 
@@ -41,10 +41,10 @@ export const defaultOtherStagesFilterState: OtherStagesFilterState = {
   invoiceStatuses: ['all'],
   insuranceClasses: ['all'],
   saleTypes: ['all'],
-  
   carInspectionStatuses: ['all'],
   leadTypes: ['all'],
   installmentType: 'all',
+  etaStatus: 'all',
   owner: 'all',
 };
 
@@ -129,6 +129,11 @@ const saleTypeOptions: { id: string; en: string; th: string }[] = [
   { id: 'credit', en: 'Credit', th: 'เครดิต' },
 ];
 
+const etaStatusOptions: { id: string; en: string; th: string }[] = [
+  { id: 'all', en: 'All', th: 'ทั้งหมด' },
+  { id: 'on_time', en: 'On Time', th: 'ตามกำหนด' },
+  { id: 'breached', en: 'Breached', th: 'เกินกำหนด' },
+];
 
 const carInspectionStatusOptions: { id: string; en: string; th: string }[] = [
   { id: 'all', en: 'All', th: 'ทั้งหมด' },
@@ -468,6 +473,10 @@ export function OtherStagesFilterPanel({
       const inst = installmentOptions.find(o => o.id === filters.installmentType);
       chips.push({ key: 'installmentType', label: language === 'th' ? 'ประเภทการชำระ' : 'Payment Type', values: inst ? (language === 'th' ? inst.th : inst.en) : filters.installmentType, onClear: () => onFiltersChange({ ...filters, installmentType: 'all' }) });
     }
+    if (filters.etaStatus !== 'all') {
+      const eta = etaStatusOptions.find(o => o.id === filters.etaStatus);
+      chips.push({ key: 'etaStatus', label: language === 'th' ? 'สถานะ ETA' : 'ETA Status', values: eta ? (language === 'th' ? eta.th : eta.en) : filters.etaStatus, onClear: () => onFiltersChange({ ...filters, etaStatus: 'all' }) });
+    }
     if (filters.owner !== 'all') {
       const ownerOpt = ownerOptions.find(o => o.id === filters.owner);
       chips.push({
@@ -500,7 +509,7 @@ export function OtherStagesFilterPanel({
           <h3 className="text-lg font-semibold mb-4">{language === 'th' ? 'กรองตาม' : 'Filter By'}</h3>
 
           <div className="flex gap-8">
-            {/* ===== Column 1: Policy Status, Agent, RF, SC, DE, Owner ===== */}
+            {/* ===== Column 1: Policy Status, Agent, RF, SC, DE ===== */}
             <div className="flex-1 space-y-4">
               {activeStage === 'all' && (
                 <div className="space-y-2">
@@ -549,11 +558,15 @@ export function OtherStagesFilterPanel({
                   placeholder={language === 'th' ? 'ค้นหา DE...' : 'Search DE...'}
                 />
               </div>
+            </div>
+
+            {/* ===== Column 2: Owner, Insurer, Insurance Class, Lead Type, Sale Type ===== */}
+            <div className="flex-1 space-y-4">
               <div className="space-y-2">
                 <Label className="text-sm font-medium">{language === 'th' ? 'ผู้รับผิดชอบ' : 'Owner'}</Label>
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full justify-between">
+                    <Button variant="outline" className="w-full justify-between font-normal">
                       <span className="truncate">
                         {(() => {
                           const opt = ownerOptions.find(o => o.id === localFilters.owner);
@@ -582,10 +595,6 @@ export function OtherStagesFilterPanel({
                   </PopoverContent>
                 </Popover>
               </div>
-            </div>
-
-            {/* ===== Column 2: Insurer, Insurance Class, Lead Type, Sale Type, Invoice ===== */}
-            <div className="flex-1 space-y-4">
               <div className="space-y-2">
                 <Label className="text-sm font-medium">{language === 'th' ? 'บริษัทประกัน' : 'Insurer'}</Label>
                 <MultiSelectDropdown
@@ -622,6 +631,10 @@ export function OtherStagesFilterPanel({
                   maxVisibleItems={2}
                 />
               </div>
+            </div>
+
+            {/* ===== Column 3: Invoice Status, Payment Type, Payment Status, Car Inspection, ETA Status ===== */}
+            <div className="flex-1 space-y-4">
               <div className="space-y-2">
                 <Label className="text-sm font-medium">{language === 'th' ? 'สถานะใบแจ้งหนี้' : 'Invoice Status'}</Label>
                 <MultiSelectDropdown
@@ -631,10 +644,6 @@ export function OtherStagesFilterPanel({
                   maxVisibleItems={2}
                 />
               </div>
-            </div>
-
-            {/* ===== Column 3: Installment Type, Payment Status, Payment Method, Car Inspection ===== */}
-            <div className="flex-1 space-y-4">
               <div className="space-y-2">
                 <Label className="text-sm font-medium">{language === 'th' ? 'ประเภทการชำระ' : 'Payment Type'}</Label>
                 <MultiSelectDropdown
@@ -668,6 +677,19 @@ export function OtherStagesFilterPanel({
                   selectedValues={localFilters.carInspectionStatuses}
                   onChange={(id, checked) => handleMultiSelectChange('carInspectionStatuses', id, checked)}
                   maxVisibleItems={2}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">{language === 'th' ? 'สถานะ ETA' : 'ETA Status'}</Label>
+                <MultiSelectDropdown
+                  options={etaStatusOptions}
+                  selectedValues={[localFilters.etaStatus]}
+                  onChange={(id, checked) => {
+                    if (checked) {
+                      setLocalFilters({ ...localFilters, etaStatus: id });
+                    }
+                  }}
+                  maxVisibleItems={1}
                 />
               </div>
             </div>
