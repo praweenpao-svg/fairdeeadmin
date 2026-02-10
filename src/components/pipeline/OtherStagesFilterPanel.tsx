@@ -608,20 +608,22 @@ export function OtherStagesFilterPanel({
         <PopoverContent className="w-[960px] p-6 bg-card z-50" align="start">
           <h3 className="text-lg font-semibold mb-4">{language === 'th' ? 'กรองตาม' : 'Filter By'}</h3>
 
+          {/* Full-width Policy Status for All tab */}
+          {activeStage === 'all' && (
+            <div className="space-y-2 mb-4">
+              <Label className="text-sm font-medium">{language === 'th' ? 'สถานะกรมธรรม์' : 'Policy Status'}</Label>
+              <MultiSelectDropdown
+                options={policyStatusOptions}
+                selectedValues={localFilters.policyStatuses}
+                onChange={(id, checked) => handleMultiSelectChange('policyStatuses', id, checked)}
+                maxVisibleItems={4}
+              />
+            </div>
+          )}
+
           <div className="flex gap-8">
-            {/* ===== Column 1: Policy Status, Agent, RF, SC, DE ===== */}
+            {/* ===== Column 1: Agent, RF, SC, DE, Created By ===== */}
             <div className="flex-1 space-y-4">
-              {activeStage === 'all' && (
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">{language === 'th' ? 'สถานะกรมธรรม์' : 'Policy Status'}</Label>
-                  <MultiSelectDropdown
-                    options={policyStatusOptions}
-                    selectedValues={localFilters.policyStatuses}
-                    onChange={(id, checked) => handleMultiSelectChange('policyStatuses', id, checked)}
-                    maxVisibleItems={2}
-                  />
-                </div>
-              )}
               <div className="space-y-2">
                 <Label className="text-sm font-medium">{language === 'th' ? 'ตัวแทน' : 'Agent'}</Label>
                 <SearchableSelect
