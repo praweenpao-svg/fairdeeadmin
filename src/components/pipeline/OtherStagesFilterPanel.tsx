@@ -23,7 +23,7 @@ export interface OtherStagesFilterState {
   invoiceStatuses: string[];
   insuranceClasses: string[];
   saleTypes: string[];
-  paymentMethods: string[];
+  
   carInspectionStatuses: string[];
   leadTypes: string[];
   installmentType: string;
@@ -41,7 +41,7 @@ export const defaultOtherStagesFilterState: OtherStagesFilterState = {
   invoiceStatuses: ['all'],
   insuranceClasses: ['all'],
   saleTypes: ['all'],
-  paymentMethods: ['all'],
+  
   carInspectionStatuses: ['all'],
   leadTypes: ['all'],
   installmentType: 'all',
@@ -126,12 +126,6 @@ const saleTypeOptions: { id: string; en: string; th: string }[] = [
   { id: 'credit', en: 'Credit', th: 'เครดิต' },
 ];
 
-const paymentMethodOptions: { id: string; en: string; th: string }[] = [
-  { id: 'all', en: 'All', th: 'ทั้งหมด' },
-  { id: 'bank', en: 'Bank Account', th: 'บัญชีธนาคาร' },
-  { id: 'credit_card', en: 'Credit Card', th: 'บัตรเครดิต' },
-  { id: 'qr', en: 'QR', th: 'QR' },
-];
 
 const carInspectionStatusOptions: { id: string; en: string; th: string }[] = [
   { id: 'all', en: 'All', th: 'ทั้งหมด' },
@@ -461,9 +455,6 @@ export function OtherStagesFilterPanel({
     if (!filters.saleTypes.includes('all') && filters.saleTypes.length > 0) {
       chips.push({ key: 'saleTypes', label: language === 'th' ? 'ประเภทการขาย' : 'Sale Type', values: formatMultiSelectValues(filters.saleTypes, saleTypeOptions), onClear: () => onFiltersChange({ ...filters, saleTypes: ['all'] }) });
     }
-    if (!filters.paymentMethods.includes('all') && filters.paymentMethods.length > 0) {
-      chips.push({ key: 'paymentMethods', label: language === 'th' ? 'วิธีชำระ' : 'Payment Method', values: formatMultiSelectValues(filters.paymentMethods, paymentMethodOptions), onClear: () => onFiltersChange({ ...filters, paymentMethods: ['all'] }) });
-    }
     if (!filters.carInspectionStatuses.includes('all') && filters.carInspectionStatuses.length > 0) {
       chips.push({ key: 'carInspection', label: language === 'th' ? 'ตรวจสภาพ' : 'Inspection', values: formatMultiSelectValues(filters.carInspectionStatuses, carInspectionStatusOptions), onClear: () => onFiltersChange({ ...filters, carInspectionStatuses: ['all'] }) });
     }
@@ -665,15 +656,6 @@ export function OtherStagesFilterPanel({
                     }
                   }}
                   maxVisibleItems={1}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">{language === 'th' ? 'วิธีชำระเงิน' : 'Payment Method'}</Label>
-                <MultiSelectDropdown
-                  options={paymentMethodOptions}
-                  selectedValues={localFilters.paymentMethods}
-                  onChange={(id, checked) => handleMultiSelectChange('paymentMethods', id, checked)}
-                  maxVisibleItems={2}
                 />
               </div>
               <div className="space-y-2">
