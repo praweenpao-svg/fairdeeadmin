@@ -109,13 +109,14 @@ const installmentOptions: { value: string; en: string; th: string }[] = [
   { value: 'non_installment', en: 'Non-Installment', th: 'ชำระเต็มจำนวน' },
 ];
 
-// Mock agents for demo
+// Mock agents from leads data
 const mockAgents = [
-  { id: 'FD-5391', name: 'Sharon Duncan' },
-  { id: 'FM-5392', name: 'Kelli Lopez' },
-  { id: 'FM-5390', name: 'Mary Collins abc' },
-  { id: 'FD-5393', name: 'John Smith' },
-  { id: 'FM-5394', name: 'Jane Doe' },
+  { id: 'FD-3460', name: 'Akshay Bazad' },
+  { id: 'FM-5368', name: 'James Santes' },
+  { id: 'FM-5369', name: 'Harriett Joyce' },
+  { id: 'FM-5370', name: 'Jennifer Haines' },
+  { id: 'FM-5371', name: 'Michael Chen' },
+  { id: 'FM-5372', name: 'Sarah Wilson' },
 ];
 
 interface AllFiltersPanelProps {
