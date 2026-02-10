@@ -505,210 +505,186 @@ export function OtherStagesFilterPanel({
         <PopoverContent className="w-[960px] p-6 bg-card z-50" align="start">
           <h3 className="text-lg font-semibold mb-4">{language === 'th' ? 'กรองตาม' : 'Filter By'}</h3>
 
-          <div className="grid grid-cols-3 gap-x-8 gap-y-4">
+          <div className="flex gap-8">
             {/* ===== Column 1: Policy Status, Agent, RF, SC, DE, Owner ===== */}
-
-            {/* Policy Status - only on All tab */}
-            {activeStage === 'all' && (
+            <div className="flex-1 space-y-4">
+              {activeStage === 'all' && (
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">{language === 'th' ? 'สถานะกรมธรรม์' : 'Policy Status'}</Label>
+                  <MultiSelectDropdown
+                    options={policyStatusOptions}
+                    selectedValues={localFilters.policyStatuses}
+                    onChange={(id, checked) => handleMultiSelectChange('policyStatuses', id, checked)}
+                    maxVisibleItems={2}
+                  />
+                </div>
+              )}
               <div className="space-y-2">
-                <Label className="text-sm font-medium">{language === 'th' ? 'สถานะกรมธรรม์' : 'Policy Status'}</Label>
-                <MultiSelectDropdown
-                  options={policyStatusOptions}
-                  selectedValues={localFilters.policyStatuses}
-                  onChange={(id, checked) => handleMultiSelectChange('policyStatuses', id, checked)}
-                  maxVisibleItems={2}
+                <Label className="text-sm font-medium">{language === 'th' ? 'ตัวแทน' : 'Agent'}</Label>
+                <SearchableSelect
+                  options={mockAgents}
+                  value={localFilters.agent}
+                  onChange={(v) => setLocalFilters({ ...localFilters, agent: v })}
+                  placeholder={language === 'th' ? 'ค้นหาตัวแทน...' : 'Search agent...'}
                 />
               </div>
-            )}
-
-            {/* Agent */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">{language === 'th' ? 'ตัวแทน' : 'Agent'}</Label>
-              <SearchableSelect
-                options={mockAgents}
-                value={localFilters.agent}
-                onChange={(v) => setLocalFilters({ ...localFilters, agent: v })}
-                placeholder={language === 'th' ? 'ค้นหาตัวแทน...' : 'Search agent...'}
-              />
-            </div>
-
-            {/* RF */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">RF</Label>
-              <SearchableSelect
-                options={rfStaff}
-                value={localFilters.rfAssignee}
-                onChange={(v) => setLocalFilters({ ...localFilters, rfAssignee: v })}
-                placeholder={language === 'th' ? 'ค้นหา RF...' : 'Search RF...'}
-              />
-            </div>
-
-            {/* SC */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">SC</Label>
-              <SearchableSelect
-                options={scStaff}
-                value={localFilters.scAssignee}
-                onChange={(v) => setLocalFilters({ ...localFilters, scAssignee: v })}
-                placeholder={language === 'th' ? 'ค้นหา SC...' : 'Search SC...'}
-              />
-            </div>
-
-            {/* DE */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">DE</Label>
-              <SearchableSelect
-                options={deStaff}
-                value={localFilters.deAssignee}
-                onChange={(v) => setLocalFilters({ ...localFilters, deAssignee: v })}
-                placeholder={language === 'th' ? 'ค้นหา DE...' : 'Search DE...'}
-              />
-            </div>
-
-            {/* Owner */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">{language === 'th' ? 'ผู้รับผิดชอบ' : 'Owner'}</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full justify-between">
-                    <span className="truncate">
-                      {(() => {
-                        const opt = ownerOptions.find(o => o.id === localFilters.owner);
-                        return language === 'th' ? opt?.th : opt?.en;
-                      })()}
-                    </span>
-                    <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-[280px] p-2 bg-card z-50" align="start">
-                  <div className="space-y-1">
-                    {ownerOptions.map((option) => (
-                      <div
-                        key={option.id}
-                        className={cn(
-                          "flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-accent hover:text-accent-foreground text-sm",
-                          localFilters.owner === option.id && "bg-primary/10"
-                        )}
-                        onClick={() => setLocalFilters({ ...localFilters, owner: option.id })}
-                      >
-                        <Check className={cn("mr-2 h-4 w-4", localFilters.owner === option.id ? "opacity-100" : "opacity-0")} />
-                        {language === 'th' ? option.th : option.en}
-                      </div>
-                    ))}
-                  </div>
-                </PopoverContent>
-              </Popover>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">RF</Label>
+                <SearchableSelect
+                  options={rfStaff}
+                  value={localFilters.rfAssignee}
+                  onChange={(v) => setLocalFilters({ ...localFilters, rfAssignee: v })}
+                  placeholder={language === 'th' ? 'ค้นหา RF...' : 'Search RF...'}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">SC</Label>
+                <SearchableSelect
+                  options={scStaff}
+                  value={localFilters.scAssignee}
+                  onChange={(v) => setLocalFilters({ ...localFilters, scAssignee: v })}
+                  placeholder={language === 'th' ? 'ค้นหา SC...' : 'Search SC...'}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">DE</Label>
+                <SearchableSelect
+                  options={deStaff}
+                  value={localFilters.deAssignee}
+                  onChange={(v) => setLocalFilters({ ...localFilters, deAssignee: v })}
+                  placeholder={language === 'th' ? 'ค้นหา DE...' : 'Search DE...'}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">{language === 'th' ? 'ผู้รับผิดชอบ' : 'Owner'}</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full justify-between">
+                      <span className="truncate">
+                        {(() => {
+                          const opt = ownerOptions.find(o => o.id === localFilters.owner);
+                          return language === 'th' ? opt?.th : opt?.en;
+                        })()}
+                      </span>
+                      <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[280px] p-2 bg-card z-50" align="start">
+                    <div className="space-y-1">
+                      {ownerOptions.map((option) => (
+                        <div
+                          key={option.id}
+                          className={cn(
+                            "flex items-center px-2 py-1.5 rounded cursor-pointer hover:bg-accent hover:text-accent-foreground text-sm",
+                            localFilters.owner === option.id && "bg-primary/10"
+                          )}
+                          onClick={() => setLocalFilters({ ...localFilters, owner: option.id })}
+                        >
+                          <Check className={cn("mr-2 h-4 w-4", localFilters.owner === option.id ? "opacity-100" : "opacity-0")} />
+                          {language === 'th' ? option.th : option.en}
+                        </div>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
             </div>
 
             {/* ===== Column 2: Insurer, Insurance Class, Lead Type, Sale Type, Invoice ===== */}
-
-            {/* Insurer */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">{language === 'th' ? 'บริษัทประกัน' : 'Insurer'}</Label>
-              <MultiSelectDropdown
-                options={insurerOptions}
-                selectedValues={localFilters.insurers}
-                onChange={(id, checked) => handleMultiSelectChange('insurers', id, checked)}
-                maxVisibleItems={2}
-              />
+            <div className="flex-1 space-y-4">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">{language === 'th' ? 'บริษัทประกัน' : 'Insurer'}</Label>
+                <MultiSelectDropdown
+                  options={insurerOptions}
+                  selectedValues={localFilters.insurers}
+                  onChange={(id, checked) => handleMultiSelectChange('insurers', id, checked)}
+                  maxVisibleItems={2}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">{language === 'th' ? 'ชั้นประกัน' : 'Insurance Class'}</Label>
+                <MultiSelectDropdown
+                  options={insuranceClassOptions}
+                  selectedValues={localFilters.insuranceClasses}
+                  onChange={(id, checked) => handleMultiSelectChange('insuranceClasses', id, checked)}
+                  maxVisibleItems={3}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">{language === 'th' ? 'ประเภท Lead' : 'Lead Type'}</Label>
+                <MultiSelectDropdown
+                  options={leadTypeOptions}
+                  selectedValues={localFilters.leadTypes}
+                  onChange={(id, checked) => handleMultiSelectChange('leadTypes', id, checked)}
+                  maxVisibleItems={2}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">{language === 'th' ? 'ประเภทการขาย' : 'Sale Type'}</Label>
+                <MultiSelectDropdown
+                  options={saleTypeOptions}
+                  selectedValues={localFilters.saleTypes}
+                  onChange={(id, checked) => handleMultiSelectChange('saleTypes', id, checked)}
+                  maxVisibleItems={2}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">{language === 'th' ? 'สถานะใบแจ้งหนี้' : 'Invoice Status'}</Label>
+                <MultiSelectDropdown
+                  options={invoiceStatusOptions}
+                  selectedValues={localFilters.invoiceStatuses}
+                  onChange={(id, checked) => handleMultiSelectChange('invoiceStatuses', id, checked)}
+                  maxVisibleItems={2}
+                />
+              </div>
             </div>
 
-            {/* Insurance Class */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">{language === 'th' ? 'ชั้นประกัน' : 'Insurance Class'}</Label>
-              <MultiSelectDropdown
-                options={insuranceClassOptions}
-                selectedValues={localFilters.insuranceClasses}
-                onChange={(id, checked) => handleMultiSelectChange('insuranceClasses', id, checked)}
-                maxVisibleItems={3}
-              />
-            </div>
-
-            {/* Lead Type */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">{language === 'th' ? 'ประเภท Lead' : 'Lead Type'}</Label>
-              <MultiSelectDropdown
-                options={leadTypeOptions}
-                selectedValues={localFilters.leadTypes}
-                onChange={(id, checked) => handleMultiSelectChange('leadTypes', id, checked)}
-                maxVisibleItems={2}
-              />
-            </div>
-
-            {/* Sale Type */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">{language === 'th' ? 'ประเภทการขาย' : 'Sale Type'}</Label>
-              <MultiSelectDropdown
-                options={saleTypeOptions}
-                selectedValues={localFilters.saleTypes}
-                onChange={(id, checked) => handleMultiSelectChange('saleTypes', id, checked)}
-                maxVisibleItems={2}
-              />
-            </div>
-
-            {/* Invoice Status */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">{language === 'th' ? 'สถานะใบแจ้งหนี้' : 'Invoice Status'}</Label>
-              <MultiSelectDropdown
-                options={invoiceStatusOptions}
-                selectedValues={localFilters.invoiceStatuses}
-                onChange={(id, checked) => handleMultiSelectChange('invoiceStatuses', id, checked)}
-                maxVisibleItems={2}
-              />
-            </div>
-
-            {/* ===== Column 3: Installment Type, Payment Status, Payment Method, Invoice Status, Car Inspection ===== */}
-
-            {/* Installment Type */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">{language === 'th' ? 'ประเภทการผ่อน' : 'Installment Type'}</Label>
-              <MultiSelectDropdown
-                options={installmentOptions}
-                selectedValues={[localFilters.installmentType]}
-                onChange={(id, checked) => {
-                  if (checked) {
-                    setLocalFilters({ ...localFilters, installmentType: id });
-                  }
-                }}
-                maxVisibleItems={1}
-              />
-            </div>
-
-            {/* Payment Status */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">{language === 'th' ? 'สถานะการชำระ' : 'Payment Status'}</Label>
-              <MultiSelectDropdown
-                options={paymentStatusOptions}
-                selectedValues={[localFilters.paymentStatus]}
-                onChange={(id, checked) => {
-                  if (checked) {
-                    setLocalFilters({ ...localFilters, paymentStatus: id });
-                  }
-                }}
-                maxVisibleItems={1}
-              />
-            </div>
-
-            {/* Payment Method */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">{language === 'th' ? 'วิธีชำระเงิน' : 'Payment Method'}</Label>
-              <MultiSelectDropdown
-                options={paymentMethodOptions}
-                selectedValues={localFilters.paymentMethods}
-                onChange={(id, checked) => handleMultiSelectChange('paymentMethods', id, checked)}
-                maxVisibleItems={2}
-              />
-            </div>
-
-            {/* Car Inspection */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">{language === 'th' ? 'สถานะตรวจสภาพรถ' : 'Car Inspection'}</Label>
-              <MultiSelectDropdown
-                options={carInspectionStatusOptions}
-                selectedValues={localFilters.carInspectionStatuses}
-                onChange={(id, checked) => handleMultiSelectChange('carInspectionStatuses', id, checked)}
-                maxVisibleItems={2}
-              />
+            {/* ===== Column 3: Installment Type, Payment Status, Payment Method, Car Inspection ===== */}
+            <div className="flex-1 space-y-4">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">{language === 'th' ? 'ประเภทการผ่อน' : 'Installment Type'}</Label>
+                <MultiSelectDropdown
+                  options={installmentOptions}
+                  selectedValues={[localFilters.installmentType]}
+                  onChange={(id, checked) => {
+                    if (checked) {
+                      setLocalFilters({ ...localFilters, installmentType: id });
+                    }
+                  }}
+                  maxVisibleItems={1}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">{language === 'th' ? 'สถานะการชำระ' : 'Payment Status'}</Label>
+                <MultiSelectDropdown
+                  options={paymentStatusOptions}
+                  selectedValues={[localFilters.paymentStatus]}
+                  onChange={(id, checked) => {
+                    if (checked) {
+                      setLocalFilters({ ...localFilters, paymentStatus: id });
+                    }
+                  }}
+                  maxVisibleItems={1}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">{language === 'th' ? 'วิธีชำระเงิน' : 'Payment Method'}</Label>
+                <MultiSelectDropdown
+                  options={paymentMethodOptions}
+                  selectedValues={localFilters.paymentMethods}
+                  onChange={(id, checked) => handleMultiSelectChange('paymentMethods', id, checked)}
+                  maxVisibleItems={2}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">{language === 'th' ? 'สถานะตรวจสภาพรถ' : 'Car Inspection'}</Label>
+                <MultiSelectDropdown
+                  options={carInspectionStatusOptions}
+                  selectedValues={localFilters.carInspectionStatuses}
+                  onChange={(id, checked) => handleMultiSelectChange('carInspectionStatuses', id, checked)}
+                  maxVisibleItems={2}
+                />
+              </div>
             </div>
           </div>
 
