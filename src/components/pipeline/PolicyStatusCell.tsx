@@ -95,16 +95,15 @@ export function PolicyStatusCell({
     return (
       <button
         onClick={() => onOpenRemarks(policy.id)}
-        className="w-full h-8 text-xs font-semibold flex items-center justify-center gap-1.5 px-3 rounded-md border cursor-pointer transition-colors hover:brightness-95"
+        className="w-full h-8 text-xs font-semibold flex items-center justify-center gap-1.5 px-3 rounded-md border cursor-pointer transition-colors bg-warning/15 hover:bg-warning/25"
         style={{ 
-          borderColor: 'hsl(var(--rework) / 0.4)', 
-          color: 'hsl(var(--rework))',
-          backgroundColor: 'hsl(var(--rework-bg))',
+          borderColor: 'hsl(var(--primary) / 0.4)', 
+          color: 'hsl(var(--primary))' 
         }}
       >
         <span>{policyStatusTranslations.rework_required[language]}</span>
         {unresolvedCount > 0 && (
-          <span className="text-[10px] font-medium px-1.5 py-0.5 rounded" style={{ backgroundColor: 'hsl(var(--rework) / 0.15)' }}>
+          <span className="text-[10px] font-medium bg-warning/20 px-1.5 py-0.5 rounded">
             {unresolvedCount}
           </span>
         )}

@@ -104,8 +104,7 @@ export function InlineReworkActions({
     }}>
       <PopoverTrigger asChild>
         <div 
-          className="w-[200px] h-8 text-xs rounded-md px-3 flex items-center gap-2 cursor-pointer transition-colors hover:brightness-95"
-          style={{ borderWidth: 1, borderStyle: 'solid', borderColor: 'hsl(var(--rework))', color: 'hsl(var(--rework))', backgroundColor: 'hsl(var(--rework-bg))' }}
+          className="w-[200px] h-8 text-xs border border-warning text-warning rounded-md px-3 flex items-center gap-2 cursor-pointer hover:bg-warning/10 transition-colors"
         >
           <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
           <span className="truncate">{language === 'th' ? 'งานติดปัญหา' : 'Rework Required'}</span>
@@ -119,8 +118,8 @@ export function InlineReworkActions({
               <div className="text-xs font-medium text-muted-foreground">
                 {language === 'th' ? 'เหตุผลล่าสุด' : 'Latest Rework Reason'}
               </div>
-              <div className="p-3 rounded-md" style={{ backgroundColor: 'hsl(var(--rework-bg))', borderWidth: 1, borderStyle: 'solid', borderColor: 'hsl(var(--rework) / 0.2)' }}>
-                <p className="text-sm font-medium" style={{ color: 'hsl(var(--rework))' }}>
+              <div className="p-3 bg-warning/10 border border-warning/20 rounded-md">
+                <p className="text-sm font-medium text-warning">
                   {(() => {
                     const config = reworkConfigs.find(c => c.id === latestEntry.reasonId);
                     return language === 'th' 

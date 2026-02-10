@@ -2095,9 +2095,10 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                           }
                                           if (policyOwners.length === 1) {
                                             return (
-                                              <span className='font-medium'
-                                                style={isReworkOwner ? { color: 'hsl(var(--rework))' } : undefined}
-                                              >
+                                              <span className={cn(
+                                                'font-medium',
+                                                isReworkOwner ? 'text-primary' : 'text-foreground'
+                                              )}>
                                                 {policyOwners[0]}
                                               </span>
                                             );
@@ -2110,10 +2111,12 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                               <TooltipTrigger asChild>
                                                 <button 
                                                   type="button"
-                                                   className='font-medium cursor-help text-left'
-                                                    style={isReworkOwner ? { color: 'hsl(var(--rework))' } : undefined}
-                                                 >
-                                                   {firstOwner} <span className={!isReworkOwner ? 'text-muted-foreground' : ''} style={isReworkOwner ? { color: 'hsl(var(--rework) / 0.7)' } : undefined}>+{remainingCount}</span>
+                                                  className={cn(
+                                                    'font-medium cursor-help text-left',
+                                                    isReworkOwner ? 'text-primary' : 'text-foreground'
+                                                  )}
+                                                >
+                                                  {firstOwner} <span className={isReworkOwner ? 'text-primary/70' : 'text-muted-foreground'}>+{remainingCount}</span>
                                                 </button>
                                               </TooltipTrigger>
                                               <TooltipContent side="top" className="max-w-xs">

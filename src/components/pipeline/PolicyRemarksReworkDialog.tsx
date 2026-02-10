@@ -368,25 +368,24 @@ export function PolicyRemarksReworkDialog({
         className={cn(
           'p-3 rounded-lg border',
           isActive
-            ? 'border'
+            ? 'bg-warning/10 border-primary/40'
             : 'bg-green-500/10 border-green-500/30'
         )}
-        style={isActive ? { backgroundColor: 'hsl(var(--rework-bg))', borderColor: 'hsl(var(--rework) / 0.4)' } : undefined}
       >
         {/* Main rework entry */}
         <div className="flex items-start gap-2">
           {isActive ? (
-            <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" style={{ color: 'hsl(var(--rework))' }} />
+            <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0 text-primary" />
           ) : (
             <CheckCircle className="w-4 h-4 mt-0.5 shrink-0 text-green-600" />
           )}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <p className={cn('text-sm font-medium', !isActive && 'text-green-700 dark:text-green-400')} style={isActive ? { color: 'hsl(var(--rework))' } : undefined}>
+              <p className={cn('text-sm font-medium', isActive ? 'text-primary' : 'text-green-700 dark:text-green-400')}>
                 {getReasonLabel(entry)}
               </p>
               {isActive && entry.assignedTo && (
-                <Badge variant="outline" className="text-[10px] h-5 px-1.5" style={{ backgroundColor: 'hsl(var(--rework-bg))', color: 'hsl(var(--rework))', borderColor: 'hsl(var(--rework) / 0.3)' }}>
+                <Badge variant="outline" className="text-[10px] h-5 px-1.5 bg-primary/10 text-primary border-primary/30">
                   <User className="w-2.5 h-2.5 mr-1" />
                   {entry.assignedTo}
                 </Badge>
@@ -597,7 +596,7 @@ export function PolicyRemarksReworkDialog({
             </Badge>
             {language === 'th' ? 'หมายเหตุ & งานติดปัญหา' : 'Remarks & Rework'}
             {unresolvedEntries.length > 0 && (
-              <Badge variant="outline" className="ml-2" style={{ backgroundColor: 'hsl(var(--rework-bg))', color: 'hsl(var(--rework))', borderColor: 'hsl(var(--rework) / 0.3)' }}>
+              <Badge variant="outline" className="ml-2 bg-warning/10 text-primary border-primary/30">
                 <AlertTriangle className="w-3 h-3 mr-1" />
                 {unresolvedEntries.length} {language === 'th' ? 'งานติดปัญหา' : 'Active'}
               </Badge>
@@ -725,8 +724,7 @@ export function PolicyRemarksReworkDialog({
                     <Button 
                       variant="outline" 
                       size="sm" 
-                    className="hover:brightness-95"
-                      style={{ borderColor: 'hsl(var(--rework) / 0.5)', color: 'hsl(var(--rework))' }}
+                      className="border-primary/50 text-primary hover:bg-warning/10 hover:text-primary"
                       onClick={() => setShowAddRework(true)}
                     >
                       <AlertTriangle className="w-3.5 h-3.5 mr-1.5" />
@@ -751,9 +749,9 @@ export function PolicyRemarksReworkDialog({
                 
                 {/* Add Rework Reason form - shown at bottom of timeline */}
                 {showAddRework && stageFilteredConfigs.length > 0 && (
-                  <div className="p-3 rounded-lg space-y-3" style={{ backgroundColor: 'hsl(var(--rework-bg))', border: '1px solid hsl(var(--rework) / 0.4)' }}>
+                  <div className="p-3 bg-warning/5 border border-primary/40 rounded-lg space-y-3">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-sm font-medium" style={{ color: 'hsl(var(--rework))' }}>
+                      <div className="flex items-center gap-2 text-sm font-medium text-primary">
                         <AlertTriangle className="w-4 h-4" />
                         {language === 'th' ? 'เพิ่มเหตุผลงานติดปัญหา' : 'Add Rework Reason'}
                       </div>
@@ -857,8 +855,7 @@ export function PolicyRemarksReworkDialog({
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="w-full h-8 text-xs hover:brightness-95"
-                    style={{ borderColor: 'hsl(var(--rework) / 0.5)', color: 'hsl(var(--rework))' }}
+                    className="w-full h-8 text-xs border-primary/50 text-primary hover:bg-warning/10 hover:text-primary"
                     onClick={() => setShowAddRework(true)}
                   >
                     <AlertTriangle className="w-3 h-3 mr-1.5" />
