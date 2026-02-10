@@ -118,10 +118,10 @@ const invoiceStatusOptions: { id: string; en: string; th: string }[] = [
 const insuranceClassOptions: { id: string; en: string; th: string }[] = [
   { id: 'all', en: 'All', th: 'ทั้งหมด' },
   { id: '1', en: '1', th: '1' },
-  { id: '2+', en: '2+', th: '2+' },
   { id: '2', en: '2', th: '2' },
-  { id: '3+', en: '3+', th: '3+' },
   { id: '3', en: '3', th: '3' },
+  { id: '2+', en: '2+', th: '2+' },
+  { id: '3+', en: '3+', th: '3+' },
 ];
 
 const saleTypeOptions: { id: string; en: string; th: string }[] = [
