@@ -266,10 +266,9 @@ export function applyOtherStagesFilters(leads: Lead[], filters: OtherStagesFilte
       }
     }
 
-    // Owner filter — handle specific staff name (not preset values which are handled by parent)
+    // Owner filter — match against deAssignee (Owner column) only
     if (filters.owner !== 'all' && filters.owner !== 'my_team' && filters.owner !== 'my_cases') {
-      const ownerName = filters.owner;
-      if (lead.rfAssignee !== ownerName && lead.scAssignee !== ownerName && lead.deAssignee !== ownerName) {
+      if (lead.deAssignee !== filters.owner) {
         return false;
       }
     }
@@ -311,10 +310,9 @@ export function applyLeadsStageFilters(leads: Lead[], filters: LeadsFilterState)
       }
     }
 
-    // Owner filter — handle specific staff name (not preset values which are handled by parent)
+    // Owner filter — match against deAssignee (Owner column) only
     if (filters.owner !== 'all' && filters.owner !== 'my_team' && filters.owner !== 'my_cases') {
-      const ownerName = filters.owner;
-      if (lead.rfAssignee !== ownerName && lead.scAssignee !== ownerName) {
+      if (lead.deAssignee !== filters.owner) {
         return false;
       }
     }
