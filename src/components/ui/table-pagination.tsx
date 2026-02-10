@@ -41,7 +41,7 @@ export function TablePagination({
   };
 
   return (
-    <div className="flex items-center justify-between px-4 py-3 border-t border-border">
+    <div className="flex items-center justify-between px-4 py-3 border-t border-border bg-muted/50">
       <div className="text-sm text-muted-foreground">
         {language === 'th' 
           ? `แสดง ${startItem} ถึง ${endItem} จาก ${totalItems} รายการ`
