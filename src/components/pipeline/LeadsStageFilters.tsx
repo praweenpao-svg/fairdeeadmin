@@ -65,7 +65,7 @@ const leadTypeOptions: { id: string; en: string; th: string }[] = [
   { id: 'all', en: 'All', th: 'ทั้งหมด' },
   { id: 'system', en: 'System', th: 'งานใหม่ (System)' },
   { id: 'custom', en: 'Custom', th: 'งานใหม่ (Custom)' },
-  { id: 'coa', en: 'COA', th: 'งานโอนโค้ด' },
+  { id: 'coa', en: 'COA', th: 'งานโอนโค้ด (COA)' },
 ];
 
 const agentTypeOptions: { id: string; en: string; th: string }[] = [
