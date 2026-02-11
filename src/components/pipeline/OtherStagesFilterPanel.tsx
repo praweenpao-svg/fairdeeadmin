@@ -804,24 +804,28 @@ export function OtherStagesFilterPanel({
                   maxVisibleItems={1}
                 />
               </div>
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">{language === 'th' ? 'ประเภทสลักหลัง' : 'Endorsement Type'}</Label>
-                <MultiSelectDropdown
-                  options={endorsementTypeOptions}
-                  selectedValues={localFilters.endorsementTypes}
-                  onChange={(id, checked) => handleMultiSelectChange('endorsementTypes', id, checked)}
-                  maxVisibleItems={2}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">{language === 'th' ? 'สถานะสลักหลัง' : 'Endorsement Status'}</Label>
-                <MultiSelectDropdown
-                  options={endorsementStatusOptions}
-                  selectedValues={localFilters.endorsementStatuses}
-                  onChange={(id, checked) => handleMultiSelectChange('endorsementStatuses', id, checked)}
-                  maxVisibleItems={2}
-                />
-              </div>
+            </div>
+          </div>
+
+          {/* Endorsement filters - centered row spanning 2/3 width */}
+          <div className="flex justify-center gap-8 mt-4">
+            <div className="flex-1 max-w-[calc((100%-4rem)/3)] space-y-2">
+              <Label className="text-sm font-medium">{language === 'th' ? 'ประเภทสลักหลัง' : 'Endorsement Type'}</Label>
+              <MultiSelectDropdown
+                options={endorsementTypeOptions}
+                selectedValues={localFilters.endorsementTypes}
+                onChange={(id, checked) => handleMultiSelectChange('endorsementTypes', id, checked)}
+                maxVisibleItems={2}
+              />
+            </div>
+            <div className="flex-1 max-w-[calc((100%-4rem)/3)] space-y-2">
+              <Label className="text-sm font-medium">{language === 'th' ? 'สถานะสลักหลัง' : 'Endorsement Status'}</Label>
+              <MultiSelectDropdown
+                options={endorsementStatusOptions}
+                selectedValues={localFilters.endorsementStatuses}
+                onChange={(id, checked) => handleMultiSelectChange('endorsementStatuses', id, checked)}
+                maxVisibleItems={2}
+              />
             </div>
           </div>
 
