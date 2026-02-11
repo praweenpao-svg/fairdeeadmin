@@ -92,8 +92,9 @@ export function PolicyStatusCell({
 
   // Count unresolved rework entries (both internal and external)
   const unresolvedCount = policy.reworkHistory?.filter(r => !r.resolved).length || 0;
+  const hasInternalOnlyRework = unresolvedCount > 0 && policy.status !== 'rework_required';
 
-  // If policy is in rework_required state, clicking opens rework dialog directly
+  // If policy is in rework_required state (external rework), clicking opens rework dialog directly
   if (policy.status === 'rework_required' && onOpenRemarks) {
     return (
       <button
@@ -114,6 +115,33 @@ export function PolicyStatusCell({
     );
   }
 
+  // If has internal-only rework: show as a clickable button (identical layout to rework_required)
+  // but using the current status color. No dropdown allowed.
+  if (hasInternalOnlyRework && onOpenRemarks) {
+    const statusStyles = getStatusStyles(policy.status, policyStatusColors);
+    return (
+      <button
+        onClick={() => onOpenRemarks(policy.id)}
+        className="w-full h-8 text-xs font-semibold flex items-center justify-center gap-1.5 px-3 rounded-md border cursor-pointer transition-colors"
+        style={{ 
+          backgroundColor: statusStyles.backgroundColor,
+          borderColor: statusStyles.borderColor,
+          color: statusStyles.color,
+        }}
+      >
+        <span>{policyStatusTranslations[policy.status]?.[language] || policy.status}</span>
+        <span 
+          className="text-[10px] font-medium px-1.5 py-0.5 rounded"
+          style={{
+            backgroundColor: statusStyles.borderColor ? `${statusStyles.borderColor}33` : undefined,
+            color: statusStyles.color,
+          }}
+        >
+          {unresolvedCount}
+        </span>
+      </button>
+    );
+  }
 
   // Get status options for the effective stage
   const statusOptions = policyStatusOptionsByStage[effectiveStage] || [];
@@ -122,56 +150,38 @@ export function PolicyStatusCell({
   const statusStyles = getStatusStyles(policy.status, policyStatusColors);
   const disabledStatusStyles = getStatusStyles(policy.status, policyStatusColors, true);
 
-  // Rework count badge for internal-only rework (status is NOT rework_required but has unresolved rework)
-  const internalReworkBadge = unresolvedCount > 0 && policy.status !== 'rework_required' ? (
-    <button
-      onClick={() => onOpenRemarks?.(policy.id)}
-      className="flex-shrink-0 flex items-center gap-0.5 text-[10px] font-medium text-warning bg-warning/15 px-1.5 py-0.5 rounded cursor-pointer hover:bg-warning/25 transition-colors border border-warning/30"
-      title={language === 'th' ? `${unresolvedCount} งานติดปัญหา (ภายใน)` : `${unresolvedCount} internal rework issue(s)`}
-    >
-      <AlertTriangle className="w-3 h-3" />
-      {unresolvedCount}
-    </button>
-  ) : null;
-
   // Editable - show dropdown
   if (isEditable && statusOptions.length > 0) {
     return (
-      <div className="flex items-center gap-1.5">
-        <Select
-          value={policy.status}
-          onValueChange={(value) => onStatusChange?.(policy.id, value as PolicyStatus)}
+      <Select
+        value={policy.status}
+        onValueChange={(value) => onStatusChange?.(policy.id, value as PolicyStatus)}
+      >
+        <SelectTrigger 
+          className="w-full h-8 text-xs"
+          style={statusStyles}
         >
-          <SelectTrigger 
-            className="flex-1 h-8 text-xs"
-            style={statusStyles}
-          >
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="bg-popover z-50">
-            {statusOptions.map((status) => (
-              <SelectItem key={status} value={status}>
-                {policyStatusTranslations[status]?.[language] || status}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {internalReworkBadge}
-      </div>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent className="bg-popover z-50">
+          {statusOptions.map((status) => (
+            <SelectItem key={status} value={status}>
+              {policyStatusTranslations[status]?.[language] || status}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     );
   }
 
   // Not editable - show greyed out box with status color (reduced opacity)
   const hasCustomColor = disabledStatusStyles.backgroundColor;
   return (
-    <div className="flex items-center gap-1.5">
-      <div 
-        className="flex-1 h-8 text-xs flex items-center px-3 rounded-md border cursor-not-allowed"
-        style={hasCustomColor ? disabledStatusStyles : { backgroundColor: 'hsl(var(--muted) / 0.8)', borderColor: 'hsl(var(--input))', color: 'hsl(var(--muted-foreground))' }}
-      >
-        {policyStatusTranslations[policy.status]?.[language] || policy.status}
-      </div>
-      {internalReworkBadge}
+    <div 
+      className="w-full h-8 text-xs flex items-center px-3 rounded-md border cursor-not-allowed"
+      style={hasCustomColor ? disabledStatusStyles : { backgroundColor: 'hsl(var(--muted) / 0.8)', borderColor: 'hsl(var(--input))', color: 'hsl(var(--muted-foreground))' }}
+    >
+      {policyStatusTranslations[policy.status]?.[language] || policy.status}
     </div>
   );
 }
