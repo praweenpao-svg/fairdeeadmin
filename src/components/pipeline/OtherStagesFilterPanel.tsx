@@ -808,7 +808,7 @@ export function OtherStagesFilterPanel({
           </div>
 
           {/* Endorsement filters - centered row spanning 2/3 width */}
-          <div className="flex justify-center gap-8 mt-4">
+          <div className="flex justify-start gap-8 mt-4">
             <div className="flex-1 max-w-[calc((100%-4rem)/3)] space-y-2">
               <Label className="text-sm font-medium">{language === 'th' ? 'ประเภทสลักหลัง' : 'Endorsement Type'}</Label>
               <MultiSelectDropdown
