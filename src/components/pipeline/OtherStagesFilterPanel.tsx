@@ -610,11 +610,11 @@ export function OtherStagesFilterPanel({
     if (!filters.createdBy.includes('all') && filters.createdBy.length > 0) {
       chips.push({ key: 'createdBy', label: language === 'th' ? 'สร้างโดย' : 'Created By', values: formatMultiSelectValues(filters.createdBy, createdByOptions), onClear: () => onFiltersChange({ ...filters, createdBy: ['all'] }) });
     }
-    if (!filters.endorsementTypes.includes('all') && filters.endorsementTypes.length > 0) {
-      chips.push({ key: 'endorsementTypes', label: language === 'th' ? 'ประเภทสลักหลัง' : 'Endorsement Type', values: formatMultiSelectValues(filters.endorsementTypes, endorsementTypeOptions), onClear: () => onFiltersChange({ ...filters, endorsementTypes: ['all'] }) });
+    if (!(filters.endorsementTypes ?? ['all']).includes('all') && (filters.endorsementTypes ?? []).length > 0) {
+      chips.push({ key: 'endorsementTypes', label: language === 'th' ? 'ประเภทสลักหลัง' : 'Endorsement Type', values: formatMultiSelectValues(filters.endorsementTypes!, endorsementTypeOptions), onClear: () => onFiltersChange({ ...filters, endorsementTypes: ['all'] }) });
     }
-    if (!filters.endorsementStatuses.includes('all') && filters.endorsementStatuses.length > 0) {
-      chips.push({ key: 'endorsementStatuses', label: language === 'th' ? 'สถานะสลักหลัง' : 'Endorsement Status', values: formatMultiSelectValues(filters.endorsementStatuses, endorsementStatusOptions), onClear: () => onFiltersChange({ ...filters, endorsementStatuses: ['all'] }) });
+    if (!(filters.endorsementStatuses ?? ['all']).includes('all') && (filters.endorsementStatuses ?? []).length > 0) {
+      chips.push({ key: 'endorsementStatuses', label: language === 'th' ? 'สถานะสลักหลัง' : 'Endorsement Status', values: formatMultiSelectValues(filters.endorsementStatuses!, endorsementStatusOptions), onClear: () => onFiltersChange({ ...filters, endorsementStatuses: ['all'] }) });
     }
 
     return chips;
