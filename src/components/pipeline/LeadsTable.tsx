@@ -174,10 +174,11 @@ const defaultStatusByStage: Record<PipelineStage, string> = {
   cancelled: 'policy_cancelled',
 };
 
-function CreatedByBadge({ createdBy }: { createdBy: CreatedByType }) {
+function CreatedByBadge({ createdBy, stage }: { createdBy: CreatedByType; stage?: string }) {
+  const isLeadsStage = stage === 'to_convert';
   const config = {
-    agent: { label: 'Agent', className: 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300' },
-    admin: { label: 'Admin', className: 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300' },
+    agent: { label: isLeadsStage ? 'Agent' : 'SS', className: 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300' },
+    admin: { label: isLeadsStage ? 'Admin' : 'NSS', className: 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300' },
   };
   const { label, className } = config[createdBy];
   return <span className={cn('text-[10px] px-1.5 py-0.5 rounded font-medium', className)}>{label}</span>;
@@ -1555,7 +1556,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
 
                           // Collect all tags into a flat array
                           const tags: React.ReactNode[] = [];
-                          tags.push(<CreatedByBadge key="created" createdBy={lead.createdBy} />);
+                          tags.push(<CreatedByBadge key="created" createdBy={lead.createdBy} stage={stage} />);
                           if (stage === 'to_convert') {
                             tags.push(<LeadSourceBadge key="source" leadType={lead.leadType} leadSource={lead.leadSource} />);
                           }

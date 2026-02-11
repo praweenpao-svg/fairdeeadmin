@@ -84,9 +84,9 @@ const leadsTypeOptions: { value: string; en: string; th: string }[] = [
 ];
 
 const createdByOptions: { value: string; en: string; th: string }[] = [
-  { value: 'all', en: 'All Creator', th: 'ผู้สร้างทั้งหมด' },
-  { value: 'agent', en: 'Agent', th: 'ตัวแทน' },
-  { value: 'admin', en: 'Admin', th: 'แอดมิน' },
+  { value: 'all', en: 'All', th: 'ทั้งหมด' },
+  { value: 'agent', en: 'Self-Serve', th: 'Self-Serve' },
+  { value: 'admin', en: 'Non Self-Serve', th: 'Non Self-Serve' },
 ];
 
 const leadTypeOptionsByStage = {
