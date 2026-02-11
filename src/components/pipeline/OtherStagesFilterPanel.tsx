@@ -29,6 +29,8 @@ export interface OtherStagesFilterState {
   etaStatus: string;
   owner: string;
   createdBy: string[];
+  endorsementTypes: string[];
+  endorsementStatuses: string[];
 }
 
 export const defaultOtherStagesFilterState: OtherStagesFilterState = {
@@ -48,6 +50,8 @@ export const defaultOtherStagesFilterState: OtherStagesFilterState = {
   etaStatus: 'all',
   owner: 'all',
   createdBy: ['all'],
+  endorsementTypes: ['all'],
+  endorsementStatuses: ['all'],
 };
 
 const mockAgents = [
@@ -149,6 +153,22 @@ const leadTypeOptions: { id: string; en: string; th: string }[] = [
   { id: 'custom', en: 'Custom', th: 'งานใหม่ (Custom)' },
   { id: 'coa', en: 'COA', th: 'งานโอนโค้ด (COA)' },
   { id: 'renewal', en: 'Renewal', th: 'งานต่ออายุ (Renewal)' },
+];
+
+const endorsementTypeOptions: { id: string; en: string; th: string }[] = [
+  { id: 'all', en: 'All', th: 'ทั้งหมด' },
+  { id: 'policy_endorsement', en: 'Policy Endorsement', th: 'สลักหลังกรมธรรม์' },
+  { id: 'policy_cancellation', en: 'Policy Cancellation', th: 'ยกเลิกกรมธรรม์' },
+];
+
+const endorsementStatusOptions: { id: string; en: string; th: string }[] = [
+  { id: 'all', en: 'All', th: 'ทั้งหมด' },
+  { id: 'request_created', en: 'Request Created', th: 'สร้างคำขอแล้ว' },
+  { id: 'request_submitted', en: 'Request Submitted', th: 'ส่งคำขอแล้ว' },
+  { id: 'request_approved', en: 'Request Approved', th: 'อนุมัติคำขอแล้ว' },
+  { id: 'pending_on_ops', en: 'Pending on Ops', th: 'รอดำเนินการ Ops' },
+  { id: 'pending_finance', en: 'Pending Finance', th: 'รอการเงิน' },
+  { id: 'invalid', en: 'Invalid', th: 'ไม่ถูกต้อง' },
 ];
 
 const installmentOptions: { id: string; en: string; th: string }[] = [
@@ -590,6 +610,12 @@ export function OtherStagesFilterPanel({
     if (!filters.createdBy.includes('all') && filters.createdBy.length > 0) {
       chips.push({ key: 'createdBy', label: language === 'th' ? 'สร้างโดย' : 'Created By', values: formatMultiSelectValues(filters.createdBy, createdByOptions), onClear: () => onFiltersChange({ ...filters, createdBy: ['all'] }) });
     }
+    if (!filters.endorsementTypes.includes('all') && filters.endorsementTypes.length > 0) {
+      chips.push({ key: 'endorsementTypes', label: language === 'th' ? 'ประเภทสลักหลัง' : 'Endorsement Type', values: formatMultiSelectValues(filters.endorsementTypes, endorsementTypeOptions), onClear: () => onFiltersChange({ ...filters, endorsementTypes: ['all'] }) });
+    }
+    if (!filters.endorsementStatuses.includes('all') && filters.endorsementStatuses.length > 0) {
+      chips.push({ key: 'endorsementStatuses', label: language === 'th' ? 'สถานะสลักหลัง' : 'Endorsement Status', values: formatMultiSelectValues(filters.endorsementStatuses, endorsementStatusOptions), onClear: () => onFiltersChange({ ...filters, endorsementStatuses: ['all'] }) });
+    }
 
     return chips;
   };
@@ -776,6 +802,24 @@ export function OtherStagesFilterPanel({
                     }
                   }}
                   maxVisibleItems={1}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">{language === 'th' ? 'ประเภทสลักหลัง' : 'Endorsement Type'}</Label>
+                <MultiSelectDropdown
+                  options={endorsementTypeOptions}
+                  selectedValues={localFilters.endorsementTypes}
+                  onChange={(id, checked) => handleMultiSelectChange('endorsementTypes', id, checked)}
+                  maxVisibleItems={2}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">{language === 'th' ? 'สถานะสลักหลัง' : 'Endorsement Status'}</Label>
+                <MultiSelectDropdown
+                  options={endorsementStatusOptions}
+                  selectedValues={localFilters.endorsementStatuses}
+                  onChange={(id, checked) => handleMultiSelectChange('endorsementStatuses', id, checked)}
+                  maxVisibleItems={2}
                 />
               </div>
             </div>
