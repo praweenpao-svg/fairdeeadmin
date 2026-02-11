@@ -1426,8 +1426,8 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
       return [];
     }
 
-    // Check if this specific policy has active reworks
-    if (policy.status === 'rework_required' && policy.reworkHistory) {
+    // Check if this specific policy has active reworks (both external and internal-only)
+    if (policy.reworkHistory) {
       const activeReworks = policy.reworkHistory.filter(e => !e.resolved);
       if (activeReworks.length > 0) {
         // Collect unique owners from all active reworks
@@ -1435,7 +1435,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
           .map(e => e.assignedTo || computeReworkOwner(lead, e.reasonId))
           .filter((owner): owner is string => !!owner);
         // Return unique owners preserving order
-        return [...new Set(owners)];
+        if (owners.length > 0) return [...new Set(owners)];
       }
     }
 
