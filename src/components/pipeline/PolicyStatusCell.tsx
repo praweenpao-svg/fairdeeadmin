@@ -100,11 +100,10 @@ export function PolicyStatusCell({
     return (
       <button
         onClick={() => onOpenRemarks(policy.id)}
-        className="w-full h-8 text-xs font-semibold flex items-center justify-center gap-1.5 px-3 rounded-md border cursor-pointer transition-colors hover:opacity-80"
+        className="w-full h-8 text-xs font-semibold flex items-center justify-center gap-1.5 px-3 rounded-md border cursor-pointer transition-colors bg-warning/15 hover:bg-warning/25"
         style={{ 
-          backgroundColor: 'rgba(249, 115, 22, 0.12)',
-          borderColor: 'rgba(249, 115, 22, 0.5)', 
-          color: '#D97706',
+          borderColor: 'hsl(var(--primary) / 0.4)', 
+          color: reworkColor?.text || 'hsl(var(--primary))',
         }}
       >
         <span>{policyStatusTranslations.rework_required[language]}</span>
