@@ -1546,53 +1546,62 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                           <span className="font-medium text-sm">{lead.leadNumber}</span>
                         </div>
                       </td>
-                      {/* Tags Column - 2 tags per row, VMI+CMI always paired */}
+                      {/* Tags Column - 2 tags per row, max 2 rows, VMI+CMI always paired */}
                       <td className="px-4 py-3">
                         {(() => {
                           const policies = lead.policyRecords || [];
                           const hasEndorsement = policies.some(p => p.endorsementType === 'policy_endorsement');
                           const hasCancellation = policies.some(p => p.endorsementType === 'policy_cancellation');
 
-                          // Build tag rows: 2 per row, VMI+CMI always together
-                          // Row 1: CreatedBy + LeadSource (leads stage) or CreatedBy alone
-                          // Row 2: VMI + CMI (always paired)
-                          // Row 3: Endorse / Cancel
+                          // Collect all tags as elements, then split into rows of 2
+                          // VMI+CMI are always kept together as a pair
+                          const row1Tags: React.ReactNode[] = [];
+                          const row2Tags: React.ReactNode[] = [];
+
+                          // Always first: CreatedBy
+                          row1Tags.push(<CreatedByBadge key="created" createdBy={lead.createdBy} />);
+
+                          // LeadSource (only in to_convert)
+                          if (stage === 'to_convert') {
+                            row1Tags.push(<LeadSourceBadge key="source" leadType={lead.leadType} leadSource={lead.leadSource} />);
+                          }
+
+                          // VMI+CMI pair - keep together, go to whichever row has space
+                          if (lead.policyType) {
+                            const vmiCmiPair = (
+                              <React.Fragment key="vmi-cmi">
+                                <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">VMI</span>
+                                {lead.policyType === 'vmi_cmi' && (
+                                  <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300">CMI</span>
+                                )}
+                              </React.Fragment>
+                            );
+                            // If row1 only has 1 tag and VMI only (no CMI), it can fit in row1
+                            // But to keep it clean: VMI+CMI always go to row2
+                            row2Tags.push(vmiCmiPair);
+                          }
+
+                          // Endorsement tags fill remaining spots in row2
+                          if (hasEndorsement) {
+                            row2Tags.push(
+                              <span key="endorse" className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300">
+                                {language === 'th' ? 'สลักหลัง' : 'Endorse'}
+                              </span>
+                            );
+                          }
+                          if (hasCancellation) {
+                            row2Tags.push(
+                              <span key="cancel" className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300">
+                                {language === 'th' ? 'ยกเลิก' : 'Cancel'}
+                              </span>
+                            );
+                          }
+
                           return (
                             <div className="flex flex-col gap-1">
-                              {/* Row 1: CreatedBy + LeadSource */}
-                              <div className="flex items-center gap-1">
-                                <CreatedByBadge createdBy={lead.createdBy} />
-                                {stage === 'to_convert' && (
-                                  <LeadSourceBadge leadType={lead.leadType} leadSource={lead.leadSource} />
-                                )}
-                              </div>
-                              {/* Row 2: VMI + CMI (always paired together) */}
-                              {lead.policyType && (
-                                <div className="flex items-center gap-1">
-                                  <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
-                                    VMI
-                                  </span>
-                                  {lead.policyType === 'vmi_cmi' && (
-                                    <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300">
-                                      CMI
-                                    </span>
-                                  )}
-                                </div>
-                              )}
-                              {/* Row 3: Endorsement tags */}
-                              {(hasEndorsement || hasCancellation) && (
-                                <div className="flex items-center gap-1">
-                                  {hasEndorsement && (
-                                    <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300">
-                                      {language === 'th' ? 'สลักหลัง' : 'Endorse'}
-                                    </span>
-                                  )}
-                                  {hasCancellation && (
-                                    <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300">
-                                      {language === 'th' ? 'ยกเลิก' : 'Cancel'}
-                                    </span>
-                                  )}
-                                </div>
+                              <div className="flex items-center gap-1">{row1Tags}</div>
+                              {row2Tags.length > 0 && (
+                                <div className="flex items-center gap-1">{row2Tags}</div>
                               )}
                             </div>
                           );
