@@ -171,8 +171,7 @@ export function ReworkDialog({ open, onOpenChange, reworkConfigs, onConfirm, lea
           </div>
 
           <div className="space-y-2">
-            <Label>{language === 'th' ? 'ไฟล์แนบ' : 'Attachments'}</Label>
-            <AttachmentThumbnails 
+            <AttachmentThumbnails
               attachments={attachments} 
               onRemove={removeAttachment}
               size="md"
