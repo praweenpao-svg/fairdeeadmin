@@ -393,8 +393,6 @@ export function applyAllFilters(
   // Apply stage-specific filters
   if (activeStage === 'to_convert' && leadsFilters) {
     result = applyLeadsStageFilters(result, leadsFilters);
-  } else if (activeStage === 'to_pay') {
-    result = applyToPayFilters(result, toPayFilters, activeStage);
   } else {
     result = applyOtherStagesFilters(result, otherStagesFilters);
   }
