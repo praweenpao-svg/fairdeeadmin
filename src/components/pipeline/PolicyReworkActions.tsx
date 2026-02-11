@@ -45,7 +45,7 @@ export function PolicyReworkActions({
   const unresolvedEntries = policy.reworkHistory?.filter(e => !e.resolved) || [];
 
   // If no active rework, don't render
-  if (unresolvedEntries.length === 0 || policy.status !== 'rework_required') {
+  if (unresolvedEntries.length === 0) {
     return null;
   }
 

@@ -408,6 +408,23 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
     ? reworkConfigs.filter(config => config.stages.some(s => ['to_pay', 'to_report', 'to_issue', 'to_deliver', 'completed', 'cancelled'].includes(s)))
     : reworkConfigs.filter(config => config.stages.includes(stage));
 
+  // Helper: check if a policy has any unresolved EXTERNAL rework entries
+  const hasExternalUnresolvedRework = (policy: PolicyRecord): boolean => {
+    const unresolved = policy.reworkHistory?.filter(e => !e.resolved) || [];
+    return unresolved.some(e => {
+      const config = reworkConfigs.find(r => r.id === e.reasonId);
+      return config?.partyType === 'external';
+    });
+  };
+
+  // Helper: determine correct policy status considering internal/external rework
+  const getPolicyStatusForRework = (policy: PolicyRecord, hasExternal: boolean): PolicyStatus => {
+    if (hasExternal) return 'rework_required';
+    // Internal only - keep previous status from the first unresolved entry, or current status
+    const firstUnresolved = policy.reworkHistory?.find(e => !e.resolved);
+    return firstUnresolved?.previousStatus || policy.status;
+  };
+
   const getActivePolicyRework = (policy: PolicyRecord | undefined): PolicyReworkEntry | undefined => {
     const history = policy?.reworkHistory;
     if (!history || history.length === 0) return undefined;
@@ -552,11 +569,21 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
       // Check if there are still other unresolved entries
       const remainingUnresolved = updatedHistory.filter(e => !e.resolved);
       const hasRemainingRework = remainingUnresolved.length > 0;
+      
+      // Check if remaining unresolved has any external reasons
+      const hasRemainingExternal = remainingUnresolved.some(e => {
+        const c = reworkConfigs.find(r => r.id === e.reasonId);
+        return c?.partyType === 'external';
+      });
 
-      // If no more rework entries, restore the previous status from the resolved entry
+      // Determine status: if no rework left, restore previous. If only internal left, also restore previous.
+      const newStatus: PolicyStatus = !hasRemainingRework 
+        ? unresolvedEntry.previousStatus 
+        : (hasRemainingExternal ? 'rework_required' : unresolvedEntry.previousStatus);
+
       return {
         ...record,
-        status: hasRemainingRework ? ('rework_required' as PolicyStatus) : unresolvedEntry.previousStatus,
+        status: newStatus,
         reworkRequired: hasRemainingRework,
         reworkHistory: updatedHistory,
         historyLog: [...(record.historyLog || []), policyHistoryEntry],
@@ -657,9 +684,19 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
         })),
       };
 
+      // After reassignment, check if remaining unresolved (including the new entry) has external
+      const allUnresolved = [...updatedHistory.filter(e => !e.resolved), newEntry];
+      const hasExternalAfterReassign = allUnresolved.some(e => {
+        const c = reworkConfigs.find(r => r.id === e.reasonId);
+        return c?.partyType === 'external';
+      });
+      const newStatus: PolicyStatus = hasExternalAfterReassign 
+        ? 'rework_required' 
+        : (unresolvedEntry?.previousStatus || record.status as PolicyStatus);
+
       return {
         ...record,
-        status: 'rework_required' as PolicyStatus,
+        status: newStatus,
         reworkRequired: true,
         reworkHistory: [...updatedHistory, newEntry],
         historyLog: [...(record.historyLog || []), policyHistoryEntry],
@@ -749,18 +786,27 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
         previousStatus,
       };
 
+      // Determine if there will be any external unresolved rework after adding this one
+      const isExternalReasonLocal = reworkConfig?.partyType === 'external';
+      const existingExternalUnresolvedLocal = reworkHistory.filter(e => !e.resolved).some(e => {
+        const c = reworkConfigs.find(r => r.id === e.reasonId);
+        return c?.partyType === 'external';
+      });
+      const willHaveExternalLocal = isExternalReasonLocal || existingExternalUnresolvedLocal;
+      const newStatusLocal: PolicyStatus = willHaveExternalLocal ? 'rework_required' : previousStatus;
+
       // Build policy-level history entries
       const historyEntries: PolicyHistoryLogEntry[] = [];
       
-      // 1. Status change entry (if status is changing to rework_required)
-      if (record.status !== 'rework_required') {
+      // 1. Status change entry (if status is actually changing)
+      if (record.status !== newStatusLocal) {
         historyEntries.push({
           id: crypto.randomUUID(),
           action: 'status_changed',
           triggeredBy: CURRENT_USER,
           triggeredAt: timestamp,
           fromStatus: record.status,
-          toStatus: 'rework_required',
+          toStatus: newStatusLocal,
         });
       }
       
@@ -779,7 +825,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
 
       return {
         ...record,
-        status: 'rework_required' as PolicyStatus,
+        status: newStatusLocal,
         reworkRequired: true,
         reworkHistory: [...reworkHistory, newEntry],
         historyLog: [...(record.historyLog || []), ...historyEntries],
@@ -887,9 +933,12 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
       const policy = selectedLead.policyRecords.find(p => p.id === selectedPolicyId);
       if (!policy) return;
 
-      const previousStatus = policy.status as PolicyStatus;
+      const previousStatus = policy.status === 'rework_required' 
+        ? (policy.reworkHistory?.find(e => !e.resolved)?.previousStatus || policy.status)
+        : policy.status as PolicyStatus;
 
       const assignedOwner = computeReworkOwner(selectedLead, reasonId);
+      const isExternalReason = reworkConfig?.partyType === 'external';
 
       const newPolicyReworkEntry: PolicyReworkEntry = {
         id: crypto.randomUUID(),
@@ -899,51 +948,56 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
         attachments,
         savedBy: CURRENT_USER,
         savedAt: timestamp,
-        assignedTo: assignedOwner, // Each rework entry has its own owner
+        assignedTo: assignedOwner,
         previousStatus,
       };
 
+      // Determine new status: only change to rework_required if external reason
+      // For internal reasons, keep the current status
+      const willHaveExternalRework = isExternalReason || (policy.reworkHistory?.filter(e => !e.resolved).some(e => {
+        const c = reworkConfigs.find(r => r.id === e.reasonId);
+        return c?.partyType === 'external';
+      }) || false);
+      const newStatus: PolicyStatus = willHaveExternalRework ? 'rework_required' : previousStatus;
+
       // Create POLICY-LEVEL history entries (not lead-level)
-      // 1. Status change entry - from previous status to rework_required
-      const statusChangeEntry: PolicyHistoryLogEntry = {
-        id: crypto.randomUUID(),
-        action: 'status_changed',
-        triggeredBy: CURRENT_USER,
-        triggeredAt: timestamp,
-        fromStatus: previousStatus,
-        toStatus: 'rework_required',
-      };
+      const historyEntries: PolicyHistoryLogEntry[] = [];
+      
+      // 1. Status change entry - only if status actually changes
+      if (policy.status !== newStatus) {
+        historyEntries.push({
+          id: crypto.randomUUID(),
+          action: 'status_changed',
+          triggeredBy: CURRENT_USER,
+          triggeredAt: timestamp,
+          fromStatus: policy.status,
+          toStatus: newStatus,
+        });
+      }
 
       // 2. Owner change entry (if applicable) - same timestamp
       const currentPolicyOwner = policy.reworkHistory?.find(e => !e.resolved)?.assignedTo;
-      const ownerChangeEntry: PolicyHistoryLogEntry | null = assignedOwner && assignedOwner !== currentPolicyOwner
-        ? {
-            id: crypto.randomUUID(),
-            action: 'assignee_changed',
-            triggeredBy: CURRENT_USER,
-            triggeredAt: timestamp,
-            assigneeType: 'owner', // Rework owner change
-            fromAssignee: currentPolicyOwner || undefined,
-            toAssignee: assignedOwner,
-          }
-        : null;
+      if (assignedOwner && assignedOwner !== currentPolicyOwner) {
+        historyEntries.push({
+          id: crypto.randomUUID(),
+          action: 'assignee_changed',
+          triggeredBy: CURRENT_USER,
+          triggeredAt: timestamp,
+          assigneeType: 'owner',
+          fromAssignee: currentPolicyOwner || undefined,
+          toAssignee: assignedOwner,
+        });
+      }
 
       const updatedRecords = selectedLead.policyRecords.map(record => {
         if (record.id !== selectedPolicyId) return record;
         
-        // Build history log with status change and optional owner change
-        const newHistoryEntries: PolicyHistoryLogEntry[] = [statusChangeEntry];
-        if (ownerChangeEntry) {
-          newHistoryEntries.push(ownerChangeEntry);
-        }
-        
         return {
           ...record,
-          status: 'rework_required' as PolicyStatus,
+          status: newStatus,
           reworkRequired: true,
           reworkHistory: [...(record.reworkHistory || []), newPolicyReworkEntry],
-          // Add entries to THIS POLICY's history log only
-          historyLog: [...(record.historyLog || []), ...newHistoryEntries],
+          historyLog: [...(record.historyLog || []), ...historyEntries],
         };
       });
 
