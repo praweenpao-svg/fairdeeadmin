@@ -10,6 +10,7 @@ import {
 import { PolicyReworkActions } from './PolicyReworkActions';
 import { policyStatusColors, getStatusStyles } from '@/utils/statusColors';
 import { getPolicyStage } from './PipelineTabs';
+import { AlertTriangle } from 'lucide-react';
 
 interface PolicyStatusCellProps {
   policy: PolicyRecord | undefined;
@@ -89,9 +90,11 @@ export function PolicyStatusCell({
     ? (getPolicyStage(policy) || 'to_pay') // fallback to to_pay if null
     : stage;
 
+  // Count unresolved rework entries (both internal and external)
+  const unresolvedCount = policy.reworkHistory?.filter(r => !r.resolved).length || 0;
+
   // If policy is in rework_required state, clicking opens rework dialog directly
   if (policy.status === 'rework_required' && onOpenRemarks) {
-    const unresolvedCount = policy.reworkHistory?.filter(r => !r.resolved).length || 0;
     return (
       <button
         onClick={() => onOpenRemarks(policy.id)}
@@ -119,38 +122,56 @@ export function PolicyStatusCell({
   const statusStyles = getStatusStyles(policy.status, policyStatusColors);
   const disabledStatusStyles = getStatusStyles(policy.status, policyStatusColors, true);
 
+  // Rework count badge for internal-only rework (status is NOT rework_required but has unresolved rework)
+  const internalReworkBadge = unresolvedCount > 0 && policy.status !== 'rework_required' ? (
+    <button
+      onClick={() => onOpenRemarks?.(policy.id)}
+      className="flex-shrink-0 flex items-center gap-0.5 text-[10px] font-medium text-warning bg-warning/15 px-1.5 py-0.5 rounded cursor-pointer hover:bg-warning/25 transition-colors border border-warning/30"
+      title={language === 'th' ? `${unresolvedCount} งานติดปัญหา (ภายใน)` : `${unresolvedCount} internal rework issue(s)`}
+    >
+      <AlertTriangle className="w-3 h-3" />
+      {unresolvedCount}
+    </button>
+  ) : null;
+
   // Editable - show dropdown
   if (isEditable && statusOptions.length > 0) {
     return (
-      <Select
-        value={policy.status}
-        onValueChange={(value) => onStatusChange?.(policy.id, value as PolicyStatus)}
-      >
-        <SelectTrigger 
-          className="w-full h-8 text-xs"
-          style={statusStyles}
+      <div className="flex items-center gap-1.5">
+        <Select
+          value={policy.status}
+          onValueChange={(value) => onStatusChange?.(policy.id, value as PolicyStatus)}
         >
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent className="bg-popover z-50">
-          {statusOptions.map((status) => (
-            <SelectItem key={status} value={status}>
-              {policyStatusTranslations[status]?.[language] || status}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+          <SelectTrigger 
+            className="flex-1 h-8 text-xs"
+            style={statusStyles}
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent className="bg-popover z-50">
+            {statusOptions.map((status) => (
+              <SelectItem key={status} value={status}>
+                {policyStatusTranslations[status]?.[language] || status}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {internalReworkBadge}
+      </div>
     );
   }
 
   // Not editable - show greyed out box with status color (reduced opacity)
   const hasCustomColor = disabledStatusStyles.backgroundColor;
   return (
-    <div 
-      className="w-full h-8 text-xs flex items-center px-3 rounded-md border cursor-not-allowed"
-      style={hasCustomColor ? disabledStatusStyles : { backgroundColor: 'hsl(var(--muted) / 0.8)', borderColor: 'hsl(var(--input))', color: 'hsl(var(--muted-foreground))' }}
-    >
-      {policyStatusTranslations[policy.status]?.[language] || policy.status}
+    <div className="flex items-center gap-1.5">
+      <div 
+        className="flex-1 h-8 text-xs flex items-center px-3 rounded-md border cursor-not-allowed"
+        style={hasCustomColor ? disabledStatusStyles : { backgroundColor: 'hsl(var(--muted) / 0.8)', borderColor: 'hsl(var(--input))', color: 'hsl(var(--muted-foreground))' }}
+      >
+        {policyStatusTranslations[policy.status]?.[language] || policy.status}
+      </div>
+      {internalReworkBadge}
     </div>
   );
 }
