@@ -1548,7 +1548,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                       </td>
                       {/* Tags Column - 2x2 grid */}
                       <td className="px-4 py-3">
-                        <div className="grid grid-cols-2 gap-1 w-fit">
+                        <div className="flex flex-wrap gap-1 max-w-[120px]">
                           <CreatedByBadge createdBy={lead.createdBy} />
                           {stage === 'to_convert' && (
                             <LeadSourceBadge leadType={lead.leadType} leadSource={lead.leadSource} />
