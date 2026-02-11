@@ -96,18 +96,25 @@ export function PolicyStatusCell({
 
   // If policy is in rework_required state (external rework), clicking opens rework dialog directly
   if (policy.status === 'rework_required' && onOpenRemarks) {
+    const reworkColor = policyStatusColors.rework_required;
     return (
       <button
         onClick={() => onOpenRemarks(policy.id)}
         className="w-full h-8 text-xs font-semibold flex items-center justify-center gap-1.5 px-3 rounded-md border cursor-pointer transition-colors bg-warning/15 hover:bg-warning/25"
         style={{ 
           borderColor: 'hsl(var(--primary) / 0.4)', 
-          color: 'hsl(var(--primary))' 
+          color: reworkColor?.text || 'hsl(var(--primary))',
         }}
       >
         <span>{policyStatusTranslations.rework_required[language]}</span>
         {unresolvedCount > 0 && (
-          <span className="text-[10px] font-medium bg-warning/20 px-1.5 py-0.5 rounded">
+          <span 
+            className="text-[10px] font-medium px-1.5 py-0.5 rounded"
+            style={{
+              backgroundColor: reworkColor ? `${reworkColor.text}20` : undefined,
+              color: reworkColor?.text,
+            }}
+          >
             {unresolvedCount}
           </span>
         )}
@@ -118,6 +125,7 @@ export function PolicyStatusCell({
   // If has internal-only rework: show as a clickable button (identical layout to rework_required)
   // but using the current status color. No dropdown allowed.
   if (hasInternalOnlyRework && onOpenRemarks) {
+    const statusColor = policyStatusColors[policy.status];
     const statusStyles = getStatusStyles(policy.status, policyStatusColors);
     return (
       <button
@@ -125,7 +133,7 @@ export function PolicyStatusCell({
         className="w-full h-8 text-xs font-semibold flex items-center justify-center gap-1.5 px-3 rounded-md border cursor-pointer transition-colors"
         style={{ 
           backgroundColor: statusStyles.backgroundColor,
-          borderColor: statusStyles.borderColor,
+          borderColor: statusColor ? `${statusColor.text}30` : undefined,
           color: statusStyles.color,
         }}
       >
@@ -133,8 +141,8 @@ export function PolicyStatusCell({
         <span 
           className="text-[10px] font-medium px-1.5 py-0.5 rounded"
           style={{
-            backgroundColor: statusStyles.borderColor ? `${statusStyles.borderColor}33` : undefined,
-            color: statusStyles.color,
+            backgroundColor: statusColor ? `${statusColor.text}20` : undefined,
+            color: statusColor?.text,
           }}
         >
           {unresolvedCount}
