@@ -440,10 +440,11 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
     const vmi = records.find(r => r.kind === 'vmi');
     const cmi = records.find(r => r.kind === 'cmi');
 
-    const vmiEntry = vmi?.status === 'rework_required' ? getActivePolicyRework(vmi) : undefined;
+    // Check for any unresolved rework (both external/rework_required status AND internal-only)
+    const vmiEntry = getActivePolicyRework(vmi);
     if (vmi && vmiEntry) return { policyId: vmi.id, kind: 'vmi', entry: vmiEntry };
 
-    const cmiEntry = cmi?.status === 'rework_required' ? getActivePolicyRework(cmi) : undefined;
+    const cmiEntry = getActivePolicyRework(cmi);
     if (cmi && cmiEntry) return { policyId: cmi.id, kind: 'cmi', entry: cmiEntry };
 
     return undefined;
