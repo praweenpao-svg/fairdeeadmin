@@ -1546,41 +1546,60 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                           <span className="font-medium text-sm">{lead.leadNumber}</span>
                         </div>
                       </td>
-                      {/* Tags Column - 2x2 grid */}
+                      {/* Tags Column - 2 tags per row */}
                       <td className="px-4 py-3">
-                        <div className="flex flex-wrap gap-1 max-w-[120px]">
-                          <CreatedByBadge createdBy={lead.createdBy} />
-                          {stage === 'to_convert' && (
-                            <LeadSourceBadge leadType={lead.leadType} leadSource={lead.leadSource} />
-                          )}
-                          {lead.policyType && (
-                            <>
-                              <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">VMI</span>
-                              {lead.policyType === 'vmi_cmi' && (
-                                <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300">CMI</span>
-                              )}
-                            </>
-                          )}
-                          {(() => {
-                            const policies = lead.policyRecords || [];
-                            const hasEndorsement = policies.some(p => p.endorsementType === 'policy_endorsement');
-                            const hasCancellation = policies.some(p => p.endorsementType === 'policy_cancellation');
-                            return (
-                              <>
-                                {hasEndorsement && (
-                                  <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300">
-                                    {language === 'th' ? 'สลักหลัง' : 'Endorse'}
-                                  </span>
-                                )}
-                                {hasCancellation && (
-                                  <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300">
-                                    {language === 'th' ? 'ยกเลิก' : 'Cancel'}
-                                  </span>
-                                )}
-                              </>
+                        {(() => {
+                          const policies = lead.policyRecords || [];
+                          const hasEndorsement = policies.some(p => p.endorsementType === 'policy_endorsement');
+                          const hasCancellation = policies.some(p => p.endorsementType === 'policy_cancellation');
+
+                          // Collect all tags into a flat array
+                          const tags: React.ReactNode[] = [];
+                          tags.push(<CreatedByBadge key="created" createdBy={lead.createdBy} />);
+                          if (stage === 'to_convert') {
+                            tags.push(<LeadSourceBadge key="source" leadType={lead.leadType} leadSource={lead.leadSource} />);
+                          }
+                          if (lead.policyType) {
+                            tags.push(
+                              <span key="vmi" className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">VMI</span>
                             );
-                          })()}
-                        </div>
+                            if (lead.policyType === 'vmi_cmi') {
+                              tags.push(
+                                <span key="cmi" className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300">CMI</span>
+                              );
+                            }
+                          }
+                          if (hasEndorsement) {
+                            tags.push(
+                              <span key="endorse" className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300">
+                                {language === 'th' ? 'สลักหลัง' : 'Endorse'}
+                              </span>
+                            );
+                          }
+                          if (hasCancellation) {
+                            tags.push(
+                              <span key="cancel" className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300">
+                                {language === 'th' ? 'ยกเลิก' : 'Cancel'}
+                              </span>
+                            );
+                          }
+
+                          // Chunk into rows of 2
+                          const rows: React.ReactNode[][] = [];
+                          for (let i = 0; i < tags.length; i += 2) {
+                            rows.push(tags.slice(i, i + 2));
+                          }
+
+                          return (
+                            <div className="flex flex-col gap-1">
+                              {rows.map((row, idx) => (
+                                <div key={idx} className="flex items-center gap-1">
+                                  {row}
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        })()}
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex flex-col">
