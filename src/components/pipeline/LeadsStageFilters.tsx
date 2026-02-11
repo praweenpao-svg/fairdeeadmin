@@ -51,8 +51,8 @@ const leadStatusOptions: { id: string; en: string; th: string }[] = [
 
 const createdByOptions: { id: string; en: string; th: string }[] = [
   { id: 'all', en: 'All', th: 'ทั้งหมด' },
-  { id: 'agent', en: 'Self-Serve', th: 'Self-Serve' },
-  { id: 'admin', en: 'Non Self-Serve', th: 'Non Self-Serve' },
+  { id: 'agent', en: 'Agent', th: 'Agent' },
+  { id: 'admin', en: 'Admin', th: 'Admin' },
 ];
 
 const ownerPresetOptions: { id: string; en: string; th: string }[] = [
