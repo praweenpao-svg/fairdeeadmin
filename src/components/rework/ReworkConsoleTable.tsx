@@ -168,11 +168,11 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
     return config.team || '-';
   };
 
-  const getTargetReasonLabel = (targetReasonId?: string) => {
-    if (!targetReasonId) return '-';
+  const getTargetReasonLabel = (targetReasonId?: string): { en: string; th: string } | null => {
+    if (!targetReasonId) return null;
     const targetConfig = uniqueConfigs.find(c => c.id === targetReasonId);
-    if (!targetConfig) return '-';
-    return targetConfig.descriptionEn;
+    if (!targetConfig) return null;
+    return { en: targetConfig.descriptionEn, th: targetConfig.descriptionTh };
   };
 
   // Pagination (dedupe by descriptions so "ซ้ำ" doesn't show in console)
@@ -548,7 +548,17 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                     {config.automationEnabled && config.automationDays ? `${config.automationDays} days` : '-'}
                   </td>
                   <td className="px-4 py-3 text-sm">
-                    {config.automationEnabled ? getTargetReasonLabel(config.targetReason) : '-'}
+                    {(() => {
+                      if (!config.automationEnabled) return '-';
+                      const target = getTargetReasonLabel(config.targetReason);
+                      if (!target) return '-';
+                      return (
+                        <div className="space-y-1">
+                          <div className="font-medium text-foreground">{target.en}</div>
+                          <div className="text-xs text-muted-foreground">{target.th}</div>
+                        </div>
+                      );
+                    })()}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-1">
