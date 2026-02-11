@@ -1463,6 +1463,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
             <thead>
               <tr className="border-b border-border">
                 <th className="data-table-header px-4 py-3 text-left">{stage === 'to_convert' ? 'Lead ID' : 'Quotation ID'}</th>
+                <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'แท็ก' : 'Tags'}</th>
                 <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'ตัวแทน' : 'Agent'}</th>
                 <th className="data-table-header px-4 py-3 text-left">{language === 'th' ? 'สร้างเมื่อ' : 'Created On'}</th>
                 {isPostLeadStage && (
@@ -1500,7 +1501,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
             <tbody>
               {sortedLeads.length === 0 ? (
                 <tr>
-                  <td colSpan={isPostLeadStage ? (showDEColumn ? 13 : 12) : 10} className="px-4 py-12 text-center text-muted-foreground">
+                   <td colSpan={isPostLeadStage ? (showDEColumn ? 14 : 13) : 11} className="px-4 py-12 text-center text-muted-foreground">
                     {language === 'th' ? 'ไม่พบเคสของคุณ ณ ตอนนี้' : 'No cases found at the moment'}
                   </td>
                 </tr>
@@ -1527,7 +1528,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                     <tr className="data-table-row">
                       <td className="px-4 py-3">
                         <div className="flex items-start gap-2">
-                          {/* Expand/Collapse chevron for post-lead stages only (insurer quotes hidden for now) */}
+                          {/* Expand/Collapse chevron for post-lead stages only */}
                           {(isPostLeadStage && hasPolicies) ? (
                             <button 
                               onClick={() => toggleLeadExpanded(lead.id)}
@@ -1542,52 +1543,18 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                           ) : (
                             <div className="w-5" /> 
                           )}
-                          <div className="flex flex-col gap-1">
-                            <span className="font-medium text-sm">{lead.leadNumber}</span>
-                            <div className="flex items-center gap-1 flex-wrap">
-                              <CreatedByBadge createdBy={lead.createdBy} />
-                              {/* Only show lead source badge in Leads stage (to_convert) */}
-                              {stage === 'to_convert' && (
-                                <LeadSourceBadge leadType={lead.leadType} leadSource={lead.leadSource} />
-                              )}
-                              {/* Endorsement tags for sales with endorsements */}
-                              {(() => {
-                                const policies = lead.policyRecords || [];
-                                const hasEndorsement = policies.some(p => p.endorsementType === 'policy_endorsement');
-                                const hasCancellation = policies.some(p => p.endorsementType === 'policy_cancellation');
-                                return (
-                                  <>
-                                    {hasEndorsement && (
-                                      <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300">
-                                        {language === 'th' ? 'สลักหลัง' : 'Endorse'}
-                                      </span>
-                                    )}
-                                    {hasCancellation && (
-                                      <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300">
-                                        {language === 'th' ? 'ยกเลิก' : 'Cancel'}
-                                      </span>
-                                    )}
-                                  </>
-                                );
-                              })()}
-                            </div>
-                          </div>
+                          <span className="font-medium text-sm">{lead.leadNumber}</span>
                         </div>
                       </td>
+                      {/* Tags Column */}
                       <td className="px-4 py-3">
-                        <div className="flex flex-col gap-1">
-                          <div className="flex flex-col">
-                            <a
-                              href="#"
-                              className="text-primary hover:underline flex items-center gap-1 text-sm font-medium"
-                            >
-                              {lead.agentId}
-                              <ExternalLink className="w-3 h-3" />
-                            </a>
-                            <span className="text-xs text-muted-foreground">{lead.agentName}</span>
-                          </div>
+                        <div className="flex items-center gap-1 flex-wrap">
+                          <CreatedByBadge createdBy={lead.createdBy} />
+                          {stage === 'to_convert' && (
+                            <LeadSourceBadge leadType={lead.leadType} leadSource={lead.leadSource} />
+                          )}
                           {lead.policyType && (
-                            <div className="flex items-center gap-1">
+                            <>
                               <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
                                 VMI
                               </span>
@@ -1596,8 +1563,39 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                   CMI
                                 </span>
                               )}
-                            </div>
+                            </>
                           )}
+                          {(() => {
+                            const policies = lead.policyRecords || [];
+                            const hasEndorsement = policies.some(p => p.endorsementType === 'policy_endorsement');
+                            const hasCancellation = policies.some(p => p.endorsementType === 'policy_cancellation');
+                            return (
+                              <>
+                                {hasEndorsement && (
+                                  <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300">
+                                    {language === 'th' ? 'สลักหลัง' : 'Endorse'}
+                                  </span>
+                                )}
+                                {hasCancellation && (
+                                  <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300">
+                                    {language === 'th' ? 'ยกเลิก' : 'Cancel'}
+                                  </span>
+                                )}
+                              </>
+                            );
+                          })()}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-col">
+                          <a
+                            href="#"
+                            className="text-primary hover:underline flex items-center gap-1 text-sm font-medium"
+                          >
+                            {lead.agentId}
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                          <span className="text-xs text-muted-foreground">{lead.agentName}</span>
                         </div>
                       </td>
                       <td className="px-4 py-3">
@@ -1888,7 +1886,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                     {/* Expanded Insurer Rows for Leads Stage (New Leads / COA) - Hidden for now
                     {stage === 'to_convert' && isExpanded && (lead.leadType === 'new_leads' || lead.leadType === 'coa') && lead.insurerQuotes && lead.insurerQuotes.length > 0 && (
                       <tr>
-                        <td colSpan={showDEColumn ? 11 : 10} className="p-0">
+                        <td colSpan={showDEColumn ? 12 : 11} className="p-0">
                           <div className="mx-4 my-2">
                             <InsurersExpandableRow 
                               insurerQuotes={lead.insurerQuotes}
@@ -1906,7 +1904,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                     {/* Expanded Policy Rows */}
                     {isPostLeadStage && isExpanded && allPolicies.length > 0 && (
                       <tr className="border-b border-border">
-                         <td colSpan={showDEColumn ? 11 : 10} className="p-0">
+                         <td colSpan={showDEColumn ? 12 : 11} className="p-0">
                           <div className="mx-4 my-2 rounded-lg border border-border overflow-hidden bg-card shadow-sm">
                             {/* Policy Sub-Table */}
                             <div className="overflow-x-auto">
