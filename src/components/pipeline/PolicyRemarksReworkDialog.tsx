@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { MessageSquare, Send, CheckCircle, ArrowRightLeft, Upload, X, FileText, Image, AlertTriangle, User, ChevronDown, ChevronRight, Reply, Paperclip } from 'lucide-react';
+import { MessageSquare, Send, CheckCircle, ArrowRightLeft, Upload, X, FileText, Image, AlertTriangle, User, ChevronDown, ChevronRight, Reply, Paperclip, Lock, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { MentionTextarea } from '@/components/ui/mention-textarea';
@@ -26,6 +26,7 @@ import { useMentionNotificationsStore, extractMentions } from '@/stores/mentionN
 import { useCurrentUserStore } from '@/stores/currentUserStore';
 import { ExpandableText } from '@/components/ui/expandable-text';
 import { AttachmentThumbnails, AttachmentDisplay } from '@/components/ui/attachment-thumbnails';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface PolicyRemarksReworkDialogProps {
   open: boolean;
@@ -384,6 +385,29 @@ export function PolicyRemarksReworkDialog({
               <p className={cn('text-sm font-medium', isActive ? 'text-primary' : 'text-green-700 dark:text-green-400')}>
                 {getReasonLabel(entry)}
               </p>
+              {(() => {
+                const config = reworkConfigs.find(c => c.id === entry.reasonId);
+                const isInternal = config?.partyType === 'internal';
+                return (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-flex items-center">
+                        {isInternal ? (
+                          <Lock className="w-3 h-3 text-muted-foreground" />
+                        ) : (
+                          <Globe className="w-3 h-3 text-muted-foreground" />
+                        )}
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="text-xs">
+                      {isInternal 
+                        ? (language === 'th' ? 'ภายใน (ตัวแทนจะไม่เห็น)' : 'Internal (agent will not see)')
+                        : (language === 'th' ? 'ภายนอก (ตัวแทนจะเห็น)' : 'External (agent will see)')
+                      }
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              })()}
               {isActive && entry.assignedTo && (
                 <Badge variant="outline" className="text-[10px] h-5 px-1.5 bg-primary/10 text-primary border-primary/30">
                   <User className="w-2.5 h-2.5 mr-1" />
