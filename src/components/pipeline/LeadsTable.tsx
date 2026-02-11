@@ -1546,45 +1546,57 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                           <span className="font-medium text-sm">{lead.leadNumber}</span>
                         </div>
                       </td>
-                      {/* Tags Column */}
+                      {/* Tags Column - 2 tags per row, VMI+CMI always paired */}
                       <td className="px-4 py-3">
-                        <div className="flex items-center gap-1 flex-wrap">
-                          <CreatedByBadge createdBy={lead.createdBy} />
-                          {stage === 'to_convert' && (
-                            <LeadSourceBadge leadType={lead.leadType} leadSource={lead.leadSource} />
-                          )}
-                          {lead.policyType && (
-                            <>
-                              <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
-                                VMI
-                              </span>
-                              {lead.policyType === 'vmi_cmi' && (
-                                <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300">
-                                  CMI
-                                </span>
+                        {(() => {
+                          const policies = lead.policyRecords || [];
+                          const hasEndorsement = policies.some(p => p.endorsementType === 'policy_endorsement');
+                          const hasCancellation = policies.some(p => p.endorsementType === 'policy_cancellation');
+
+                          // Build tag rows: 2 per row, VMI+CMI always together
+                          // Row 1: CreatedBy + LeadSource (leads stage) or CreatedBy alone
+                          // Row 2: VMI + CMI (always paired)
+                          // Row 3: Endorse / Cancel
+                          return (
+                            <div className="flex flex-col gap-1">
+                              {/* Row 1: CreatedBy + LeadSource */}
+                              <div className="flex items-center gap-1">
+                                <CreatedByBadge createdBy={lead.createdBy} />
+                                {stage === 'to_convert' && (
+                                  <LeadSourceBadge leadType={lead.leadType} leadSource={lead.leadSource} />
+                                )}
+                              </div>
+                              {/* Row 2: VMI + CMI (always paired together) */}
+                              {lead.policyType && (
+                                <div className="flex items-center gap-1">
+                                  <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                                    VMI
+                                  </span>
+                                  {lead.policyType === 'vmi_cmi' && (
+                                    <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300">
+                                      CMI
+                                    </span>
+                                  )}
+                                </div>
                               )}
-                            </>
-                          )}
-                          {(() => {
-                            const policies = lead.policyRecords || [];
-                            const hasEndorsement = policies.some(p => p.endorsementType === 'policy_endorsement');
-                            const hasCancellation = policies.some(p => p.endorsementType === 'policy_cancellation');
-                            return (
-                              <>
-                                {hasEndorsement && (
-                                  <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300">
-                                    {language === 'th' ? 'สลักหลัง' : 'Endorse'}
-                                  </span>
-                                )}
-                                {hasCancellation && (
-                                  <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300">
-                                    {language === 'th' ? 'ยกเลิก' : 'Cancel'}
-                                  </span>
-                                )}
-                              </>
-                            );
-                          })()}
-                        </div>
+                              {/* Row 3: Endorsement tags */}
+                              {(hasEndorsement || hasCancellation) && (
+                                <div className="flex items-center gap-1">
+                                  {hasEndorsement && (
+                                    <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300">
+                                      {language === 'th' ? 'สลักหลัง' : 'Endorse'}
+                                    </span>
+                                  )}
+                                  {hasCancellation && (
+                                    <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300">
+                                      {language === 'th' ? 'ยกเลิก' : 'Cancel'}
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })()}
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex flex-col">
