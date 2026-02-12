@@ -698,7 +698,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                   </td>
                   <td className="px-4 py-3 text-sm">{getTeamDisplay(config)}</td>
                   <td className="px-4 py-3 text-sm">
-                    {config.configType === 'endorsement' ? 'All' : getStageLabels(config.stages || [])}
+                    {config.configType === 'endorsement' ? '-' : getStageLabels(config.stages || [])}
                   </td>
                   <td className="px-4 py-3 text-sm text-center">
                     <span className="px-2 py-0.5 rounded text-xs font-medium bg-muted text-muted-foreground">
@@ -717,8 +717,8 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                     </span>
                   </td>
                   <td className="px-4 py-3 text-sm text-center">
-                    <span className={config.movesToCancellation ? 'text-destructive' : 'text-muted-foreground'}>
-                      {config.movesToCancellation ? 'YES' : '-'}
+                    <span className={config.movesToCancellation ? 'text-green-500' : 'text-muted-foreground'}>
+                      {config.movesToCancellation ? 'ON' : 'OFF'}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-sm text-center">
