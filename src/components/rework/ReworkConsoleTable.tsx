@@ -30,6 +30,7 @@ interface ReworkConsoleTableProps {
 
 const assignmentOptions: { value: AssignmentType; label: string }[] = [
   { value: 'rf_sc', label: 'RF/SC' },
+  { value: 'rf', label: 'RF' },
   { value: 'round_robin', label: 'Round-Robin' },
   { value: 'none', label: '-' },
 ];
@@ -116,8 +117,8 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
   };
 
   const handleSave = () => {
-    // If RF/SC or none, clear team since it's not used
-    const teamValue = formData.assignment === 'rf_sc' || formData.assignment === 'none' ? '' : (formData.team || '');
+    // If RF/SC, RF, or none, clear team since it's not used
+    const teamValue = formData.assignment === 'rf_sc' || formData.assignment === 'rf' || formData.assignment === 'none' ? '' : (formData.team || '');
     
     if (editingConfig) {
       onUpdate(
@@ -162,7 +163,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
   };
 
   const getTeamDisplay = (config: ReworkConfig) => {
-    if (config.assignment === 'rf_sc' || config.assignment === 'none') {
+    if (config.assignment === 'rf_sc' || config.assignment === 'rf' || config.assignment === 'none') {
       return '-';
     }
     return config.team || '-';
@@ -308,7 +309,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                     onValueChange={(value) => setFormData({ 
                       ...formData, 
                       assignment: value as AssignmentType,
-                      team: value === 'rf_sc' || value === 'none' ? '' : formData.team 
+                      team: value === 'rf_sc' || value === 'rf' || value === 'none' ? '' : formData.team 
                     })}
                   >
                     <SelectTrigger>
@@ -325,6 +326,8 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                   <p className="text-xs text-muted-foreground">
                     {formData.assignment === 'rf_sc' 
                       ? 'Assigns to SC person if claimed, otherwise RF person'
+                      : formData.assignment === 'rf'
+                      ? 'Always assigns to RF person regardless of SC assignment'
                       : formData.assignment === 'none'
                       ? 'No owner assignment for this rework reason'
                       : 'Distributes tasks fairly among selected team members'}
