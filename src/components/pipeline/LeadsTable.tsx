@@ -1572,27 +1572,32 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
       return [];
     }
 
-    // Check if this specific policy has active endorsements (non-terminal)
+    // Collect owners from both active endorsements and active reworks
+    const allOwners: string[] = [];
+
+    // Endorsement owners (from latest non-terminal entry)
     if (policy.endorsementHistory && policy.endorsementHistory.length > 0) {
-      // Get the latest endorsement entry
       const latestEndorsement = policy.endorsementHistory[policy.endorsementHistory.length - 1];
       const isTerminal = latestEndorsement.toStatus === 'request_approved' || latestEndorsement.toStatus === 'invalid';
       if (!isTerminal && latestEndorsement.assignedTo) {
-        return [latestEndorsement.assignedTo];
+        allOwners.push(latestEndorsement.assignedTo);
       }
     }
 
-    // Check if this specific policy has active reworks (both external and internal-only)
+    // Rework owners (from all active/unresolved entries)
     if (policy.reworkHistory) {
       const activeReworks = policy.reworkHistory.filter(e => !e.resolved);
       if (activeReworks.length > 0) {
-        // Collect unique owners from all active reworks
-        const owners = activeReworks
+        const reworkOwners = activeReworks
           .map(e => e.assignedTo || computeReworkOwner(lead, e.reasonId))
           .filter((owner): owner is string => !!owner);
-        // Return unique owners preserving order
-        if (owners.length > 0) return [...new Set(owners)];
+        allOwners.push(...reworkOwners);
       }
+    }
+
+    // Return unique owners if any
+    if (allOwners.length > 0) {
+      return [...new Set(allOwners)];
     }
 
    // No active rework on this policy - use stage-based owner
