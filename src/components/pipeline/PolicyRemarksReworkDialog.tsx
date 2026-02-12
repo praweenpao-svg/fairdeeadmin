@@ -580,24 +580,8 @@ export function PolicyRemarksReworkDialog({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <p className={cn('text-sm font-medium', isCancellation ? 'text-red-700 dark:text-red-400' : 'text-amber-700 dark:text-amber-400')}>
-                {isCancellation 
-                  ? (language === 'th' ? 'ยกเลิกกรมธรรม์' : 'Policy Cancellation')
-                  : (language === 'th' ? 'สลักหลังกรมธรรม์' : 'Policy Endorsement')
-                }
-              </p>
-              <Badge 
-                variant="outline" 
-                className={cn(
-                  'text-[10px] h-5 px-1.5',
-                  isCancellation
-                    ? 'bg-red-100 text-red-700 border-red-300 dark:bg-red-900 dark:text-red-300 dark:border-red-700'
-                    : 'bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-900 dark:text-amber-300 dark:border-amber-700'
-                )}
-              >
-                {endorsementStatusLabels[entry.fromStatus]?.[language] || entry.fromStatus}
-                {' → '}
                 {endorsementStatusLabels[entry.toStatus]?.[language] || entry.toStatus}
-              </Badge>
+              </p>
               {entry.assignedTo && (
                 <Badge variant="outline" className={cn(
                   'text-[10px] h-5 px-1.5',
