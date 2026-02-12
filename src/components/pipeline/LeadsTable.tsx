@@ -465,6 +465,10 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
       }
       case 'rf_sc':
         return lead.scAssignee || lead.rfAssignee;
+      case 'rf':
+        return lead.rfAssignee;
+      case 'requestor':
+        return CURRENT_USER;
       case 'none':
         return undefined;
       default:
@@ -897,8 +901,9 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
       minute: '2-digit',
     });
 
-    // Compute owner based on the config's assignment logic
-    const newOwner = computeReworkOwner(lead, matchingConfig.id);
+    // Terminal endorsement statuses have no owner
+    const isTerminalStatus = newStatus === 'request_approved' || newStatus === 'invalid';
+    const newOwner = isTerminalStatus ? undefined : computeReworkOwner(lead, matchingConfig.id);
 
     // Create endorsement entry (ticket)
     const endorsementEntry: PolicyEndorsementEntry = {
@@ -1565,6 +1570,16 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
     // Terminal state - no owner needed
     if (isPolicyTerminal(policy)) {
       return [];
+    }
+
+    // Check if this specific policy has active endorsements (non-terminal)
+    if (policy.endorsementHistory && policy.endorsementHistory.length > 0) {
+      // Get the latest endorsement entry
+      const latestEndorsement = policy.endorsementHistory[policy.endorsementHistory.length - 1];
+      const isTerminal = latestEndorsement.toStatus === 'request_approved' || latestEndorsement.toStatus === 'invalid';
+      if (!isTerminal && latestEndorsement.assignedTo) {
+        return [latestEndorsement.assignedTo];
+      }
     }
 
     // Check if this specific policy has active reworks (both external and internal-only)
