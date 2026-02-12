@@ -32,6 +32,7 @@ const assignmentOptions: { value: AssignmentType; label: string }[] = [
   { value: 'rf_sc', label: 'RF/SC' },
   { value: 'rf', label: 'RF' },
   { value: 'round_robin', label: 'Round-Robin' },
+  { value: 'requestor', label: 'Requestor' },
   { value: 'none', label: '-' },
 ];
 
@@ -144,20 +145,22 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
   };
 
   const handleSave = () => {
-    // If RF/SC, RF, or none, clear team since it's not used
-    const teamValue = formData.assignment === 'rf_sc' || formData.assignment === 'rf' || formData.assignment === 'none' ? '' : (formData.team || '');
+    // If RF/SC, RF, Requestor, or none, clear team since it's not used
+    const teamValue = formData.assignment === 'rf_sc' || formData.assignment === 'rf' || formData.assignment === 'requestor' || formData.assignment === 'none' ? '' : (formData.team || '');
     
     // For endorsement type, force pre-selected values
     const isEndorsement = formData.configType === 'endorsement';
     const stages = isEndorsement ? allPostLeadStages : (formData.stages || []);
     const partyType = isEndorsement ? 'internal' as ReworkPartyType : (formData.partyType || 'internal');
     const policyScope = isEndorsement ? 'both' as PolicyScopeType : (formData.policyScope || 'both');
+    const automationEnabled = isEndorsement ? false : (formData.automationEnabled || false);
+    const movesToCancellation = isEndorsement ? false : (formData.movesToCancellation || false);
     
     if (editingConfig) {
       onUpdate(
         reworkConfigs.map((config) =>
           config.id === editingConfig.id
-            ? { ...config, ...formData, team: teamValue, stages, partyType, policyScope }
+            ? { ...config, ...formData, team: teamValue, stages, partyType, policyScope, automationEnabled, movesToCancellation }
             : config
         )
       );
@@ -165,16 +168,16 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
       const newConfig: ReworkConfig = {
         id: String(Date.now()),
         configType: formData.configType || 'rework',
-        descriptionTh: formData.descriptionTh || '',
-        descriptionEn: formData.descriptionEn || '',
+        descriptionTh: isEndorsement ? '' : (formData.descriptionTh || ''),
+        descriptionEn: isEndorsement ? '' : (formData.descriptionEn || ''),
         team: teamValue,
         teamMembers: [],
-        automationEnabled: formData.automationEnabled || false,
-        automationDays: formData.automationDays,
-        targetReason: formData.targetReason,
+        automationEnabled,
+        automationDays: isEndorsement ? undefined : formData.automationDays,
+        targetReason: isEndorsement ? undefined : formData.targetReason,
         assignment: formData.assignment || 'rf_sc',
         stages,
-        movesToCancellation: formData.movesToCancellation || false,
+        movesToCancellation,
         partyType,
         policyScope,
         endorsementConfigType: isEndorsement ? formData.endorsementConfigType : undefined,
@@ -199,7 +202,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
   };
 
   const getTeamDisplay = (config: ReworkConfig) => {
-    if (config.assignment === 'rf_sc' || config.assignment === 'rf' || config.assignment === 'none') {
+    if (config.assignment === 'rf_sc' || config.assignment === 'rf' || config.assignment === 'requestor' || config.assignment === 'none') {
       return '-';
     }
     return config.team || '-';
@@ -345,24 +348,29 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                   </>
                 )}
 
-                <div className="grid gap-2">
-                  <Label htmlFor="descriptionTh">Description (TH)</Label>
-                  <Input
-                    id="descriptionTh"
-                    value={formData.descriptionTh}
-                    onChange={(e) => setFormData({ ...formData, descriptionTh: e.target.value })}
-                    placeholder="Enter Thai description"
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="descriptionEn">Description (EN)</Label>
-                  <Input
-                    id="descriptionEn"
-                    value={formData.descriptionEn}
-                    onChange={(e) => setFormData({ ...formData, descriptionEn: e.target.value })}
-                    placeholder="Enter English description"
-                  />
-                </div>
+                {/* TH/EN Description - only for Rework */}
+                {formData.configType !== 'endorsement' && (
+                  <>
+                    <div className="grid gap-2">
+                      <Label htmlFor="descriptionTh">Description (TH)</Label>
+                      <Input
+                        id="descriptionTh"
+                        value={formData.descriptionTh}
+                        onChange={(e) => setFormData({ ...formData, descriptionTh: e.target.value })}
+                        placeholder="Enter Thai description"
+                      />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="descriptionEn">Description (EN)</Label>
+                      <Input
+                        id="descriptionEn"
+                        value={formData.descriptionEn}
+                        onChange={(e) => setFormData({ ...formData, descriptionEn: e.target.value })}
+                        placeholder="Enter English description"
+                      />
+                    </div>
+                  </>
+                )}
 
                 {/* Party Type - only for Rework */}
                 {formData.configType !== 'endorsement' && (
@@ -433,7 +441,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                     onValueChange={(value) => setFormData({ 
                       ...formData, 
                       assignment: value as AssignmentType,
-                      team: value === 'rf_sc' || value === 'rf' || value === 'none' ? '' : formData.team 
+                      team: value === 'rf_sc' || value === 'rf' || value === 'requestor' || value === 'none' ? '' : formData.team 
                     })}
                   >
                     <SelectTrigger>
@@ -452,6 +460,8 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                       ? 'Assigns to SC person if claimed, otherwise RF person'
                       : formData.assignment === 'rf'
                       ? 'Always assigns to RF person regardless of SC assignment'
+                      : formData.assignment === 'requestor'
+                      ? 'Assigns to whoever created the rework/endorsement request'
                       : formData.assignment === 'none'
                       ? 'No owner assignment for this rework reason'
                       : 'Distributes tasks fairly among selected team members'}
@@ -501,86 +511,90 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                   </div>
                 )}
 
-                {/* Moves to Cancellation Section */}
-                <div className="border-t pt-4 mt-2">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="movesToCancellation">Moves to Cancellation</Label>
-                      <p className="text-xs text-muted-foreground">
-                        When selected, leads with this rework will move to Cancellation tab
-                      </p>
-                    </div>
-                    <Switch
-                      id="movesToCancellation"
-                      checked={formData.movesToCancellation || false}
-                      onCheckedChange={(checked) => setFormData({ ...formData, movesToCancellation: checked })}
-                    />
-                  </div>
-                </div>
-
-                {/* Date Automation Section */}
-                <div className="border-t pt-4 mt-2">
-                  
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="automationEnabled">Enable Auto-Move</Label>
-                      <p className="text-xs text-muted-foreground">
-                        Automatically escalate after threshold days
-                      </p>
-                    </div>
-                    <Switch
-                      id="automationEnabled"
-                      checked={formData.automationEnabled || false}
-                      onCheckedChange={(checked) => setFormData({ ...formData, automationEnabled: checked })}
-                    />
-                  </div>
-
-                  {formData.automationEnabled && (
-                    <div className="grid gap-4">
-                      <div className="grid gap-2">
-                        <Label htmlFor="automationDays">Threshold (Days)</Label>
-                        <Input
-                          id="automationDays"
-                          type="number"
-                          min={1}
-                          value={formData.automationDays || ''}
-                          onChange={(e) => setFormData({ 
-                            ...formData, 
-                            automationDays: e.target.value ? parseInt(e.target.value) : undefined 
-                          })}
-                          placeholder="Enter number of days"
-                        />
-                      </div>
-                      <div className="grid gap-2">
-                        <Label htmlFor="targetReason">Target Status</Label>
-                        <Select 
-                          value={formData.targetReason || '__none__'} 
-                          onValueChange={(value) => setFormData({ 
-                            ...formData, 
-                            targetReason: value === '__none__' ? undefined : value 
-                          })}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select target rework reason" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="__none__">Select target reason</SelectItem>
-                            {uniqueConfigs
-                              .filter(c => c.id !== editingConfig?.id)
-                              .map((config) => (
-                                <SelectItem key={config.id} value={config.id}>
-                                  {config.descriptionEn}
-                                </SelectItem>
-                              ))}
-                          </SelectContent>
-                        </Select>
+                {/* Moves to Cancellation Section - only for Rework */}
+                {formData.configType !== 'endorsement' && (
+                  <div className="border-t pt-4 mt-2">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="movesToCancellation">Moves to Cancellation</Label>
                         <p className="text-xs text-muted-foreground">
-                          Where the record moves after threshold is reached
+                          When selected, leads with this rework will move to Cancellation tab
                         </p>
                       </div>
+                      <Switch
+                        id="movesToCancellation"
+                        checked={formData.movesToCancellation || false}
+                        onCheckedChange={(checked) => setFormData({ ...formData, movesToCancellation: checked })}
+                      />
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
+
+                {/* Date Automation Section - only for Rework */}
+                {formData.configType !== 'endorsement' && (
+                  <div className="border-t pt-4 mt-2">
+                    
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="automationEnabled">Enable Auto-Move</Label>
+                        <p className="text-xs text-muted-foreground">
+                          Automatically escalate after threshold days
+                        </p>
+                      </div>
+                      <Switch
+                        id="automationEnabled"
+                        checked={formData.automationEnabled || false}
+                        onCheckedChange={(checked) => setFormData({ ...formData, automationEnabled: checked })}
+                      />
+                    </div>
+
+                    {formData.automationEnabled && (
+                      <div className="grid gap-4">
+                        <div className="grid gap-2">
+                          <Label htmlFor="automationDays">Threshold (Days)</Label>
+                          <Input
+                            id="automationDays"
+                            type="number"
+                            min={1}
+                            value={formData.automationDays || ''}
+                            onChange={(e) => setFormData({ 
+                              ...formData, 
+                              automationDays: e.target.value ? parseInt(e.target.value) : undefined 
+                            })}
+                            placeholder="Enter number of days"
+                          />
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="targetReason">Target Status</Label>
+                          <Select 
+                            value={formData.targetReason || '__none__'} 
+                            onValueChange={(value) => setFormData({ 
+                              ...formData, 
+                              targetReason: value === '__none__' ? undefined : value 
+                            })}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select target rework reason" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="__none__">Select target reason</SelectItem>
+                              {uniqueConfigs
+                                .filter(c => c.id !== editingConfig?.id)
+                                .map((config) => (
+                                  <SelectItem key={config.id} value={config.id}>
+                                    {config.descriptionEn}
+                                  </SelectItem>
+                                ))}
+                            </SelectContent>
+                          </Select>
+                          <p className="text-xs text-muted-foreground">
+                            Where the record moves after threshold is reached
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
@@ -661,10 +675,21 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                     )}
                   </td>
                   <td className="px-4 py-3 text-sm min-w-[280px]">
-                    <div className="space-y-1">
-                      <div className="font-medium text-foreground">{config.descriptionEn}</div>
-                      <div className="text-xs text-muted-foreground">{config.descriptionTh}</div>
-                    </div>
+                    {config.configType === 'endorsement' ? (
+                      <div className="space-y-1">
+                        <div className="font-medium text-foreground">
+                          {endorsementTypeOptions.find(o => o.value === config.endorsementConfigType)?.label || '-'}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {config.endorsementConfigType === 'policy_endorsement' ? 'สลักหลังกรมธรรม์' : 'ยกเลิกกรมธรรม์'}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-1">
+                        <div className="font-medium text-foreground">{config.descriptionEn}</div>
+                        <div className="text-xs text-muted-foreground">{config.descriptionTh}</div>
+                      </div>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-sm">
                     {assignmentOptions.find(o => o.value === config.assignment)?.label || config.assignment}
