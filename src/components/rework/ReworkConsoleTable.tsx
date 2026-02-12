@@ -154,7 +154,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
     const partyType = isEndorsement ? 'internal' as ReworkPartyType : (formData.partyType || 'internal');
     const policyScope = isEndorsement ? 'both' as PolicyScopeType : (formData.policyScope || 'both');
     const automationEnabled = isEndorsement ? false : (formData.automationEnabled || false);
-    const movesToCancellation = isEndorsement ? false : (formData.movesToCancellation || false);
+    const movesToCancellation = formData.movesToCancellation || false;
     
     if (editingConfig) {
       onUpdate(
@@ -511,24 +511,22 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                   </div>
                 )}
 
-                {/* Moves to Cancellation Section - only for Rework */}
-                {formData.configType !== 'endorsement' && (
-                  <div className="border-t pt-4 mt-2">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label htmlFor="movesToCancellation">Moves to Cancellation</Label>
-                        <p className="text-xs text-muted-foreground">
-                          When selected, leads with this rework will move to Cancellation tab
-                        </p>
-                      </div>
-                      <Switch
-                        id="movesToCancellation"
-                        checked={formData.movesToCancellation || false}
-                        onCheckedChange={(checked) => setFormData({ ...formData, movesToCancellation: checked })}
-                      />
+                {/* Moves to Cancellation Section - shown for both Rework and Endorsement */}
+                <div className="border-t pt-4 mt-2">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="movesToCancellation">Moves to Cancellation</Label>
+                      <p className="text-xs text-muted-foreground">
+                        When selected, leads with this rework will move to Cancellation tab
+                      </p>
                     </div>
+                    <Switch
+                      id="movesToCancellation"
+                      checked={formData.movesToCancellation || false}
+                      onCheckedChange={(checked) => setFormData({ ...formData, movesToCancellation: checked })}
+                    />
                   </div>
-                )}
+                </div>
 
                 {/* Date Automation Section - only for Rework */}
                 {formData.configType !== 'endorsement' && (
