@@ -1,6 +1,21 @@
-import { FileText, Image, X } from 'lucide-react';
+import { FileText, Image, X, Download } from 'lucide-react';
 import { ReworkAttachment } from '@/types/pipeline';
 import { cn } from '@/lib/utils';
+
+function handleDownloadAll(attachments: ReworkAttachment[]) {
+  attachments.forEach((att, i) => {
+    setTimeout(() => {
+      const a = document.createElement('a');
+      a.href = att.url;
+      a.download = att.name;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }, i * 200);
+  });
+}
 
 interface AttachmentThumbnailsProps {
   attachments: ReworkAttachment[];
@@ -28,7 +43,7 @@ export function AttachmentThumbnails({
   };
 
   return (
-    <div className={cn("flex flex-wrap gap-2", className)}>
+    <div className={cn("flex flex-wrap gap-2 items-end", className)}>
       {attachments.map(att => {
         const isImage = att.type === 'png' || att.type === 'jpg';
         const isPdf = att.type === 'pdf';
@@ -82,6 +97,21 @@ export function AttachmentThumbnails({
           </div>
         );
       })}
+      {/* Download All button - only show for read-only (no onRemove) and 2+ attachments */}
+      {!onRemove && attachments.length >= 2 && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleDownloadAll(attachments);
+          }}
+          className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors px-1.5 py-1 rounded hover:bg-muted border border-border h-fit"
+        >
+          <Download className="w-3 h-3" />
+          <span>All</span>
+        </button>
+      )}
     </div>
   );
 }
