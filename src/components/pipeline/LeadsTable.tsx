@@ -2297,14 +2297,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                               }
                                             }}
                                           >
-                                            <SelectTrigger 
-                                              className={cn(
-                                                "h-8 text-xs w-full font-medium",
-                                                policy.endorsementType === 'policy_cancellation'
-                                                  ? "bg-red-50 border-red-200 text-red-700 dark:bg-red-950 dark:border-red-800 dark:text-red-300"
-                                                  : "bg-amber-50 border-amber-200 text-amber-700 dark:bg-amber-950 dark:border-amber-800 dark:text-amber-300"
-                                              )}
-                                            >
+                                            <SelectTrigger className="h-8 text-xs w-full">
                                               <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent className="bg-popover z-50">
