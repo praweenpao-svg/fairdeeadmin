@@ -386,6 +386,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                       <Label htmlFor="descriptionTh">Description (TH)</Label>
                       <Input
                         id="descriptionTh"
+                        className="bg-card"
                         value={formData.descriptionTh}
                         onChange={(e) => setFormData({ ...formData, descriptionTh: e.target.value })}
                         placeholder="Enter Thai description"
@@ -395,6 +396,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                       <Label htmlFor="descriptionEn">Description (EN)</Label>
                       <Input
                         id="descriptionEn"
+                        className="bg-card"
                         value={formData.descriptionEn}
                         onChange={(e) => setFormData({ ...formData, descriptionEn: e.target.value })}
                         placeholder="Enter English description"
