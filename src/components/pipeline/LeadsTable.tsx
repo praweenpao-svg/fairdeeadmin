@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   ExternalLink, 
   MoreVertical,
@@ -10,6 +10,7 @@ import {
   MessageSquare,
   Truck,
   CalendarClock,
+  ChevronsUpDown,
 } from 'lucide-react';
 import { Lead, PipelineStage, LeadType, LeadSource, ReworkConfig, CreatedByType, ReworkAttachment, ReworkHistoryEntry, HistoryLogEntry, PolicyStatus, PolicyReworkEntry, PolicyRecord, PaymentMethod, PolicyHistoryLogEntry, InstallmentCount } from '@/types/pipeline';
 import { cn } from '@/lib/utils';
@@ -1459,6 +1460,34 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
   return (
     <>
       <div className="bg-card rounded-lg border border-border overflow-hidden">
+        {/* Expand/Collapse All button for post-lead stages */}
+        {isPostLeadStage && paginatedLeads.some(l => (l.policyRecords || []).length > 0) && (
+          <div className="flex items-center justify-end px-4 py-1.5 border-b border-border bg-muted/30">
+            <button
+              onClick={() => {
+                const allExpanded = paginatedLeads.every(l => expandedLeads.has(l.id));
+                setExpandedLeads(prev => {
+                  const newSet = new Set(prev);
+                  if (allExpanded) {
+                    paginatedLeads.forEach(l => newSet.delete(l.id));
+                  } else {
+                    paginatedLeads.forEach(l => {
+                      if ((l.policyRecords || []).length > 0) newSet.add(l.id);
+                    });
+                  }
+                  return newSet;
+                });
+              }}
+              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded hover:bg-muted"
+            >
+              <ChevronsUpDown className="w-3.5 h-3.5" />
+              {paginatedLeads.every(l => expandedLeads.has(l.id))
+                ? (language === 'th' ? 'ย่อทั้งหมด' : 'Collapse All')
+                : (language === 'th' ? 'ขยายทั้งหมด' : 'Expand All')
+              }
+            </button>
+          </div>
+        )}
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
