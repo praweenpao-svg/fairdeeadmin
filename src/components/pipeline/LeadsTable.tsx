@@ -12,7 +12,7 @@ import {
   CalendarClock,
   ChevronsUpDown,
 } from 'lucide-react';
-import { Lead, PipelineStage, LeadType, LeadSource, ReworkConfig, CreatedByType, ReworkAttachment, ReworkHistoryEntry, HistoryLogEntry, PolicyStatus, PolicyReworkEntry, PolicyRecord, PaymentMethod, PolicyHistoryLogEntry, InstallmentCount } from '@/types/pipeline';
+import { Lead, PipelineStage, LeadType, LeadSource, ReworkConfig, CreatedByType, ReworkAttachment, ReworkHistoryEntry, HistoryLogEntry, PolicyStatus, PolicyReworkEntry, PolicyRecord, PaymentMethod, PolicyHistoryLogEntry, InstallmentCount, EndorsementStatus, PolicyEndorsementEntry } from '@/types/pipeline';
 import { cn } from '@/lib/utils';
 import { useLanguageStore } from '@/stores/languageStore';
 import { toast } from 'sonner';
@@ -862,6 +862,111 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
     onLeadUpdate?.(lead.id, updates);
   };
 
+  // Handle endorsement status change - validates against rework console, creates entry, updates owner
+  const handleEndorsementStatusChange = (lead: Lead, policyId: string, newStatus: EndorsementStatus) => {
+    if (!lead.policyRecords) return;
+
+    const policy = lead.policyRecords.find(r => r.id === policyId);
+    if (!policy || !policy.endorsementType) return;
+
+    const oldStatus = policy.endorsementStatus;
+    if (oldStatus === newStatus) return;
+
+    // Validate: find matching endorsement config in rework console
+    const matchingConfig = reworkConfigs.find(
+      c => c.configType === 'endorsement'
+        && c.endorsementConfigType === policy.endorsementType
+        && c.endorsementConfigStatus === newStatus
+    );
+
+    if (!matchingConfig) {
+      toast.error(
+        language === 'th'
+          ? 'ไม่พบการตั้งค่าสถานะนี้ใน Rework Console กรุณาเพิ่มการตั้งค่าก่อน'
+          : 'This endorsement status is not configured in the Rework Console. Please add the configuration first.',
+        { duration: 4000 }
+      );
+      return;
+    }
+
+    const timestamp = new Date().toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+    // Compute owner based on the config's assignment logic
+    const newOwner = computeReworkOwner(lead, matchingConfig.id);
+
+    // Create endorsement entry (ticket)
+    const endorsementEntry: PolicyEndorsementEntry = {
+      id: crypto.randomUUID(),
+      endorsementType: policy.endorsementType,
+      fromStatus: oldStatus!,
+      toStatus: newStatus,
+      details: '',
+      attachments: [],
+      savedBy: CURRENT_USER,
+      savedAt: timestamp,
+      assignedTo: newOwner,
+    };
+
+    // Create policy-level history log entry
+    const policyHistoryEntry: PolicyHistoryLogEntry = {
+      id: crypto.randomUUID(),
+      action: 'endorsement_status_changed',
+      triggeredBy: CURRENT_USER,
+      triggeredAt: timestamp,
+      fromStatus: oldStatus,
+      toStatus: newStatus,
+    };
+
+    const historyEntries: PolicyHistoryLogEntry[] = [policyHistoryEntry];
+
+    // Add owner change to history if applicable
+    if (newOwner) {
+      historyEntries.push({
+        id: crypto.randomUUID(),
+        action: 'assignee_changed',
+        triggeredBy: 'System',
+        triggeredAt: timestamp,
+        assigneeType: 'owner',
+        fromAssignee: lead.assignedTo,
+        toAssignee: newOwner,
+      });
+    }
+
+    const updatedRecords = lead.policyRecords.map(record => {
+      if (record.id !== policyId) return record;
+      return {
+        ...record,
+        endorsementStatus: newStatus,
+        endorsementHistory: [...(record.endorsementHistory || []), endorsementEntry],
+        historyLog: [...(record.historyLog || []), ...historyEntries],
+      };
+    });
+
+    const leadHistoryEntry: HistoryLogEntry = {
+      id: crypto.randomUUID(),
+      action: 'status_changed',
+      triggeredBy: CURRENT_USER,
+      triggeredAt: timestamp,
+      fromStatus: oldStatus,
+      toStatus: newStatus,
+      comment: `${policy.kind.toUpperCase()} endorsement status changed`,
+    };
+
+    const updates: Partial<Lead> = {
+      policyRecords: updatedRecords,
+      assignedTo: newOwner || lead.assignedTo,
+      historyLog: [...(lead.historyLog || []), leadHistoryEntry],
+    };
+
+    onLeadUpdate?.(lead.id, updates);
+  };
+
   const handleStatusChange = (lead: Lead, newStatus: string) => {
     if (newStatus === 'rework_required') {
       setSelectedLead(lead);
@@ -1337,7 +1442,41 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
     onLeadUpdate?.(lead.id, { policyRecords: updatedRecords });
   };
 
-  // Sort leads by createdOn descending (newest first)
+  const handleAddEndorsementReply = (entryId: string, comment: string, attachments?: ReworkAttachment[]) => {
+    if (!selectedPolicyForRemarks) return;
+
+    const lead = leads.find(l => l.id === selectedPolicyForRemarks.leadId);
+    if (!lead || !lead.policyRecords) return;
+
+    const newReply = {
+      id: crypto.randomUUID(),
+      comment,
+      attachments,
+      createdBy: CURRENT_USER,
+      createdAt: new Date().toISOString(),
+    };
+
+    const updatedRecords = lead.policyRecords.map(record => {
+      if (record.id !== selectedPolicyForRemarks.policyId) return record;
+      
+      const updatedEndorsementHistory = record.endorsementHistory?.map(entry => {
+        if (entry.id !== entryId) return entry;
+        return {
+          ...entry,
+          replies: [...(entry.replies || []), newReply],
+        };
+      });
+
+      return {
+        ...record,
+        endorsementHistory: updatedEndorsementHistory,
+      };
+    });
+
+    onLeadUpdate?.(lead.id, { policyRecords: updatedRecords });
+  };
+
+
   const sortedLeads = [...leads].sort((a, b) => {
     const dateA = parseDateTime(a.createdOn).getTime();
     const dateB = parseDateTime(b.createdOn).getTime();
@@ -2147,23 +2286,25 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                         )}
                                       </div>
                                       
-                                      {/* Endorsement Status - dropdown with toast error on change */}
+                                      {/* Endorsement Status - dropdown that validates against rework console */}
                                       <div className="w-[160px] shrink-0">
                                         {policy.endorsementType && policy.endorsementStatus ? (
                                           <Select
                                             value={policy.endorsementStatus}
                                             onValueChange={(newValue) => {
                                               if (newValue !== policy.endorsementStatus) {
-                                                toast.error(
-                                                  language === 'th' 
-                                                    ? 'ไม่สามารถเปลี่ยนสถานะได้โดยตรง กรุณาดำเนินการผ่านระบบที่เกี่ยวข้อง'
-                                                    : 'Cannot change endorsement status directly. Please process through the appropriate workflow.',
-                                                  { duration: 4000 }
-                                                );
+                                                handleEndorsementStatusChange(lead, policy.id, newValue as EndorsementStatus);
                                               }
                                             }}
                                           >
-                                            <SelectTrigger className="h-8 text-xs w-full">
+                                            <SelectTrigger 
+                                              className={cn(
+                                                "h-8 text-xs w-full font-medium",
+                                                policy.endorsementType === 'policy_cancellation'
+                                                  ? "bg-red-50 border-red-200 text-red-700 dark:bg-red-950 dark:border-red-800 dark:text-red-300"
+                                                  : "bg-amber-50 border-amber-200 text-amber-700 dark:bg-amber-950 dark:border-amber-800 dark:text-amber-300"
+                                              )}
+                                            >
                                               <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent className="bg-popover z-50">
@@ -2368,6 +2509,12 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
           const policy = lead?.policyRecords?.find(p => p.id === selectedPolicyForRemarks.policyId);
           return policy?.reworkHistory || [];
         })()}
+        endorsementHistory={(() => {
+          if (!selectedPolicyForRemarks) return [];
+          const lead = leads.find(l => l.id === selectedPolicyForRemarks.leadId);
+          const policy = lead?.policyRecords?.find(p => p.id === selectedPolicyForRemarks.policyId);
+          return policy?.endorsementHistory || [];
+        })()}
         reworkConfigs={reworkConfigs}
         currentStage={(() => {
           // Use policy's actual stage, not the tab's stage (important for "All" tab)
@@ -2383,6 +2530,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
         onAddRemark={handleAddRemark}
         onAddRemarkReply={handleAddRemarkReply}
         onAddReworkReply={handleAddReworkReply}
+        onAddEndorsementReply={handleAddEndorsementReply}
         onReworkResolve={(entryId) => {
           if (!selectedPolicyForRemarks) return;
           const lead = leads.find(l => l.id === selectedPolicyForRemarks.leadId);
