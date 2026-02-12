@@ -275,8 +275,12 @@ export type PolicyScopeType = 'vmi' | 'cmi' | 'both';
 // Party type for rework reasons - internal (within organization) or external (insurer, customer, etc.)
 export type ReworkPartyType = 'internal' | 'external';
 
+// Config type for rework console entries
+export type ReworkConfigType = 'rework' | 'endorsement';
+
 export interface ReworkConfig {
   id: string;
+  configType: ReworkConfigType; // Top-level type: Rework or Endorsement
   descriptionTh: string;
   descriptionEn: string;
   team: string;
@@ -289,6 +293,9 @@ export interface ReworkConfig {
   movesToCancellation?: boolean; // If true, selecting this rework moves the lead to Cancellation tab
   partyType: ReworkPartyType; // Whether this is an internal or external rework reason
   policyScope: PolicyScopeType; // Whether this applies to VMI only, CMI only, or both
+  // Endorsement-specific fields (only when configType === 'endorsement')
+  endorsementConfigType?: EndorsementType; // Policy Endorsement or Policy Cancellation
+  endorsementConfigStatus?: EndorsementStatus; // Status for this endorsement config
 }
 
 export interface PipelineTab {
