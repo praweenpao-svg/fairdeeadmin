@@ -1,20 +1,32 @@
 import { FileText, Image, X, Download } from 'lucide-react';
 import { ReworkAttachment } from '@/types/pipeline';
 import { cn } from '@/lib/utils';
+import JSZip from 'jszip';
 
-function handleDownloadAll(attachments: ReworkAttachment[]) {
-  attachments.forEach((att, i) => {
-    setTimeout(() => {
-      const a = document.createElement('a');
-      a.href = att.url;
-      a.download = att.name;
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    }, i * 200);
-  });
+async function handleDownloadAllZip(attachments: ReworkAttachment[]) {
+  const zip = new JSZip();
+
+  await Promise.all(
+    attachments.map(async (att) => {
+      try {
+        const response = await fetch(att.url);
+        const blob = await response.blob();
+        zip.file(att.name, blob);
+      } catch {
+        // skip files that fail to fetch
+      }
+    })
+  );
+
+  const content = await zip.generateAsync({ type: 'blob' });
+  const url = URL.createObjectURL(content);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'attachments.zip';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 interface AttachmentThumbnailsProps {
@@ -104,7 +116,7 @@ export function AttachmentThumbnails({
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            handleDownloadAll(attachments);
+            handleDownloadAllZip(attachments);
           }}
           className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors px-1.5 py-1 rounded hover:bg-muted border border-border h-fit"
         >
