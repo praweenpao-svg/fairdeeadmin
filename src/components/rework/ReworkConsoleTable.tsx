@@ -220,7 +220,10 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
     const seen = new Set<string>();
     const result: ReworkConfig[] = [];
     for (const c of reworkConfigs) {
-      const key = `${(c.descriptionTh || '').trim().toLowerCase()}|${(c.descriptionEn || '').trim().toLowerCase()}`;
+      // For endorsements, use configType + endorsementType + status as key to avoid false dedup
+      const key = c.configType === 'endorsement'
+        ? `endorsement|${c.endorsementConfigType}|${c.endorsementConfigStatus}`
+        : `${(c.descriptionTh || '').trim().toLowerCase()}|${(c.descriptionEn || '').trim().toLowerCase()}`;
       if (seen.has(key)) continue;
       seen.add(key);
       result.push(c);
