@@ -307,10 +307,19 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                       <Label htmlFor="endorsementConfigType">Endorsement Type</Label>
                       <Select 
                         value={formData.endorsementConfigType || 'policy_endorsement'} 
-                        onValueChange={(value) => setFormData({ 
-                          ...formData, 
-                          endorsementConfigType: value as EndorsementType
-                        })}
+                        onValueChange={(value) => {
+                          const newType = value as EndorsementType;
+                          // Find first available status for new type
+                          const usedStatuses = reworkConfigs
+                            .filter(c => c.configType === 'endorsement' && c.endorsementConfigType === newType && c.id !== editingConfig?.id)
+                            .map(c => c.endorsementConfigStatus);
+                          const firstAvailable = endorsementStatusOptions.find(o => !usedStatuses.includes(o.value));
+                          setFormData({ 
+                            ...formData, 
+                            endorsementConfigType: newType,
+                            endorsementConfigStatus: firstAvailable?.value || formData.endorsementConfigStatus,
+                          });
+                        }}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select endorsement type" />
@@ -337,11 +346,19 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                           <SelectValue placeholder="Select endorsement status" />
                         </SelectTrigger>
                         <SelectContent>
-                          {endorsementStatusOptions.map((option) => (
-                            <SelectItem key={option.value} value={option.value}>
-                              {option.label}
-                            </SelectItem>
-                          ))}
+                          {endorsementStatusOptions.map((option) => {
+                            const alreadyUsed = reworkConfigs.some(
+                              c => c.configType === 'endorsement' 
+                                && c.endorsementConfigType === (formData.endorsementConfigType || 'policy_endorsement')
+                                && c.endorsementConfigStatus === option.value
+                                && c.id !== editingConfig?.id
+                            );
+                            return (
+                              <SelectItem key={option.value} value={option.value} disabled={alreadyUsed}>
+                                {option.label}{alreadyUsed ? ' (already exists)' : ''}
+                              </SelectItem>
+                            );
+                          })}
                         </SelectContent>
                       </Select>
                     </div>
