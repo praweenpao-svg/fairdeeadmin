@@ -656,32 +656,34 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
               {paginatedConfigs.map((config) => (
                 <tr key={config.id} className="data-table-row">
                   <td className="px-4 py-3 text-sm text-center">
-                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                      config.configType === 'endorsement'
-                        ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                        : 'bg-muted text-muted-foreground'
-                    }`}>
-                      {config.configType === 'endorsement' ? 'Endorsement' : 'Rework'}
-                    </span>
-                    {config.configType === 'endorsement' && config.endorsementConfigType && (
-                      <div className="text-[10px] text-muted-foreground mt-0.5">
-                        {endorsementTypeOptions.find(o => o.value === config.endorsementConfigType)?.label}
-                      </div>
-                    )}
-                    {config.configType === 'endorsement' && config.endorsementConfigStatus && (
-                      <div className="text-[10px] text-muted-foreground">
-                        {endorsementStatusOptions.find(o => o.value === config.endorsementConfigStatus)?.label}
-                      </div>
+                    {config.configType === 'endorsement' ? (
+                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                        config.endorsementConfigType === 'policy_cancellation'
+                          ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                          : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                      }`}>
+                        {config.endorsementConfigType === 'policy_cancellation' ? 'Cancel' : 'Endorse'}
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded text-xs font-medium bg-muted text-muted-foreground">
+                        Rework
+                      </span>
                     )}
                   </td>
                   <td className="px-4 py-3 text-sm min-w-[280px]">
                     {config.configType === 'endorsement' ? (
                       <div className="space-y-1">
                         <div className="font-medium text-foreground">
-                          {endorsementTypeOptions.find(o => o.value === config.endorsementConfigType)?.label || '-'}
+                          {endorsementStatusOptions.find(o => o.value === config.endorsementConfigStatus)?.label || '-'}
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          {config.endorsementConfigType === 'policy_endorsement' ? 'สลักหลังกรมธรรม์' : 'ยกเลิกกรมธรรม์'}
+                          {config.endorsementConfigStatus === 'request_created' ? 'สร้างคำขอแล้ว'
+                            : config.endorsementConfigStatus === 'request_submitted' ? 'ส่งคำขอแล้ว'
+                            : config.endorsementConfigStatus === 'request_approved' ? 'อนุมัติคำขอแล้ว'
+                            : config.endorsementConfigStatus === 'pending_on_ops' ? 'รอดำเนินการ OPS'
+                            : config.endorsementConfigStatus === 'pending_finance' ? 'รอการเงิน'
+                            : config.endorsementConfigStatus === 'invalid' ? 'ไม่ถูกต้อง'
+                            : '-'}
                         </div>
                       </div>
                     ) : (
