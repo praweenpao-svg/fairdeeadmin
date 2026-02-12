@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { MessageSquare, Send, CheckCircle, ArrowRightLeft, Upload, X, FileText, Image, AlertTriangle, User, ChevronDown, ChevronRight, Reply, Paperclip, Lock, Globe } from 'lucide-react';
+import { MessageSquare, Send, CheckCircle, ArrowRightLeft, Upload, X, FileText, Image, AlertTriangle, User, ChevronDown, ChevronRight, Reply, Paperclip, Lock, Globe, FileCheck, FileX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { MentionTextarea } from '@/components/ui/mention-textarea';
@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { PolicyRemark, PolicyReworkEntry, ReworkConfig, ReworkAttachment, ThreadReply, PipelineStage } from '@/types/pipeline';
+import { PolicyRemark, PolicyReworkEntry, ReworkConfig, ReworkAttachment, ThreadReply, PipelineStage, PolicyEndorsementEntry, EndorsementType, EndorsementStatus } from '@/types/pipeline';
 import { useLanguageStore } from '@/stores/languageStore';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
@@ -28,6 +28,16 @@ import { ExpandableText } from '@/components/ui/expandable-text';
 import { AttachmentThumbnails, AttachmentDisplay } from '@/components/ui/attachment-thumbnails';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
+// Endorsement status translations
+const endorsementStatusLabels: Record<EndorsementStatus, { en: string; th: string }> = {
+  request_created: { en: 'Request Created', th: 'สร้างคำขอแล้ว' },
+  request_submitted: { en: 'Request Submitted', th: 'ส่งคำขอแล้ว' },
+  request_approved: { en: 'Request Approved', th: 'อนุมัติคำขอแล้ว' },
+  pending_on_ops: { en: 'Pending on Ops', th: 'รอดำเนินการ Ops' },
+  pending_finance: { en: 'Pending Finance', th: 'รอการเงิน' },
+  invalid: { en: 'Invalid', th: 'ไม่ถูกต้อง' },
+};
+
 interface PolicyRemarksReworkDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -36,11 +46,13 @@ interface PolicyRemarksReworkDialogProps {
   leadNumber?: string; // Sale ID for notification
   remarks: PolicyRemark[];
   reworkHistory: PolicyReworkEntry[];
+  endorsementHistory?: PolicyEndorsementEntry[];
   reworkConfigs: ReworkConfig[];
   currentStage: PipelineStage;
   onAddRemark: (comment: string, attachments?: ReworkAttachment[]) => void;
   onAddRemarkReply?: (remarkId: string, comment: string, attachments?: ReworkAttachment[]) => void;
   onAddReworkReply?: (entryId: string, comment: string, attachments?: ReworkAttachment[]) => void;
+  onAddEndorsementReply?: (entryId: string, comment: string, attachments?: ReworkAttachment[]) => void;
   onReworkResolve: (entryId: string) => void;
   onReworkReassign: (entryId: string, newReasonId: string, details: string, attachments: ReworkAttachment[]) => void;
   onAddRework?: (policyId: string, reasonId: string, details: string, attachments: ReworkAttachment[]) => void;
@@ -48,7 +60,9 @@ interface PolicyRemarksReworkDialogProps {
 
 type ThreadItem = 
   | { type: 'remark'; data: PolicyRemark; timestamp: Date }
-  | { type: 'rework'; data: PolicyReworkEntry; timestamp: Date };
+  | { type: 'rework'; data: PolicyReworkEntry; timestamp: Date }
+  | { type: 'endorsement'; data: PolicyEndorsementEntry; timestamp: Date };
+
 
 export function PolicyRemarksReworkDialog({
   open,
@@ -58,11 +72,13 @@ export function PolicyRemarksReworkDialog({
   leadNumber,
   remarks,
   reworkHistory,
+  endorsementHistory = [],
   reworkConfigs,
   currentStage,
   onAddRemark,
   onAddRemarkReply,
   onAddReworkReply,
+  onAddEndorsementReply,
   onReworkResolve,
   onReworkReassign,
   onAddRework,
@@ -73,7 +89,7 @@ export function PolicyRemarksReworkDialog({
   const [newComment, setNewComment] = useState('');
   const [newCommentAttachments, setNewCommentAttachments] = useState<ReworkAttachment[]>([]);
   const [expandedThreads, setExpandedThreads] = useState<Set<string>>(new Set());
-  const [replyingTo, setReplyingTo] = useState<{ id: string; type: 'remark' | 'rework' } | null>(null);
+  const [replyingTo, setReplyingTo] = useState<{ id: string; type: 'remark' | 'rework' | 'endorsement' } | null>(null);
   const [replyComment, setReplyComment] = useState('');
   const [replyAttachments, setReplyAttachments] = useState<ReworkAttachment[]>([]);
   
@@ -90,7 +106,7 @@ export function PolicyRemarksReworkDialog({
   // Get unresolved rework entries
   const unresolvedEntries = reworkHistory.filter(e => !e.resolved);
 
-  // Merge remarks and rework into a single timeline
+  // Merge remarks, rework, and endorsements into a single timeline
   const buildTimeline = (): ThreadItem[] => {
     const items: ThreadItem[] = [];
     
@@ -105,6 +121,14 @@ export function PolicyRemarksReworkDialog({
     reworkHistory.forEach(entry => {
       items.push({
         type: 'rework',
+        data: entry,
+        timestamp: new Date(entry.savedAt),
+      });
+    });
+
+    endorsementHistory.forEach(entry => {
+      items.push({
+        type: 'endorsement',
         data: entry,
         timestamp: new Date(entry.savedAt),
       });
@@ -153,6 +177,8 @@ export function PolicyRemarksReworkDialog({
       onAddRemarkReply(replyingTo.id, replyComment.trim(), replyAttachments.length > 0 ? replyAttachments : undefined);
     } else if (replyingTo.type === 'rework' && onAddReworkReply) {
       onAddReworkReply(replyingTo.id, replyComment.trim(), replyAttachments.length > 0 ? replyAttachments : undefined);
+    } else if (replyingTo.type === 'endorsement' && onAddEndorsementReply) {
+      onAddEndorsementReply(replyingTo.id, replyComment.trim(), replyAttachments.length > 0 ? replyAttachments : undefined);
     }
     
     setReplyComment('');
@@ -528,7 +554,141 @@ export function PolicyRemarksReworkDialog({
     );
   };
 
-  // Get stage-filtered rework configs for adding new rework
+  const renderEndorsementThread = (entry: PolicyEndorsementEntry) => {
+    const hasReplies = entry.replies && entry.replies.length > 0;
+    const isExpanded = expandedThreads.has(entry.id);
+    const isReplying = replyingTo?.id === entry.id && replyingTo?.type === 'endorsement';
+    const isCancellation = entry.endorsementType === 'policy_cancellation';
+
+    return (
+      <div
+        key={entry.id}
+        className={cn(
+          'p-3 rounded-lg border',
+          isCancellation
+            ? 'bg-red-50 border-red-200 dark:bg-red-950/30 dark:border-red-800'
+            : 'bg-amber-50 border-amber-200 dark:bg-amber-950/30 dark:border-amber-800'
+        )}
+      >
+        {/* Main endorsement entry */}
+        <div className="flex items-start gap-2">
+          {isCancellation ? (
+            <FileX className="w-4 h-4 mt-0.5 shrink-0 text-red-600 dark:text-red-400" />
+          ) : (
+            <FileCheck className="w-4 h-4 mt-0.5 shrink-0 text-amber-600 dark:text-amber-400" />
+          )}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className={cn('text-sm font-medium', isCancellation ? 'text-red-700 dark:text-red-400' : 'text-amber-700 dark:text-amber-400')}>
+                {isCancellation 
+                  ? (language === 'th' ? 'ยกเลิกกรมธรรม์' : 'Policy Cancellation')
+                  : (language === 'th' ? 'สลักหลังกรมธรรม์' : 'Policy Endorsement')
+                }
+              </p>
+              <Badge 
+                variant="outline" 
+                className={cn(
+                  'text-[10px] h-5 px-1.5',
+                  isCancellation
+                    ? 'bg-red-100 text-red-700 border-red-300 dark:bg-red-900 dark:text-red-300 dark:border-red-700'
+                    : 'bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-900 dark:text-amber-300 dark:border-amber-700'
+                )}
+              >
+                {endorsementStatusLabels[entry.fromStatus]?.[language] || entry.fromStatus}
+                {' → '}
+                {endorsementStatusLabels[entry.toStatus]?.[language] || entry.toStatus}
+              </Badge>
+              {entry.assignedTo && (
+                <Badge variant="outline" className={cn(
+                  'text-[10px] h-5 px-1.5',
+                  isCancellation
+                    ? 'bg-red-50 text-red-600 border-red-200 dark:bg-red-950 dark:text-red-400 dark:border-red-800'
+                    : 'bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-950 dark:text-amber-400 dark:border-amber-800'
+                )}>
+                  <User className="w-2.5 h-2.5 mr-1" />
+                  {entry.assignedTo}
+                </Badge>
+              )}
+            </div>
+            {entry.details && (
+              <ExpandableText 
+                text={entry.details} 
+                className="text-xs text-muted-foreground mt-1" 
+                maxLines={3} 
+                lineHeight={16}
+              />
+            )}
+            {renderAttachments(entry.attachments)}
+            <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
+              <span>{language === 'th' ? 'โดย' : 'By'} {entry.savedBy}</span>
+              <span>•</span>
+              <span>{formatDate(entry.savedAt)}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Thread controls - no resolve/reassign for endorsements */}
+        <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border/50 flex-wrap">
+          {hasReplies && (
+            <button
+              onClick={() => toggleThreadExpanded(entry.id)}
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {isExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+              {entry.replies?.length} {language === 'th' ? 'ความคิดเห็น' : 'replies'}
+            </button>
+          )}
+          <button
+            onClick={() => setReplyingTo(isReplying ? null : { id: entry.id, type: 'endorsement' })}
+            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Reply className="w-3 h-3" />
+            {language === 'th' ? 'ตอบกลับ' : 'Reply'}
+          </button>
+        </div>
+
+        {/* Expanded replies */}
+        {hasReplies && isExpanded && renderReplies(entry.replies)}
+
+        {/* Reply input */}
+        {isReplying && (
+          <div className="mt-3 pt-3 border-t border-border/50 space-y-2">
+            <MentionTextarea
+              placeholder={language === 'th' ? 'เพิ่มความคิดเห็น... (พิมพ์ @ เพื่อ tag คน)' : 'Add a reply... (type @ to tag someone)'}
+              value={replyComment}
+              onChange={setReplyComment}
+              className="min-h-[60px] resize-none text-xs"
+            />
+            {replyAttachments.length > 0 && (
+              <AttachmentThumbnails 
+                attachments={replyAttachments} 
+                onRemove={(id) => removeAttachment(id, 'reply')}
+                size="sm"
+              />
+            )}
+            <div className="flex items-center justify-between">
+              <input ref={replyFileInputRef} type="file" accept=".png,.jpg,.jpeg,.pdf" multiple className="hidden" onChange={(e) => handleFileSelect(e, 'reply')} />
+              <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={() => replyFileInputRef.current?.click()}>
+                <Paperclip className="w-3 h-3 mr-1" />
+                {language === 'th' ? 'แนบ' : 'Attach'}
+              </Button>
+              <div className="flex gap-2">
+                <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={() => { setReplyingTo(null); setReplyComment(''); setReplyAttachments([]); }}>
+                  {language === 'th' ? 'ยกเลิก' : 'Cancel'}
+                </Button>
+                <Button size="sm" className="h-6 text-xs" onClick={handleSubmitReply} disabled={!replyComment.trim()}>
+                  <Send className="w-3 h-3 mr-1" />
+                  {language === 'th' ? 'ส่ง' : 'Send'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+
   // Also filter by policy scope - show only configs that match this policy kind or 'both'
   const stageFilteredConfigs = reworkConfigs.filter(config => 
     config.stages.includes(currentStage) && 
@@ -765,11 +925,11 @@ export function PolicyRemarksReworkDialog({
                 )}
                 
                 {/* Timeline items */}
-                {timeline.map(item => 
-                  item.type === 'remark' 
-                    ? renderRemarkThread(item.data as PolicyRemark)
-                    : renderReworkThread(item.data as PolicyReworkEntry)
-                )}
+                {timeline.map(item => {
+                  if (item.type === 'remark') return renderRemarkThread(item.data as PolicyRemark);
+                  if (item.type === 'endorsement') return renderEndorsementThread(item.data as PolicyEndorsementEntry);
+                  return renderReworkThread(item.data as PolicyReworkEntry);
+                })}
                 
                 {/* Add Rework Reason form - shown at bottom of timeline */}
                 {showAddRework && stageFilteredConfigs.length > 0 && (

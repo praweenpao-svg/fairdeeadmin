@@ -127,6 +127,20 @@ export interface PolicyHistoryLogEntry {
   toAssignee?: string;
 }
 
+// Endorsement entry for tracking endorsement status changes with comments/attachments
+export interface PolicyEndorsementEntry {
+  id: string;
+  endorsementType: EndorsementType;
+  fromStatus: EndorsementStatus;
+  toStatus: EndorsementStatus;
+  details: string;
+  attachments: ReworkAttachment[];
+  savedBy: string;
+  savedAt: string;
+  assignedTo?: string; // Owner for this endorsement entry
+  replies?: ThreadReply[]; // Thread replies
+}
+
 export interface PolicyRecord {
   id: string;
   kind: PolicyKind;
@@ -148,6 +162,8 @@ export interface PolicyRecord {
   // Endorsement fields
   endorsementType?: EndorsementType;
   endorsementStatus?: EndorsementStatus;
+  // Endorsement change history
+  endorsementHistory?: PolicyEndorsementEntry[];
 }
 
 export type CreatedByType = 'agent' | 'admin';
