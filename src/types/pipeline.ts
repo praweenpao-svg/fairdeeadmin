@@ -267,7 +267,7 @@ export interface Lead {
   etaDaysOverdue?: number;
 }
 
-export type AssignmentType = 'round_robin' | 'rf_sc' | 'rf' | 'none';
+export type AssignmentType = 'round_robin' | 'rf_sc' | 'rf' | 'requestor' | 'none';
 
 // Policy scope for rework reasons - which policy types this rework reason applies to
 export type PolicyScopeType = 'vmi' | 'cmi' | 'both';
