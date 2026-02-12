@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 import { ReworkConfig, AssignmentType, PipelineStage, ReworkPartyType, PolicyScopeType, ReworkConfigType, EndorsementType, EndorsementStatus } from '@/types/pipeline';
 import { useTeamsStore } from '@/stores/teamsStore';
 import { Button } from '@/components/ui/button';
@@ -150,6 +151,24 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
     
     // For endorsement type, force pre-selected values
     const isEndorsement = formData.configType === 'endorsement';
+
+    // Check for duplicate endorsement status
+    if (isEndorsement) {
+      const duplicate = reworkConfigs.some(
+        c => c.configType === 'endorsement'
+          && c.endorsementConfigType === formData.endorsementConfigType
+          && c.endorsementConfigStatus === formData.endorsementConfigStatus
+          && c.id !== editingConfig?.id
+      );
+      if (duplicate) {
+        toast({
+          title: 'Already exists',
+          description: 'This endorsement status already exists for the selected type.',
+          variant: 'destructive',
+        });
+        return;
+      }
+    }
     const stages = isEndorsement ? allPostLeadStages : (formData.stages || []);
     const partyType = isEndorsement ? 'internal' as ReworkPartyType : (formData.partyType || 'internal');
     const policyScope = isEndorsement ? 'both' as PolicyScopeType : (formData.policyScope || 'both');
@@ -349,19 +368,11 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                           <SelectValue placeholder="Select endorsement status" />
                         </SelectTrigger>
                         <SelectContent>
-                          {endorsementStatusOptions.map((option) => {
-                            const alreadyUsed = reworkConfigs.some(
-                              c => c.configType === 'endorsement' 
-                                && c.endorsementConfigType === (formData.endorsementConfigType || 'policy_endorsement')
-                                && c.endorsementConfigStatus === option.value
-                                && c.id !== editingConfig?.id
-                            );
-                            return (
-                              <SelectItem key={option.value} value={option.value} disabled={alreadyUsed}>
-                                {option.label}{alreadyUsed ? ' (already exists)' : ''}
-                              </SelectItem>
-                            );
-                          })}
+                          {endorsementStatusOptions.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
