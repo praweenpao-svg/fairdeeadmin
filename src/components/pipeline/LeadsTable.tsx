@@ -1462,7 +1462,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
       <div className="bg-card rounded-lg border border-border overflow-hidden">
         {/* Expand/Collapse All button for post-lead stages */}
         {isPostLeadStage && paginatedLeads.some(l => (l.policyRecords || []).length > 0) && (
-          <div className="flex items-center justify-end px-4 py-1.5 border-b border-border bg-muted/30">
+          <div className="flex items-center justify-start px-4 py-1.5 border-b border-border bg-muted/30">
             <button
               onClick={() => {
                 const allExpanded = paginatedLeads.every(l => expandedLeads.has(l.id));
