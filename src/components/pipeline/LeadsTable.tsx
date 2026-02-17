@@ -480,11 +480,23 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
   const handlePolicyStatusChange = (lead: Lead, policyId: string, newStatus: PolicyStatus) => {
     if (!lead.policyRecords) return;
     
-    // If changing to rework_required, open rework dialog
+    // If changing to rework_required, open rework dialog (always allowed manually)
     if (newStatus === 'rework_required') {
       setSelectedLead(lead);
       setSelectedPolicyId(policyId);
       setReworkDialogOpen(true);
+      return;
+    }
+
+    // Block all other manual status changes — forward progression is system-driven
+    const policy = lead.policyRecords.find(r => r.id === policyId);
+    if (policy && newStatus !== policy.status) {
+      toast.error(
+        language === 'th'
+          ? 'สถานะนี้เปลี่ยนโดยระบบอัตโนมัติ ไม่สามารถเปลี่ยนด้วยตนเองได้'
+          : 'This status is changed automatically by the system and cannot be changed manually.',
+        { duration: 4000 }
+      );
       return;
     }
 
@@ -496,8 +508,8 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
       minute: '2-digit',
     });
 
-    // Find the policy and create POLICY-LEVEL history log entry (not lead-level)
-    const policy = lead.policyRecords.find(r => r.id === policyId);
+    // This code is unreachable now due to the manual restriction above,
+    // but kept for when system-driven changes call this handler directly.
     
     const policyHistoryEntry: PolicyHistoryLogEntry = {
       id: crypto.randomUUID(),

@@ -36,31 +36,27 @@ const policyStatusTranslations: Record<string, { en: string; th: string }> = {
 
 // Stage-specific policy status options (mirrors statusOptionsByStage but for policies)
 // rework_required is included for stages that have rework configs (except cancelled)
+// All policy statuses shown in every post-lead stage dropdown
+// Manual restriction is enforced in the handler (only rework_required is freely selectable)
+const allPolicyStatuses: PolicyStatus[] = [
+  'pending_payment',
+  'pending_review',
+  'pending_issuance',
+  'policy_issued',
+  'policy_shipped',
+  'policy_delivered',
+  'policy_cancelled',
+  'rework_required',
+];
+
 const policyStatusOptionsByStage: Record<PipelineStage, PolicyStatus[]> = {
-  all: [], // Empty - will be determined dynamically based on policy's actual stage
+  all: allPolicyStatuses,
   to_convert: [], // No policy statuses in to_convert
-  to_pay: [
-    'pending_payment',
-    'rework_required',
-  ],
-  to_report: [
-    'pending_review',
-    'rework_required',
-  ],
-  to_issue: [
-    'pending_issuance',
-    'rework_required',
-  ],
-  to_deliver: [
-    'policy_issued',
-    'rework_required',
-  ],
-  completed: [
-    'policy_issued',
-    'policy_shipped',
-    'policy_delivered',
-    'rework_required',
-  ],
+  to_pay: allPolicyStatuses,
+  to_report: allPolicyStatuses,
+  to_issue: allPolicyStatuses,
+  to_deliver: allPolicyStatuses,
+  completed: allPolicyStatuses,
   cancelled: [
     'policy_cancelled',
     // No rework_required for cancelled stage
