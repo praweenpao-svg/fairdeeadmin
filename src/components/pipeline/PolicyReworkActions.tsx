@@ -180,6 +180,7 @@ export function PolicyReworkActions({
                 <SelectContent className="bg-popover z-50">
                   {(() => {
                     const filteredConfigs = reworkConfigs.filter((config) => 
+                      config.configType === 'rework' &&
                       !existingReasonIds.includes(config.id) && 
                       config.stages.includes(currentStage) &&
                       (config.policyScope === 'both' || config.policyScope === policy.kind)

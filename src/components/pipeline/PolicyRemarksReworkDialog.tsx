@@ -675,6 +675,7 @@ export function PolicyRemarksReworkDialog({
 
   // Also filter by policy scope - show only configs that match this policy kind or 'both'
   const stageFilteredConfigs = reworkConfigs.filter(config => 
+    config.configType === 'rework' &&
     config.stages.includes(currentStage) && 
     (config.policyScope === 'both' || config.policyScope === policyKind)
   );
@@ -805,6 +806,7 @@ export function PolicyRemarksReworkDialog({
                 <SelectContent className="bg-popover z-50">
                   {(() => {
                     const filteredConfigs = reworkConfigs.filter(config => 
+                      config.configType === 'rework' &&
                       config.id !== currentReassignEntry?.reasonId && 
                       config.stages.includes(currentStage) &&
                       (config.policyScope === 'both' || config.policyScope === policyKind)
