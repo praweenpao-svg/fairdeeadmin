@@ -2577,6 +2577,22 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
             handlePolicyReworkAdd(lead, policyId, reasonId, details, attachments);
           }
         }}
+        onUpdateAutoResolveDate={(entryId, newDate) => {
+          if (!selectedPolicyForRemarks) return;
+          const lead = leads.find(l => l.id === selectedPolicyForRemarks.leadId);
+          if (lead) {
+            const updatedRecords = lead.policyRecords?.map(p => {
+              if (p.id !== selectedPolicyForRemarks.policyId) return p;
+              return {
+                ...p,
+                reworkHistory: p.reworkHistory?.map(e =>
+                  e.id === entryId ? { ...e, autoResolveDate: newDate } : e
+                ),
+              };
+            });
+            onLeadUpdate?.(lead.id, { policyRecords: updatedRecords });
+          }
+        }}
       />
     </>
   );

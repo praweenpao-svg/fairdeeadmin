@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { MessageSquare, Send, CheckCircle, ArrowRightLeft, Upload, X, FileText, Image, AlertTriangle, User, ChevronDown, ChevronRight, Reply, Paperclip, Lock, Globe, FileCheck, FileX } from 'lucide-react';
+import { MessageSquare, Send, CheckCircle, ArrowRightLeft, Upload, X, FileText, Image, AlertTriangle, User, ChevronDown, ChevronRight, Reply, Paperclip, Lock, Globe, FileCheck, FileX, CalendarIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { MentionTextarea } from '@/components/ui/mention-textarea';
@@ -27,6 +27,10 @@ import { useCurrentUserStore } from '@/stores/currentUserStore';
 import { ExpandableText } from '@/components/ui/expandable-text';
 import { AttachmentThumbnails, AttachmentDisplay } from '@/components/ui/attachment-thumbnails';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { format, parse, startOfDay } from 'date-fns';
+import { th as thLocale } from 'date-fns/locale';
 
 // Endorsement status translations
 const endorsementStatusLabels: Record<EndorsementStatus, { en: string; th: string }> = {
@@ -56,6 +60,7 @@ interface PolicyRemarksReworkDialogProps {
   onReworkResolve: (entryId: string) => void;
   onReworkReassign: (entryId: string, newReasonId: string, details: string, attachments: ReworkAttachment[]) => void;
   onAddRework?: (policyId: string, reasonId: string, details: string, attachments: ReworkAttachment[]) => void;
+  onUpdateAutoResolveDate?: (entryId: string, newDate: string) => void;
 }
 
 type ThreadItem = 
@@ -82,6 +87,7 @@ export function PolicyRemarksReworkDialog({
   onReworkResolve,
   onReworkReassign,
   onAddRework,
+  onUpdateAutoResolveDate,
 }: PolicyRemarksReworkDialogProps) {
   const { language } = useLanguageStore();
   const CURRENT_USER = useCurrentUserStore(s => s.name);
@@ -445,6 +451,44 @@ export function PolicyRemarksReworkDialog({
                   <CheckCircle className="w-2.5 h-2.5 mr-1" />
                   {language === 'th' ? 'แก้ไขแล้ว' : 'Resolved'}
                 </Badge>
+              )}
+              {/* Auto-resolve date display/edit */}
+              {entry.autoResolveDate && (
+                isActive ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Badge variant="outline" className="text-[10px] h-5 px-1.5 bg-muted text-muted-foreground border-border cursor-pointer hover:bg-accent">
+                        <CalendarIcon className="w-2.5 h-2.5 mr-1" />
+                        {(() => {
+                          const parsed = parse(entry.autoResolveDate, 'dd/MM/yyyy', new Date());
+                          return format(parsed, 'd MMM yyyy', language === 'th' ? { locale: thLocale } : undefined);
+                        })()}
+                      </Badge>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 z-[60]" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={parse(entry.autoResolveDate, 'dd/MM/yyyy', new Date())}
+                        onSelect={(date) => {
+                          if (date && onUpdateAutoResolveDate) {
+                            onUpdateAutoResolveDate(entry.id, format(date, 'dd/MM/yyyy'));
+                          }
+                        }}
+                        disabled={(date) => date <= startOfDay(new Date())}
+                        initialFocus
+                        className="pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <Badge variant="outline" className="text-[10px] h-5 px-1.5 bg-muted text-muted-foreground border-border">
+                    <CalendarIcon className="w-2.5 h-2.5 mr-1" />
+                    {(() => {
+                      const parsed = parse(entry.autoResolveDate, 'dd/MM/yyyy', new Date());
+                      return format(parsed, 'd MMM yyyy', language === 'th' ? { locale: thLocale } : undefined);
+                    })()}
+                  </Badge>
+                )
               )}
             </div>
             {entry.details && (
