@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { Upload, CalendarIcon } from 'lucide-react';
-import { format, parse } from 'date-fns';
+import { format, parse, addDays, startOfDay } from 'date-fns';
 import { th as thLocale } from 'date-fns/locale';
 import {
   Dialog,
@@ -203,6 +203,7 @@ export function ReworkDialog({ open, onOpenChange, reworkConfigs, onConfirm, lea
                     mode="single"
                     selected={autoResolveDate}
                     onSelect={setAutoResolveDate}
+                    disabled={(date) => date <= startOfDay(new Date())}
                     initialFocus
                     className="pointer-events-auto"
                   />
