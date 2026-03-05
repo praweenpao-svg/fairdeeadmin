@@ -388,6 +388,9 @@ function generatePolicyRecordWithRework(
     const entryDate = new Date(year, month - 1, day, hours + 8 + idx * 2, Math.floor(Math.random() * 60));
     const savedAt = `${String(entryDate.getDate()).padStart(2, '0')}-${String(entryDate.getMonth() + 1).padStart(2, '0')}-${entryDate.getFullYear()} ${String(entryDate.getHours()).padStart(2, '0')}:${String(entryDate.getMinutes()).padStart(2, '0')}`;
     
+    // Reason '1' (Missing Documents) is auto_resolve type
+    const isAutoResolve = reasonId === '1';
+    
     return {
       id: `rework-${id}-${idx}`,
       reasonId,
@@ -398,6 +401,7 @@ function generatePolicyRecordWithRework(
       savedAt,
       previousStatus,
       assignedTo: assignedTo, // Owner for this rework entry
+      ...(isAutoResolve ? { autoResolveDate: '15/04/2026' } : {}),
     };
   });
 
@@ -1142,7 +1146,7 @@ const generateLeads = (): Lead[] => {
     // Assign to SC/RF based on rework config (rf_sc assignment for reasons 5,6,7)
     let policyRecords: PolicyRecord[];
     if (scenario.hasRework) {
-      const reworkReasonIds = scenario.multipleRework ? ['5', '6', '7'] : ['6'];
+      const reworkReasonIds = scenario.multipleRework ? ['1', '5', '6'] : ['1'];
       // For VMI rework, alternate between Pao and other staff to test count logic
       const vmiReworkOwner = i % 2 === 0 ? 'Pao' : scStaff[i % scStaff.length];
       const cmiReworkOwner = i % 2 === 0 ? scStaff[i % scStaff.length] : 'Pao'; // Opposite of VMI
