@@ -1,5 +1,7 @@
 import { useState, useRef } from 'react';
-import { Upload } from 'lucide-react';
+import { Upload, CalendarIcon } from 'lucide-react';
+import { format, parse } from 'date-fns';
+import { th as thLocale } from 'date-fns/locale';
 import {
   Dialog,
   DialogContent,
@@ -18,6 +20,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
 import { ReworkAttachment, ReworkConfig } from '@/types/pipeline';
 import { useLanguageStore } from '@/stores/languageStore';
 import { useMentionNotificationsStore, extractMentions } from '@/stores/mentionNotificationsStore';
@@ -28,8 +37,8 @@ interface ReworkDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   reworkConfigs: ReworkConfig[];
-  onConfirm: (reasonId: string, details: string, attachments: ReworkAttachment[]) => void;
-  leadNumber?: string; // Sale ID for notification
+  onConfirm: (reasonId: string, details: string, attachments: ReworkAttachment[], autoResolveDate?: string) => void;
+  leadNumber?: string;
   policyKind?: 'vmi' | 'cmi';
 }
 
@@ -39,6 +48,7 @@ export function ReworkDialog({ open, onOpenChange, reworkConfigs, onConfirm, lea
   const [selectedReasonId, setSelectedReasonId] = useState<string>('');
   const [details, setDetails] = useState('');
   const [attachments, setAttachments] = useState<ReworkAttachment[]>([]);
+  const [autoResolveDate, setAutoResolveDate] = useState<Date | undefined>(undefined);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Helper to process mentions and create notifications
@@ -82,16 +92,23 @@ export function ReworkDialog({ open, onOpenChange, reworkConfigs, onConfirm, lea
     setAttachments((prev) => prev.filter((a) => a.id !== id));
   };
 
+  // Check if selected reason is auto-resolve type
+  const selectedConfig = reworkConfigs.find(c => c.id === selectedReasonId);
+  const isAutoResolve = selectedConfig?.automationEnabled && selectedConfig?.automationType === 'auto_resolve';
+
   const handleConfirm = () => {
     if (!selectedReasonId) return;
-    // Process mentions in details before confirming
     if (details.trim()) {
       processMentions(details.trim());
     }
-    onConfirm(selectedReasonId, details, attachments);
+    const resolveDate = isAutoResolve && autoResolveDate 
+      ? format(autoResolveDate, 'dd/MM/yyyy') 
+      : undefined;
+    onConfirm(selectedReasonId, details, attachments, resolveDate);
     setSelectedReasonId('');
     setDetails('');
     setAttachments([]);
+    setAutoResolveDate(undefined);
     onOpenChange(false);
   };
 
@@ -99,6 +116,7 @@ export function ReworkDialog({ open, onOpenChange, reworkConfigs, onConfirm, lea
     setSelectedReasonId('');
     setDetails('');
     setAttachments([]);
+    setAutoResolveDate(undefined);
     onOpenChange(false);
   };
 
@@ -160,6 +178,38 @@ export function ReworkDialog({ open, onOpenChange, reworkConfigs, onConfirm, lea
               </SelectContent>
             </Select>
           </div>
+
+          {/* Auto-Resolve Date Picker */}
+          {isAutoResolve && (
+            <div className="space-y-2">
+              <Label>{language === 'th' ? 'วันที่ Auto-Resolve' : 'Auto-Resolve Date'}</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !autoResolveDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {autoResolveDate
+                      ? format(autoResolveDate, 'd MMM yyyy', language === 'th' ? { locale: thLocale } : undefined)
+                      : (language === 'th' ? 'เลือกวันที่' : 'Select date')}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 z-[60]" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={autoResolveDate}
+                    onSelect={setAutoResolveDate}
+                    initialFocus
+                    className="pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="details">{language === 'th' ? 'รายละเอียดเพิ่มเติม' : 'Rework reason details'}</Label>
