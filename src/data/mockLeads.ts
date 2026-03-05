@@ -1468,7 +1468,7 @@ const generateLeads = (): Lead[] => {
 export const mockLeads: Lead[] = generateLeads();
 
 export const mockReworkConfigs: ReworkConfig[] = [
-  { id: '1', configType: 'rework', descriptionTh: 'ขาดเอกสาร', descriptionEn: 'Missing Documents', team: '', teamMembers: [], automationEnabled: true, automationDays: 8, targetReason: '15', assignment: 'rf_sc', stages: ['to_pay', 'to_report'], movesToCancellation: false, partyType: 'internal', policyScope: 'both' },
+  { id: '1', configType: 'rework', descriptionTh: 'ขาดเอกสาร', descriptionEn: 'Missing Documents', team: '', teamMembers: [], automationEnabled: true, automationType: 'auto_resolve', assignment: 'rf_sc', stages: ['to_pay', 'to_report'], movesToCancellation: false, partyType: 'internal', policyScope: 'both' },
   { id: '2', configType: 'rework', descriptionTh: 'ต้องการคอนเฟิร์ม', descriptionEn: 'Pending Confirmation', team: '', teamMembers: [], automationEnabled: true, automationDays: 8, targetReason: '15', assignment: 'rf_sc', stages: ['to_pay', 'to_report'], movesToCancellation: false, partyType: 'internal', policyScope: 'both' },
   { id: '3', configType: 'rework', descriptionTh: 'รอยืนยันตัวตน', descriptionEn: 'Pending Verification', team: '', teamMembers: [], automationEnabled: true, automationDays: 8, targetReason: '15', assignment: 'rf_sc', stages: ['to_pay', 'to_report'], movesToCancellation: false, partyType: 'internal', policyScope: 'both' },
   { id: '4', configType: 'rework', descriptionTh: 'รอจ่ายงวดแรก', descriptionEn: 'Pending Initial Payment', team: '', teamMembers: [], automationEnabled: true, automationDays: 8, targetReason: '15', assignment: 'rf_sc', stages: ['to_pay', 'to_report'], movesToCancellation: false, partyType: 'internal', policyScope: 'both' },
