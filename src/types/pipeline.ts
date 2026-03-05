@@ -286,36 +286,39 @@ export interface Lead {
 export type AssignmentType = 'round_robin' | 'rf_sc' | 'rf' | 'requestor' | 'none';
 
 // Automation type for rework configs
-export type AutomationType = 'auto_move' | 'auto_resolve';
+export type AutomationType = 'auto_reassign' | 'auto_resolve';
 
 // Policy scope for rework reasons - which policy types this rework reason applies to
 export type PolicyScopeType = 'vmi' | 'cmi' | 'both';
 
-// Party type for rework reasons - internal (within organization) or external (insurer, customer, etc.)
-export type ReworkPartyType = 'internal' | 'external';
+// Party type for rework reasons
+export type ReworkPartyType = 'internal' | 'external' | 'both';
+export type PartyType = ReworkPartyType;
 
-// Config type for rework console entries
+// Configuration type: standard rework or endorsement
 export type ReworkConfigType = 'rework' | 'endorsement';
+
+// Endorsement config type
+export type EndorsementConfigType = 'policy_endorsement' | 'policy_cancellation';
 
 export interface ReworkConfig {
   id: string;
-  configType: ReworkConfigType; // Top-level type: Rework or Endorsement
   descriptionTh: string;
   descriptionEn: string;
   team: string;
   teamMembers: string[];
   automationEnabled: boolean;
-  automationType?: AutomationType; // 'auto_move' moves to target reason, 'auto_resolve' auto-resolves and re-runs waterfall
+  automationType?: AutomationType; // 'auto_reassign' reassigns to target reason, 'auto_resolve' auto-resolves and re-runs waterfall
   automationDays?: number;
-  targetReason?: string; // Only used when automationType === 'auto_move'
+  targetReason?: string; // Only used when automationType === 'auto_reassign'
   assignment: AssignmentType;
   stages: PipelineStage[];
-  movesToCancellation?: boolean; // If true, selecting this rework moves the lead to Cancellation tab
-  partyType: ReworkPartyType; // Whether this is an internal or external rework reason
-  policyScope: PolicyScopeType; // Whether this applies to VMI only, CMI only, or both
-  // Endorsement-specific fields (only when configType === 'endorsement')
-  endorsementConfigType?: EndorsementType; // Policy Endorsement or Policy Cancellation
-  endorsementConfigStatus?: EndorsementStatus; // Status for this endorsement config
+  movesToCancellation?: boolean;
+  partyType: ReworkPartyType;
+  policyScope: PolicyScopeType;
+  configType?: ReworkConfigType;
+  endorsementConfigType?: EndorsementType;
+  endorsementConfigStatus?: EndorsementStatus;
 }
 
 export interface PipelineTab {
