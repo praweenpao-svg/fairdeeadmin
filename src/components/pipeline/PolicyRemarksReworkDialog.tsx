@@ -59,7 +59,7 @@ interface PolicyRemarksReworkDialogProps {
   onAddEndorsementReply?: (entryId: string, comment: string, attachments?: ReworkAttachment[]) => void;
   onReworkResolve: (entryId: string) => void;
   onReworkReassign: (entryId: string, newReasonId: string, details: string, attachments: ReworkAttachment[]) => void;
-  onAddRework?: (policyId: string, reasonId: string, details: string, attachments: ReworkAttachment[]) => void;
+  onAddRework?: (policyId: string, reasonId: string, details: string, attachments: ReworkAttachment[], autoResolveDate?: string) => void;
   onUpdateAutoResolveDate?: (entryId: string, newDate: string) => void;
 }
 
@@ -751,6 +751,7 @@ export function PolicyRemarksReworkDialog({
   const [newReworkReasonId, setNewReworkReasonId] = useState('');
   const [newReworkDetails, setNewReworkDetails] = useState('');
   const [newReworkAttachments, setNewReworkAttachments] = useState<ReworkAttachment[]>([]);
+  const [newReworkAutoResolveDate, setNewReworkAutoResolveDate] = useState<Date | undefined>(undefined);
   const addReworkFileInputRef = useRef<HTMLInputElement>(null);
 
   const handleAddReworkFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -780,6 +781,7 @@ export function PolicyRemarksReworkDialog({
     setNewReworkReasonId('');
     setNewReworkDetails('');
     setNewReworkAttachments([]);
+    setNewReworkAutoResolveDate(undefined);
   };
 
   return (
@@ -1026,8 +1028,47 @@ export function PolicyRemarksReworkDialog({
                       />
                     </div>
 
+                    {/* Auto-resolve date picker - show when selected reason is auto_resolve */}
+                    {(() => {
+                      const selectedConfig = reworkConfigs.find(c => c.id === newReworkReasonId);
+                      const isAutoResolve = selectedConfig?.automationEnabled && selectedConfig?.automationType === 'auto_resolve';
+                      if (!isAutoResolve) return null;
+                      return (
+                        <div className="space-y-2">
+                          <Label className="text-xs">{language === 'th' ? 'วันที่ Auto-Resolve' : 'Auto-Resolve Date'}</Label>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className={cn(
+                                  "w-full justify-start text-left font-normal h-8 text-xs",
+                                  !newReworkAutoResolveDate && "text-muted-foreground"
+                                )}
+                              >
+                                <CalendarIcon className="mr-2 h-3.5 w-3.5" />
+                                {newReworkAutoResolveDate
+                                  ? format(newReworkAutoResolveDate, 'd MMM yyyy', language === 'th' ? { locale: thLocale } : undefined)
+                                  : (language === 'th' ? 'เลือกวันที่' : 'Select date')}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0 z-[60]" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={newReworkAutoResolveDate}
+                                onSelect={setNewReworkAutoResolveDate}
+                                disabled={(date) => date <= startOfDay(new Date())}
+                                initialFocus
+                                className="pointer-events-auto"
+                              />
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+                      );
+                    })()}
+
                     <div className="space-y-2">
-                      <AttachmentThumbnails 
+                      <AttachmentThumbnails
                         attachments={newReworkAttachments} 
                         onRemove={(id) => setNewReworkAttachments(prev => prev.filter(a => a.id !== id))}
                         size="sm"
@@ -1053,7 +1094,12 @@ export function PolicyRemarksReworkDialog({
                             if (newReworkDetails.trim()) {
                               processMentions(newReworkDetails.trim());
                             }
-                            onAddRework(policyId, newReworkReasonId, newReworkDetails, newReworkAttachments);
+                            const selectedConfig = reworkConfigs.find(c => c.id === newReworkReasonId);
+                            const isAutoResolve = selectedConfig?.automationEnabled && selectedConfig?.automationType === 'auto_resolve';
+                            const resolveDate = isAutoResolve && newReworkAutoResolveDate 
+                              ? format(newReworkAutoResolveDate, 'dd/MM/yyyy') 
+                              : undefined;
+                            onAddRework(policyId, newReworkReasonId, newReworkDetails, newReworkAttachments, resolveDate);
                             resetAddReworkForm();
                           }
                         }}

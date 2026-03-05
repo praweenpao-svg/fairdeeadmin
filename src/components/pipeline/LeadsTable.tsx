@@ -765,7 +765,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
   };
 
   // Handle adding a new rework entry (without resolving existing ones)
-  const handlePolicyReworkAdd = (lead: Lead, policyId: string, reasonId: string, details: string, attachments: ReworkAttachment[]) => {
+  const handlePolicyReworkAdd = (lead: Lead, policyId: string, reasonId: string, details: string, attachments: ReworkAttachment[], autoResolveDate?: string) => {
     if (!lead.policyRecords) return;
 
     const timestamp = new Date().toLocaleString('en-US', {
@@ -803,6 +803,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
         savedAt: timestamp,
         assignedTo: newOwner, // Each rework entry has its own owner
         previousStatus,
+        ...(autoResolveDate ? { autoResolveDate } : {}),
       };
 
       // Determine if there will be any external unresolved rework after adding this one
@@ -2570,11 +2571,11 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
             handlePolicyReworkReassign(lead, selectedPolicyForRemarks.policyId, entryId, newReasonId, details, attachments);
           }
         }}
-        onAddRework={(policyId, reasonId, details, attachments) => {
+        onAddRework={(policyId, reasonId, details, attachments, autoResolveDate) => {
           if (!selectedPolicyForRemarks) return;
           const lead = leads.find(l => l.id === selectedPolicyForRemarks.leadId);
           if (lead) {
-            handlePolicyReworkAdd(lead, policyId, reasonId, details, attachments);
+            handlePolicyReworkAdd(lead, policyId, reasonId, details, attachments, autoResolveDate);
           }
         }}
         onUpdateAutoResolveDate={(entryId, newDate) => {
