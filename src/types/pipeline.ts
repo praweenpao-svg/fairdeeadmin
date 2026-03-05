@@ -84,6 +84,7 @@ export interface PolicyReworkEntry {
   resolved?: boolean;
   resolvedAt?: string;
   resolvedBy?: string;
+  autoResolveDate?: string; // DD/MM/YYYY date for auto-resolve reasons
   previousStatus: PolicyStatus; // Status before rework was triggered
   replies?: ThreadReply[]; // Thread replies for this rework entry
 }

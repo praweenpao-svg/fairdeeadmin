@@ -616,20 +616,23 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                           </p>
                         </div>
 
-                        <div className="grid gap-2">
-                          <Label htmlFor="automationDays">Threshold (Days)</Label>
-                          <Input
-                            id="automationDays"
-                            type="number"
-                            min={1}
-                            value={formData.automationDays || ''}
-                            onChange={(e) => setFormData({ 
-                              ...formData, 
-                              automationDays: e.target.value ? parseInt(e.target.value) : undefined 
-                            })}
-                            placeholder="Enter number of days"
-                          />
-                        </div>
+                        {/* Threshold Days - only for Auto-Reassign */}
+                        {(formData.automationType || 'auto_reassign') === 'auto_reassign' && (
+                          <div className="grid gap-2">
+                            <Label htmlFor="automationDays">Threshold (Days)</Label>
+                            <Input
+                              id="automationDays"
+                              type="number"
+                              min={1}
+                              value={formData.automationDays || ''}
+                              onChange={(e) => setFormData({ 
+                                ...formData, 
+                                automationDays: e.target.value ? parseInt(e.target.value) : undefined 
+                              })}
+                              placeholder="Enter number of days"
+                            />
+                          </div>
+                        )}
 
                         {/* Target Reason - only for Auto-Move */}
                         {(formData.automationType || 'auto_reassign') === 'auto_reassign' && (
@@ -801,7 +804,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                     )}
                   </td>
                   <td className="px-4 py-3 text-sm text-center">
-                    {config.automationEnabled && config.automationDays ? `${config.automationDays} days` : '-'}
+                    {config.automationEnabled && config.automationType === 'auto_reassign' && config.automationDays ? `${config.automationDays} days` : '-'}
                   </td>
                   <td className="px-4 py-3 text-sm">
                     {(() => {
@@ -809,7 +812,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                       if (config.automationType === 'auto_resolve') {
                         return (
                           <span className="text-xs text-muted-foreground italic">
-                            Auto-resolve & re-run waterfall
+                            Auto-resolve on selected date
                           </span>
                         );
                       }
