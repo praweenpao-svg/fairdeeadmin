@@ -285,6 +285,9 @@ export interface Lead {
 
 export type AssignmentType = 'round_robin' | 'rf_sc' | 'rf' | 'requestor' | 'none';
 
+// Automation type for rework configs
+export type AutomationType = 'auto_move' | 'auto_resolve';
+
 // Policy scope for rework reasons - which policy types this rework reason applies to
 export type PolicyScopeType = 'vmi' | 'cmi' | 'both';
 
@@ -302,8 +305,9 @@ export interface ReworkConfig {
   team: string;
   teamMembers: string[];
   automationEnabled: boolean;
+  automationType?: AutomationType; // 'auto_move' moves to target reason, 'auto_resolve' auto-resolves and re-runs waterfall
   automationDays?: number;
-  targetReason?: string;
+  targetReason?: string; // Only used when automationType === 'auto_move'
   assignment: AssignmentType;
   stages: PipelineStage[];
   movesToCancellation?: boolean; // If true, selecting this rework moves the lead to Cancellation tab

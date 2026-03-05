@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { ReworkConfig, AssignmentType, PipelineStage, ReworkPartyType, PolicyScopeType, ReworkConfigType, EndorsementType, EndorsementStatus } from '@/types/pipeline';
+import { ReworkConfig, AssignmentType, PipelineStage, ReworkPartyType, PolicyScopeType, ReworkConfigType, EndorsementType, EndorsementStatus, AutomationType } from '@/types/pipeline';
 import { useTeamsStore } from '@/stores/teamsStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -106,6 +106,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
     assignment: 'rf_sc',
     stages: [],
     automationEnabled: false,
+    automationType: undefined,
     automationDays: undefined,
     targetReason: undefined,
     movesToCancellation: false,
@@ -129,6 +130,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
         assignment: 'rf_sc',
         stages: [],
         automationEnabled: false,
+        automationType: undefined,
         automationDays: undefined,
         targetReason: undefined,
         movesToCancellation: false,
@@ -173,13 +175,14 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
     const partyType = isEndorsement ? 'internal' as ReworkPartyType : (formData.partyType || 'internal');
     const policyScope = isEndorsement ? 'both' as PolicyScopeType : (formData.policyScope || 'both');
     const automationEnabled = isEndorsement ? false : (formData.automationEnabled || false);
+    const automationType = isEndorsement ? undefined : (automationEnabled ? (formData.automationType || 'auto_move') : undefined);
     const movesToCancellation = formData.movesToCancellation || false;
     
     if (editingConfig) {
       onUpdate(
         reworkConfigs.map((config) =>
           config.id === editingConfig.id
-            ? { ...config, ...formData, team: teamValue, stages, partyType, policyScope, automationEnabled, movesToCancellation }
+            ? { ...config, ...formData, team: teamValue, stages, partyType, policyScope, automationEnabled, automationType, movesToCancellation }
             : config
         )
       );
@@ -192,8 +195,9 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
         team: teamValue,
         teamMembers: [],
         automationEnabled,
+        automationType,
         automationDays: isEndorsement ? undefined : formData.automationDays,
-        targetReason: isEndorsement ? undefined : formData.targetReason,
+        targetReason: isEndorsement ? undefined : (automationType === 'auto_resolve' ? undefined : formData.targetReason),
         assignment: formData.assignment || 'rf_sc',
         stages,
         movesToCancellation,
@@ -561,26 +565,57 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                   </div>
                 </div>
 
-                {/* Date Automation Section - only for Rework */}
+                {/* Automation Section - only for Rework */}
                 {formData.configType !== 'endorsement' && (
                   <div className="border-t pt-4 mt-2">
                     
                     <div className="flex items-center justify-between mb-4">
                       <div className="space-y-0.5">
-                        <Label htmlFor="automationEnabled">Enable Auto-Move</Label>
+                        <Label htmlFor="automationEnabled">Enable Automation</Label>
                         <p className="text-xs text-muted-foreground">
-                          Automatically escalate after threshold days
+                          Automatically act after threshold days
                         </p>
                       </div>
                       <Switch
                         id="automationEnabled"
                         checked={formData.automationEnabled || false}
-                        onCheckedChange={(checked) => setFormData({ ...formData, automationEnabled: checked })}
+                        onCheckedChange={(checked) => setFormData({ 
+                          ...formData, 
+                          automationEnabled: checked,
+                          automationType: checked ? (formData.automationType || 'auto_move') : undefined,
+                        })}
                       />
                     </div>
 
                     {formData.automationEnabled && (
                       <div className="grid gap-4">
+                        {/* Automation Type Toggle */}
+                        <div className="grid gap-2">
+                          <Label>Automation Type</Label>
+                          <Select 
+                            value={formData.automationType || 'auto_move'} 
+                            onValueChange={(value) => setFormData({ 
+                              ...formData, 
+                              automationType: value as AutomationType,
+                              // Clear target reason when switching to auto_resolve
+                              targetReason: value === 'auto_resolve' ? undefined : formData.targetReason,
+                            })}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="auto_move">Auto-Move</SelectItem>
+                              <SelectItem value="auto_resolve">Auto-Resolve</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <p className="text-xs text-muted-foreground">
+                            {formData.automationType === 'auto_resolve'
+                              ? 'Auto-resolves the rework entry and re-runs status & stage waterfall'
+                              : 'Moves the rework to a different target reason after threshold'}
+                          </p>
+                        </div>
+
                         <div className="grid gap-2">
                           <Label htmlFor="automationDays">Threshold (Days)</Label>
                           <Input
@@ -595,33 +630,37 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                             placeholder="Enter number of days"
                           />
                         </div>
-                        <div className="grid gap-2">
-                          <Label htmlFor="targetReason">Target Status</Label>
-                          <Select 
-                            value={formData.targetReason || '__none__'} 
-                            onValueChange={(value) => setFormData({ 
-                              ...formData, 
-                              targetReason: value === '__none__' ? undefined : value 
-                            })}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select target rework reason" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="__none__">Select target reason</SelectItem>
-                              {uniqueConfigs
-                                .filter(c => c.id !== editingConfig?.id)
-                                .map((config) => (
-                                  <SelectItem key={config.id} value={config.id}>
-                                    {config.descriptionEn}
-                                  </SelectItem>
-                                ))}
-                            </SelectContent>
-                          </Select>
-                          <p className="text-xs text-muted-foreground">
-                            Where the record moves after threshold is reached
-                          </p>
-                        </div>
+
+                        {/* Target Reason - only for Auto-Move */}
+                        {(formData.automationType || 'auto_move') === 'auto_move' && (
+                          <div className="grid gap-2">
+                            <Label htmlFor="targetReason">Target Status</Label>
+                            <Select 
+                              value={formData.targetReason || '__none__'} 
+                              onValueChange={(value) => setFormData({ 
+                                ...formData, 
+                                targetReason: value === '__none__' ? undefined : value 
+                              })}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select target rework reason" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="__none__">Select target reason</SelectItem>
+                                {uniqueConfigs
+                                  .filter(c => c.id !== editingConfig?.id)
+                                  .map((config) => (
+                                    <SelectItem key={config.id} value={config.id}>
+                                      {config.descriptionEn}
+                                    </SelectItem>
+                                  ))}
+                              </SelectContent>
+                            </Select>
+                            <p className="text-xs text-muted-foreground">
+                              Where the record moves after threshold is reached
+                            </p>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -670,13 +709,13 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                   Cancellation
                 </th>
                 <th className="data-table-header px-4 py-3 text-center">
-                  Auto-Move
+                  Automation
                 </th>
                 <th className="data-table-header px-4 py-3 text-center">
                   Threshold
                 </th>
                 <th className="data-table-header px-4 py-3 text-left">
-                  Target Status
+                  Target / Action
                 </th>
                 <th className="data-table-header px-4 py-3 text-right">
                   Actions
@@ -753,9 +792,17 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                     </span>
                   </td>
                   <td className="px-4 py-3 text-sm text-center">
-                    <span className={config.automationEnabled ? 'text-green-500' : 'text-muted-foreground'}>
-                      {config.automationEnabled ? 'ON' : 'OFF'}
-                    </span>
+                    {config.automationEnabled ? (
+                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                        config.automationType === 'auto_resolve'
+                          ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                          : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                      }`}>
+                        {config.automationType === 'auto_resolve' ? 'Resolve' : 'Move'}
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground">OFF</span>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-sm text-center">
                     {config.automationEnabled && config.automationDays ? `${config.automationDays} days` : '-'}
@@ -763,6 +810,13 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                   <td className="px-4 py-3 text-sm">
                     {(() => {
                       if (!config.automationEnabled) return '-';
+                      if (config.automationType === 'auto_resolve') {
+                        return (
+                          <span className="text-xs text-muted-foreground italic">
+                            Auto-resolve & re-run waterfall
+                          </span>
+                        );
+                      }
                       const target = getTargetReasonLabel(config.targetReason);
                       if (!target) return '-';
                       return (
