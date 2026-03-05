@@ -175,7 +175,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
     const partyType = isEndorsement ? 'internal' as ReworkPartyType : (formData.partyType || 'internal');
     const policyScope = isEndorsement ? 'both' as PolicyScopeType : (formData.policyScope || 'both');
     const automationEnabled = isEndorsement ? false : (formData.automationEnabled || false);
-    const automationType = isEndorsement ? undefined : (automationEnabled ? (formData.automationType || 'auto_move') : undefined);
+    const automationType = isEndorsement ? undefined : (automationEnabled ? (formData.automationType || 'auto_reassign') : undefined);
     const movesToCancellation = formData.movesToCancellation || false;
     
     if (editingConfig) {
@@ -582,7 +582,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                         onCheckedChange={(checked) => setFormData({ 
                           ...formData, 
                           automationEnabled: checked,
-                          automationType: checked ? (formData.automationType || 'auto_move') : undefined,
+                          automationType: checked ? (formData.automationType || 'auto_reassign') : undefined,
                         })}
                       />
                     </div>
@@ -593,7 +593,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                         <div className="grid gap-2">
                           <Label>Automation Type</Label>
                           <Select 
-                            value={formData.automationType || 'auto_move'} 
+                            value={formData.automationType || 'auto_reassign'} 
                             onValueChange={(value) => setFormData({ 
                               ...formData, 
                               automationType: value as AutomationType,
@@ -605,14 +605,14 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="auto_move">Auto-Move</SelectItem>
+                              <SelectItem value="auto_reassign">Auto-Reassign</SelectItem>
                               <SelectItem value="auto_resolve">Auto-Resolve</SelectItem>
                             </SelectContent>
                           </Select>
                           <p className="text-xs text-muted-foreground">
                             {formData.automationType === 'auto_resolve'
                               ? 'Auto-resolves the rework entry and re-runs status & stage waterfall'
-                              : 'Moves the rework to a different target reason after threshold'}
+                              : 'Reassigns the rework to a different target reason after threshold'}
                           </p>
                         </div>
 
@@ -632,7 +632,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                         </div>
 
                         {/* Target Reason - only for Auto-Move */}
-                        {(formData.automationType || 'auto_move') === 'auto_move' && (
+                        {(formData.automationType || 'auto_reassign') === 'auto_reassign' && (
                           <div className="grid gap-2">
                             <Label htmlFor="targetReason">Target Status</Label>
                             <Select 
@@ -793,12 +793,8 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                   </td>
                   <td className="px-4 py-3 text-sm text-center">
                     {config.automationEnabled ? (
-                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                        config.automationType === 'auto_resolve'
-                          ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                          : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                      }`}>
-                        {config.automationType === 'auto_resolve' ? 'Resolve' : 'Move'}
+                      <span className="px-2 py-0.5 rounded text-xs font-medium bg-muted text-muted-foreground">
+                        {config.automationType === 'auto_resolve' ? 'Resolve' : 'Reassign'}
                       </span>
                     ) : (
                       <span className="text-muted-foreground">OFF</span>

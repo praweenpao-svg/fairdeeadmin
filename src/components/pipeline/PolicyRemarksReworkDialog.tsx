@@ -681,7 +681,7 @@ export function PolicyRemarksReworkDialog({
   );
 
   // Helper to get party type label with prefix
-  const getPartyTypeLabel = (partyType: 'internal' | 'external') => {
+  const getPartyTypeLabel = (partyType: string) => {
     if (partyType === 'external') {
       return language === 'th' ? '[ภายนอก]' : '[External]';
     }
