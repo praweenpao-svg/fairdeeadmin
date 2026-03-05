@@ -1039,7 +1039,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
     }
   };
 
-  const handleReworkConfirm = (reasonId: string, details: string, attachments: ReworkAttachment[]) => {
+  const handleReworkConfirm = (reasonId: string, details: string, attachments: ReworkAttachment[], autoResolveDate?: string) => {
     if (!selectedLead || !reasonId) return;
 
     const reworkConfig = reworkConfigs.find(r => r.id === reasonId);
@@ -1076,6 +1076,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
         savedAt: timestamp,
         assignedTo: assignedOwner,
         previousStatus,
+        ...(autoResolveDate ? { autoResolveDate } : {}),
       };
 
       // Determine new status: only change to rework_required if external reason
