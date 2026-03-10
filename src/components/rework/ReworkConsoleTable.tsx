@@ -269,8 +269,9 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
         policyScope,
         endorsementConfigType: isEndorsement ? formData.endorsementConfigType : undefined,
         endorsementConfigStatus: isEndorsement ? formData.endorsementConfigStatus : undefined,
-        stickyColumn: formData.stickyColumn,
         statusFilter: typesWithStatus.includes(formData.configType as ReworkConfigType) ? formData.statusFilter : undefined,
+        issuanceMethod: formData.configType === 'policy' && statusesWithIssuanceMethod.includes(formData.statusFilter || '') ? formData.issuanceMethod : undefined,
+        deliveryMethod: formData.configType === 'policy' && statusesWithDeliveryMethod.includes(formData.statusFilter || '') ? formData.deliveryMethod : undefined,
       };
       onUpdate([...reworkConfigs, newConfig]);
     }
