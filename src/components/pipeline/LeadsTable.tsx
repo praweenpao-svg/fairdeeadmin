@@ -463,7 +463,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
     return undefined;
   };
 
-  const computeReworkOwner = (lead: Lead, reasonId: string): string | undefined => {
+  const computeReworkOwner = (lead: Lead, reasonId: string, policy?: PolicyRecord): string | undefined => {
     const config = reworkConfigs.find(r => r.id === reasonId);
     if (!config) return undefined;
 
@@ -478,6 +478,12 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
         return lead.scAssignee || lead.rfAssignee;
       case 'rf':
         return lead.rfAssignee;
+      case 'admin':
+        // Sticky: use existing admin on this policy, else round-robin Admin team
+        return policy?.adminAssignee || getNextRoundRobinStaff('Admin');
+      case 'delivery':
+        // Sticky: use existing delivery on this policy, else round-robin Delivery team
+        return policy?.deliveryAssignee || getNextRoundRobinStaff('Delivery');
       case 'requestor':
         return CURRENT_USER;
       case 'none':
