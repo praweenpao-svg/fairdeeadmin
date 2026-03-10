@@ -235,6 +235,37 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
       }
     }
 
+    // Check for duplicate policy/lead/renewal configs
+    if (typesWithStatus.includes(formData.configType as ReworkConfigType) && formData.statusFilter) {
+      const hasMethodField = formData.configType === 'policy' && (
+        statusesWithIssuanceMethod.includes(formData.statusFilter) || statusesWithDeliveryMethod.includes(formData.statusFilter)
+      );
+      
+      const duplicate = reworkConfigs.some(c => {
+        if (c.id === editingConfig?.id) return false;
+        if (c.configType !== formData.configType || c.statusFilter !== formData.statusFilter) return false;
+        if (hasMethodField) {
+          // For statuses with method sub-field, check method combo
+          if (statusesWithIssuanceMethod.includes(formData.statusFilter!)) {
+            return c.issuanceMethod === formData.issuanceMethod;
+          }
+          if (statusesWithDeliveryMethod.includes(formData.statusFilter!)) {
+            return c.deliveryMethod === formData.deliveryMethod;
+          }
+        }
+        return true; // No method field = max 1 per status
+      });
+
+      if (duplicate) {
+        toast({
+          title: 'Already exists',
+          description: `This ${formData.configType} status configuration already exists.`,
+          variant: 'destructive',
+        });
+        return;
+      }
+    }
+
     const stages = isMinimal ? allPostLeadStages : (formData.stages || []);
     const partyType = isMinimal ? 'internal' as ReworkPartyType : (formData.partyType || 'internal');
     const policyScope = isMinimal ? 'both' as PolicyScopeType : (formData.policyScope || 'both');
