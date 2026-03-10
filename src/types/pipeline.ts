@@ -165,6 +165,9 @@ export interface PolicyRecord {
   endorsementStatus?: EndorsementStatus;
   // Endorsement change history
   endorsementHistory?: PolicyEndorsementEntry[];
+  // Policy-level assignees (Admin and Delivery are per-policy, not per-sale)
+  adminAssignee?: string;
+  deliveryAssignee?: string;
 }
 
 export type CreatedByType = 'agent' | 'admin';
