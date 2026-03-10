@@ -933,7 +933,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
 
     // Terminal endorsement statuses have no owner
     const isTerminalStatus = newStatus === 'request_approved' || newStatus === 'invalid';
-    const newOwner = isTerminalStatus ? undefined : computeReworkOwner(lead, matchingConfig.id);
+    const newOwner = isTerminalStatus ? undefined : computeReworkOwner(lead, matchingConfig.id, policy);
 
     // Create endorsement entry (ticket)
     const endorsementEntry: PolicyEndorsementEntry = {
