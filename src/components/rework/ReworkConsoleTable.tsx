@@ -529,7 +529,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                     <Label htmlFor="statusFilter">Status</Label>
                     <Select 
                       value={formData.statusFilter || '__none__'} 
-                      onValueChange={(value) => setFormData({ ...formData, statusFilter: value === '__none__' ? undefined : value })}
+                      onValueChange={(value) => setFormData({ ...formData, statusFilter: value === '__none__' ? undefined : value, issuanceMethod: undefined, deliveryMethod: undefined })}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select status" />
