@@ -2433,6 +2433,62 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                         />
                                       </div>
                                       
+                                      {/* Admin Assignee (policy-level) */}
+                                      <div className="w-[130px] shrink-0">
+                                        <Select
+                                          value={policy.adminAssignee || '__none__'}
+                                          onValueChange={(value) => {
+                                            const newAdmin = value === '__none__' ? undefined : value;
+                                            const updatedRecords = lead.policyRecords?.map(r => 
+                                              r.id === policy.id ? { ...r, adminAssignee: newAdmin } : r
+                                            );
+                                            onLeadUpdate?.(lead.id, { policyRecords: updatedRecords });
+                                          }}
+                                        >
+                                          <SelectTrigger className="w-[120px] h-8 text-xs">
+                                            <SelectValue placeholder={language === 'th' ? 'ยังไม่มอบหมาย' : 'Unassigned'} />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            <SelectItem value="__none__" className="text-muted-foreground">
+                                              {language === 'th' ? 'ยังไม่มอบหมาย' : 'Unassigned'}
+                                            </SelectItem>
+                                            {getAdminStaff().map((staff) => (
+                                              <SelectItem key={staff.id} value={staff.name}>
+                                                {staff.name}
+                                              </SelectItem>
+                                            ))}
+                                          </SelectContent>
+                                        </Select>
+                                      </div>
+
+                                      {/* Delivery Assignee (policy-level) */}
+                                      <div className="w-[130px] shrink-0">
+                                        <Select
+                                          value={policy.deliveryAssignee || '__none__'}
+                                          onValueChange={(value) => {
+                                            const newDelivery = value === '__none__' ? undefined : value;
+                                            const updatedRecords = lead.policyRecords?.map(r => 
+                                              r.id === policy.id ? { ...r, deliveryAssignee: newDelivery } : r
+                                            );
+                                            onLeadUpdate?.(lead.id, { policyRecords: updatedRecords });
+                                          }}
+                                        >
+                                          <SelectTrigger className="w-[120px] h-8 text-xs">
+                                            <SelectValue placeholder={language === 'th' ? 'ยังไม่มอบหมาย' : 'Unassigned'} />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            <SelectItem value="__none__" className="text-muted-foreground">
+                                              {language === 'th' ? 'ยังไม่มอบหมาย' : 'Unassigned'}
+                                            </SelectItem>
+                                            {getDeliveryStaff().map((staff) => (
+                                              <SelectItem key={staff.id} value={staff.name}>
+                                                {staff.name}
+                                              </SelectItem>
+                                            ))}
+                                          </SelectContent>
+                                        </Select>
+                                      </div>
+
                                       {/* Policy Owners - supports multiple */}
                                       <div className="w-[100px] shrink-0 text-sm">
                                         {(() => {
