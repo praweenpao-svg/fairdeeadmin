@@ -32,6 +32,8 @@ interface ReworkConsoleTableProps {
 const assignmentOptions: { value: AssignmentType; label: string }[] = [
   { value: 'rf_sc', label: 'RF/SC' },
   { value: 'rf', label: 'RF' },
+  { value: 'admin', label: 'Admin' },
+  { value: 'delivery', label: 'Delivery' },
   { value: 'round_robin', label: 'Round-Robin' },
   { value: 'requestor', label: 'Requestor' },
   { value: 'none', label: '-' },
@@ -148,8 +150,8 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
   };
 
   const handleSave = () => {
-    // If RF/SC, RF, Requestor, or none, clear team since it's not used
-    const teamValue = formData.assignment === 'rf_sc' || formData.assignment === 'rf' || formData.assignment === 'requestor' || formData.assignment === 'none' ? '' : (formData.team || '');
+    // If RF/SC, RF, Admin, Delivery, Requestor, or none, clear team since it's not used
+    const teamValue = formData.assignment === 'rf_sc' || formData.assignment === 'rf' || formData.assignment === 'admin' || formData.assignment === 'delivery' || formData.assignment === 'requestor' || formData.assignment === 'none' ? '' : (formData.team || '');
     
     // For endorsement type, force pre-selected values
     const isEndorsement = formData.configType === 'endorsement';
@@ -225,7 +227,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
   };
 
   const getTeamDisplay = (config: ReworkConfig) => {
-    if (config.assignment === 'rf_sc' || config.assignment === 'rf' || config.assignment === 'requestor' || config.assignment === 'none') {
+    if (config.assignment === 'rf_sc' || config.assignment === 'rf' || config.assignment === 'admin' || config.assignment === 'delivery' || config.assignment === 'requestor' || config.assignment === 'none') {
       return '-';
     }
     return config.team || '-';
@@ -478,7 +480,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                     onValueChange={(value) => setFormData({ 
                       ...formData, 
                       assignment: value as AssignmentType,
-                      team: value === 'rf_sc' || value === 'rf' || value === 'requestor' || value === 'none' ? '' : formData.team 
+                      team: value === 'rf_sc' || value === 'rf' || value === 'admin' || value === 'delivery' || value === 'requestor' || value === 'none' ? '' : formData.team 
                     })}
                   >
                     <SelectTrigger>
@@ -497,6 +499,10 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                       ? 'Assigns to SC person if claimed, otherwise RF person'
                       : formData.assignment === 'rf'
                       ? 'Always assigns to RF person regardless of SC assignment'
+                      : formData.assignment === 'admin'
+                      ? 'Assigns to the Admin person on this policy (sticky, else Round-Robin Admin)'
+                      : formData.assignment === 'delivery'
+                      ? 'Assigns to the Delivery person on this policy (sticky, else Round-Robin Delivery)'
                       : formData.assignment === 'requestor'
                       ? 'Assigns to whoever created the rework/endorsement request'
                       : formData.assignment === 'none'

@@ -302,6 +302,7 @@ const teamRosters: Record<string, string[]> = {
   'AST SC': ['Lisa', 'Mike', 'Nina'],
   'DE': ['Oscar', 'Paula', 'Quinn'],
   'Admin': ['Rachel', 'Sam', 'Tina'],
+  'Delivery': ['Dao', 'Kai', 'Ploy'],
 };
 
 function getStaffByTeam(team: string) {
@@ -324,6 +325,16 @@ function getSCStaff() {
 // Get DE staff (DE team)
 function getDEStaff() {
   return mockStaffMembers.filter(staff => staff.team === 'DE');
+}
+
+// Get Admin staff (Admin team)
+function getAdminStaff() {
+  return mockStaffMembers.filter(staff => staff.team === 'Admin');
+}
+
+// Get Delivery staff (Delivery team)
+function getDeliveryStaff() {
+  return mockStaffMembers.filter(staff => staff.team === 'Delivery');
 }
 
 // Round robin state per team
@@ -452,7 +463,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
     return undefined;
   };
 
-  const computeReworkOwner = (lead: Lead, reasonId: string): string | undefined => {
+  const computeReworkOwner = (lead: Lead, reasonId: string, policy?: PolicyRecord): string | undefined => {
     const config = reworkConfigs.find(r => r.id === reasonId);
     if (!config) return undefined;
 
@@ -467,6 +478,12 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
         return lead.scAssignee || lead.rfAssignee;
       case 'rf':
         return lead.rfAssignee;
+      case 'admin':
+        // Sticky: use existing admin on this policy, else round-robin Admin team
+        return policy?.adminAssignee || getNextRoundRobinStaff('Admin');
+      case 'delivery':
+        // Sticky: use existing delivery on this policy, else round-robin Delivery team
+        return policy?.deliveryAssignee || getNextRoundRobinStaff('Delivery');
       case 'requestor':
         return CURRENT_USER;
       case 'none':
@@ -622,7 +639,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
     // If any policy is still in active rework, keep lead-level rework priority + owner
     const leadAfter: Lead = { ...lead, policyRecords: updatedRecords };
     const active = getLeadActivePolicyRework(leadAfter);
-    const nextOwner = active ? computeReworkOwner(lead, active.entry.reasonId) : undefined;
+    const nextOwner = active ? computeReworkOwner(lead, active.entry.reasonId, updatedRecords.find(r => r.reworkHistory?.some(e => e.id === active.entry.id))) : undefined;
 
     onLeadUpdate?.(lead.id, {
       policyRecords: updatedRecords,
@@ -646,7 +663,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
 
     const reworkConfig = reworkConfigs.find(r => r.id === newReasonId);
     const reasonLabel = reworkConfig?.descriptionEn || 'Unknown';
-    const newOwner = computeReworkOwner(lead, newReasonId);
+    const newOwner = computeReworkOwner(lead, newReasonId, lead.policyRecords?.find(r => r.id === policyId));
 
     const policy = lead.policyRecords.find(r => r.id === policyId);
     const targetEntry = policy?.reworkHistory?.find(e => e.id === entryId);
@@ -778,7 +795,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
 
     const reworkConfig = reworkConfigs.find(r => r.id === reasonId);
     const reasonLabel = reworkConfig?.descriptionEn || 'Unknown';
-    const newOwner = computeReworkOwner(lead, reasonId);
+    const newOwner = computeReworkOwner(lead, reasonId, lead.policyRecords?.find(r => r.id === policyId));
 
     const policy = lead.policyRecords.find(r => r.id === policyId);
 
@@ -916,7 +933,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
 
     // Terminal endorsement statuses have no owner
     const isTerminalStatus = newStatus === 'request_approved' || newStatus === 'invalid';
-    const newOwner = isTerminalStatus ? undefined : computeReworkOwner(lead, matchingConfig.id);
+    const newOwner = isTerminalStatus ? undefined : computeReworkOwner(lead, matchingConfig.id, policy);
 
     // Create endorsement entry (ticket)
     const endorsementEntry: PolicyEndorsementEntry = {
@@ -1063,7 +1080,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
         ? (policy.reworkHistory?.find(e => !e.resolved)?.previousStatus || policy.status)
         : policy.status as PolicyStatus;
 
-      const assignedOwner = computeReworkOwner(selectedLead, reasonId);
+      const assignedOwner = computeReworkOwner(selectedLead, reasonId, policy);
       const isExternalReason = reworkConfig?.partyType === 'external';
 
       const newPolicyReworkEntry: PolicyReworkEntry = {
@@ -1577,9 +1594,14 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
   };
 
   // Get owners for a specific policy row (policy-level)
-  // When a policy is in rework, returns all unique owners from active rework entries
-  // When not in rework, it uses the stage-based owner (RF/SC or DE)
-  // When policy reaches terminal state, returns empty (shows "-")
+  // Status-based ownership per the owner role mapping table:
+  // - Lead/Renewal statuses: SC > RF (except terminal Invalid/Renewal Rejected → empty)
+  // - Pending (to_pay): SC > RF
+  // - Pending Review: DE (sticky, else round-robin)
+  // - Pending Issuance: Admin on policy (sticky, else round-robin) — only if triggered
+  // - Policy Uploaded/Shipped: Delivery on policy (sticky, else round-robin) — only if print_by_fairdee
+  // - Policy Delivered/Cancelled: empty (terminal)
+  // Rework/endorsement owners override when active.
   const getPolicyOwners = (lead: Lead, policy: PolicyRecord): string[] => {
     // Terminal state - no owner needed
     if (isPolicyTerminal(policy)) {
@@ -1603,7 +1625,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
       const activeReworks = policy.reworkHistory.filter(e => !e.resolved);
       if (activeReworks.length > 0) {
         const reworkOwners = activeReworks
-          .map(e => e.assignedTo || computeReworkOwner(lead, e.reasonId))
+          .map(e => e.assignedTo || computeReworkOwner(lead, e.reasonId, policy))
           .filter((owner): owner is string => !!owner);
         allOwners.push(...reworkOwners);
       }
@@ -1614,20 +1636,52 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
       return [...new Set(allOwners)];
     }
 
-   // No active rework on this policy - use stage-based owner
-   // IMPORTANT: Use the policy's actual stage, not the current tab's stage
-   // This ensures consistency across tabs (e.g., All tab vs To Pay tab)
-   const policyStage = getPolicyStage(policy);
-   const effectiveStage = policyStage || stage;
-   
-    let stageOwner: string | undefined;
-   if (effectiveStage === 'to_convert' || effectiveStage === 'to_pay') {
-      stageOwner = lead.scAssignee || lead.rfAssignee;
-    } else {
-     // to_report, to_issue, to_deliver, completed, cancelled use DE
-      stageOwner = lead.deAssignee;
+    // No active rework on this policy - use status-based owner
+    const policyStatus = policy.status;
+    
+    switch (policyStatus) {
+      case 'pending_payment':
+        // SC > RF (sale-level)
+        return lead.scAssignee ? [lead.scAssignee] : lead.rfAssignee ? [lead.rfAssignee] : [];
+      
+      case 'pending_review':
+        // DE (sale-level, sticky)
+        return lead.deAssignee ? [lead.deAssignee] : [];
+      
+      case 'pending_issuance':
+        // Admin (policy-level, sticky)
+        return policy.adminAssignee ? [policy.adminAssignee] : [];
+      
+      case 'policy_issued':
+        // Delivery only if print_by_fairdee, else no owner (terminal for e_policy/print_by_myself)
+        if (policy.shippingMethod === 'print_by_fairdee') {
+          return policy.deliveryAssignee ? [policy.deliveryAssignee] : [];
+        }
+        return []; // terminal for other shipping methods
+      
+      case 'policy_shipped':
+        // Delivery only if print_by_fairdee
+        if (policy.shippingMethod === 'print_by_fairdee') {
+          return policy.deliveryAssignee ? [policy.deliveryAssignee] : [];
+        }
+        return [];
+      
+      case 'policy_delivered':
+      case 'policy_cancelled':
+        return []; // terminal
+      
+      default:
+        // Fallback: use stage-based logic
+        const policyStage = getPolicyStage(policy);
+        const effectiveStage = policyStage || stage;
+        let stageOwner: string | undefined;
+        if (effectiveStage === 'to_convert' || effectiveStage === 'to_pay') {
+          stageOwner = lead.scAssignee || lead.rfAssignee;
+        } else {
+          stageOwner = lead.deAssignee;
+        }
+        return stageOwner ? [stageOwner] : [];
     }
-    return stageOwner ? [stageOwner] : [];
   };
 
   return (
@@ -2164,6 +2218,12 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                 <div className="w-[150px] shrink-0">
                                   {language === 'th' ? 'สถานะกรมธรรม์' : 'Policy Status'}
                                 </div>
+                                <div className="w-[130px] shrink-0">
+                                  Admin
+                                </div>
+                                <div className="w-[130px] shrink-0">
+                                  Delivery
+                                </div>
                                 <div className="w-[100px] shrink-0">
                                   {language === 'th' ? 'ผู้รับผิดชอบ' : 'Owner'}
                                 </div>
@@ -2373,6 +2433,62 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                         />
                                       </div>
                                       
+                                      {/* Admin Assignee (policy-level) */}
+                                      <div className="w-[130px] shrink-0">
+                                        <Select
+                                          value={policy.adminAssignee || '__none__'}
+                                          onValueChange={(value) => {
+                                            const newAdmin = value === '__none__' ? undefined : value;
+                                            const updatedRecords = lead.policyRecords?.map(r => 
+                                              r.id === policy.id ? { ...r, adminAssignee: newAdmin } : r
+                                            );
+                                            onLeadUpdate?.(lead.id, { policyRecords: updatedRecords });
+                                          }}
+                                        >
+                                          <SelectTrigger className="w-[120px] h-8 text-xs">
+                                            <SelectValue placeholder={language === 'th' ? 'ยังไม่มอบหมาย' : 'Unassigned'} />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            <SelectItem value="__none__" className="text-muted-foreground">
+                                              {language === 'th' ? 'ยังไม่มอบหมาย' : 'Unassigned'}
+                                            </SelectItem>
+                                            {getAdminStaff().map((staff) => (
+                                              <SelectItem key={staff.id} value={staff.name}>
+                                                {staff.name}
+                                              </SelectItem>
+                                            ))}
+                                          </SelectContent>
+                                        </Select>
+                                      </div>
+
+                                      {/* Delivery Assignee (policy-level) */}
+                                      <div className="w-[130px] shrink-0">
+                                        <Select
+                                          value={policy.deliveryAssignee || '__none__'}
+                                          onValueChange={(value) => {
+                                            const newDelivery = value === '__none__' ? undefined : value;
+                                            const updatedRecords = lead.policyRecords?.map(r => 
+                                              r.id === policy.id ? { ...r, deliveryAssignee: newDelivery } : r
+                                            );
+                                            onLeadUpdate?.(lead.id, { policyRecords: updatedRecords });
+                                          }}
+                                        >
+                                          <SelectTrigger className="w-[120px] h-8 text-xs">
+                                            <SelectValue placeholder={language === 'th' ? 'ยังไม่มอบหมาย' : 'Unassigned'} />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            <SelectItem value="__none__" className="text-muted-foreground">
+                                              {language === 'th' ? 'ยังไม่มอบหมาย' : 'Unassigned'}
+                                            </SelectItem>
+                                            {getDeliveryStaff().map((staff) => (
+                                              <SelectItem key={staff.id} value={staff.name}>
+                                                {staff.name}
+                                              </SelectItem>
+                                            ))}
+                                          </SelectContent>
+                                        </Select>
+                                      </div>
+
                                       {/* Policy Owners - supports multiple */}
                                       <div className="w-[100px] shrink-0 text-sm">
                                         {(() => {

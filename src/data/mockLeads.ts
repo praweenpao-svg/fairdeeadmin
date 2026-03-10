@@ -12,6 +12,8 @@ const agents = [
 const rfStaff = ['Ricky', 'Jenny', 'Tommy'];
 const scStaff = ['Lisa', 'Mike', 'Nina'];
 const deStaff = ['Oscar', 'Paula', 'Quinn', 'Pao'];
+const adminStaff = ['Rachel', 'Sam', 'Tina'];
+const deliveryStaff = ['Dao', 'Kai', 'Ploy'];
 
 // Current user constant
 export const CURRENT_USER = 'Pao';
@@ -340,6 +342,14 @@ function generatePolicyRecord(
     deAssignee: staffOptions?.deAssignee,
   });
 
+  // Assign admin for pending_issuance status and beyond
+  const needsAdmin = ['pending_issuance', 'policy_issued', 'policy_shipped', 'policy_delivered'].includes(status);
+  const adminAssignee = needsAdmin ? adminStaff[Math.floor(Math.random() * adminStaff.length)] : undefined;
+  
+  // Assign delivery for print_by_fairdee with policy_issued/shipped/delivered
+  const needsDelivery = shippingMethod === 'print_by_fairdee' && ['policy_issued', 'policy_shipped', 'policy_delivered'].includes(status);
+  const deliveryAssignee = needsDelivery ? deliveryStaff[Math.floor(Math.random() * deliveryStaff.length)] : undefined;
+
   return {
     id,
     kind,
@@ -355,6 +365,8 @@ function generatePolicyRecord(
     endorsementType,
     endorsementStatus,
     historyLog,
+    adminAssignee,
+    deliveryAssignee,
   };
 }
 

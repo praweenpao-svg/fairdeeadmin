@@ -165,6 +165,9 @@ export interface PolicyRecord {
   endorsementStatus?: EndorsementStatus;
   // Endorsement change history
   endorsementHistory?: PolicyEndorsementEntry[];
+  // Policy-level assignees (Admin and Delivery are per-policy, not per-sale)
+  adminAssignee?: string;
+  deliveryAssignee?: string;
 }
 
 export type CreatedByType = 'agent' | 'admin';
@@ -284,7 +287,7 @@ export interface Lead {
   etaDaysOverdue?: number;
 }
 
-export type AssignmentType = 'round_robin' | 'rf_sc' | 'rf' | 'requestor' | 'none';
+export type AssignmentType = 'round_robin' | 'rf_sc' | 'rf' | 'admin' | 'delivery' | 'requestor' | 'none';
 
 // Automation type for rework configs
 export type AutomationType = 'auto_reassign' | 'auto_resolve';

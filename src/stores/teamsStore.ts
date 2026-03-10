@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 
 // Default teams
-const defaultTeams = ['AST RF', 'AST SC', 'DE', 'Admin'];
+const defaultTeams = ['AST RF', 'AST SC', 'DE', 'Admin', 'Delivery'];
 
 // Simple global state for teams (shared between components)
 let globalTeams = [...defaultTeams];
