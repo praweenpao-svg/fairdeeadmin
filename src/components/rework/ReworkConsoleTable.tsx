@@ -367,7 +367,14 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
     if (typesWithStatus.includes(config.configType as ReworkConfigType) && config.statusFilter) {
       const statusOpts = getStatusOptionsForType(config.configType);
       const statusLabel = statusOpts.find(o => o.value === config.statusFilter)?.label || config.statusFilter;
-      return { primary: statusLabel, secondary: '' };
+      // Show method as secondary info
+      let methodLabel = '';
+      if (config.issuanceMethod) {
+        methodLabel = issuanceMethodOptions.find(o => o.value === config.issuanceMethod)?.label || '';
+      } else if (config.deliveryMethod) {
+        methodLabel = deliveryMethodOptions.find(o => o.value === config.deliveryMethod)?.label || '';
+      }
+      return { primary: statusLabel, secondary: methodLabel };
     }
     return { primary: config.descriptionEn, secondary: config.descriptionTh };
   };
