@@ -647,29 +647,50 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                   </div>
                 )}
 
-                {/* Sticky Column */}
-                <div className="grid gap-2">
-                  <Label htmlFor="stickyColumn">Sticky</Label>
-                  <Select 
-                    value={formData.stickyColumn || '__none__'} 
-                    onValueChange={(value) => setFormData({ ...formData, stickyColumn: value === '__none__' ? undefined : value as StickyColumnType })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select sticky column" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="__none__">None</SelectItem>
-                      {stickyColumnOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-muted-foreground">
-                    If set, checks this column for an existing assignee before using assignment logic
-                  </p>
-                </div>
+                {/* Dynamic Method field for Policy type */}
+                {formData.configType === 'policy' && statusesWithIssuanceMethod.includes(formData.statusFilter || '') && (
+                  <div className="grid gap-2">
+                    <Label>Method</Label>
+                    <Select 
+                      value={formData.issuanceMethod || '__none__'} 
+                      onValueChange={(value) => setFormData({ ...formData, issuanceMethod: value === '__none__' ? undefined : value as IssuanceMethod })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select method" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">Select method</SelectItem>
+                        {issuanceMethodOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                {formData.configType === 'policy' && statusesWithDeliveryMethod.includes(formData.statusFilter || '') && (
+                  <div className="grid gap-2">
+                    <Label>Delivery Method</Label>
+                    <Select 
+                      value={formData.deliveryMethod || '__none__'} 
+                      onValueChange={(value) => setFormData({ ...formData, deliveryMethod: value === '__none__' ? undefined : value as DeliveryMethodType })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select delivery method" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">Select delivery method</SelectItem>
+                        {deliveryMethodOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
 
                 {/* Stages - only for Rework */}
                 {isReworkOnly && (
