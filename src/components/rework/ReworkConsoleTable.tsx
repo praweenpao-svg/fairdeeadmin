@@ -884,9 +884,13 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                     </td>
                     <td className="px-4 py-3 text-sm">{getTeamDisplay(config)}</td>
                     <td className="px-4 py-3 text-sm text-center">
-                      {config.stickyColumn ? (
-                        <span className="px-2 py-0.5 rounded text-xs font-medium bg-muted text-muted-foreground uppercase">
-                          {config.stickyColumn}
+                      {config.configType === 'policy' && config.issuanceMethod ? (
+                        <span className="px-2 py-0.5 rounded text-xs font-medium bg-muted text-muted-foreground">
+                          {issuanceMethodOptions.find(o => o.value === config.issuanceMethod)?.label || config.issuanceMethod}
+                        </span>
+                      ) : config.configType === 'policy' && config.deliveryMethod ? (
+                        <span className="px-2 py-0.5 rounded text-xs font-medium bg-muted text-muted-foreground">
+                          {deliveryMethodOptions.find(o => o.value === config.deliveryMethod)?.label || config.deliveryMethod}
                         </span>
                       ) : '-'}
                     </td>
