@@ -387,7 +387,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
       const key = c.configType === 'endorsement'
         ? `endorsement|${c.endorsementConfigType}|${c.endorsementConfigStatus}`
         : typesWithStatus.includes(c.configType as ReworkConfigType)
-        ? `${c.configType}|${c.statusFilter}`
+        ? `${c.configType}|${c.statusFilter}|${c.issuanceMethod || ''}|${c.deliveryMethod || ''}`
         : `${(c.descriptionTh || '').trim().toLowerCase()}|${(c.descriptionEn || '').trim().toLowerCase()}`;
       if (seen.has(key)) continue;
       seen.add(key);
