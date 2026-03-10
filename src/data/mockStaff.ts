@@ -144,6 +144,37 @@ export const mockStaffMembers: StaffMember[] = [
     shift2StartTime: '13:00:00',
     shift2EndTime: '18:00:00',
   },
+  // Delivery team
+  {
+    id: '14',
+    name: 'Dao',
+    email: 'dao@fairdee.co.th',
+    team: 'Delivery',
+    startTime: '09:00:00',
+    endTime: '12:00:00',
+    shift2StartTime: '13:00:00',
+    shift2EndTime: '18:00:00',
+  },
+  {
+    id: '15',
+    name: 'Kai',
+    email: 'kai@fairdee.co.th',
+    team: 'Delivery',
+    startTime: '09:00:00',
+    endTime: '12:00:00',
+    shift2StartTime: '13:00:00',
+    shift2EndTime: '18:00:00',
+  },
+  {
+    id: '16',
+    name: 'Ploy',
+    email: 'ploy@fairdee.co.th',
+    team: 'Delivery',
+    startTime: '09:00:00',
+    endTime: '12:30:00',
+    shift2StartTime: '13:30:00',
+    shift2EndTime: '18:00:00',
+  },
 ];
 
-export const defaultTeams = ['AST RF', 'AST SC', 'DE', 'Admin'];
+export const defaultTeams = ['AST RF', 'AST SC', 'DE', 'Admin', 'Delivery'];

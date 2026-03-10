@@ -287,7 +287,7 @@ export interface Lead {
   etaDaysOverdue?: number;
 }
 
-export type AssignmentType = 'round_robin' | 'rf_sc' | 'rf' | 'requestor' | 'none';
+export type AssignmentType = 'round_robin' | 'rf_sc' | 'rf' | 'admin' | 'delivery' | 'requestor' | 'none';
 
 // Automation type for rework configs
 export type AutomationType = 'auto_reassign' | 'auto_resolve';
