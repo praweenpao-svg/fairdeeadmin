@@ -482,7 +482,6 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                       assignment: value as AssignmentType,
                       team: value === 'rf_sc' || value === 'rf' || value === 'admin' || value === 'delivery' || value === 'requestor' || value === 'none' ? '' : formData.team 
                     })}
-                    })}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select assignment logic" />
