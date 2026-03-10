@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { ReworkConfig, AssignmentType, PipelineStage, ReworkPartyType, PolicyScopeType, ReworkConfigType, EndorsementType, EndorsementStatus, AutomationType } from '@/types/pipeline';
+import { ReworkConfig, AssignmentType, PipelineStage, ReworkPartyType, PolicyScopeType, ReworkConfigType, EndorsementType, EndorsementStatus, AutomationType, StickyColumnType } from '@/types/pipeline';
 import { useTeamsStore } from '@/stores/teamsStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,8 +32,6 @@ interface ReworkConsoleTableProps {
 const assignmentOptions: { value: AssignmentType; label: string }[] = [
   { value: 'rf_sc', label: 'RF/SC' },
   { value: 'rf', label: 'RF' },
-  { value: 'admin', label: 'Admin' },
-  { value: 'delivery', label: 'Delivery' },
   { value: 'round_robin', label: 'Round-Robin' },
   { value: 'requestor', label: 'Requestor' },
   { value: 'none', label: '-' },
@@ -62,6 +60,9 @@ const policyScopeOptions: { value: PolicyScopeType; label: string }[] = [
 const configTypeOptions: { value: ReworkConfigType; label: string }[] = [
   { value: 'rework', label: 'Rework' },
   { value: 'endorsement', label: 'Endorsement' },
+  { value: 'policy', label: 'Policy' },
+  { value: 'lead', label: 'Lead' },
+  { value: 'renewal', label: 'Renewal' },
 ];
 
 const endorsementTypeOptions: { value: EndorsementType; label: string }[] = [
@@ -78,10 +79,54 @@ const endorsementStatusOptions: { value: EndorsementStatus; label: string }[] = 
   { value: 'invalid', label: 'Invalid' },
 ];
 
+const stickyColumnOptions: { value: StickyColumnType; label: string }[] = [
+  { value: 'rf', label: 'RF' },
+  { value: 'sc', label: 'SC' },
+  { value: 'de', label: 'DE' },
+  { value: 'admin', label: 'Admin' },
+  { value: 'delivery', label: 'Delivery' },
+];
+
+// Status options per config type
+const policyStatusOptions: { value: string; label: string }[] = [
+  { value: 'pending_payment', label: 'Pending Payment' },
+  { value: 'pending_review', label: 'Pending Review' },
+  { value: 'pending_issuance', label: 'Pending Issuance' },
+  { value: 'policy_issued', label: 'Policy Issued' },
+  { value: 'policy_shipped', label: 'Policy Shipped' },
+  { value: 'policy_delivered', label: 'Policy Delivered' },
+  { value: 'policy_cancelled', label: 'Policy Cancelled' },
+];
+
+const leadStatusOptions: { value: string; label: string }[] = [
+  { value: 'pending', label: 'Pending' },
+  { value: 'docs_missing', label: 'Docs Missing' },
+  { value: 'waiting_for_insurer', label: 'Waiting for Insurer' },
+  { value: 'partially_added', label: 'Partially Added' },
+  { value: 'completed', label: 'Completed' },
+  { value: 'quotation_shared', label: 'Quotation Shared' },
+  { value: 'invalid', label: 'Invalid' },
+];
+
+const renewalStatusOptions: { value: string; label: string }[] = [
+  { value: 'price_pending', label: 'Price Pending' },
+  { value: 'revision_pending', label: 'Revision Pending' },
+  { value: 'renewal_rejected', label: 'Renewal Rejected' },
+  { value: 'price_ready', label: 'Price Ready' },
+];
+
+function getStatusOptionsForType(configType?: ReworkConfigType) {
+  switch (configType) {
+    case 'policy': return policyStatusOptions;
+    case 'lead': return leadStatusOptions;
+    case 'renewal': return renewalStatusOptions;
+    default: return [];
+  }
+}
+
 const allPostLeadStages: PipelineStage[] = ['to_pay', 'to_report', 'to_issue', 'to_deliver', 'completed', 'cancelled'];
 
 // Helper function to check if a rework reason moves leads to Cancellation tab
-// This checks the movesToCancellation property on the config
 export function isCancellationReworkReason(reasonId: string, reworkConfigs: ReworkConfig[]): boolean {
   const config = reworkConfigs.find(c => c.id === reasonId);
   return config?.movesToCancellation === true;
@@ -92,9 +137,13 @@ const sanitizeStages = (stages: PipelineStage[]): PipelineStage[] => {
   return stages.filter(s => s !== 'to_convert');
 };
 
+// Types that show status selector
+const typesWithStatus: ReworkConfigType[] = ['policy', 'lead', 'renewal'];
+// Types that hide TH/EN description, party, policy scope, stages, automation
+const typesWithMinimalForm: ReworkConfigType[] = ['endorsement', 'policy', 'lead', 'renewal'];
+
 export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTableProps) {
   const { teams } = useTeamsStore();
-  // Rework Console is always in English, ignoring language toggle
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingConfig, setEditingConfig] = useState<ReworkConfig | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -116,6 +165,8 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
     policyScope: 'both',
     endorsementConfigType: undefined,
     endorsementConfigStatus: undefined,
+    stickyColumn: undefined,
+    statusFilter: undefined,
   });
 
   const openDialog = (config?: ReworkConfig) => {
@@ -140,6 +191,8 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
         policyScope: 'both',
         endorsementConfigType: undefined,
         endorsementConfigStatus: undefined,
+        stickyColumn: undefined,
+        statusFilter: undefined,
       });
     }
     setIsDialogOpen(true);
@@ -150,11 +203,9 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
   };
 
   const handleSave = () => {
-    // If RF/SC, RF, Admin, Delivery, Requestor, or none, clear team since it's not used
-    const teamValue = formData.assignment === 'rf_sc' || formData.assignment === 'rf' || formData.assignment === 'admin' || formData.assignment === 'delivery' || formData.assignment === 'requestor' || formData.assignment === 'none' ? '' : (formData.team || '');
-    
-    // For endorsement type, force pre-selected values
     const isEndorsement = formData.configType === 'endorsement';
+    const isMinimal = typesWithMinimalForm.includes(formData.configType as ReworkConfigType);
+    const teamValue = formData.assignment === 'round_robin' ? (formData.team || '') : '';
 
     // Check for duplicate endorsement status
     if (isEndorsement) {
@@ -173,11 +224,12 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
         return;
       }
     }
-    const stages = isEndorsement ? allPostLeadStages : (formData.stages || []);
-    const partyType = isEndorsement ? 'internal' as ReworkPartyType : (formData.partyType || 'internal');
-    const policyScope = isEndorsement ? 'both' as PolicyScopeType : (formData.policyScope || 'both');
-    const automationEnabled = isEndorsement ? false : (formData.automationEnabled || false);
-    const automationType = isEndorsement ? undefined : (automationEnabled ? (formData.automationType || 'auto_reassign') : undefined);
+
+    const stages = isMinimal ? allPostLeadStages : (formData.stages || []);
+    const partyType = isMinimal ? 'internal' as ReworkPartyType : (formData.partyType || 'internal');
+    const policyScope = isMinimal ? 'both' as PolicyScopeType : (formData.policyScope || 'both');
+    const automationEnabled = isMinimal ? false : (formData.automationEnabled || false);
+    const automationType = isMinimal ? undefined : (automationEnabled ? (formData.automationType || 'auto_reassign') : undefined);
     const movesToCancellation = formData.movesToCancellation || false;
     
     if (editingConfig) {
@@ -192,14 +244,14 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
       const newConfig: ReworkConfig = {
         id: String(Date.now()),
         configType: formData.configType || 'rework',
-        descriptionTh: isEndorsement ? '' : (formData.descriptionTh || ''),
-        descriptionEn: isEndorsement ? '' : (formData.descriptionEn || ''),
+        descriptionTh: isMinimal ? '' : (formData.descriptionTh || ''),
+        descriptionEn: isMinimal ? '' : (formData.descriptionEn || ''),
         team: teamValue,
         teamMembers: [],
         automationEnabled,
         automationType,
-        automationDays: isEndorsement ? undefined : formData.automationDays,
-        targetReason: isEndorsement ? undefined : (automationType === 'auto_resolve' ? undefined : formData.targetReason),
+        automationDays: isMinimal ? undefined : formData.automationDays,
+        targetReason: isMinimal ? undefined : (automationType === 'auto_resolve' ? undefined : formData.targetReason),
         assignment: formData.assignment || 'rf_sc',
         stages,
         movesToCancellation,
@@ -207,6 +259,8 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
         policyScope,
         endorsementConfigType: isEndorsement ? formData.endorsementConfigType : undefined,
         endorsementConfigStatus: isEndorsement ? formData.endorsementConfigStatus : undefined,
+        stickyColumn: formData.stickyColumn,
+        statusFilter: typesWithStatus.includes(formData.configType as ReworkConfigType) ? formData.statusFilter : undefined,
       };
       onUpdate([...reworkConfigs, newConfig]);
     }
@@ -227,9 +281,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
   };
 
   const getTeamDisplay = (config: ReworkConfig) => {
-    if (config.assignment === 'rf_sc' || config.assignment === 'rf' || config.assignment === 'admin' || config.assignment === 'delivery' || config.assignment === 'requestor' || config.assignment === 'none') {
-      return '-';
-    }
+    if (config.assignment !== 'round_robin') return '-';
     return config.team || '-';
   };
 
@@ -240,14 +292,53 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
     return { en: targetConfig.descriptionEn, th: targetConfig.descriptionTh };
   };
 
-  // Pagination (dedupe by descriptions so "ซ้ำ" doesn't show in console)
+  const getTypeTag = (config: ReworkConfig) => {
+    switch (config.configType) {
+      case 'endorsement':
+        return config.endorsementConfigType === 'policy_cancellation'
+          ? { label: 'Cancel', className: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' }
+          : { label: 'Endorse', className: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' };
+      case 'policy':
+        return { label: 'Policy', className: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' };
+      case 'lead':
+        return { label: 'Lead', className: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' };
+      case 'renewal':
+        return { label: 'Renewal', className: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' };
+      default:
+        return { label: 'Rework', className: 'bg-muted text-muted-foreground' };
+    }
+  };
+
+  const getReasonDisplay = (config: ReworkConfig) => {
+    if (config.configType === 'endorsement') {
+      return {
+        primary: endorsementStatusOptions.find(o => o.value === config.endorsementConfigStatus)?.label || '-',
+        secondary: config.endorsementConfigStatus === 'request_created' ? 'สร้างคำขอแล้ว'
+          : config.endorsementConfigStatus === 'request_submitted' ? 'ส่งคำขอแล้ว'
+          : config.endorsementConfigStatus === 'request_approved' ? 'อนุมัติคำขอแล้ว'
+          : config.endorsementConfigStatus === 'pending_on_ops' ? 'รอดำเนินการ OPS'
+          : config.endorsementConfigStatus === 'pending_finance' ? 'รอการเงิน'
+          : config.endorsementConfigStatus === 'invalid' ? 'ไม่ถูกต้อง'
+          : '-',
+      };
+    }
+    if (typesWithStatus.includes(config.configType as ReworkConfigType) && config.statusFilter) {
+      const statusOpts = getStatusOptionsForType(config.configType);
+      const statusLabel = statusOpts.find(o => o.value === config.statusFilter)?.label || config.statusFilter;
+      return { primary: statusLabel, secondary: '' };
+    }
+    return { primary: config.descriptionEn, secondary: config.descriptionTh };
+  };
+
+  // Pagination (dedupe)
   const uniqueConfigs = (() => {
     const seen = new Set<string>();
     const result: ReworkConfig[] = [];
     for (const c of reworkConfigs) {
-      // For endorsements, use configType + endorsementType + status as key to avoid false dedup
       const key = c.configType === 'endorsement'
         ? `endorsement|${c.endorsementConfigType}|${c.endorsementConfigStatus}`
+        : typesWithStatus.includes(c.configType as ReworkConfigType)
+        ? `${c.configType}|${c.statusFilter}`
         : `${(c.descriptionTh || '').trim().toLowerCase()}|${(c.descriptionEn || '').trim().toLowerCase()}`;
       if (seen.has(key)) continue;
       seen.add(key);
@@ -263,14 +354,15 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
     currentPage * rowsPerPage
   );
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
-
+  const handlePageChange = (page: number) => setCurrentPage(page);
   const handleRowsPerPageChange = (rows: number) => {
     setRowsPerPage(rows);
     setCurrentPage(1);
   };
+
+  const isReworkOnly = formData.configType === 'rework';
+  const isMinimalType = typesWithMinimalForm.includes(formData.configType as ReworkConfigType);
+  const showStatusSelector = typesWithStatus.includes(formData.configType as ReworkConfigType);
 
   return (
     <div className="space-y-4">
@@ -282,7 +374,6 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
           </p>
         </div>
         <div className="flex items-center gap-2">
-          {/* Add Rework Reason Button */}
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" onClick={() => openDialog()}>
@@ -297,21 +388,20 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                 </DialogTitle>
               </DialogHeader>
               <div className="grid gap-4 py-4">
-                {/* Type selector - top-level identifier */}
+                {/* Type selector */}
                 <div className="grid gap-2">
                   <Label htmlFor="configType">Type</Label>
                   <Select 
                     value={formData.configType || 'rework'} 
                     onValueChange={(value) => {
-                      const isEndorsement = value === 'endorsement';
+                      const ct = value as ReworkConfigType;
                       setFormData({ 
                         ...formData, 
-                        configType: value as ReworkConfigType,
-                        // Reset endorsement fields when switching away
-                        endorsementConfigType: isEndorsement ? (formData.endorsementConfigType || 'policy_endorsement') : undefined,
-                        endorsementConfigStatus: isEndorsement ? (formData.endorsementConfigStatus || 'request_created') : undefined,
-                        // Pre-select defaults for endorsement
-                        movesToCancellation: isEndorsement ? false : formData.movesToCancellation,
+                        configType: ct,
+                        endorsementConfigType: ct === 'endorsement' ? (formData.endorsementConfigType || 'policy_endorsement') : undefined,
+                        endorsementConfigStatus: ct === 'endorsement' ? (formData.endorsementConfigStatus || 'request_created') : undefined,
+                        statusFilter: typesWithStatus.includes(ct) ? undefined : undefined,
+                        movesToCancellation: ct === 'endorsement' ? false : formData.movesToCancellation,
                       });
                     }}
                   >
@@ -337,7 +427,6 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                         value={formData.endorsementConfigType || 'policy_endorsement'} 
                         onValueChange={(value) => {
                           const newType = value as EndorsementType;
-                          // Find first available status for new type
                           const usedStatuses = reworkConfigs
                             .filter(c => c.configType === 'endorsement' && c.endorsementConfigType === newType && c.id !== editingConfig?.id)
                             .map(c => c.endorsementConfigStatus);
@@ -385,8 +474,31 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                   </>
                 )}
 
+                {/* Status selector for Policy/Lead/Renewal types */}
+                {showStatusSelector && (
+                  <div className="grid gap-2">
+                    <Label htmlFor="statusFilter">Status</Label>
+                    <Select 
+                      value={formData.statusFilter || '__none__'} 
+                      onValueChange={(value) => setFormData({ ...formData, statusFilter: value === '__none__' ? undefined : value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">Select status</SelectItem>
+                        {getStatusOptionsForType(formData.configType).map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
                 {/* TH/EN Description - only for Rework */}
-                {formData.configType !== 'endorsement' && (
+                {isReworkOnly && (
                   <>
                     <div className="grid gap-2">
                       <Label htmlFor="descriptionTh">Description (TH)</Label>
@@ -412,7 +524,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                 )}
 
                 {/* Party Type - only for Rework */}
-                {formData.configType !== 'endorsement' && (
+                {isReworkOnly && (
                   <div className="grid gap-2">
                     <Label htmlFor="partyType">Party Type</Label>
                     <Select 
@@ -442,7 +554,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                 )}
 
                 {/* Policy Scope - only for Rework */}
-                {formData.configType !== 'endorsement' && (
+                {isReworkOnly && (
                   <div className="grid gap-2">
                     <Label htmlFor="policyScope">Policy Scope</Label>
                     <Select 
@@ -463,16 +575,10 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                         ))}
                       </SelectContent>
                     </Select>
-                    <p className="text-xs text-muted-foreground">
-                      {formData.policyScope === 'both' 
-                        ? 'This reason applies to both VMI and CMI policies'
-                        : formData.policyScope === 'vmi'
-                        ? 'This reason applies only to VMI policies'
-                        : 'This reason applies only to CMI policies'}
-                    </p>
                   </div>
                 )}
 
+                {/* Assignment Logic */}
                 <div className="grid gap-2">
                   <Label htmlFor="assignment">Assignment Logic</Label>
                   <Select 
@@ -480,7 +586,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                     onValueChange={(value) => setFormData({ 
                       ...formData, 
                       assignment: value as AssignmentType,
-                      team: value === 'rf_sc' || value === 'rf' || value === 'admin' || value === 'delivery' || value === 'requestor' || value === 'none' ? '' : formData.team 
+                      team: value === 'round_robin' ? formData.team : '' 
                     })}
                   >
                     <SelectTrigger>
@@ -499,17 +605,15 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                       ? 'Assigns to SC person if claimed, otherwise RF person'
                       : formData.assignment === 'rf'
                       ? 'Always assigns to RF person regardless of SC assignment'
-                      : formData.assignment === 'admin'
-                      ? 'Assigns to the Admin person on this policy (sticky, else Round-Robin Admin)'
-                      : formData.assignment === 'delivery'
-                      ? 'Assigns to the Delivery person on this policy (sticky, else Round-Robin Delivery)'
                       : formData.assignment === 'requestor'
-                      ? 'Assigns to whoever created the rework/endorsement request'
+                      ? 'Assigns to whoever created the request'
                       : formData.assignment === 'none'
-                      ? 'No owner assignment for this rework reason'
+                      ? 'No owner assignment'
                       : 'Distributes tasks fairly among selected team members'}
                   </p>
                 </div>
+
+                {/* Team for Round-Robin */}
                 {formData.assignment === 'round_robin' && (
                   <div className="grid gap-2">
                     <Label htmlFor="team">Team</Label>
@@ -532,8 +636,32 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                   </div>
                 )}
 
+                {/* Sticky Column */}
+                <div className="grid gap-2">
+                  <Label htmlFor="stickyColumn">Sticky</Label>
+                  <Select 
+                    value={formData.stickyColumn || '__none__'} 
+                    onValueChange={(value) => setFormData({ ...formData, stickyColumn: value === '__none__' ? undefined : value as StickyColumnType })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select sticky column" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">None</SelectItem>
+                      {stickyColumnOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    If set, checks this column for an existing assignee before using assignment logic
+                  </p>
+                </div>
+
                 {/* Stages - only for Rework */}
-                {formData.configType !== 'endorsement' && (
+                {isReworkOnly && (
                   <div className="grid gap-2">
                     <Label>Stages</Label>
                     <div className="border rounded-md p-3 space-y-2">
@@ -554,7 +682,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                   </div>
                 )}
 
-                {/* Moves to Cancellation Section - shown for both Rework and Endorsement */}
+                {/* Moves to Cancellation */}
                 <div className="border-t pt-4 mt-2">
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
@@ -572,9 +700,8 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                 </div>
 
                 {/* Automation Section - only for Rework */}
-                {formData.configType !== 'endorsement' && (
+                {isReworkOnly && (
                   <div className="border-t pt-4 mt-2">
-                    
                     <div className="flex items-center justify-between mb-4">
                       <div className="space-y-0.5">
                         <Label htmlFor="automationEnabled">Enable Automation</Label>
@@ -595,7 +722,6 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
 
                     {formData.automationEnabled && (
                       <div className="grid gap-4">
-                        {/* Automation Type Toggle */}
                         <div className="grid gap-2">
                           <Label>Automation Type</Label>
                           <Select 
@@ -603,7 +729,6 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                             onValueChange={(value) => setFormData({ 
                               ...formData, 
                               automationType: value as AutomationType,
-                              // Clear target reason when switching to auto_resolve
                               targetReason: value === 'auto_resolve' ? undefined : formData.targetReason,
                             })}
                           >
@@ -622,53 +747,50 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                           </p>
                         </div>
 
-                        {/* Threshold Days - only for Auto-Reassign */}
                         {(formData.automationType || 'auto_reassign') === 'auto_reassign' && (
-                          <div className="grid gap-2">
-                            <Label htmlFor="automationDays">Threshold (Days)</Label>
-                            <Input
-                              id="automationDays"
-                              type="number"
-                              min={1}
-                              value={formData.automationDays || ''}
-                              onChange={(e) => setFormData({ 
-                                ...formData, 
-                                automationDays: e.target.value ? parseInt(e.target.value) : undefined 
-                              })}
-                              placeholder="Enter number of days"
-                            />
-                          </div>
-                        )}
-
-                        {/* Target Reason - only for Auto-Move */}
-                        {(formData.automationType || 'auto_reassign') === 'auto_reassign' && (
-                          <div className="grid gap-2">
-                            <Label htmlFor="targetReason">Target Status</Label>
-                            <Select 
-                              value={formData.targetReason || '__none__'} 
-                              onValueChange={(value) => setFormData({ 
-                                ...formData, 
-                                targetReason: value === '__none__' ? undefined : value 
-                              })}
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select target rework reason" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="__none__">Select target reason</SelectItem>
-                                {uniqueConfigs
-                                  .filter(c => c.id !== editingConfig?.id)
-                                  .map((config) => (
-                                    <SelectItem key={config.id} value={config.id}>
-                                      {config.descriptionEn}
-                                    </SelectItem>
-                                  ))}
-                              </SelectContent>
-                            </Select>
-                            <p className="text-xs text-muted-foreground">
-                              Where the record moves after threshold is reached
-                            </p>
-                          </div>
+                          <>
+                            <div className="grid gap-2">
+                              <Label htmlFor="automationDays">Threshold (Days)</Label>
+                              <Input
+                                id="automationDays"
+                                type="number"
+                                min={1}
+                                value={formData.automationDays || ''}
+                                onChange={(e) => setFormData({ 
+                                  ...formData, 
+                                  automationDays: e.target.value ? parseInt(e.target.value) : undefined 
+                                })}
+                                placeholder="Enter number of days"
+                              />
+                            </div>
+                            <div className="grid gap-2">
+                              <Label htmlFor="targetReason">Target Status</Label>
+                              <Select 
+                                value={formData.targetReason || '__none__'} 
+                                onValueChange={(value) => setFormData({ 
+                                  ...formData, 
+                                  targetReason: value === '__none__' ? undefined : value 
+                                })}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select target rework reason" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="__none__">Select target reason</SelectItem>
+                                  {uniqueConfigs
+                                    .filter(c => c.id !== editingConfig?.id)
+                                    .map((config) => (
+                                      <SelectItem key={config.id} value={config.id}>
+                                        {config.descriptionEn}
+                                      </SelectItem>
+                                    ))}
+                                </SelectContent>
+                              </Select>
+                              <p className="text-xs text-muted-foreground">
+                                Where the record moves after threshold is reached
+                              </p>
+                            </div>
+                          </>
                         )}
                       </div>
                     )}
@@ -693,172 +815,132 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
           <table className="w-full">
             <thead>
               <tr className="border-b border-border">
-                <th className="data-table-header px-4 py-3 text-center">
-                  Type
-                </th>
-                <th className="data-table-header px-4 py-3 text-left min-w-[280px]">
-                  Reason
-                </th>
-                <th className="data-table-header px-4 py-3 text-left">
-                  Assignment Logic
-                </th>
-                <th className="data-table-header px-4 py-3 text-left">
-                  Teams
-                </th>
-                <th className="data-table-header px-4 py-3 text-left">
-                  Stages
-                </th>
-                <th className="data-table-header px-4 py-3 text-center">
-                  Party
-                </th>
-                <th className="data-table-header px-4 py-3 text-center">
-                  VMI/CMI
-                </th>
-                <th className="data-table-header px-4 py-3 text-center">
-                  Cancellation
-                </th>
-                <th className="data-table-header px-4 py-3 text-center">
-                  Automation
-                </th>
-                <th className="data-table-header px-4 py-3 text-center">
-                  Threshold
-                </th>
-                <th className="data-table-header px-4 py-3 text-left">
-                  Target / Action
-                </th>
-                <th className="data-table-header px-4 py-3 text-right">
-                  Actions
-                </th>
+                <th className="data-table-header px-4 py-3 text-center">Type</th>
+                <th className="data-table-header px-4 py-3 text-left min-w-[280px]">Reason</th>
+                <th className="data-table-header px-4 py-3 text-left">Assignment Logic</th>
+                <th className="data-table-header px-4 py-3 text-left">Teams</th>
+                <th className="data-table-header px-4 py-3 text-center">Sticky</th>
+                <th className="data-table-header px-4 py-3 text-left">Stages</th>
+                <th className="data-table-header px-4 py-3 text-center">Party</th>
+                <th className="data-table-header px-4 py-3 text-center">VMI/CMI</th>
+                <th className="data-table-header px-4 py-3 text-center">Cancellation</th>
+                <th className="data-table-header px-4 py-3 text-center">Automation</th>
+                <th className="data-table-header px-4 py-3 text-center">Threshold</th>
+                <th className="data-table-header px-4 py-3 text-left">Target / Action</th>
+                <th className="data-table-header px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {paginatedConfigs.map((config) => (
-                <tr key={config.id} className="data-table-row">
-                  <td className="px-4 py-3 text-sm text-center">
-                    {config.configType === 'endorsement' ? (
+              {paginatedConfigs.map((config) => {
+                const tag = getTypeTag(config);
+                const reason = getReasonDisplay(config);
+                return (
+                  <tr key={config.id} className="data-table-row">
+                    <td className="px-4 py-3 text-sm text-center">
+                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${tag.className}`}>
+                        {tag.label}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-sm min-w-[280px]">
+                      <div className="space-y-1">
+                        <div className="font-medium text-foreground">{reason.primary}</div>
+                        {reason.secondary && <div className="text-xs text-muted-foreground">{reason.secondary}</div>}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-sm">
+                      {assignmentOptions.find(o => o.value === config.assignment)?.label || config.assignment}
+                    </td>
+                    <td className="px-4 py-3 text-sm">{getTeamDisplay(config)}</td>
+                    <td className="px-4 py-3 text-sm text-center">
+                      {config.stickyColumn ? (
+                        <span className="px-2 py-0.5 rounded text-xs font-medium bg-muted text-muted-foreground uppercase">
+                          {config.stickyColumn}
+                        </span>
+                      ) : '-'}
+                    </td>
+                    <td className="px-4 py-3 text-sm">
+                      {config.configType !== 'rework' ? '-' : getStageLabels(config.stages || [])}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-center">
+                      <span className="px-2 py-0.5 rounded text-xs font-medium bg-muted text-muted-foreground">
+                        {config.partyType === 'external' ? 'External' : 'Internal'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-center">
                       <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                        config.endorsementConfigType === 'policy_cancellation'
-                          ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                          : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                        config.policyScope === 'vmi' 
+                          ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' 
+                          : config.policyScope === 'cmi'
+                          ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
+                          : 'bg-muted text-muted-foreground'
                       }`}>
-                        {config.endorsementConfigType === 'policy_cancellation' ? 'Cancel' : 'Endorse'}
+                        {config.policyScope === 'vmi' ? 'VMI' : config.policyScope === 'cmi' ? 'CMI' : 'Both'}
                       </span>
-                    ) : (
-                      <span className="px-2 py-0.5 rounded text-xs font-medium bg-muted text-muted-foreground">
-                        Rework
+                    </td>
+                    <td className="px-4 py-3 text-sm text-center">
+                      <span className={config.movesToCancellation ? 'text-green-500' : 'text-muted-foreground'}>
+                        {config.movesToCancellation ? 'ON' : 'OFF'}
                       </span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-sm min-w-[280px]">
-                    {config.configType === 'endorsement' ? (
-                      <div className="space-y-1">
-                        <div className="font-medium text-foreground">
-                          {endorsementStatusOptions.find(o => o.value === config.endorsementConfigStatus)?.label || '-'}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {config.endorsementConfigStatus === 'request_created' ? 'สร้างคำขอแล้ว'
-                            : config.endorsementConfigStatus === 'request_submitted' ? 'ส่งคำขอแล้ว'
-                            : config.endorsementConfigStatus === 'request_approved' ? 'อนุมัติคำขอแล้ว'
-                            : config.endorsementConfigStatus === 'pending_on_ops' ? 'รอดำเนินการ OPS'
-                            : config.endorsementConfigStatus === 'pending_finance' ? 'รอการเงิน'
-                            : config.endorsementConfigStatus === 'invalid' ? 'ไม่ถูกต้อง'
-                            : '-'}
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="space-y-1">
-                        <div className="font-medium text-foreground">{config.descriptionEn}</div>
-                        <div className="text-xs text-muted-foreground">{config.descriptionTh}</div>
-                      </div>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-sm">
-                    {assignmentOptions.find(o => o.value === config.assignment)?.label || config.assignment}
-                  </td>
-                  <td className="px-4 py-3 text-sm">{getTeamDisplay(config)}</td>
-                  <td className="px-4 py-3 text-sm">
-                    {config.configType === 'endorsement' ? '-' : getStageLabels(config.stages || [])}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-center">
-                    <span className="px-2 py-0.5 rounded text-xs font-medium bg-muted text-muted-foreground">
-                      {config.partyType === 'external' ? 'External' : 'Internal'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-center">
-                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                      config.policyScope === 'vmi' 
-                        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' 
-                        : config.policyScope === 'cmi'
-                        ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
-                        : 'bg-muted text-muted-foreground'
-                    }`}>
-                      {config.policyScope === 'vmi' ? 'VMI' : config.policyScope === 'cmi' ? 'CMI' : 'Both'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-center">
-                    <span className={config.movesToCancellation ? 'text-green-500' : 'text-muted-foreground'}>
-                      {config.movesToCancellation ? 'ON' : 'OFF'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-center">
-                    {config.automationEnabled ? (
-                      <span className="px-2 py-0.5 rounded text-xs font-medium bg-muted text-muted-foreground">
-                        {config.automationType === 'auto_resolve' ? 'Resolve' : 'Reassign'}
-                      </span>
-                    ) : (
-                      <span className="text-muted-foreground">OFF</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-center">
-                    {config.automationEnabled && config.automationType === 'auto_reassign' && config.automationDays ? `${config.automationDays} days` : '-'}
-                  </td>
-                  <td className="px-4 py-3 text-sm">
-                    {(() => {
-                      if (!config.automationEnabled) return '-';
-                      if (config.automationType === 'auto_resolve') {
+                    </td>
+                    <td className="px-4 py-3 text-sm text-center">
+                      {config.automationEnabled ? (
+                        <span className="px-2 py-0.5 rounded text-xs font-medium bg-muted text-muted-foreground">
+                          {config.automationType === 'auto_resolve' ? 'Resolve' : 'Reassign'}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">OFF</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-center">
+                      {config.automationEnabled && config.automationType === 'auto_reassign' && config.automationDays ? `${config.automationDays} days` : '-'}
+                    </td>
+                    <td className="px-4 py-3 text-sm">
+                      {(() => {
+                        if (!config.automationEnabled) return '-';
+                        if (config.automationType === 'auto_resolve') {
+                          return (
+                            <span className="text-xs text-muted-foreground italic">
+                              Auto-resolve on selected date
+                            </span>
+                          );
+                        }
+                        const target = getTargetReasonLabel(config.targetReason);
+                        if (!target) return '-';
                         return (
-                          <span className="text-xs text-muted-foreground italic">
-                            Auto-resolve on selected date
-                          </span>
+                          <div className="space-y-1">
+                            <div className="font-medium text-foreground">{target.en}</div>
+                            <div className="text-xs text-muted-foreground">{target.th}</div>
+                          </div>
                         );
-                      }
-                      const target = getTargetReasonLabel(config.targetReason);
-                      if (!target) return '-';
-                      return (
-                        <div className="space-y-1">
-                          <div className="font-medium text-foreground">{target.en}</div>
-                          <div className="text-xs text-muted-foreground">{target.th}</div>
-                        </div>
-                      );
-                    })()}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center justify-end gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => openDialog(config)}
-                        className="h-8 w-8 p-0"
-                      >
-                        <Pencil className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDelete(config.id)}
-                        className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                      })()}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => openDialog(config)}
+                          className="h-8 w-8 p-0"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDelete(config.id)}
+                          className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
 
-        {/* Pagination */}
         <TablePagination
           currentPage={currentPage}
           totalPages={totalPages}

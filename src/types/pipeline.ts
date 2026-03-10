@@ -287,7 +287,7 @@ export interface Lead {
   etaDaysOverdue?: number;
 }
 
-export type AssignmentType = 'round_robin' | 'rf_sc' | 'rf' | 'admin' | 'delivery' | 'requestor' | 'none';
+export type AssignmentType = 'round_robin' | 'rf_sc' | 'rf' | 'requestor' | 'none';
 
 // Automation type for rework configs
 export type AutomationType = 'auto_reassign' | 'auto_resolve';
@@ -299,8 +299,11 @@ export type PolicyScopeType = 'vmi' | 'cmi' | 'both';
 export type ReworkPartyType = 'internal' | 'external' | 'both';
 export type PartyType = ReworkPartyType;
 
-// Configuration type: standard rework or endorsement
-export type ReworkConfigType = 'rework' | 'endorsement';
+// Configuration type: rework, endorsement, policy, lead, or renewal
+export type ReworkConfigType = 'rework' | 'endorsement' | 'policy' | 'lead' | 'renewal';
+
+// Sticky column type - which existing assignee column to reference
+export type StickyColumnType = 'rf' | 'sc' | 'de' | 'admin' | 'delivery';
 
 // Endorsement config type
 export type EndorsementConfigType = 'policy_endorsement' | 'policy_cancellation';
@@ -312,9 +315,9 @@ export interface ReworkConfig {
   team: string;
   teamMembers: string[];
   automationEnabled: boolean;
-  automationType?: AutomationType; // 'auto_reassign' reassigns to target reason, 'auto_resolve' auto-resolves and re-runs waterfall
+  automationType?: AutomationType;
   automationDays?: number;
-  targetReason?: string; // Only used when automationType === 'auto_reassign'
+  targetReason?: string;
   assignment: AssignmentType;
   stages: PipelineStage[];
   movesToCancellation?: boolean;
@@ -323,6 +326,8 @@ export interface ReworkConfig {
   configType?: ReworkConfigType;
   endorsementConfigType?: EndorsementType;
   endorsementConfigStatus?: EndorsementStatus;
+  stickyColumn?: StickyColumnType;
+  statusFilter?: string; // Selected status for policy/lead/renewal types
 }
 
 export interface PipelineTab {
