@@ -302,8 +302,11 @@ export type PartyType = ReworkPartyType;
 // Configuration type: rework, endorsement, policy, lead, or renewal
 export type ReworkConfigType = 'rework' | 'endorsement' | 'policy' | 'lead' | 'renewal';
 
-// Sticky column type - which existing assignee column to reference
-export type StickyColumnType = 'rf' | 'sc' | 'de' | 'admin' | 'delivery';
+// Issuance method for Pending Issuance policy configs
+export type IssuanceMethod = 'api' | 'email' | 'manual';
+
+// Delivery method for Policy Uploaded / Policy Shipped configs
+export type DeliveryMethodType = 'print_by_fairdee' | 'print_by_myself' | 'e_policy';
 
 // Endorsement config type
 export type EndorsementConfigType = 'policy_endorsement' | 'policy_cancellation';
