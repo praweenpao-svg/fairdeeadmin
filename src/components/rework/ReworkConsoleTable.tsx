@@ -79,13 +79,21 @@ const endorsementStatusOptions: { value: EndorsementStatus; label: string }[] = 
   { value: 'invalid', label: 'Invalid' },
 ];
 
-const stickyColumnOptions: { value: StickyColumnType; label: string }[] = [
-  { value: 'rf', label: 'RF' },
-  { value: 'sc', label: 'SC' },
-  { value: 'de', label: 'DE' },
-  { value: 'admin', label: 'Admin' },
-  { value: 'delivery', label: 'Delivery' },
+const issuanceMethodOptions: { value: IssuanceMethod; label: string }[] = [
+  { value: 'api', label: 'API' },
+  { value: 'email', label: 'Email' },
+  { value: 'manual', label: 'Manual' },
 ];
+
+const deliveryMethodOptions: { value: DeliveryMethodType; label: string }[] = [
+  { value: 'print_by_fairdee', label: 'Print by FairDee' },
+  { value: 'print_by_myself', label: 'Print by Myself' },
+  { value: 'e_policy', label: 'E-Policy' },
+];
+
+// Statuses that have a dynamic method sub-field
+const statusesWithIssuanceMethod = ['pending_issuance'];
+const statusesWithDeliveryMethod = ['policy_issued', 'policy_shipped'];
 
 // Status options per config type
 const policyStatusOptions: { value: string; label: string }[] = [
