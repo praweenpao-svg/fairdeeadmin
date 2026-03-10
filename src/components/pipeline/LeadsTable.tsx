@@ -302,6 +302,7 @@ const teamRosters: Record<string, string[]> = {
   'AST SC': ['Lisa', 'Mike', 'Nina'],
   'DE': ['Oscar', 'Paula', 'Quinn'],
   'Admin': ['Rachel', 'Sam', 'Tina'],
+  'Delivery': ['Dao', 'Kai', 'Ploy'],
 };
 
 function getStaffByTeam(team: string) {
@@ -324,6 +325,16 @@ function getSCStaff() {
 // Get DE staff (DE team)
 function getDEStaff() {
   return mockStaffMembers.filter(staff => staff.team === 'DE');
+}
+
+// Get Admin staff (Admin team)
+function getAdminStaff() {
+  return mockStaffMembers.filter(staff => staff.team === 'Admin');
+}
+
+// Get Delivery staff (Delivery team)
+function getDeliveryStaff() {
+  return mockStaffMembers.filter(staff => staff.team === 'Delivery');
 }
 
 // Round robin state per team
