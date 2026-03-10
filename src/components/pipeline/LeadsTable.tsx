@@ -639,7 +639,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
     // If any policy is still in active rework, keep lead-level rework priority + owner
     const leadAfter: Lead = { ...lead, policyRecords: updatedRecords };
     const active = getLeadActivePolicyRework(leadAfter);
-    const nextOwner = active ? computeReworkOwner(lead, active.entry.reasonId) : undefined;
+    const nextOwner = active ? computeReworkOwner(lead, active.entry.reasonId, updatedRecords.find(r => r.reworkHistory?.some(e => e.id === active.entry.id))) : undefined;
 
     onLeadUpdate?.(lead.id, {
       policyRecords: updatedRecords,
