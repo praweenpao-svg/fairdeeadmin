@@ -663,7 +663,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
 
     const reworkConfig = reworkConfigs.find(r => r.id === newReasonId);
     const reasonLabel = reworkConfig?.descriptionEn || 'Unknown';
-    const newOwner = computeReworkOwner(lead, newReasonId);
+    const newOwner = computeReworkOwner(lead, newReasonId, lead.policyRecords?.find(r => r.id === policyId));
 
     const policy = lead.policyRecords.find(r => r.id === policyId);
     const targetEntry = policy?.reworkHistory?.find(e => e.id === entryId);
