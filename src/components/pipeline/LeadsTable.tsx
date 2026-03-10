@@ -2218,6 +2218,12 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
                                 <div className="w-[150px] shrink-0">
                                   {language === 'th' ? 'สถานะกรมธรรม์' : 'Policy Status'}
                                 </div>
+                                <div className="w-[130px] shrink-0">
+                                  Admin
+                                </div>
+                                <div className="w-[130px] shrink-0">
+                                  Delivery
+                                </div>
                                 <div className="w-[100px] shrink-0">
                                   {language === 'th' ? 'ผู้รับผิดชอบ' : 'Owner'}
                                 </div>
