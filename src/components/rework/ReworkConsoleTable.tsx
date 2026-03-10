@@ -150,8 +150,8 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
   };
 
   const handleSave = () => {
-    // If RF/SC, RF, Requestor, or none, clear team since it's not used
-    const teamValue = formData.assignment === 'rf_sc' || formData.assignment === 'rf' || formData.assignment === 'requestor' || formData.assignment === 'none' ? '' : (formData.team || '');
+    // If RF/SC, RF, Admin, Delivery, Requestor, or none, clear team since it's not used
+    const teamValue = formData.assignment === 'rf_sc' || formData.assignment === 'rf' || formData.assignment === 'admin' || formData.assignment === 'delivery' || formData.assignment === 'requestor' || formData.assignment === 'none' ? '' : (formData.team || '');
     
     // For endorsement type, force pre-selected values
     const isEndorsement = formData.configType === 'endorsement';
