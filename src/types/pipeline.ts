@@ -329,8 +329,9 @@ export interface ReworkConfig {
   configType?: ReworkConfigType;
   endorsementConfigType?: EndorsementType;
   endorsementConfigStatus?: EndorsementStatus;
-  stickyColumn?: StickyColumnType;
   statusFilter?: string; // Selected status for policy/lead/renewal types
+  issuanceMethod?: IssuanceMethod; // For pending_issuance policy configs
+  deliveryMethod?: DeliveryMethodType; // For policy_issued/policy_shipped policy configs
 }
 
 export interface PipelineTab {
