@@ -12,6 +12,8 @@ const agents = [
 const rfStaff = ['Ricky', 'Jenny', 'Tommy'];
 const scStaff = ['Lisa', 'Mike', 'Nina'];
 const deStaff = ['Oscar', 'Paula', 'Quinn', 'Pao'];
+const adminStaff = ['Rachel', 'Sam', 'Tina'];
+const deliveryStaff = ['Dao', 'Kai', 'Ploy'];
 
 // Current user constant
 export const CURRENT_USER = 'Pao';
