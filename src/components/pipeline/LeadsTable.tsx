@@ -1080,7 +1080,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
         ? (policy.reworkHistory?.find(e => !e.resolved)?.previousStatus || policy.status)
         : policy.status as PolicyStatus;
 
-      const assignedOwner = computeReworkOwner(selectedLead, reasonId);
+      const assignedOwner = computeReworkOwner(selectedLead, reasonId, policy);
       const isExternalReason = reworkConfig?.partyType === 'external';
 
       const newPolicyReworkEntry: PolicyReworkEntry = {
