@@ -173,8 +173,9 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
     policyScope: 'both',
     endorsementConfigType: undefined,
     endorsementConfigStatus: undefined,
-    stickyColumn: undefined,
     statusFilter: undefined,
+    issuanceMethod: undefined,
+    deliveryMethod: undefined,
   });
 
   const openDialog = (config?: ReworkConfig) => {
