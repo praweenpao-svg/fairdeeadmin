@@ -227,7 +227,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
   };
 
   const getTeamDisplay = (config: ReworkConfig) => {
-    if (config.assignment === 'rf_sc' || config.assignment === 'rf' || config.assignment === 'requestor' || config.assignment === 'none') {
+    if (config.assignment === 'rf_sc' || config.assignment === 'rf' || config.assignment === 'admin' || config.assignment === 'delivery' || config.assignment === 'requestor' || config.assignment === 'none') {
       return '-';
     }
     return config.team || '-';
