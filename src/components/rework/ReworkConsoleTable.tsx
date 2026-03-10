@@ -480,7 +480,8 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                     onValueChange={(value) => setFormData({ 
                       ...formData, 
                       assignment: value as AssignmentType,
-                      team: value === 'rf_sc' || value === 'rf' || value === 'requestor' || value === 'none' ? '' : formData.team 
+                      team: value === 'rf_sc' || value === 'rf' || value === 'admin' || value === 'delivery' || value === 'requestor' || value === 'none' ? '' : formData.team 
+                    })}
                     })}
                   >
                     <SelectTrigger>
