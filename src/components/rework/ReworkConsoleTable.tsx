@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { ReworkConfig, AssignmentType, PipelineStage, ReworkPartyType, PolicyScopeType, ReworkConfigType, EndorsementType, EndorsementStatus, AutomationType, StickyColumnType } from '@/types/pipeline';
+import { ReworkConfig, AssignmentType, PipelineStage, ReworkPartyType, PolicyScopeType, ReworkConfigType, EndorsementType, EndorsementStatus, AutomationType, IssuanceMethod, DeliveryMethodType } from '@/types/pipeline';
 import { useTeamsStore } from '@/stores/teamsStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -79,13 +79,21 @@ const endorsementStatusOptions: { value: EndorsementStatus; label: string }[] = 
   { value: 'invalid', label: 'Invalid' },
 ];
 
-const stickyColumnOptions: { value: StickyColumnType; label: string }[] = [
-  { value: 'rf', label: 'RF' },
-  { value: 'sc', label: 'SC' },
-  { value: 'de', label: 'DE' },
-  { value: 'admin', label: 'Admin' },
-  { value: 'delivery', label: 'Delivery' },
+const issuanceMethodOptions: { value: IssuanceMethod; label: string }[] = [
+  { value: 'api', label: 'API' },
+  { value: 'email', label: 'Email' },
+  { value: 'manual', label: 'Manual' },
 ];
+
+const deliveryMethodOptions: { value: DeliveryMethodType; label: string }[] = [
+  { value: 'print_by_fairdee', label: 'Print by FairDee' },
+  { value: 'print_by_myself', label: 'Print by Myself' },
+  { value: 'e_policy', label: 'E-Policy' },
+];
+
+// Statuses that have a dynamic method sub-field
+const statusesWithIssuanceMethod = ['pending_issuance'];
+const statusesWithDeliveryMethod = ['policy_issued', 'policy_shipped'];
 
 // Status options per config type
 const policyStatusOptions: { value: string; label: string }[] = [
@@ -165,8 +173,9 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
     policyScope: 'both',
     endorsementConfigType: undefined,
     endorsementConfigStatus: undefined,
-    stickyColumn: undefined,
     statusFilter: undefined,
+    issuanceMethod: undefined,
+    deliveryMethod: undefined,
   });
 
   const openDialog = (config?: ReworkConfig) => {
@@ -191,8 +200,9 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
         policyScope: 'both',
         endorsementConfigType: undefined,
         endorsementConfigStatus: undefined,
-        stickyColumn: undefined,
         statusFilter: undefined,
+        issuanceMethod: undefined,
+        deliveryMethod: undefined,
       });
     }
     setIsDialogOpen(true);
@@ -219,6 +229,37 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
         toast({
           title: 'Already exists',
           description: 'This endorsement status already exists for the selected type.',
+          variant: 'destructive',
+        });
+        return;
+      }
+    }
+
+    // Check for duplicate policy/lead/renewal configs
+    if (typesWithStatus.includes(formData.configType as ReworkConfigType) && formData.statusFilter) {
+      const hasMethodField = formData.configType === 'policy' && (
+        statusesWithIssuanceMethod.includes(formData.statusFilter) || statusesWithDeliveryMethod.includes(formData.statusFilter)
+      );
+      
+      const duplicate = reworkConfigs.some(c => {
+        if (c.id === editingConfig?.id) return false;
+        if (c.configType !== formData.configType || c.statusFilter !== formData.statusFilter) return false;
+        if (hasMethodField) {
+          // For statuses with method sub-field, check method combo
+          if (statusesWithIssuanceMethod.includes(formData.statusFilter!)) {
+            return c.issuanceMethod === formData.issuanceMethod;
+          }
+          if (statusesWithDeliveryMethod.includes(formData.statusFilter!)) {
+            return c.deliveryMethod === formData.deliveryMethod;
+          }
+        }
+        return true; // No method field = max 1 per status
+      });
+
+      if (duplicate) {
+        toast({
+          title: 'Already exists',
+          description: `This ${formData.configType} status configuration already exists.`,
           variant: 'destructive',
         });
         return;
@@ -259,8 +300,9 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
         policyScope,
         endorsementConfigType: isEndorsement ? formData.endorsementConfigType : undefined,
         endorsementConfigStatus: isEndorsement ? formData.endorsementConfigStatus : undefined,
-        stickyColumn: formData.stickyColumn,
         statusFilter: typesWithStatus.includes(formData.configType as ReworkConfigType) ? formData.statusFilter : undefined,
+        issuanceMethod: formData.configType === 'policy' && statusesWithIssuanceMethod.includes(formData.statusFilter || '') ? formData.issuanceMethod : undefined,
+        deliveryMethod: formData.configType === 'policy' && statusesWithDeliveryMethod.includes(formData.statusFilter || '') ? formData.deliveryMethod : undefined,
       };
       onUpdate([...reworkConfigs, newConfig]);
     }
@@ -325,7 +367,14 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
     if (typesWithStatus.includes(config.configType as ReworkConfigType) && config.statusFilter) {
       const statusOpts = getStatusOptionsForType(config.configType);
       const statusLabel = statusOpts.find(o => o.value === config.statusFilter)?.label || config.statusFilter;
-      return { primary: statusLabel, secondary: '' };
+      // Show method as secondary info
+      let methodLabel = '';
+      if (config.issuanceMethod) {
+        methodLabel = issuanceMethodOptions.find(o => o.value === config.issuanceMethod)?.label || '';
+      } else if (config.deliveryMethod) {
+        methodLabel = deliveryMethodOptions.find(o => o.value === config.deliveryMethod)?.label || '';
+      }
+      return { primary: statusLabel, secondary: methodLabel };
     }
     return { primary: config.descriptionEn, secondary: config.descriptionTh };
   };
@@ -338,7 +387,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
       const key = c.configType === 'endorsement'
         ? `endorsement|${c.endorsementConfigType}|${c.endorsementConfigStatus}`
         : typesWithStatus.includes(c.configType as ReworkConfigType)
-        ? `${c.configType}|${c.statusFilter}`
+        ? `${c.configType}|${c.statusFilter}|${c.issuanceMethod || ''}|${c.deliveryMethod || ''}`
         : `${(c.descriptionTh || '').trim().toLowerCase()}|${(c.descriptionEn || '').trim().toLowerCase()}`;
       if (seen.has(key)) continue;
       seen.add(key);
@@ -480,7 +529,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                     <Label htmlFor="statusFilter">Status</Label>
                     <Select 
                       value={formData.statusFilter || '__none__'} 
-                      onValueChange={(value) => setFormData({ ...formData, statusFilter: value === '__none__' ? undefined : value })}
+                      onValueChange={(value) => setFormData({ ...formData, statusFilter: value === '__none__' ? undefined : value, issuanceMethod: undefined, deliveryMethod: undefined })}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select status" />
@@ -636,29 +685,50 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                   </div>
                 )}
 
-                {/* Sticky Column */}
-                <div className="grid gap-2">
-                  <Label htmlFor="stickyColumn">Sticky</Label>
-                  <Select 
-                    value={formData.stickyColumn || '__none__'} 
-                    onValueChange={(value) => setFormData({ ...formData, stickyColumn: value === '__none__' ? undefined : value as StickyColumnType })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select sticky column" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="__none__">None</SelectItem>
-                      {stickyColumnOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-muted-foreground">
-                    If set, checks this column for an existing assignee before using assignment logic
-                  </p>
-                </div>
+                {/* Dynamic Method field for Policy type */}
+                {formData.configType === 'policy' && statusesWithIssuanceMethod.includes(formData.statusFilter || '') && (
+                  <div className="grid gap-2">
+                    <Label>Method</Label>
+                    <Select 
+                      value={formData.issuanceMethod || '__none__'} 
+                      onValueChange={(value) => setFormData({ ...formData, issuanceMethod: value === '__none__' ? undefined : value as IssuanceMethod })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select method" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">Select method</SelectItem>
+                        {issuanceMethodOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                {formData.configType === 'policy' && statusesWithDeliveryMethod.includes(formData.statusFilter || '') && (
+                  <div className="grid gap-2">
+                    <Label>Delivery Method</Label>
+                    <Select 
+                      value={formData.deliveryMethod || '__none__'} 
+                      onValueChange={(value) => setFormData({ ...formData, deliveryMethod: value === '__none__' ? undefined : value as DeliveryMethodType })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select delivery method" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">Select delivery method</SelectItem>
+                        {deliveryMethodOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
 
                 {/* Stages - only for Rework */}
                 {isReworkOnly && (
@@ -819,7 +889,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                 <th className="data-table-header px-4 py-3 text-left min-w-[280px]">Reason</th>
                 <th className="data-table-header px-4 py-3 text-left">Assignment Logic</th>
                 <th className="data-table-header px-4 py-3 text-left">Teams</th>
-                <th className="data-table-header px-4 py-3 text-center">Sticky</th>
+                <th className="data-table-header px-4 py-3 text-center">Method</th>
                 <th className="data-table-header px-4 py-3 text-left">Stages</th>
                 <th className="data-table-header px-4 py-3 text-center">Party</th>
                 <th className="data-table-header px-4 py-3 text-center">VMI/CMI</th>
@@ -852,9 +922,13 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                     </td>
                     <td className="px-4 py-3 text-sm">{getTeamDisplay(config)}</td>
                     <td className="px-4 py-3 text-sm text-center">
-                      {config.stickyColumn ? (
-                        <span className="px-2 py-0.5 rounded text-xs font-medium bg-muted text-muted-foreground uppercase">
-                          {config.stickyColumn}
+                      {config.configType === 'policy' && config.issuanceMethod ? (
+                        <span className="px-2 py-0.5 rounded text-xs font-medium bg-muted text-muted-foreground">
+                          {issuanceMethodOptions.find(o => o.value === config.issuanceMethod)?.label || config.issuanceMethod}
+                        </span>
+                      ) : config.configType === 'policy' && config.deliveryMethod ? (
+                        <span className="px-2 py-0.5 rounded text-xs font-medium bg-muted text-muted-foreground">
+                          {deliveryMethodOptions.find(o => o.value === config.deliveryMethod)?.label || config.deliveryMethod}
                         </span>
                       ) : '-'}
                     </td>
