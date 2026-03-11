@@ -181,6 +181,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [formData, setFormData] = useState<FormData>({ ...defaultFormData });
+  const [typeFilter, setTypeFilter] = useState<string>('all');
 
   const openDialog = (config?: ReworkConfig) => {
     if (config) {
