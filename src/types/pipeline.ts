@@ -289,6 +289,9 @@ export interface Lead {
 
 export type AssignmentType = 'round_robin' | 'rf_sc' | 'rf' | 'requestor' | 'none';
 
+// Sticky column types for assignment configuration
+export type StickyColumnType = 'RF' | 'SC' | 'DE' | 'Admin' | 'Delivery';
+
 // Automation type for rework configs
 export type AutomationType = 'auto_reassign' | 'auto_resolve';
 
@@ -332,6 +335,9 @@ export interface ReworkConfig {
   statusFilter?: string; // Selected status for policy/lead/renewal types
   issuanceMethod?: IssuanceMethod; // For pending_issuance policy configs
   deliveryMethod?: DeliveryMethodType; // For policy_issued/policy_shipped policy configs
+  // Sticky check fields
+  stickyEnabled?: boolean;
+  stickyColumns?: StickyColumnType[];
 }
 
 export interface PipelineTab {
