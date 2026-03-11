@@ -37,7 +37,7 @@ const navItems = [
   { 
     to: '/rework-console', 
     icon: Settings2, 
-    label: { en: 'Rework Console', th: 'จัดการ Rework' }
+    label: { en: 'Assignment Config', th: 'จัดการ Assignment' }
   },
 ];
 
