@@ -181,6 +181,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [formData, setFormData] = useState<FormData>({ ...defaultFormData });
+  const [typeFilter, setTypeFilter] = useState<string>('all');
 
   const openDialog = (config?: ReworkConfig) => {
     if (config) {
@@ -432,9 +433,17 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
     return result;
   })();
 
-  const totalItems = uniqueConfigs.length;
+  const filteredConfigs = typeFilter === 'all'
+    ? uniqueConfigs
+    : uniqueConfigs.filter(c => {
+        if (typeFilter === 'endorse') return c.configType === 'endorsement' && c.endorsementConfigType === 'policy_endorsement';
+        if (typeFilter === 'cancel') return c.configType === 'endorsement' && c.endorsementConfigType === 'policy_cancellation';
+        return c.configType === typeFilter;
+      });
+
+  const totalItems = filteredConfigs.length;
   const totalPages = Math.ceil(totalItems / rowsPerPage) || 1;
-  const paginatedConfigs = uniqueConfigs.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
+  const paginatedConfigs = filteredConfigs.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
 
   const isReworkOnly = formData.configType === 'rework';
   const isMinimalType = typesWithMinimalForm.includes(formData.configType as ReworkConfigType);
@@ -450,13 +459,28 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
             Manage assignment, rework, and endorsement configurations
           </p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button variant="outline" onClick={() => openDialog()}>
-              <Plus className="w-4 h-4 mr-2" />
-              Add Config
-            </Button>
-          </DialogTrigger>
+        <div className="flex items-center gap-2">
+          <Select value={typeFilter} onValueChange={(v) => { setTypeFilter(v); setCurrentPage(1); }}>
+            <SelectTrigger className="w-[160px]">
+              <SelectValue placeholder="Filter by type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Types</SelectItem>
+              <SelectItem value="policy">Policy</SelectItem>
+              <SelectItem value="lead">Lead</SelectItem>
+              <SelectItem value="renewal">Renewal</SelectItem>
+              <SelectItem value="rework">Rework</SelectItem>
+              <SelectItem value="endorse">Endorse</SelectItem>
+              <SelectItem value="cancel">Cancel</SelectItem>
+            </SelectContent>
+          </Select>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" onClick={() => openDialog()}>
+                <Plus className="w-4 h-4 mr-2" />
+                Add Config
+              </Button>
+            </DialogTrigger>
           <DialogContent className="sm:max-w-[550px] max-h-[85vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingConfig ? 'Edit Config' : 'Add New Config'}</DialogTitle>
@@ -781,6 +805,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
             </div>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {/* Table */}
