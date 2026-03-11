@@ -459,13 +459,28 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
             Manage assignment, rework, and endorsement configurations
           </p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button variant="outline" onClick={() => openDialog()}>
-              <Plus className="w-4 h-4 mr-2" />
-              Add Config
-            </Button>
-          </DialogTrigger>
+        <div className="flex items-center gap-2">
+          <Select value={typeFilter} onValueChange={(v) => { setTypeFilter(v); setCurrentPage(1); }}>
+            <SelectTrigger className="w-[160px]">
+              <SelectValue placeholder="Filter by type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Types</SelectItem>
+              <SelectItem value="policy">Policy</SelectItem>
+              <SelectItem value="lead">Lead</SelectItem>
+              <SelectItem value="renewal">Renewal</SelectItem>
+              <SelectItem value="rework">Rework</SelectItem>
+              <SelectItem value="endorse">Endorse</SelectItem>
+              <SelectItem value="cancel">Cancel</SelectItem>
+            </SelectContent>
+          </Select>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" onClick={() => openDialog()}>
+                <Plus className="w-4 h-4 mr-2" />
+                Add Config
+              </Button>
+            </DialogTrigger>
           <DialogContent className="sm:max-w-[550px] max-h-[85vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingConfig ? 'Edit Config' : 'Add New Config'}</DialogTitle>
