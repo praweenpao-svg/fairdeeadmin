@@ -805,6 +805,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
             </div>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {/* Table */}
