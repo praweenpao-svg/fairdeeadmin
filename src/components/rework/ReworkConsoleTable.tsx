@@ -433,9 +433,17 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
     return result;
   })();
 
-  const totalItems = uniqueConfigs.length;
+  const filteredConfigs = typeFilter === 'all'
+    ? uniqueConfigs
+    : uniqueConfigs.filter(c => {
+        if (typeFilter === 'endorse') return c.configType === 'endorsement' && c.endorsementConfigType === 'policy_endorsement';
+        if (typeFilter === 'cancel') return c.configType === 'endorsement' && c.endorsementConfigType === 'policy_cancellation';
+        return c.configType === typeFilter;
+      });
+
+  const totalItems = filteredConfigs.length;
   const totalPages = Math.ceil(totalItems / rowsPerPage) || 1;
-  const paginatedConfigs = uniqueConfigs.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
+  const paginatedConfigs = filteredConfigs.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
 
   const isReworkOnly = formData.configType === 'rework';
   const isMinimalType = typesWithMinimalForm.includes(formData.configType as ReworkConfigType);
