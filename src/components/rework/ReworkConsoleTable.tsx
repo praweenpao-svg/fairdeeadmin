@@ -714,7 +714,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                           <SelectTrigger><SelectValue placeholder="Select team" /></SelectTrigger>
                           <SelectContent>
                             <SelectItem value="__none__">Select team</SelectItem>
-                            {availableTeams.map(t => <SelectItem key={t.name} value={t.name}>{t.name}{t.stickyColumn ? ` (${t.stickyColumn})` : ''}</SelectItem>)}
+                            {availableTeams.map(t => <SelectItem key={t.name} value={t.name}>{t.name}</SelectItem>)}
                           </SelectContent>
                         </Select>
                         {firstStickyCol && (
