@@ -1,12 +1,18 @@
 import { useState } from 'react';
-import { Pencil, Trash2, Plus, X } from 'lucide-react';
-import { useTeamsStore, TeamEntry } from '@/stores/teamsStore';
+import { Pencil, Trash2, Plus } from 'lucide-react';
+import { useTeamsStore } from '@/stores/teamsStore';
 import { StickyColumnType } from '@/types/pipeline';
+import { mockStaffMembers } from '@/data/mockStaff';
+import { toast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle,
+} from '@/components/ui/dialog';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -21,36 +27,49 @@ const stickyColumnOptions: { value: StickyColumnType; label: string }[] = [
 ];
 
 export function TeamListTable() {
-  const { teamEntries, addTeam, updateTeam, updateTeamStickyColumn, deleteTeam } = useTeamsStore();
+  const { teamEntries, addTeam, updateTeam, deleteTeam } = useTeamsStore();
   const [newTeamName, setNewTeamName] = useState('');
   const [newStickyColumn, setNewStickyColumn] = useState<StickyColumnType | null>(null);
-  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editName, setEditName] = useState('');
+  const [editOriginalName, setEditOriginalName] = useState('');
   const [editStickyColumn, setEditStickyColumn] = useState<StickyColumnType | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const handleAdd = () => {
-    if (newTeamName.trim()) {
-      addTeam(newTeamName.trim(), newStickyColumn);
-      setNewTeamName('');
-      setNewStickyColumn(null);
+    const name = newTeamName.trim();
+    if (!name) {
+      toast({ title: 'Validation Error', description: 'Team name is required.', variant: 'destructive' });
+      return;
     }
+    if (teamEntries.some(t => t.name === name)) {
+      toast({ title: 'Already exists', description: `Team "${name}" already exists.`, variant: 'destructive' });
+      return;
+    }
+    addTeam(name, newStickyColumn);
+    setNewTeamName('');
+    setNewStickyColumn(null);
   };
 
-  const startEdit = (index: number) => {
-    const entry = teamEntries[index];
-    setEditingIndex(index);
+  const openEdit = (entry: { name: string; stickyColumn: StickyColumnType | null }) => {
+    setEditOriginalName(entry.name);
     setEditName(entry.name);
     setEditStickyColumn(entry.stickyColumn);
+    setEditDialogOpen(true);
   };
 
   const handleSaveEdit = () => {
-    if (editingIndex === null) return;
-    const oldName = teamEntries[editingIndex].name;
-    if (editName.trim()) {
-      updateTeam(oldName, editName.trim(), editStickyColumn);
+    const name = editName.trim();
+    if (!name) {
+      toast({ title: 'Validation Error', description: 'Team name is required.', variant: 'destructive' });
+      return;
     }
-    setEditingIndex(null);
+    if (name !== editOriginalName && teamEntries.some(t => t.name === name)) {
+      toast({ title: 'Already exists', description: `Team "${name}" already exists.`, variant: 'destructive' });
+      return;
+    }
+    updateTeam(editOriginalName, name, editStickyColumn);
+    setEditDialogOpen(false);
   };
 
   const handleConfirmDelete = () => {
@@ -60,18 +79,20 @@ export function TeamListTable() {
     }
   };
 
+  // Count members from mock staff data per team
+  const getMemberCount = (teamName: string) => mockStaffMembers.filter(s => s.team === teamName).length;
+  const getMemberNames = (teamName: string) => mockStaffMembers.filter(s => s.team === teamName).map(s => s.name);
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold">Team List</h2>
-          <p className="text-sm text-muted-foreground">
-            Manage teams and their sticky column mappings
-          </p>
+          <p className="text-sm text-muted-foreground">Manage teams and their sticky column mappings</p>
         </div>
       </div>
 
-      {/* Add new team row */}
+      {/* Add new team */}
       <div className="flex items-center gap-2">
         <Input
           value={newTeamName}
@@ -108,79 +129,49 @@ export function TeamListTable() {
                 <th className="data-table-header px-4 py-3 text-left">#</th>
                 <th className="data-table-header px-4 py-3 text-left">Team Name</th>
                 <th className="data-table-header px-4 py-3 text-left">Sticky Column</th>
-                <th className="data-table-header px-4 py-3 text-center">Members</th>
+                <th className="data-table-header px-4 py-3 text-left">Members</th>
                 <th className="data-table-header px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {teamEntries.map((entry, index) => (
-                <tr key={entry.name} className="data-table-row">
-                  <td className="px-4 py-3 text-sm text-muted-foreground">{index + 1}</td>
-                  {editingIndex === index ? (
-                    <>
-                      <td className="px-4 py-3">
-                        <Input
-                          value={editName}
-                          onChange={(e) => setEditName(e.target.value)}
-                          className="h-8 max-w-[200px]"
-                          autoFocus
-                        />
-                      </td>
-                      <td className="px-4 py-3">
-                        <Select
-                          value={editStickyColumn || '__none__'}
-                          onValueChange={(v) => setEditStickyColumn(v === '__none__' ? null : v as StickyColumnType)}
-                        >
-                          <SelectTrigger className="w-[140px] h-8">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="__none__">No mapping</SelectItem>
-                            {stickyColumnOptions.map(o => (
-                              <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </td>
-                      <td className="px-4 py-3 text-center text-sm text-muted-foreground">—</td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button size="sm" variant="outline" onClick={handleSaveEdit} className="h-7 text-xs">
-                            Save
-                          </Button>
-                          <Button size="sm" variant="ghost" onClick={() => setEditingIndex(null)} className="h-7 w-7 p-0">
-                            <X className="w-3.5 h-3.5" />
-                          </Button>
-                        </div>
-                      </td>
-                    </>
-                  ) : (
-                    <>
-                      <td className="px-4 py-3 text-sm font-medium">{entry.name}</td>
-                      <td className="px-4 py-3 text-sm">
-                        {entry.stickyColumn ? (
-                          <span className="px-2 py-0.5 rounded text-xs font-medium bg-muted text-muted-foreground">
-                            {entry.stickyColumn}
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground">—</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-center text-sm text-muted-foreground">—</td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button variant="ghost" size="sm" onClick={() => startEdit(index)} className="h-8 w-8 p-0">
-                            <Pencil className="w-4 h-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm" onClick={() => setDeleteTarget(entry.name)} className="h-8 w-8 p-0 text-destructive hover:text-destructive">
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </td>
-                    </>
-                  )}
-                </tr>
-              ))}
+              {teamEntries.map((entry, index) => {
+                const memberCount = getMemberCount(entry.name);
+                const memberNames = getMemberNames(entry.name);
+                return (
+                  <tr key={entry.name} className="data-table-row">
+                    <td className="px-4 py-3 text-sm text-muted-foreground">{index + 1}</td>
+                    <td className="px-4 py-3 text-sm font-medium">{entry.name}</td>
+                    <td className="px-4 py-3 text-sm">
+                      {entry.stickyColumn ? (
+                        <span className="px-2 py-0.5 rounded text-xs font-medium bg-muted text-muted-foreground">
+                          {entry.stickyColumn}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-sm">
+                      {memberCount > 0 ? (
+                        <span className="text-muted-foreground" title={memberNames.join(', ')}>
+                          {memberCount} ({memberNames.join(', ')})
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">0</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center justify-end gap-1">
+                        <Button variant="ghost" size="sm" onClick={() => openEdit(entry)} className="h-8 w-8 p-0">
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => setDeleteTarget(entry.name)} className="h-8 w-8 p-0 text-destructive hover:text-destructive">
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
               {teamEntries.length === 0 && (
                 <tr>
                   <td colSpan={5} className="px-4 py-8 text-center text-sm text-muted-foreground">
@@ -192,6 +183,40 @@ export function TeamListTable() {
           </table>
         </div>
       </div>
+
+      {/* Edit Team Modal */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle>Edit Team</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label>Team Name</Label>
+              <Input value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Team name" />
+            </div>
+            <div className="grid gap-2">
+              <Label>Sticky Column</Label>
+              <Select
+                value={editStickyColumn || '__none__'}
+                onValueChange={(v) => setEditStickyColumn(v === '__none__' ? null : v as StickyColumnType)}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">No mapping</SelectItem>
+                  {stickyColumnOptions.map(o => (
+                    <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleSaveEdit}>Save</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Delete confirmation */}
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>

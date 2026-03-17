@@ -15,7 +15,7 @@ import {
 
 export function StaffTimingTable() {
   const [staff, setStaff] = useState<StaffMember[]>(mockStaffMembers);
-  const { teams } = useTeamsStore();
+  const { teams, teamEntries } = useTeamsStore();
   const [isAddTimingsOpen, setIsAddTimingsOpen] = useState(false);
   const [editingStaff, setEditingStaff] = useState<StaffMember | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -40,6 +40,12 @@ export function StaffTimingTable() {
     }
     setIsAddTimingsOpen(false);
     setEditingStaff(null);
+  };
+
+  const getStickyColumnForTeam = (teamName: string | null) => {
+    if (!teamName) return null;
+    const entry = teamEntries.find(t => t.name === teamName);
+    return entry?.stickyColumn || null;
   };
 
   const totalItems = staff.length;
@@ -119,6 +125,7 @@ export function StaffTimingTable() {
                 <th className="data-table-header px-4 py-3 text-left">Staff</th>
                 <th className="data-table-header px-4 py-3 text-left">Email</th>
                 <th className="data-table-header px-4 py-3 text-left">Team</th>
+                <th className="data-table-header px-4 py-3 text-left">Sticky Column</th>
                 <th className="data-table-header px-4 py-3 text-left">Start time</th>
                 <th className="data-table-header px-4 py-3 text-left">End time</th>
                 <th className="data-table-header px-4 py-3 text-left">Shift 2 start</th>
@@ -128,31 +135,43 @@ export function StaffTimingTable() {
               </tr>
             </thead>
             <tbody>
-              {paginatedStaff.map((member) => (
-                <tr key={member.id} className="data-table-row">
-                  <td className="px-4 py-3 text-sm font-medium">{member.name}</td>
-                  <td className="px-4 py-3 text-sm text-muted-foreground">{member.email}</td>
-                  <td className="px-4 py-3">
-                    <Select value={member.team || '__none__'} onValueChange={(value) => handleTeamChange(member.id, value === '__none__' ? null : value)}>
-                      <SelectTrigger className="w-[140px] h-8 text-xs"><SelectValue placeholder="Select team" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="__none__">Select team</SelectItem>
-                        {teams.map((team) => <SelectItem key={team} value={team}>{team}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </td>
-                  <td className="px-4 py-3 text-sm">{member.startTime}</td>
-                  <td className="px-4 py-3 text-sm">{member.endTime}</td>
-                  <td className="px-4 py-3 text-sm">{member.shift2StartTime}</td>
-                  <td className="px-4 py-3 text-sm">{member.shift2EndTime}</td>
-                  <td className="px-4 py-3 text-center">
-                    <Button variant="outline" size="sm" onClick={() => openEditStaff(member)} className="h-7 px-3 text-xs text-primary border-primary hover:bg-primary/10">Edit</Button>
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <Button variant="outline" size="sm" onClick={() => handleDeleteStaff(member.id)} className="h-7 px-3 text-xs">Delete</Button>
-                  </td>
-                </tr>
-              ))}
+              {paginatedStaff.map((member) => {
+                const stickyCol = getStickyColumnForTeam(member.team);
+                return (
+                  <tr key={member.id} className="data-table-row">
+                    <td className="px-4 py-3 text-sm font-medium">{member.name}</td>
+                    <td className="px-4 py-3 text-sm text-muted-foreground">{member.email}</td>
+                    <td className="px-4 py-3">
+                      <Select value={member.team || '__none__'} onValueChange={(value) => handleTeamChange(member.id, value === '__none__' ? null : value)}>
+                        <SelectTrigger className="w-[140px] h-8 text-xs"><SelectValue placeholder="Select team" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="__none__">Select team</SelectItem>
+                          {teams.map((team) => <SelectItem key={team} value={team}>{team}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </td>
+                    <td className="px-4 py-3 text-sm">
+                      {stickyCol ? (
+                        <span className="px-2 py-0.5 rounded text-xs font-medium bg-muted text-muted-foreground">
+                          {stickyCol}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-sm">{member.startTime}</td>
+                    <td className="px-4 py-3 text-sm">{member.endTime}</td>
+                    <td className="px-4 py-3 text-sm">{member.shift2StartTime}</td>
+                    <td className="px-4 py-3 text-sm">{member.shift2EndTime}</td>
+                    <td className="px-4 py-3 text-center">
+                      <Button variant="outline" size="sm" onClick={() => openEditStaff(member)} className="h-7 px-3 text-xs text-primary border-primary hover:bg-primary/10">Edit</Button>
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <Button variant="outline" size="sm" onClick={() => handleDeleteStaff(member.id)} className="h-7 px-3 text-xs">Delete</Button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
