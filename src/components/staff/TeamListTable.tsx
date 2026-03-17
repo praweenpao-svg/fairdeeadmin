@@ -28,6 +28,7 @@ const stickyColumnOptions: { value: StickyColumnType; label: string }[] = [
 
 export function TeamListTable() {
   const { teamEntries, addTeam, updateTeam, deleteTeam } = useTeamsStore();
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [newTeamName, setNewTeamName] = useState('');
   const [newStickyColumn, setNewStickyColumn] = useState<StickyColumnType | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -49,6 +50,7 @@ export function TeamListTable() {
     addTeam(name, newStickyColumn);
     setNewTeamName('');
     setNewStickyColumn(null);
+    setAddDialogOpen(false);
   };
 
   const openEdit = (entry: { name: string; stickyColumn: StickyColumnType | null }) => {
@@ -90,33 +92,9 @@ export function TeamListTable() {
           <h2 className="text-lg font-semibold">Team List</h2>
           <p className="text-sm text-muted-foreground">Manage teams and their sticky column mappings</p>
         </div>
-      </div>
-
-      {/* Add new team */}
-      <div className="flex items-center gap-2">
-        <Input
-          value={newTeamName}
-          onChange={(e) => setNewTeamName(e.target.value)}
-          placeholder="New team name"
-          className="max-w-[220px]"
-          onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
-        />
-        <Select
-          value={newStickyColumn || '__none__'}
-          onValueChange={(v) => setNewStickyColumn(v === '__none__' ? null : v as StickyColumnType)}
-        >
-          <SelectTrigger className="w-[160px]">
-            <SelectValue placeholder="Sticky Column" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="__none__">No mapping</SelectItem>
-            {stickyColumnOptions.map(o => (
-              <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Button onClick={handleAdd} size="sm" className="gap-1">
-          <Plus className="w-4 h-4" /> Add Team
+        <Button onClick={() => setAddDialogOpen(true)} className="gap-2">
+          <Plus className="w-4 h-4" />
+          Add Team
         </Button>
       </div>
 
@@ -183,6 +161,47 @@ export function TeamListTable() {
           </table>
         </div>
       </div>
+
+      {/* Add Team Modal */}
+      <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle>Add Team</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label>Team Name</Label>
+              <Input
+                value={newTeamName}
+                onChange={(e) => setNewTeamName(e.target.value)}
+                placeholder="Team name"
+                onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label>Sticky Column</Label>
+              <Select
+                value={newStickyColumn || '__none__'}
+                onValueChange={(v) => setNewStickyColumn(v === '__none__' ? null : v as StickyColumnType)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select sticky column" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">No mapping</SelectItem>
+                  {stickyColumnOptions.map(o => (
+                    <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setAddDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleAdd}>Add Team</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Team Modal */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
