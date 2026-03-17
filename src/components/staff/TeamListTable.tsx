@@ -123,15 +123,6 @@ export function TeamListTable() {
                         <span className="text-muted-foreground">—</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-sm">
-                      {memberCount > 0 ? (
-                        <span className="text-muted-foreground" title={memberNames.join(', ')}>
-                          {memberCount} ({memberNames.join(', ')})
-                        </span>
-                      ) : (
-                        <span className="text-muted-foreground">0</span>
-                      )}
-                    </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1">
                         <Button variant="ghost" size="sm" onClick={() => openEdit(entry)} className="h-8 w-8 p-0">
