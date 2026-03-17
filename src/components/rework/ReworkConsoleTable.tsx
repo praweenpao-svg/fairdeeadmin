@@ -174,7 +174,7 @@ const defaultFormData: FormData = {
 };
 
 export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTableProps) {
-  const { teams } = useTeamsStore();
+  const { teams, teamEntries, getTeamsByStickyColumn } = useTeamsStore();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingConfig, setEditingConfig] = useState<ReworkConfig | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
@@ -695,13 +695,31 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
               {formData.assignment === 'round_robin' && (
                 <div className="grid gap-2">
                   <Label>Team</Label>
-                  <Select value={formData.team || '__none__'} onValueChange={(v) => setFormData({ ...formData, team: v === '__none__' ? '' : v })}>
-                    <SelectTrigger><SelectValue placeholder="Select team" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="__none__">Select team</SelectItem>
-                      {teams.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
+                  {(() => {
+                    // If sticky enabled and columns selected, filter teams by #1 sticky column mapping
+                    const firstStickyCol = formData.stickyEnabled && (formData.stickyColumns || []).length > 0
+                      ? formData.stickyColumns![0]
+                      : null;
+                    const availableTeams = firstStickyCol
+                      ? teamEntries.filter(t => t.stickyColumn === firstStickyCol)
+                      : teamEntries;
+                    return (
+                      <>
+                        <Select value={formData.team || '__none__'} onValueChange={(v) => setFormData({ ...formData, team: v === '__none__' ? '' : v })}>
+                          <SelectTrigger><SelectValue placeholder="Select team" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="__none__">Select team</SelectItem>
+                            {availableTeams.map(t => <SelectItem key={t.name} value={t.name}>{t.name}{t.stickyColumn ? ` (${t.stickyColumn})` : ''}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                        {firstStickyCol && (
+                          <p className="text-xs text-muted-foreground">
+                            Filtered by sticky column: <span className="font-medium">{firstStickyCol}</span>
+                          </p>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
               )}
 
