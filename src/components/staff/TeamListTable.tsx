@@ -81,9 +81,6 @@ export function TeamListTable() {
     }
   };
 
-  // Count members from mock staff data per team
-  const getMemberCount = (teamName: string) => mockStaffMembers.filter(s => s.team === teamName).length;
-  const getMemberNames = (teamName: string) => mockStaffMembers.filter(s => s.team === teamName).map(s => s.name);
 
   return (
     <div className="space-y-4">
