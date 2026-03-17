@@ -138,7 +138,7 @@ export function TeamListTable() {
               })}
               {teamEntries.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-sm text-muted-foreground">
+                  <td colSpan={4} className="px-4 py-8 text-center text-sm text-muted-foreground">
                     No teams configured. Add a team above.
                   </td>
                 </tr>
