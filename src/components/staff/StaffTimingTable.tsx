@@ -24,11 +24,10 @@ import {
 export function StaffTimingTable() {
   const [staff, setStaff] = useState<StaffMember[]>(mockStaffMembers);
   const { teams, addTeam, updateTeam, deleteTeam } = useTeamsStore();
-  const [isTeamDialogOpen, setIsTeamDialogOpen] = useState(false);
   const [isAddTimingsOpen, setIsAddTimingsOpen] = useState(false);
   const [editingStaff, setEditingStaff] = useState<StaffMember | null>(null);
-  const [newTeamName, setNewTeamName] = useState('');
-  const [editingTeam, setEditingTeam] = useState<{ index: number; name: string } | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
