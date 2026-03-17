@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Pencil, Trash2, Plus } from 'lucide-react';
 import { useTeamsStore } from '@/stores/teamsStore';
 import { StickyColumnType } from '@/types/pipeline';
-import { mockStaffMembers } from '@/data/mockStaff';
+
 import { toast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
