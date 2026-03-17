@@ -217,11 +217,12 @@ export function TeamListTable() {
             <div className="grid gap-2">
               <Label>Sticky Column</Label>
               <Select
-                value={editStickyColumn || ''}
-                onValueChange={(v) => setEditStickyColumn(v as StickyColumnType)}
+                value={editStickyColumn || '__none__'}
+                onValueChange={(v) => setEditStickyColumn(v === '__none__' ? null : v as StickyColumnType)}
               >
                 <SelectTrigger><SelectValue placeholder="Select sticky column" /></SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="__none__">— Unselected —</SelectItem>
                   {stickyColumnOptions.map(o => (
                     <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
                   ))}
