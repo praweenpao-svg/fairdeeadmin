@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { StickyColumnType } from '@/types/pipeline';
 
 export interface TeamEntry {
@@ -6,7 +6,6 @@ export interface TeamEntry {
   stickyColumn: StickyColumnType | null;
 }
 
-// Default teams with sticky column mapping
 const defaultTeamEntries: TeamEntry[] = [
   { name: 'AST RF', stickyColumn: 'RF' },
   { name: 'AST SC', stickyColumn: 'SC' },
@@ -15,7 +14,6 @@ const defaultTeamEntries: TeamEntry[] = [
   { name: 'Delivery', stickyColumn: 'Delivery' },
 ];
 
-// Simple global state for teams (shared between components)
 let globalTeamEntries: TeamEntry[] = [...defaultTeamEntries];
 let listeners: Set<() => void> = new Set();
 
@@ -26,28 +24,15 @@ function notify() {
 export function useTeamsStore() {
   const [teamEntries, setTeamEntriesState] = useState<TeamEntry[]>(globalTeamEntries);
 
-  const subscribe = useCallback(() => {
+  useEffect(() => {
     const listener = () => setTeamEntriesState([...globalTeamEntries]);
     listeners.add(listener);
-    return () => listeners.delete(listener);
+    // Sync on mount in case global changed before subscribing
+    listener();
+    return () => { listeners.delete(listener); };
   }, []);
 
-  // Subscribe on mount
-  useState(() => {
-    const unsubscribe = subscribe();
-    return unsubscribe;
-  });
-
-  // Derived: plain team name list for backward compat
   const teams = teamEntries.map(t => t.name);
-
-  const setTeams = useCallback((newTeams: string[]) => {
-    globalTeamEntries = newTeams.map(name => {
-      const existing = globalTeamEntries.find(t => t.name === name);
-      return existing || { name, stickyColumn: null };
-    });
-    notify();
-  }, []);
 
   const addTeam = useCallback((name: string, stickyColumn: StickyColumnType | null = null) => {
     if (!globalTeamEntries.some(t => t.name === name)) {
@@ -66,21 +51,10 @@ export function useTeamsStore() {
     return oldName;
   }, []);
 
-  const updateTeamStickyColumn = useCallback((teamName: string, stickyColumn: StickyColumnType | null) => {
-    globalTeamEntries = globalTeamEntries.map(t =>
-      t.name === teamName ? { ...t, stickyColumn } : t
-    );
-    notify();
-  }, []);
-
   const deleteTeam = useCallback((teamName: string) => {
     globalTeamEntries = globalTeamEntries.filter(t => t.name !== teamName);
     notify();
     return teamName;
-  }, []);
-
-  const getTeamByStickyColumn = useCallback((col: StickyColumnType): TeamEntry | undefined => {
-    return globalTeamEntries.find(t => t.stickyColumn === col);
   }, []);
 
   const getTeamsByStickyColumn = useCallback((col: StickyColumnType): TeamEntry[] => {
@@ -90,12 +64,9 @@ export function useTeamsStore() {
   return {
     teams,
     teamEntries,
-    setTeams,
     addTeam,
     updateTeam,
-    updateTeamStickyColumn,
     deleteTeam,
-    getTeamByStickyColumn,
     getTeamsByStickyColumn,
   };
 }
