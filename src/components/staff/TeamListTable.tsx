@@ -43,10 +43,6 @@ export function TeamListTable() {
       toast({ title: 'Validation Error', description: 'Team name is required.', variant: 'destructive' });
       return;
     }
-    if (!newStickyColumn) {
-      toast({ title: 'Validation Error', description: 'Sticky column is required.', variant: 'destructive' });
-      return;
-    }
     if (teamEntries.some(t => t.name === name)) {
       toast({ title: 'Already exists', description: `Team "${name}" already exists.`, variant: 'destructive' });
       return;
@@ -68,10 +64,6 @@ export function TeamListTable() {
     const name = editName.trim();
     if (!name) {
       toast({ title: 'Validation Error', description: 'Team name is required.', variant: 'destructive' });
-      return;
-    }
-    if (!editStickyColumn) {
-      toast({ title: 'Validation Error', description: 'Sticky column is required.', variant: 'destructive' });
       return;
     }
     if (name !== editOriginalName && teamEntries.some(t => t.name === name)) {
@@ -189,13 +181,14 @@ export function TeamListTable() {
             <div className="grid gap-2">
               <Label>Sticky Column</Label>
               <Select
-                value={newStickyColumn || ''}
-                onValueChange={(v) => setNewStickyColumn(v as StickyColumnType)}
+                value={newStickyColumn || '__none__'}
+                onValueChange={(v) => setNewStickyColumn(v === '__none__' ? null : v as StickyColumnType)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select sticky column" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="__none__">— Unselected —</SelectItem>
                   {stickyColumnOptions.map(o => (
                     <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
                   ))}
@@ -224,11 +217,12 @@ export function TeamListTable() {
             <div className="grid gap-2">
               <Label>Sticky Column</Label>
               <Select
-                value={editStickyColumn || ''}
-                onValueChange={(v) => setEditStickyColumn(v as StickyColumnType)}
+                value={editStickyColumn || '__none__'}
+                onValueChange={(v) => setEditStickyColumn(v === '__none__' ? null : v as StickyColumnType)}
               >
                 <SelectTrigger><SelectValue placeholder="Select sticky column" /></SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="__none__">— Unselected —</SelectItem>
                   {stickyColumnOptions.map(o => (
                     <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
                   ))}
