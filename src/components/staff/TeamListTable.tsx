@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Pencil, Trash2, Plus } from 'lucide-react';
 import { useTeamsStore } from '@/stores/teamsStore';
 import { StickyColumnType } from '@/types/pipeline';
-import { mockStaffMembers } from '@/data/mockStaff';
+
 import { toast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -81,9 +81,6 @@ export function TeamListTable() {
     }
   };
 
-  // Count members from mock staff data per team
-  const getMemberCount = (teamName: string) => mockStaffMembers.filter(s => s.team === teamName).length;
-  const getMemberNames = (teamName: string) => mockStaffMembers.filter(s => s.team === teamName).map(s => s.name);
 
   return (
     <div className="space-y-4">
@@ -107,14 +104,12 @@ export function TeamListTable() {
                 <th className="data-table-header px-4 py-3 text-left">#</th>
                 <th className="data-table-header px-4 py-3 text-left">Team Name</th>
                 <th className="data-table-header px-4 py-3 text-left">Sticky Column</th>
-                <th className="data-table-header px-4 py-3 text-left">Members</th>
+                
                 <th className="data-table-header px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
               {teamEntries.map((entry, index) => {
-                const memberCount = getMemberCount(entry.name);
-                const memberNames = getMemberNames(entry.name);
                 return (
                   <tr key={entry.name} className="data-table-row">
                     <td className="px-4 py-3 text-sm text-muted-foreground">{index + 1}</td>
@@ -126,15 +121,6 @@ export function TeamListTable() {
                         </span>
                       ) : (
                         <span className="text-muted-foreground">—</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-sm">
-                      {memberCount > 0 ? (
-                        <span className="text-muted-foreground" title={memberNames.join(', ')}>
-                          {memberCount} ({memberNames.join(', ')})
-                        </span>
-                      ) : (
-                        <span className="text-muted-foreground">0</span>
                       )}
                     </td>
                     <td className="px-4 py-3">
@@ -152,7 +138,7 @@ export function TeamListTable() {
               })}
               {teamEntries.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-sm text-muted-foreground">
+                  <td colSpan={4} className="px-4 py-8 text-center text-sm text-muted-foreground">
                     No teams configured. Add a team above.
                   </td>
                 </tr>
