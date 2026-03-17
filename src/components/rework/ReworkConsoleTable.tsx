@@ -681,7 +681,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                   <Label>Assignment Logic {formData.stickyEnabled ? '(Fallback)' : ''}</Label>
                   <Select
                     value={formData.assignment || 'none'}
-                    onValueChange={(v) => setFormData({ ...formData, assignment: v as AssignmentType, team: v === 'round_robin' ? formData.team : '' })}
+                    onValueChange={(v) => setFormData({ ...formData, assignment: v as AssignmentType, team: '' })}
                   >
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
