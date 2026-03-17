@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Pencil, Trash2, Plus, X, Users } from 'lucide-react';
+import { Pencil, Trash2, Plus } from 'lucide-react';
 import { StaffMember, mockStaffMembers } from '@/data/mockStaff';
 import { useTeamsStore } from '@/stores/teamsStore';
 import { Button } from '@/components/ui/button';
