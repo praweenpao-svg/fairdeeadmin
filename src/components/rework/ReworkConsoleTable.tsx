@@ -352,7 +352,12 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
 
   const handleStickyColumnToggle = (col: StickyColumnType) => {
     const cur = formData.stickyColumns || [];
-    setFormData({ ...formData, stickyColumns: cur.includes(col) ? cur.filter(c => c !== col) : [...cur, col] });
+    const newCols = cur.includes(col) ? cur.filter(c => c !== col) : [...cur, col];
+    // Reset team if #1 sticky column changed
+    const oldFirst = cur.length > 0 ? cur[0] : null;
+    const newFirst = newCols.length > 0 ? newCols[0] : null;
+    const teamReset = oldFirst !== newFirst ? '' : formData.team;
+    setFormData({ ...formData, stickyColumns: newCols, team: teamReset });
   };
 
   // Helpers
