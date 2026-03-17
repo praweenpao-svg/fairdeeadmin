@@ -110,8 +110,6 @@ export function TeamListTable() {
             </thead>
             <tbody>
               {teamEntries.map((entry, index) => {
-                const memberCount = getMemberCount(entry.name);
-                const memberNames = getMemberNames(entry.name);
                 return (
                   <tr key={entry.name} className="data-table-row">
                     <td className="px-4 py-3 text-sm text-muted-foreground">{index + 1}</td>
