@@ -104,7 +104,7 @@ export function TeamListTable() {
                 <th className="data-table-header px-4 py-3 text-left">#</th>
                 <th className="data-table-header px-4 py-3 text-left">Team Name</th>
                 <th className="data-table-header px-4 py-3 text-left">Sticky Column</th>
-                <th className="data-table-header px-4 py-3 text-left">Members</th>
+                
                 <th className="data-table-header px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
