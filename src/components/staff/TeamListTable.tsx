@@ -43,10 +43,6 @@ export function TeamListTable() {
       toast({ title: 'Validation Error', description: 'Team name is required.', variant: 'destructive' });
       return;
     }
-    if (!newStickyColumn) {
-      toast({ title: 'Validation Error', description: 'Sticky column is required.', variant: 'destructive' });
-      return;
-    }
     if (teamEntries.some(t => t.name === name)) {
       toast({ title: 'Already exists', description: `Team "${name}" already exists.`, variant: 'destructive' });
       return;
