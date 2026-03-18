@@ -595,7 +595,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                     <SelectTrigger><SelectValue placeholder="Select delivery method" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="__none__">Select delivery method</SelectItem>
-                      {deliveryMethodOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+                      {selectableDeliveryMethodOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
