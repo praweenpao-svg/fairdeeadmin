@@ -158,17 +158,7 @@ const Index = () => {
     <>
       {/* Header */}
       <header className="sticky top-0 z-30 bg-card border-b border-border">
-        <div className="flex items-center justify-between px-6 py-3">
-          {/* Global Search - Left aligned */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder={language === 'th' ? 'ค้นหา' : 'Search'}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 w-[300px] h-8 text-sm"
-            />
-          </div>
+        <div className="flex items-center justify-end px-6 py-3">
           <div className="flex items-center gap-3">
             <MentionNotificationBell />
             <LanguageToggle />
