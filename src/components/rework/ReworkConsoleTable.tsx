@@ -413,7 +413,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
     if (!c.stickyEnabled) return 'No';
     const cols = c.stickyColumns || [];
     if (!cols.length) return 'No';
-    return `Yes — ${cols.join(' → ')}`;
+    return 'Yes';
   };
 
   const getMethodDisplay = (c: ReworkConfig) => {
