@@ -422,6 +422,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
   };
 
   const getAssignmentDisplay = (c: ReworkConfig) => {
+    if (c.hardCoded) return 'Chatwoot';
     // Legacy rf_sc/rf values display nicely
     if (c.assignment === 'rf_sc') return 'RF/SC';
     if (c.assignment === 'rf') return 'RF';
