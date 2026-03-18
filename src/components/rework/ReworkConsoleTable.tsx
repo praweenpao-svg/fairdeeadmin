@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Info } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import {
   ReworkConfig, AssignmentType, PipelineStage, ReworkPartyType, PolicyScopeType,
@@ -23,6 +23,9 @@ import {
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
+import {
+  Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 interface ReworkConsoleTableProps {
   reworkConfigs: ReworkConfig[];
@@ -89,6 +92,9 @@ const deliveryMethodOptions: { value: DeliveryMethodType; label: string }[] = [
   { value: 'print_by_myself', label: 'Print by Myself' },
   { value: 'e_policy', label: 'E-Policy' },
 ];
+
+// Selectable delivery methods in the form (excludes Print by FairDee per US-25b R-28e)
+const selectableDeliveryMethodOptions = deliveryMethodOptions.filter(o => o.value !== 'print_by_fairdee');
 
 const stickyColumnOptions: { value: StickyColumnType; label: string }[] = [
   { value: 'RF', label: 'RF' },
@@ -195,6 +201,8 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
   };
 
   const handleDelete = (id: string) => {
+    const config = reworkConfigs.find(c => c.id === id);
+    if (config?.hardCoded) return; // Cannot delete hard-coded rows
     onUpdate(reworkConfigs.filter(c => c.id !== id));
     setDeleteTarget(null);
   };
@@ -366,7 +374,10 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
     return stages.map(s => stageOptions.find(o => o.value === s)?.label || s).join(', ');
   };
 
-  const getTeamDisplay = (c: ReworkConfig) => c.assignment === 'round_robin' ? (c.team || '—') : '—';
+  const getTeamDisplay = (c: ReworkConfig) => {
+    if (c.hardCoded) return '—';
+    return c.assignment === 'round_robin' ? (c.team || '—') : '—';
+  };
 
   const getTypeTag = (c: ReworkConfig) => {
     switch (c.configType) {
@@ -398,6 +409,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
   };
 
   const getStickyDisplay = (c: ReworkConfig) => {
+    if (c.hardCoded) return '—';
     if (!c.stickyEnabled) return 'No';
     const cols = c.stickyColumns || [];
     if (!cols.length) return 'No';
@@ -415,6 +427,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
   };
 
   const getAssignmentDisplay = (c: ReworkConfig) => {
+    if (c.hardCoded) return 'Chatwoot';
     // Legacy rf_sc/rf values display nicely
     if (c.assignment === 'rf_sc') return 'RF/SC';
     if (c.assignment === 'rf') return 'RF';
@@ -589,7 +602,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                     <SelectTrigger><SelectValue placeholder="Select delivery method" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="__none__">Select delivery method</SelectItem>
-                      {deliveryMethodOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+                      {selectableDeliveryMethodOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
@@ -832,6 +845,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
       </div>
 
       {/* Table */}
+      <TooltipProvider>
       <div className="bg-card rounded-lg border border-border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -859,7 +873,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                 const reason = getReasonDisplay(config);
                 const isRw = config.configType === 'rework';
                 return (
-                  <tr key={config.id} className="data-table-row">
+                  <tr key={config.id} className={`data-table-row ${config.hardCoded ? 'opacity-60' : ''}`}>
                     {/* TYPE */}
                     <td className="px-4 py-3 text-sm text-center">
                       <span className={`px-2 py-0.5 rounded text-xs font-medium ${tag.cls}`}>{tag.label}</span>
@@ -951,14 +965,27 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                     </td>
                     {/* ACTIONS */}
                     <td className="px-4 py-3">
-                      <div className="flex items-center justify-end gap-1">
-                        <Button variant="ghost" size="sm" onClick={() => openDialog(config)} className="h-8 w-8 p-0">
-                          <Pencil className="w-4 h-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => setDeleteTarget(config.id)} className="h-8 w-8 p-0 text-destructive hover:text-destructive">
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
+                      {config.hardCoded ? (
+                        <div className="flex items-center justify-end">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Info className="w-4 h-4 text-muted-foreground cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent side="left" className="max-w-[280px]">
+                              <p>Delivery assignment for Print by FairDee is handled by Chatwoot printing logic and cannot be configured here.</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-end gap-1">
+                          <Button variant="ghost" size="sm" onClick={() => openDialog(config)} className="h-8 w-8 p-0">
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => setDeleteTarget(config.id)} className="h-8 w-8 p-0 text-destructive hover:text-destructive">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 );
@@ -976,6 +1003,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
           onRowsPerPageChange={(r) => { setRowsPerPage(r); setCurrentPage(1); }}
         />
       </div>
+      </TooltipProvider>
 
       {/* Delete confirmation */}
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
