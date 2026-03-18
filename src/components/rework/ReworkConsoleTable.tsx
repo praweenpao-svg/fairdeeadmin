@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Info } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import {
   ReworkConfig, AssignmentType, PipelineStage, ReworkPartyType, PolicyScopeType,
