@@ -201,6 +201,8 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
   };
 
   const handleDelete = (id: string) => {
+    const config = reworkConfigs.find(c => c.id === id);
+    if (config?.hardCoded) return; // Cannot delete hard-coded rows
     onUpdate(reworkConfigs.filter(c => c.id !== id));
     setDeleteTarget(null);
   };
