@@ -404,6 +404,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
   };
 
   const getStickyDisplay = (c: ReworkConfig) => {
+    if (c.hardCoded) return '—';
     if (!c.stickyEnabled) return 'No';
     const cols = c.stickyColumns || [];
     if (!cols.length) return 'No';
