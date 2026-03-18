@@ -372,7 +372,10 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
     return stages.map(s => stageOptions.find(o => o.value === s)?.label || s).join(', ');
   };
 
-  const getTeamDisplay = (c: ReworkConfig) => c.assignment === 'round_robin' ? (c.team || '—') : '—';
+  const getTeamDisplay = (c: ReworkConfig) => {
+    if (c.hardCoded) return '—';
+    return c.assignment === 'round_robin' ? (c.team || '—') : '—';
+  };
 
   const getTypeTag = (c: ReworkConfig) => {
     switch (c.configType) {
