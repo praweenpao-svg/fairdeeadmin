@@ -194,6 +194,17 @@ const Index = () => {
               />
             );
           })()}
+
+          {/* Tab-specific Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder={language === 'th' ? 'ค้นหา' : 'Search'}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 w-[220px] h-8 text-sm"
+            />
+          </div>
           
           {/* Date Range Filter - before All Filters for Leads stage */}
            {activeStage === 'to_convert' && (
