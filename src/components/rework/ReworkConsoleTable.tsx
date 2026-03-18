@@ -1001,6 +1001,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
           onRowsPerPageChange={(r) => { setRowsPerPage(r); setCurrentPage(1); }}
         />
       </div>
+      </TooltipProvider>
 
       {/* Delete confirmation */}
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
