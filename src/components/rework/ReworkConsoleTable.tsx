@@ -962,14 +962,27 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                     </td>
                     {/* ACTIONS */}
                     <td className="px-4 py-3">
-                      <div className="flex items-center justify-end gap-1">
-                        <Button variant="ghost" size="sm" onClick={() => openDialog(config)} className="h-8 w-8 p-0">
-                          <Pencil className="w-4 h-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => setDeleteTarget(config.id)} className="h-8 w-8 p-0 text-destructive hover:text-destructive">
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
+                      {config.hardCoded ? (
+                        <div className="flex items-center justify-end">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Info className="w-4 h-4 text-muted-foreground cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent side="left" className="max-w-[280px]">
+                              <p>Delivery assignment for Print by FairDee is handled by Chatwoot printing logic and cannot be configured here.</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-end gap-1">
+                          <Button variant="ghost" size="sm" onClick={() => openDialog(config)} className="h-8 w-8 p-0">
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => setDeleteTarget(config.id)} className="h-8 w-8 p-0 text-destructive hover:text-destructive">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 );
