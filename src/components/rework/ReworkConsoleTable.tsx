@@ -93,6 +93,9 @@ const deliveryMethodOptions: { value: DeliveryMethodType; label: string }[] = [
   { value: 'e_policy', label: 'E-Policy' },
 ];
 
+// Selectable delivery methods in the form (excludes Print by FairDee per US-25b R-28e)
+const selectableDeliveryMethodOptions = deliveryMethodOptions.filter(o => o.value !== 'print_by_fairdee');
+
 const stickyColumnOptions: { value: StickyColumnType; label: string }[] = [
   { value: 'RF', label: 'RF' },
   { value: 'SC', label: 'SC' },
