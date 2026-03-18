@@ -24,7 +24,11 @@ const Index = () => {
   const { language } = useLanguageStore();
   const { name: currentUser, team: currentUserTeam } = useCurrentUserStore();
   const [activeStage, setActiveStage] = useState<PipelineStage>('to_convert');
-  const [searchQuery, setSearchQuery] = useState('');
+  // Per-stage search queries
+  const [leadsSearchQuery, setLeadsSearchQuery] = useState('');
+  const [otherStagesSearchQuery, setOtherStagesSearchQuery] = useState('');
+  const searchQuery = activeStage === 'to_convert' ? leadsSearchQuery : otherStagesSearchQuery;
+  const setSearchQuery = activeStage === 'to_convert' ? setLeadsSearchQuery : setOtherStagesSearchQuery;
   const [leads, setLeads] = useState<Lead[]>(mockLeads);
   const [reworkConfigs, setReworkConfigs] = useState<ReworkConfig[]>(mockReworkConfigs);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
