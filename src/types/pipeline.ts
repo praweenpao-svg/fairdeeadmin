@@ -338,6 +338,8 @@ export interface ReworkConfig {
   // Sticky check fields
   stickyEnabled?: boolean;
   stickyColumns?: StickyColumnType[];
+  // Hard-coded rows (e.g., Print by FairDee) — not editable/deletable
+  hardCoded?: boolean;
 }
 
 export interface PipelineTab {
