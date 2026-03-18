@@ -873,7 +873,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                 const reason = getReasonDisplay(config);
                 const isRw = config.configType === 'rework';
                 return (
-                  <tr key={config.id} className="data-table-row">
+                  <tr key={config.id} className={`data-table-row ${config.hardCoded ? 'opacity-60' : ''}`}>
                     {/* TYPE */}
                     <td className="px-4 py-3 text-sm text-center">
                       <span className={`px-2 py-0.5 rounded text-xs font-medium ${tag.cls}`}>{tag.label}</span>
