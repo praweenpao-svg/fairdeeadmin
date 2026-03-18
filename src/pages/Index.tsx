@@ -24,7 +24,11 @@ const Index = () => {
   const { language } = useLanguageStore();
   const { name: currentUser, team: currentUserTeam } = useCurrentUserStore();
   const [activeStage, setActiveStage] = useState<PipelineStage>('to_convert');
-  const [searchQuery, setSearchQuery] = useState('');
+  // Per-stage search queries
+  const [leadsSearchQuery, setLeadsSearchQuery] = useState('');
+  const [otherStagesSearchQuery, setOtherStagesSearchQuery] = useState('');
+  const searchQuery = activeStage === 'to_convert' ? leadsSearchQuery : otherStagesSearchQuery;
+  const setSearchQuery = activeStage === 'to_convert' ? setLeadsSearchQuery : setOtherStagesSearchQuery;
   const [leads, setLeads] = useState<Lead[]>(mockLeads);
   const [reworkConfigs, setReworkConfigs] = useState<ReworkConfig[]>(mockReworkConfigs);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
@@ -154,17 +158,7 @@ const Index = () => {
     <>
       {/* Header */}
       <header className="sticky top-0 z-30 bg-card border-b border-border">
-        <div className="flex items-center justify-between px-6 py-3">
-          {/* Global Search - Left aligned */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder={language === 'th' ? 'ค้นหา' : 'Search'}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 w-[300px] h-8 text-sm"
-            />
-          </div>
+        <div className="flex items-center justify-end px-6 py-3">
           <div className="flex items-center gap-3">
             <MentionNotificationBell />
             <LanguageToggle />
@@ -200,6 +194,17 @@ const Index = () => {
               />
             );
           })()}
+
+          {/* Tab-specific Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder={language === 'th' ? 'ค้นหา' : 'Search'}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 w-[220px] h-8 text-sm"
+            />
+          </div>
           
           {/* Date Range Filter - before All Filters for Leads stage */}
            {activeStage === 'to_convert' && (
