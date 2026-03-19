@@ -171,46 +171,11 @@ export function InlineReworkActions({
             
             <div className="space-y-2">
               <Label className="text-xs">{language === 'th' ? 'เลือกเหตุผลใหม่' : 'Select new reason'}</Label>
-              <Select value={selectedNewReasonId} onValueChange={setSelectedNewReasonId}>
-                <SelectTrigger className="w-full h-8 text-xs">
-                  <SelectValue placeholder={language === 'th' ? 'เลือกเหตุผล' : 'Select reason'} />
-                </SelectTrigger>
-                <SelectContent className="bg-popover z-50">
-                  {(() => {
-                    const filteredConfigs = reworkConfigs.filter((config) => config.id !== latestEntry.reasonId);
-                    const internal = filteredConfigs.filter(c => c.partyType === 'internal');
-                    const external = filteredConfigs.filter(c => c.partyType === 'external');
-                    return (
-                      <>
-                        {internal.length > 0 && (
-                          <>
-                            <div className="px-2 py-1.5 text-[10px] font-semibold text-muted-foreground tracking-wide">
-                              {language === 'th' ? 'ใช้สำหรับ OPS เท่านั้น (ตัวแทนจะไม่เห็นข้อมูลดังกล่าว)' : 'OPS only (agent will not see this)'}
-                            </div>
-                            {internal.map((config) => (
-                              <SelectItem key={config.id} value={config.id} className="text-xs pl-4">
-                                {language === 'th' ? config.descriptionTh : config.descriptionEn}
-                              </SelectItem>
-                            ))}
-                          </>
-                        )}
-                        {external.length > 0 && (
-                          <>
-                            <div className="px-2 py-1.5 text-[10px] font-semibold text-muted-foreground tracking-wide border-t mt-1">
-                              {language === 'th' ? 'ใช้สำหรับ OPS และตัวแทน (ตัวแทนจะเห็นข้อมูลดังกล่าว)' : 'OPS and agent (agent will see this)'}
-                            </div>
-                            {external.map((config) => (
-                              <SelectItem key={config.id} value={config.id} className="text-xs pl-4">
-                                {language === 'th' ? config.descriptionTh : config.descriptionEn}
-                              </SelectItem>
-                            ))}
-                          </>
-                        )}
-                      </>
-                    );
-                  })()}
-                </SelectContent>
-              </Select>
+              <SearchableReasonSelect
+                configs={reworkConfigs.filter((config) => config.id !== latestEntry.reasonId)}
+                value={selectedNewReasonId}
+                onValueChange={setSelectedNewReasonId}
+              />
             </div>
 
             <div className="space-y-2">
