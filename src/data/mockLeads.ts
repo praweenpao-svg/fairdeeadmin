@@ -591,15 +591,16 @@ function generateInsurerQuotes(leadId: string, numQuotes: number = 3): InsurerQu
 
 // Rework reason labels mapping
 const reworkReasonLabels: Record<string, { en: string; th: string }> = {
-  '1': { en: 'Missing Documents', th: 'เอกสารไม่ครบ' },
+  '1': { en: 'Missing Documents', th: 'เอกสารไม่ครบถ้วน' },
   '2': { en: 'Pending Confirmation', th: 'รอยืนยันข้อมูล' },
-  '3': { en: 'Pending Verification', th: 'รอตรวจสอบ' },
-  '4': { en: 'Pending Initial Payment', th: 'รองวดแรก' },
-  '5': { en: 'Pre-submission: Return to AST', th: 'ตีกลับก่อนแจ้งงาน' },
-  '6': { en: 'Reverted by Insurer', th: 'บ.ประกันตีกลับ' },
-  '7': { en: 'Rejected by Insurer', th: 'บ.ประกันปฎิเสธ' },
-  '8': { en: 'Pending Re-submission', th: 'รอแจ้งงานอีกครั้ง' },
-  '9': { en: 'Return to OPS', th: 'ตีกลับให้ OPS' },
+  '3': { en: 'Pending Initial Payment', th: 'รอชำระเงินงวดแรก' },
+  '4': { en: 'Incorrect Information', th: 'ข้อมูลไม่ถูกต้อง' },
+  '5': { en: 'Vehicle Inspection Failed', th: 'ตรวจสภาพรถไม่ผ่าน' },
+  '6': { en: 'Insurer Rejected', th: 'บริษัทประกันปฏิเสธ' },
+  '7': { en: 'Other (External)', th: 'อื่นๆ (ภายนอก)' },
+  '8': { en: 'Incorrect Commission', th: 'ค่าคอมมิชชั่นไม่ถูกต้อง' },
+  '9': { en: 'Wrong Lead Type', th: 'แจ้งงานผิดประเภท' },
+  '10': { en: 'Other (Internal)', th: 'อื่นๆ (ภายใน)' },
 };
 
 // Helper to generate realistic history log entries based on lead's journey stage
