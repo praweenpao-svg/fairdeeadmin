@@ -1,0 +1,157 @@
+import { useState, useRef, useEffect } from 'react';
+import { Check, ChevronsUpDown, Search } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { ReworkConfig } from '@/types/pipeline';
+import { useLanguageStore } from '@/stores/languageStore';
+
+interface SearchableReasonSelectProps {
+  configs: ReworkConfig[];
+  value: string;
+  onValueChange: (value: string) => void;
+  placeholder?: string;
+  className?: string;
+  triggerClassName?: string;
+}
+
+export function SearchableReasonSelect({
+  configs,
+  value,
+  onValueChange,
+  placeholder,
+  className,
+  triggerClassName,
+}: SearchableReasonSelectProps) {
+  const { language } = useLanguageStore();
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const defaultPlaceholder = language === 'th' ? 'เลือกเหตุผล' : 'Select reason';
+  const searchPlaceholder = language === 'th' ? 'ค้นหาเหตุผล...' : 'Search reason...';
+
+  useEffect(() => {
+    if (open) {
+      setSearch('');
+      setTimeout(() => inputRef.current?.focus(), 0);
+    }
+  }, [open]);
+
+  const getLabel = (config: ReworkConfig) =>
+    language === 'th' ? config.descriptionTh : config.descriptionEn;
+
+  const selectedConfig = configs.find(c => c.id === value);
+  const displayLabel = selectedConfig ? getLabel(selectedConfig) : '';
+
+  // Filter by search
+  const filtered = configs.filter(c => {
+    if (!search) return true;
+    const lowerSearch = search.toLowerCase();
+    return (
+      c.descriptionTh.toLowerCase().includes(lowerSearch) ||
+      c.descriptionEn.toLowerCase().includes(lowerSearch)
+    );
+  });
+
+  const internal = filtered.filter(c => c.partyType === 'internal');
+  const external = filtered.filter(c => c.partyType === 'external');
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className={cn(
+            'w-full justify-between font-normal text-xs h-8',
+            !value && 'text-muted-foreground',
+            triggerClassName
+          )}
+        >
+          <span className="truncate">
+            {displayLabel || placeholder || defaultPlaceholder}
+          </span>
+          <ChevronsUpDown className="ml-2 h-3 w-3 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className={cn('p-0 w-[var(--radix-popover-trigger-width)]', className)} align="start">
+        <div className="flex items-center border-b px-3 py-2">
+          <Search className="mr-2 h-3.5 w-3.5 shrink-0 opacity-50" />
+          <input
+            ref={inputRef}
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder={searchPlaceholder}
+            className="flex h-6 w-full bg-transparent text-xs outline-none placeholder:text-muted-foreground"
+          />
+        </div>
+        <div className="max-h-[250px] overflow-y-auto p-1">
+          {internal.length === 0 && external.length === 0 && (
+            <div className="py-4 text-center text-xs text-muted-foreground">
+              {language === 'th' ? 'ไม่พบผลลัพธ์' : 'No results found'}
+            </div>
+          )}
+          {internal.length > 0 && (
+            <>
+              <div className="px-2 py-1.5 text-[10px] font-semibold text-muted-foreground tracking-wide">
+                {language === 'th'
+                  ? 'ใช้สำหรับ OPS เท่านั้น (ตัวแทนจะไม่เห็นข้อมูลดังกล่าว)'
+                  : 'OPS only (agent will not see this)'}
+              </div>
+              {internal.map(config => (
+                <button
+                  key={config.id}
+                  onClick={() => {
+                    onValueChange(config.id);
+                    setOpen(false);
+                  }}
+                  className={cn(
+                    'relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 pl-7 pr-2 text-xs outline-none hover:bg-accent hover:text-accent-foreground',
+                    value === config.id && 'bg-accent'
+                  )}
+                >
+                  {value === config.id && (
+                    <Check className="absolute left-2 h-3 w-3" />
+                  )}
+                  {getLabel(config)}
+                </button>
+              ))}
+            </>
+          )}
+          {external.length > 0 && (
+            <>
+              <div className={cn(
+                'px-2 py-1.5 text-[10px] font-semibold text-muted-foreground tracking-wide',
+                internal.length > 0 && 'border-t mt-1'
+              )}>
+                {language === 'th'
+                  ? 'ใช้สำหรับ OPS และตัวแทน (ตัวแทนจะเห็นข้อมูลดังกล่าว)'
+                  : 'OPS and agent (agent will see this)'}
+              </div>
+              {external.map(config => (
+                <button
+                  key={config.id}
+                  onClick={() => {
+                    onValueChange(config.id);
+                    setOpen(false);
+                  }}
+                  className={cn(
+                    'relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 pl-7 pr-2 text-xs outline-none hover:bg-accent hover:text-accent-foreground',
+                    value === config.id && 'bg-accent'
+                  )}
+                >
+                  {value === config.id && (
+                    <Check className="absolute left-2 h-3 w-3" />
+                  )}
+                  {getLabel(config)}
+                </button>
+              ))}
+            </>
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
