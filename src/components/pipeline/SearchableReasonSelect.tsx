@@ -95,39 +95,9 @@ export function SearchableReasonSelect({
               {language === 'th' ? 'ไม่พบผลลัพธ์' : 'No results found'}
             </div>
           )}
-          {internal.length > 0 && (
-            <>
-              <div className="px-2 py-1.5 text-[10px] font-semibold text-muted-foreground tracking-wide">
-                {language === 'th'
-                  ? 'ใช้สำหรับ OPS เท่านั้น (ตัวแทนจะไม่เห็นข้อมูลดังกล่าว)'
-                  : 'OPS only (agent will not see this)'}
-              </div>
-              {internal.map(config => (
-                <button
-                  key={config.id}
-                  onClick={() => {
-                    onValueChange(config.id);
-                    setOpen(false);
-                  }}
-                  className={cn(
-                    'relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 pl-7 pr-2 text-xs outline-none hover:bg-accent hover:text-accent-foreground',
-                    value === config.id && 'bg-accent'
-                  )}
-                >
-                  {value === config.id && (
-                    <Check className="absolute left-2 h-3 w-3" />
-                  )}
-                  {getLabel(config)}
-                </button>
-              ))}
-            </>
-          )}
           {external.length > 0 && (
             <>
-              <div className={cn(
-                'px-2 py-1.5 text-[10px] font-semibold text-muted-foreground tracking-wide',
-                internal.length > 0 && 'border-t mt-1'
-              )}>
+              <div className="px-2 py-1.5 text-[10px] font-semibold text-muted-foreground tracking-wide">
                 {language === 'th'
                   ? 'ใช้สำหรับ OPS และตัวแทน (ตัวแทนจะเห็นข้อมูลดังกล่าว)'
                   : 'OPS and agent (agent will see this)'}
@@ -140,14 +110,44 @@ export function SearchableReasonSelect({
                     setOpen(false);
                   }}
                   className={cn(
-                    'relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 pl-7 pr-2 text-xs outline-none hover:bg-accent hover:text-accent-foreground',
+                    'relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 pl-7 pr-2 text-xs outline-none hover:bg-accent hover:text-accent-foreground truncate',
                     value === config.id && 'bg-accent'
                   )}
                 >
                   {value === config.id && (
                     <Check className="absolute left-2 h-3 w-3" />
                   )}
-                  {getLabel(config)}
+                  <span className="truncate">{getLabel(config)}</span>
+                </button>
+              ))}
+            </>
+          )}
+          {internal.length > 0 && (
+            <>
+              <div className={cn(
+                'px-2 py-1.5 text-[10px] font-semibold text-muted-foreground tracking-wide',
+                external.length > 0 && 'border-t mt-1'
+              )}>
+                {language === 'th'
+                  ? 'ใช้สำหรับ OPS เท่านั้น (ตัวแทนจะไม่เห็นข้อมูลดังกล่าว)'
+                  : 'OPS only (agent will not see this)'}
+              </div>
+              {internal.map(config => (
+                <button
+                  key={config.id}
+                  onClick={() => {
+                    onValueChange(config.id);
+                    setOpen(false);
+                  }}
+                  className={cn(
+                    'relative flex w-full cursor-pointer select-none items-center rounded-sm py-1.5 pl-7 pr-2 text-xs outline-none hover:bg-accent hover:text-accent-foreground truncate',
+                    value === config.id && 'bg-accent'
+                  )}
+                >
+                  {value === config.id && (
+                    <Check className="absolute left-2 h-3 w-3" />
+                  )}
+                  <span className="truncate">{getLabel(config)}</span>
                 </button>
               ))}
             </>

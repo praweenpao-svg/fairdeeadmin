@@ -879,10 +879,10 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                       <span className={`px-2 py-0.5 rounded text-xs font-medium ${tag.cls}`}>{tag.label}</span>
                     </td>
                     {/* STATUS/REASON */}
-                    <td className="px-4 py-3 text-sm min-w-[220px]">
+                    <td className="px-4 py-3 text-sm min-w-[220px] max-w-[320px]">
                       <div className="space-y-0.5">
-                        <div className="font-medium text-foreground">{reason.primary}</div>
-                        {reason.secondary && <div className="text-xs text-muted-foreground">{reason.secondary}</div>}
+                        <div className="font-medium text-foreground truncate" title={reason.primary}>{reason.primary}</div>
+                        {reason.secondary && <div className="text-xs text-muted-foreground truncate" title={reason.secondary}>{reason.secondary}</div>}
                       </div>
                     </td>
                     {/* STICKY */}
