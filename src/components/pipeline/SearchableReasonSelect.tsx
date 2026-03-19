@@ -76,7 +76,7 @@ export function SearchableReasonSelect({
           <ChevronsUpDown className="ml-2 h-3 w-3 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className={cn('p-0 w-[var(--radix-popover-trigger-width)]', className)} align="start">
+      <PopoverContent className={cn('p-0 w-[480px]', className)} align="start" side="bottom" sideOffset={4}>
         <div className="flex items-center border-b px-3 py-2">
           <Search className="mr-2 h-3.5 w-3.5 shrink-0 opacity-50" />
           <input
@@ -87,7 +87,7 @@ export function SearchableReasonSelect({
             className="flex h-6 w-full bg-transparent text-xs outline-none placeholder:text-muted-foreground"
           />
         </div>
-        <div className="max-h-[250px] overflow-y-auto p-1">
+        <div className="max-h-[280px] overflow-y-auto p-1">
           {internal.length === 0 && external.length === 0 && (
             <div className="py-4 text-center text-xs text-muted-foreground">
               {language === 'th' ? 'ไม่พบผลลัพธ์' : 'No results found'}
