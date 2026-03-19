@@ -13,13 +13,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { MentionTextarea } from '@/components/ui/mention-textarea';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { SearchableReasonSelect } from '@/components/pipeline/SearchableReasonSelect';
 import {
   Popover,
   PopoverContent,
