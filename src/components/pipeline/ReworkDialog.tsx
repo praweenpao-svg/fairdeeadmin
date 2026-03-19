@@ -127,50 +127,16 @@ export function ReworkDialog({ open, onOpenChange, reworkConfigs, onConfirm, lea
         <div className="space-y-4 py-4">
           <div className="space-y-2">
             <Label>{language === 'th' ? 'เหตุผล' : 'Rework Reason'}</Label>
-            <Select value={selectedReasonId} onValueChange={setSelectedReasonId}>
-              <SelectTrigger>
-                <SelectValue placeholder={language === 'th' ? 'เลือกเหตุผล' : 'Select rework reason'} />
-              </SelectTrigger>
-              <SelectContent className="bg-popover z-50">
-                {(() => {
-                  // Filter out endorsement types and by policy scope if policyKind is provided
-                  const reworkOnly = reworkConfigs.filter(c => c.configType === 'rework');
-                  const scopeFiltered = policyKind 
-                    ? reworkOnly.filter(c => c.policyScope === 'both' || c.policyScope === policyKind)
-                    : reworkOnly;
-                  const internal = scopeFiltered.filter(c => c.partyType === 'internal');
-                  const external = scopeFiltered.filter(c => c.partyType === 'external');
-                  return (
-                    <>
-                      {internal.length > 0 && (
-                        <>
-                          <div className="px-2 py-1.5 text-[10px] font-semibold text-muted-foreground tracking-wide">
-                            {language === 'th' ? 'ใช้สำหรับ OPS เท่านั้น (ตัวแทนจะไม่เห็นข้อมูลดังกล่าว)' : 'OPS only (agent will not see this)'}
-                          </div>
-                          {internal.map((config) => (
-                            <SelectItem key={config.id} value={config.id} className="text-xs pl-4">
-                              {language === 'th' ? config.descriptionTh : config.descriptionEn}
-                            </SelectItem>
-                          ))}
-                        </>
-                      )}
-                      {external.length > 0 && (
-                        <>
-                          <div className="px-2 py-1.5 text-[10px] font-semibold text-muted-foreground tracking-wide border-t mt-1">
-                            {language === 'th' ? 'ใช้สำหรับ OPS และตัวแทน (ตัวแทนจะเห็นข้อมูลดังกล่าว)' : 'OPS and agent (agent will see this)'}
-                          </div>
-                          {external.map((config) => (
-                            <SelectItem key={config.id} value={config.id} className="text-xs pl-4">
-                              {language === 'th' ? config.descriptionTh : config.descriptionEn}
-                            </SelectItem>
-                          ))}
-                        </>
-                      )}
-                    </>
-                  );
-                })()}
-              </SelectContent>
-            </Select>
+            <SearchableReasonSelect
+              configs={(() => {
+                const reworkOnly = reworkConfigs.filter(c => c.configType === 'rework');
+                return policyKind 
+                  ? reworkOnly.filter(c => c.policyScope === 'both' || c.policyScope === policyKind)
+                  : reworkOnly;
+              })()}
+              value={selectedReasonId}
+              onValueChange={setSelectedReasonId}
+            />
           </div>
 
           {/* Auto-Resolve Date Picker */}
