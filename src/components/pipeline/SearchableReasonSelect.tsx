@@ -117,7 +117,7 @@ export function SearchableReasonSelect({
                   {value === config.id && (
                     <Check className="absolute left-2 h-3 w-3" />
                   )}
-                  <span className="truncate">{getLabel(config)}</span>
+                  <span className="truncate" title={getLabel(config)}>{getLabel(config)}</span>
                 </button>
               ))}
             </>
@@ -147,7 +147,7 @@ export function SearchableReasonSelect({
                   {value === config.id && (
                     <Check className="absolute left-2 h-3 w-3" />
                   )}
-                  <span className="truncate">{getLabel(config)}</span>
+                  <span className="truncate" title={getLabel(config)}>{getLabel(config)}</span>
                 </button>
               ))}
             </>
