@@ -3,13 +3,7 @@ import { Upload, X, FileText, Image, AlertTriangle, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { SearchableReasonSelect } from '@/components/pipeline/SearchableReasonSelect';
 import {
   Popover,
   PopoverContent,
