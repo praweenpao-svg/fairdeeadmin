@@ -153,6 +153,7 @@ export function SearchableReasonSelect({
             </>
           )}
         </div>
+        </ScrollArea>
       </PopoverContent>
     </Popover>
   );
