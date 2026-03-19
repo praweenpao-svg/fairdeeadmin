@@ -87,7 +87,7 @@ export function SearchableReasonSelect({
             className="flex h-6 w-full bg-transparent text-xs outline-none placeholder:text-muted-foreground"
           />
         </div>
-        <div className="max-h-[280px] overflow-y-auto p-1">
+        <div className="max-h-[280px] overflow-y-scroll p-1">
           {internal.length === 0 && external.length === 0 && (
             <div className="py-4 text-center text-xs text-muted-foreground">
               {language === 'th' ? 'ไม่พบผลลัพธ์' : 'No results found'}
