@@ -467,6 +467,22 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
     const config = reworkConfigs.find(r => r.id === reasonId);
     if (!config) return undefined;
 
+    // Step 1: Check sticky columns first (priority order)
+    if (config.stickyEnabled && config.stickyColumns && config.stickyColumns.length > 0) {
+      for (const col of config.stickyColumns) {
+        let stickyOwner: string | undefined;
+        switch (col) {
+          case 'RF': stickyOwner = lead.rfAssignee; break;
+          case 'SC': stickyOwner = lead.scAssignee; break;
+          case 'DE': stickyOwner = lead.deAssignee; break;
+          case 'Admin': stickyOwner = policy?.adminAssignee; break;
+          case 'Delivery': stickyOwner = policy?.deliveryAssignee; break;
+        }
+        if (stickyOwner) return stickyOwner;
+      }
+    }
+
+    // Step 2: Fallback to assignment logic
     switch (config.assignment) {
       case 'round_robin': {
         if (config.teamMembers && config.teamMembers.length > 0) {
