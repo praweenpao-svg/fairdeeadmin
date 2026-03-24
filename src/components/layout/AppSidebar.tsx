@@ -5,6 +5,7 @@ import {
   PanelLeftClose,
   PanelLeft,
   Settings2,
+  LayoutDashboard,
   Check,
   ChevronUp,
 } from 'lucide-react';
@@ -38,6 +39,11 @@ const navItems = [
     to: '/rework-console', 
     icon: Settings2, 
     label: { en: 'Assignment Config', th: 'จัดการ Assignment' }
+  },
+  { 
+    to: '/ops-dashboard', 
+    icon: LayoutDashboard, 
+    label: { en: 'OPS Dashboard', th: 'OPS Dashboard' }
   },
 ];
 
