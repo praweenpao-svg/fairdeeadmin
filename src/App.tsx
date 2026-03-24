@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import Index from "./pages/Index";
 import StaffTiming from "./pages/StaffTiming";
 import ReworkConsole from "./pages/ReworkConsole";
+import OpsDashboard from "./pages/OpsDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
