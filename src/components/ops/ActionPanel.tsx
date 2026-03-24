@@ -127,7 +127,7 @@ export function ActionPanel({ sale, onUpdate }: ActionPanelProps) {
   };
 
   return (
-    <div className="w-80 shrink-0 sticky top-0 h-screen overflow-y-auto border-l border-border bg-card">
+    <div className="w-80 shrink-0 sticky top-0 h-screen overflow-y-auto border-r border-border bg-card">
       <div className="p-4 space-y-6">
         {/* Panel Title */}
         <div>
