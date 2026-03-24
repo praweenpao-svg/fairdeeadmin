@@ -5,6 +5,7 @@ import {
   PanelLeftClose,
   PanelLeft,
   Settings2,
+  LayoutDashboard,
   Check,
   ChevronUp,
 } from 'lucide-react';
