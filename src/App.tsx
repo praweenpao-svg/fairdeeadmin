@@ -33,6 +33,7 @@ function AppLayout() {
           <Route path="/" element={<Index />} />
           <Route path="/staff-timing" element={<StaffTiming />} />
           <Route path="/rework-console" element={<ReworkConsole />} />
+          <Route path="/ops-dashboard" element={<OpsDashboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

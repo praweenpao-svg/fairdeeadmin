@@ -40,6 +40,11 @@ const navItems = [
     icon: Settings2, 
     label: { en: 'Assignment Config', th: 'จัดการ Assignment' }
   },
+  { 
+    to: '/ops-dashboard', 
+    icon: LayoutDashboard, 
+    label: { en: 'OPS Dashboard', th: 'OPS Dashboard' }
+  },
 ];
 
 // Group staff by team
