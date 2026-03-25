@@ -3,11 +3,15 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { mockStaffMembers } from "@/data/mockStaff";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { User } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export interface MentionTextareaProps extends Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, 'onChange'> {
   value: string;
   onChange: (value: string) => void;
+}
+
+function getInitials(name: string): string {
+  return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 }
 
 const MentionTextarea = React.forwardRef<HTMLTextAreaElement, MentionTextareaProps>(
@@ -20,7 +24,6 @@ const MentionTextarea = React.forwardRef<HTMLTextAreaElement, MentionTextareaPro
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
-    // Combine refs
     const combinedRef = useCallback((node: HTMLTextAreaElement | null) => {
       (textareaRef as React.MutableRefObject<HTMLTextAreaElement | null>).current = node;
       if (typeof ref === 'function') {
@@ -30,30 +33,28 @@ const MentionTextarea = React.forwardRef<HTMLTextAreaElement, MentionTextareaPro
       }
     }, [ref]);
 
-    // Get all staff names for mention
-    const allStaffNames = mockStaffMembers.map(s => s.name);
+    // Internal staff only — external agents excluded (R-03)
+    const staffList = mockStaffMembers.map(s => ({ id: s.id, name: s.name, team: s.team }));
 
-    // Filter staff based on search query
-    const filteredStaff = allStaffNames.filter(name =>
-      name.toLowerCase().includes(searchQuery.toLowerCase())
+    // Case-insensitive prefix matching (R-02)
+    const filteredStaff = staffList.filter(s =>
+      s.name.toLowerCase().startsWith(searchQuery.toLowerCase())
     );
 
     const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       const newValue = e.target.value;
       const cursorPos = e.target.selectionStart || 0;
-      
+
       onChange(newValue);
       setCursorPosition(cursorPos);
 
-      // Check if we're in a mention context
       const textBeforeCursor = newValue.slice(0, cursorPos);
       const lastAtIndex = textBeforeCursor.lastIndexOf('@');
-      
+
       if (lastAtIndex !== -1) {
-        // Check if there's a space between @ and cursor
         const textAfterAt = textBeforeCursor.slice(lastAtIndex + 1);
         const hasSpaceOrNewline = /[\s\n]/.test(textAfterAt);
-        
+
         if (!hasSpaceOrNewline) {
           setMentionStartIndex(lastAtIndex);
           setSearchQuery(textAfterAt);
@@ -75,16 +76,15 @@ const MentionTextarea = React.forwardRef<HTMLTextAreaElement, MentionTextareaPro
       const beforeMention = value.slice(0, mentionStartIndex);
       const afterMention = value.slice(cursorPosition);
       const newValue = `${beforeMention}@${name} ${afterMention}`;
-      
+
       onChange(newValue);
       setShowDropdown(false);
       setMentionStartIndex(-1);
       setSearchQuery('');
 
-      // Focus back on textarea and move cursor
       setTimeout(() => {
         if (textareaRef.current) {
-          const newCursorPos = mentionStartIndex + name.length + 2; // @name + space
+          const newCursorPos = mentionStartIndex + name.length + 2;
           textareaRef.current.focus();
           textareaRef.current.setSelectionRange(newCursorPos, newCursorPos);
         }
@@ -97,20 +97,16 @@ const MentionTextarea = React.forwardRef<HTMLTextAreaElement, MentionTextareaPro
       switch (e.key) {
         case 'ArrowDown':
           e.preventDefault();
-          setSelectedIndex(prev => 
-            prev < filteredStaff.length - 1 ? prev + 1 : 0
-          );
+          setSelectedIndex(prev => prev < filteredStaff.length - 1 ? prev + 1 : 0);
           break;
         case 'ArrowUp':
           e.preventDefault();
-          setSelectedIndex(prev => 
-            prev > 0 ? prev - 1 : filteredStaff.length - 1
-          );
+          setSelectedIndex(prev => prev > 0 ? prev - 1 : filteredStaff.length - 1);
           break;
         case 'Enter':
-          if (showDropdown && filteredStaff[selectedIndex]) {
+          if (filteredStaff[selectedIndex]) {
             e.preventDefault();
-            insertMention(filteredStaff[selectedIndex]);
+            insertMention(filteredStaff[selectedIndex].name);
           }
           break;
         case 'Escape':
@@ -118,15 +114,14 @@ const MentionTextarea = React.forwardRef<HTMLTextAreaElement, MentionTextareaPro
           setShowDropdown(false);
           break;
         case 'Tab':
-          if (showDropdown && filteredStaff[selectedIndex]) {
+          if (filteredStaff[selectedIndex]) {
             e.preventDefault();
-            insertMention(filteredStaff[selectedIndex]);
+            insertMention(filteredStaff[selectedIndex].name);
           }
           break;
       }
     };
 
-    // Close dropdown when clicking outside
     useEffect(() => {
       const handleClickOutside = (event: MouseEvent) => {
         if (
@@ -138,7 +133,6 @@ const MentionTextarea = React.forwardRef<HTMLTextAreaElement, MentionTextareaPro
           setShowDropdown(false);
         }
       };
-
       document.addEventListener('mousedown', handleClickOutside);
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
@@ -157,7 +151,7 @@ const MentionTextarea = React.forwardRef<HTMLTextAreaElement, MentionTextareaPro
           placeholder={placeholder}
           {...props}
         />
-        
+
         {showDropdown && filteredStaff.length > 0 && (
           <div
             ref={dropdownRef}
@@ -165,19 +159,28 @@ const MentionTextarea = React.forwardRef<HTMLTextAreaElement, MentionTextareaPro
           >
             <ScrollArea className="max-h-[200px]">
               <div className="py-1">
-                {filteredStaff.map((name, index) => (
+                {filteredStaff.map((staff, index) => (
                   <button
-                    key={name}
+                    key={staff.id}
                     type="button"
                     className={cn(
-                      "w-full px-3 py-2 text-left text-sm flex items-center gap-2 hover:bg-muted transition-colors",
+                      "w-full px-3 py-2 text-left text-sm flex items-center gap-2.5 hover:bg-muted transition-colors",
                       index === selectedIndex && "bg-muted"
                     )}
-                    onClick={() => insertMention(name)}
+                    onClick={() => insertMention(staff.name)}
                     onMouseEnter={() => setSelectedIndex(index)}
                   >
-                    <User className="w-4 h-4 text-muted-foreground" />
-                    <span>{name}</span>
+                    <Avatar className="h-6 w-6">
+                      <AvatarFallback className="text-[10px] bg-primary/10 text-primary">
+                        {getInitials(staff.name)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col">
+                      <span className="font-medium">{staff.name}</span>
+                      {staff.team && (
+                        <span className="text-[10px] text-muted-foreground">{staff.team}</span>
+                      )}
+                    </div>
                   </button>
                 ))}
               </div>
