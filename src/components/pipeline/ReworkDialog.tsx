@@ -50,11 +50,13 @@ export function ReworkDialog({ open, onOpenChange, reworkConfigs, onConfirm, lea
     const mentions = extractMentions(comment);
     mentions.forEach(() => {
       addNotification({
+        recipientUserId: mentionedName,
         saleId: leadNumber || 'Unknown',
-        comment: comment,
+        mentionTextPreview: comment.slice(0, 80),
         mentionedBy: CURRENT_USER,
+        mentionedByUserId: CURRENT_USER,
         mentionedAt: new Date().toISOString(),
-        policyKind: policyKind,
+        policyType: policyKind === 'vmi' ? 'vmi' : policyKind === 'cmi' ? 'cmi' : undefined,
       });
     });
   };
