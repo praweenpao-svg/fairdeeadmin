@@ -158,11 +158,13 @@ export function PolicyRemarksReworkDialog({
       // For demo, we simulate that the current user "Pao" can receive notifications
       // when they view as themselves, so we should still create the notification
       addNotification({
+        recipientUserId: mentionedName,
         saleId: leadNumber || policyId,
-        comment: comment,
+        mentionTextPreview: comment.slice(0, 80),
         mentionedBy: CURRENT_USER,
+        mentionedByUserId: CURRENT_USER,
         mentionedAt: new Date().toISOString(),
-        policyKind: policyKind,
+        policyType: policyKind === 'vmi' ? 'vmi' : policyKind === 'cmi' ? 'cmi' : undefined,
       });
     });
   };

@@ -48,13 +48,15 @@ export function ReworkDialog({ open, onOpenChange, reworkConfigs, onConfirm, lea
   // Helper to process mentions and create notifications
   const processMentions = (comment: string) => {
     const mentions = extractMentions(comment);
-    mentions.forEach(() => {
+    mentions.forEach((mentionedName) => {
       addNotification({
+        recipientUserId: mentionedName,
         saleId: leadNumber || 'Unknown',
-        comment: comment,
+        mentionTextPreview: comment.slice(0, 80),
         mentionedBy: CURRENT_USER,
+        mentionedByUserId: CURRENT_USER,
         mentionedAt: new Date().toISOString(),
-        policyKind: policyKind,
+        policyType: policyKind === 'vmi' ? 'vmi' : policyKind === 'cmi' ? 'cmi' : undefined,
       });
     });
   };
