@@ -48,7 +48,7 @@ export function ReworkDialog({ open, onOpenChange, reworkConfigs, onConfirm, lea
   // Helper to process mentions and create notifications
   const processMentions = (comment: string) => {
     const mentions = extractMentions(comment);
-    mentions.forEach(() => {
+    mentions.forEach((mentionedName) => {
       addNotification({
         recipientUserId: mentionedName,
         saleId: leadNumber || 'Unknown',
