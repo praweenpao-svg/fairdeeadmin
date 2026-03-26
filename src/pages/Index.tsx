@@ -59,6 +59,14 @@ const Index = () => {
   // Filters for other stages (To Report, To Issue, To Deliver, Completed)
   const [otherStagesFilters, setOtherStagesFilters] = useState<OtherStagesFilterState>(defaultOtherStagesFilterState);
 
+  // Watch notification navigation store — switch to correct stage when a notification is clicked
+  const navTarget = useNotificationNavigationStore(s => s.target);
+  useEffect(() => {
+    if (navTarget) {
+      setActiveStage(navTarget.targetStage);
+    }
+  }, [navTarget]);
+
   const teamMembers = useMemo(() => {
     if (!currentUserTeam) return [];
     return mockStaffMembers
