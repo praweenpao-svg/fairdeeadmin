@@ -386,7 +386,7 @@ function parseDateTime(dateStr: string): Date {
 import { useCurrentUserStore } from '@/stores/currentUserStore';
 import { useNotificationNavigationStore } from '@/stores/notificationNavigationStore';
 
-export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsTableProps) {
+export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate }: LeadsTableProps) {
   const { language } = useLanguageStore();
   const CURRENT_USER = useCurrentUserStore(s => s.name);
   const navTarget = useNotificationNavigationStore(s => s.target);
