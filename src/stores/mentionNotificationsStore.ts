@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { PipelineStage } from '@/types/pipeline';
 
 export interface MentionNotification {
   id: string;
@@ -12,6 +13,10 @@ export interface MentionNotification {
   mentionedByUserId: string;
   mentionedAt: string; // ISO datetime
   read: boolean;
+  // Deep-link data
+  leadId?: string;
+  policyId?: string;
+  targetStage?: PipelineStage;
 }
 
 export interface AssignmentNotification {
@@ -22,6 +27,10 @@ export interface AssignmentNotification {
   assignedAt: string;
   saleStage: string;
   isActive: boolean;
+  // Deep-link data
+  leadId?: string;
+  policyId?: string;
+  targetStage?: PipelineStage;
 }
 
 interface MentionNotificationsState {
