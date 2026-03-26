@@ -2664,24 +2664,24 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
         policyId={selectedPolicyForRemarks?.policyId || ''}
         leadNumber={(() => {
           if (!selectedPolicyForRemarks) return undefined;
-          const lead = leads.find(l => l.id === selectedPolicyForRemarks.leadId);
+          const lead = (allLeads || leads).find(l => l.id === selectedPolicyForRemarks.leadId);
           return lead?.leadNumber;
         })()}
         remarks={(() => {
           if (!selectedPolicyForRemarks) return [];
-          const lead = leads.find(l => l.id === selectedPolicyForRemarks.leadId);
+          const lead = (allLeads || leads).find(l => l.id === selectedPolicyForRemarks.leadId);
           const policy = lead?.policyRecords?.find(p => p.id === selectedPolicyForRemarks.policyId);
           return policy?.remarks || [];
         })()}
         reworkHistory={(() => {
           if (!selectedPolicyForRemarks) return [];
-          const lead = leads.find(l => l.id === selectedPolicyForRemarks.leadId);
+          const lead = (allLeads || leads).find(l => l.id === selectedPolicyForRemarks.leadId);
           const policy = lead?.policyRecords?.find(p => p.id === selectedPolicyForRemarks.policyId);
           return policy?.reworkHistory || [];
         })()}
         endorsementHistory={(() => {
           if (!selectedPolicyForRemarks) return [];
-          const lead = leads.find(l => l.id === selectedPolicyForRemarks.leadId);
+          const lead = (allLeads || leads).find(l => l.id === selectedPolicyForRemarks.leadId);
           const policy = lead?.policyRecords?.find(p => p.id === selectedPolicyForRemarks.policyId);
           return policy?.endorsementHistory || [];
         })()}
@@ -2689,7 +2689,7 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
         currentStage={(() => {
           // Use policy's actual stage, not the tab's stage (important for "All" tab)
           if (!selectedPolicyForRemarks) return stage;
-          const lead = leads.find(l => l.id === selectedPolicyForRemarks.leadId);
+          const lead = (allLeads || leads).find(l => l.id === selectedPolicyForRemarks.leadId);
           const policy = lead?.policyRecords?.find(p => p.id === selectedPolicyForRemarks.policyId);
           if (policy) {
             const policyStage = getPolicyStage(policy);
@@ -2703,28 +2703,28 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
         onAddEndorsementReply={handleAddEndorsementReply}
         onReworkResolve={(entryId) => {
           if (!selectedPolicyForRemarks) return;
-          const lead = leads.find(l => l.id === selectedPolicyForRemarks.leadId);
+          const lead = (allLeads || leads).find(l => l.id === selectedPolicyForRemarks.leadId);
           if (lead) {
             handlePolicyReworkResolve(lead, selectedPolicyForRemarks.policyId, entryId);
           }
         }}
         onReworkReassign={(entryId, newReasonId, details, attachments) => {
           if (!selectedPolicyForRemarks) return;
-          const lead = leads.find(l => l.id === selectedPolicyForRemarks.leadId);
+          const lead = (allLeads || leads).find(l => l.id === selectedPolicyForRemarks.leadId);
           if (lead) {
             handlePolicyReworkReassign(lead, selectedPolicyForRemarks.policyId, entryId, newReasonId, details, attachments);
           }
         }}
         onAddRework={(policyId, reasonId, details, attachments, autoResolveDate) => {
           if (!selectedPolicyForRemarks) return;
-          const lead = leads.find(l => l.id === selectedPolicyForRemarks.leadId);
+          const lead = (allLeads || leads).find(l => l.id === selectedPolicyForRemarks.leadId);
           if (lead) {
             handlePolicyReworkAdd(lead, policyId, reasonId, details, attachments, autoResolveDate);
           }
         }}
         onUpdateAutoResolveDate={(entryId, newDate) => {
           if (!selectedPolicyForRemarks) return;
-          const lead = leads.find(l => l.id === selectedPolicyForRemarks.leadId);
+          const lead = (allLeads || leads).find(l => l.id === selectedPolicyForRemarks.leadId);
           if (lead) {
             const updatedRecords = lead.policyRecords?.map(p => {
               if (p.id !== selectedPolicyForRemarks.policyId) return p;
