@@ -51,7 +51,7 @@ export function ReworkDialog({ open, onOpenChange, reworkConfigs, onConfirm, lea
     mentions.forEach((mentionedName) => {
       addNotification({
         recipientUserId: mentionedName,
-        saleId: leadNumber || 'Unknown',
+        quotationId: leadNumber || 'Unknown',
         mentionTextPreview: comment.slice(0, 80),
         mentionedBy: CURRENT_USER,
         mentionedByUserId: CURRENT_USER,
