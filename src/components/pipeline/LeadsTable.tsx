@@ -383,10 +383,13 @@ function parseDateTime(dateStr: string): Date {
 
 // Current user - from profile store
 import { useCurrentUserStore } from '@/stores/currentUserStore';
+import { useNotificationNavigationStore } from '@/stores/notificationNavigationStore';
 
 export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsTableProps) {
   const { language } = useLanguageStore();
   const CURRENT_USER = useCurrentUserStore(s => s.name);
+  const navTarget = useNotificationNavigationStore(s => s.target);
+  const clearNavTarget = useNotificationNavigationStore(s => s.clearTarget);
   const [reworkDialogOpen, setReworkDialogOpen] = useState(false);
   const [historyLogDialogOpen, setHistoryLogDialogOpen] = useState(false);
   const [remarksDialogOpen, setRemarksDialogOpen] = useState(false);
@@ -396,6 +399,23 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [expandedLeads, setExpandedLeads] = useState<Set<string>>(() => new Set());
+
+  // Auto-open remarks dialog when notification navigation target is set
+  React.useEffect(() => {
+    if (navTarget && navTarget.targetStage === stage) {
+      // Find the lead in the full leads list
+      const lead = leads.find(l => l.id === navTarget.leadId);
+      if (lead) {
+        setSelectedPolicyForRemarks({
+          leadId: navTarget.leadId,
+          policyId: navTarget.policyId,
+          kind: navTarget.policyKind,
+        });
+        setRemarksDialogOpen(true);
+      }
+      clearNavTarget();
+    }
+  }, [navTarget, stage, leads, clearNavTarget]);
 
   // Toggle expanded state for a lead
   const toggleLeadExpanded = (leadId: string) => {
