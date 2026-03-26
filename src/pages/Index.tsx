@@ -1,9 +1,10 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Search } from 'lucide-react';
 import { DateRange } from 'react-day-picker';
 import { PipelineStage, LeadType, Lead, ReworkConfig } from '@/types/pipeline';
 import { mockLeads, mockReworkConfigs } from '@/data/mockLeads';
 import { useCurrentUserStore } from '@/stores/currentUserStore';
+import { useNotificationNavigationStore } from '@/stores/notificationNavigationStore';
 import { PipelineTabs, getLeadsForStage, getLeadsOwnedByUser, getLeadsOwnedByTeam } from '@/components/pipeline/PipelineTabs';
 import { LeadsTable } from '@/components/pipeline/LeadsTable';
 import { DateRangeFilter } from '@/components/pipeline/DateRangeFilter';
@@ -57,6 +58,14 @@ const Index = () => {
 
   // Filters for other stages (To Report, To Issue, To Deliver, Completed)
   const [otherStagesFilters, setOtherStagesFilters] = useState<OtherStagesFilterState>(defaultOtherStagesFilterState);
+
+  // Watch notification navigation store — switch to correct stage when a notification is clicked
+  const navTarget = useNotificationNavigationStore(s => s.target);
+  useEffect(() => {
+    if (navTarget) {
+      setActiveStage(navTarget.targetStage);
+    }
+  }, [navTarget]);
 
   const teamMembers = useMemo(() => {
     if (!currentUserTeam) return [];
@@ -248,6 +257,7 @@ const Index = () => {
         {/* Table */}
         <LeadsTable
           leads={filteredLeads}
+          allLeads={leads}
           stage={activeStage}
           reworkConfigs={reworkConfigs}
           onLeadUpdate={handleLeadUpdate}

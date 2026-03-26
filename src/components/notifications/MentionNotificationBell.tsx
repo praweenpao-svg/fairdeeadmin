@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 import { useMentionNotificationsStore, MentionNotification, AssignmentNotification } from '@/stores/mentionNotificationsStore';
 import { useLanguageStore } from '@/stores/languageStore';
 import { useCurrentUserStore } from '@/stores/currentUserStore';
+import { useNotificationNavigationStore } from '@/stores/notificationNavigationStore';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Switch } from '@/components/ui/switch';
@@ -68,25 +69,35 @@ export function MentionNotificationBell() {
 
   const hasUnreadMentions = myMentions.some((n) => !n.read);
 
+  const setNavTarget = useNotificationNavigationStore(s => s.setTarget);
+
   const handleMentionClick = (notification: MentionNotification) => {
     markAsRead(notification.id);
     setOpen(false);
-    toast.info(
-      language === 'th'
-        ? `กำลังเปิด ${notification.quotationId}...`
-        : `Opening ${notification.quotationId}...`,
-      { description: language === 'th' ? 'เปิดประวัติกิจกรรม' : 'Opening History & Activity sidebar' }
-    );
+    if (notification.leadId && notification.policyId && notification.targetStage) {
+      setNavTarget({
+        leadId: notification.leadId,
+        policyId: notification.policyId,
+        policyKind: notification.policyType || 'vmi',
+        targetStage: notification.targetStage,
+      });
+    } else {
+      toast.info(`Opening ${notification.quotationId}...`);
+    }
   };
 
   const handleAssignmentClick = (assignment: AssignmentNotification) => {
     setOpen(false);
-    toast.info(
-      language === 'th'
-        ? `กำลังเปิด ${assignment.quotationId}...`
-        : `Opening ${assignment.quotationId}...`,
-      { description: language === 'th' ? 'เปิดประวัติกิจกรรม' : 'Opening History & Activity sidebar' }
-    );
+    if (assignment.leadId && assignment.policyId && assignment.targetStage) {
+      setNavTarget({
+        leadId: assignment.leadId,
+        policyId: assignment.policyId,
+        policyKind: assignment.policyType,
+        targetStage: assignment.targetStage,
+      });
+    } else {
+      toast.info(`Opening ${assignment.quotationId}...`);
+    }
   };
 
   const highlightMentions = (text: string) => {

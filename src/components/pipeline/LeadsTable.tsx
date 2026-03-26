@@ -44,6 +44,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 
 interface LeadsTableProps {
   leads: Lead[];
+  allLeads?: Lead[];
   stage: PipelineStage;
   reworkConfigs: ReworkConfig[];
   onLeadUpdate?: (leadId: string, updates: Partial<Lead>) => void;
@@ -383,10 +384,13 @@ function parseDateTime(dateStr: string): Date {
 
 // Current user - from profile store
 import { useCurrentUserStore } from '@/stores/currentUserStore';
+import { useNotificationNavigationStore } from '@/stores/notificationNavigationStore';
 
-export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsTableProps) {
+export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate }: LeadsTableProps) {
   const { language } = useLanguageStore();
   const CURRENT_USER = useCurrentUserStore(s => s.name);
+  const navTarget = useNotificationNavigationStore(s => s.target);
+  const clearNavTarget = useNotificationNavigationStore(s => s.clearTarget);
   const [reworkDialogOpen, setReworkDialogOpen] = useState(false);
   const [historyLogDialogOpen, setHistoryLogDialogOpen] = useState(false);
   const [remarksDialogOpen, setRemarksDialogOpen] = useState(false);
@@ -396,6 +400,19 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [expandedLeads, setExpandedLeads] = useState<Set<string>>(() => new Set());
+
+  // Auto-open remarks dialog when notification navigation target is set
+  React.useEffect(() => {
+    if (navTarget && navTarget.targetStage === stage) {
+      setSelectedPolicyForRemarks({
+        leadId: navTarget.leadId,
+        policyId: navTarget.policyId,
+        kind: navTarget.policyKind,
+      });
+      setRemarksDialogOpen(true);
+      clearNavTarget();
+    }
+  }, [navTarget, stage, clearNavTarget]);
 
   // Toggle expanded state for a lead
   const toggleLeadExpanded = (leadId: string) => {
@@ -2647,24 +2664,24 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
         policyId={selectedPolicyForRemarks?.policyId || ''}
         leadNumber={(() => {
           if (!selectedPolicyForRemarks) return undefined;
-          const lead = leads.find(l => l.id === selectedPolicyForRemarks.leadId);
+          const lead = (allLeads || leads).find(l => l.id === selectedPolicyForRemarks.leadId);
           return lead?.leadNumber;
         })()}
         remarks={(() => {
           if (!selectedPolicyForRemarks) return [];
-          const lead = leads.find(l => l.id === selectedPolicyForRemarks.leadId);
+          const lead = (allLeads || leads).find(l => l.id === selectedPolicyForRemarks.leadId);
           const policy = lead?.policyRecords?.find(p => p.id === selectedPolicyForRemarks.policyId);
           return policy?.remarks || [];
         })()}
         reworkHistory={(() => {
           if (!selectedPolicyForRemarks) return [];
-          const lead = leads.find(l => l.id === selectedPolicyForRemarks.leadId);
+          const lead = (allLeads || leads).find(l => l.id === selectedPolicyForRemarks.leadId);
           const policy = lead?.policyRecords?.find(p => p.id === selectedPolicyForRemarks.policyId);
           return policy?.reworkHistory || [];
         })()}
         endorsementHistory={(() => {
           if (!selectedPolicyForRemarks) return [];
-          const lead = leads.find(l => l.id === selectedPolicyForRemarks.leadId);
+          const lead = (allLeads || leads).find(l => l.id === selectedPolicyForRemarks.leadId);
           const policy = lead?.policyRecords?.find(p => p.id === selectedPolicyForRemarks.policyId);
           return policy?.endorsementHistory || [];
         })()}
@@ -2672,7 +2689,7 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
         currentStage={(() => {
           // Use policy's actual stage, not the tab's stage (important for "All" tab)
           if (!selectedPolicyForRemarks) return stage;
-          const lead = leads.find(l => l.id === selectedPolicyForRemarks.leadId);
+          const lead = (allLeads || leads).find(l => l.id === selectedPolicyForRemarks.leadId);
           const policy = lead?.policyRecords?.find(p => p.id === selectedPolicyForRemarks.policyId);
           if (policy) {
             const policyStage = getPolicyStage(policy);
@@ -2686,28 +2703,28 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
         onAddEndorsementReply={handleAddEndorsementReply}
         onReworkResolve={(entryId) => {
           if (!selectedPolicyForRemarks) return;
-          const lead = leads.find(l => l.id === selectedPolicyForRemarks.leadId);
+          const lead = (allLeads || leads).find(l => l.id === selectedPolicyForRemarks.leadId);
           if (lead) {
             handlePolicyReworkResolve(lead, selectedPolicyForRemarks.policyId, entryId);
           }
         }}
         onReworkReassign={(entryId, newReasonId, details, attachments) => {
           if (!selectedPolicyForRemarks) return;
-          const lead = leads.find(l => l.id === selectedPolicyForRemarks.leadId);
+          const lead = (allLeads || leads).find(l => l.id === selectedPolicyForRemarks.leadId);
           if (lead) {
             handlePolicyReworkReassign(lead, selectedPolicyForRemarks.policyId, entryId, newReasonId, details, attachments);
           }
         }}
         onAddRework={(policyId, reasonId, details, attachments, autoResolveDate) => {
           if (!selectedPolicyForRemarks) return;
-          const lead = leads.find(l => l.id === selectedPolicyForRemarks.leadId);
+          const lead = (allLeads || leads).find(l => l.id === selectedPolicyForRemarks.leadId);
           if (lead) {
             handlePolicyReworkAdd(lead, policyId, reasonId, details, attachments, autoResolveDate);
           }
         }}
         onUpdateAutoResolveDate={(entryId, newDate) => {
           if (!selectedPolicyForRemarks) return;
-          const lead = leads.find(l => l.id === selectedPolicyForRemarks.leadId);
+          const lead = (allLeads || leads).find(l => l.id === selectedPolicyForRemarks.leadId);
           if (lead) {
             const updatedRecords = lead.policyRecords?.map(p => {
               if (p.id !== selectedPolicyForRemarks.policyId) return p;

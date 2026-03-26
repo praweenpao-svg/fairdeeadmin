@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { PipelineStage } from '@/types/pipeline';
 
 export interface MentionNotification {
   id: string;
@@ -12,6 +13,10 @@ export interface MentionNotification {
   mentionedByUserId: string;
   mentionedAt: string; // ISO datetime
   read: boolean;
+  // Deep-link data
+  leadId?: string;
+  policyId?: string;
+  targetStage?: PipelineStage;
 }
 
 export interface AssignmentNotification {
@@ -22,6 +27,10 @@ export interface AssignmentNotification {
   assignedAt: string;
   saleStage: string;
   isActive: boolean;
+  // Deep-link data
+  leadId?: string;
+  policyId?: string;
+  targetStage?: PipelineStage;
 }
 
 interface MentionNotificationsState {
@@ -36,13 +45,17 @@ interface MentionNotificationsState {
   removeAssignment: (quotationId: string, policyType: 'vmi' | 'cmi') => void;
 }
 
-// Seed some demo mention notifications
+// Seed demo mention notifications using real lead/policy IDs from mockLeads
+// To Report: ids 15-20, leadNumbers #10012-#10007, policy IDs pol-{id}-vmi/cmi
+// To Issue: ids 21-26, leadNumbers #10018-#10013, policy IDs pol-{id}-vmi/cmi
+// Pao is DE on To Report lead id=19 (#10008, vmi_cmi)
+// To Issue lead id=22 (#10017, vmi_only, has rework), id=24 (#10015, vmi_cmi, has multiple reworks)
 const now = new Date();
 const seedMentions: MentionNotification[] = [
   {
     id: '1',
     recipientUserId: 'Pao',
-    quotationId: 'FR-2025-001',
+    quotationId: '#10017',
     policyType: 'vmi',
     mentionTextPreview: '@Pao ช่วยตรวจสอบเอกสารเพิ่มเติมด้วยครับ ลูกค้าส่งมาใหม่แล้ว',
     mentionedBy: 'Ricky',
@@ -51,11 +64,15 @@ const seedMentions: MentionNotification[] = [
     read: false,
     reworkRecordId: 'rw-1',
     commentId: null,
+    // Deep-link data
+    leadId: '22',
+    policyId: 'pol-22-vmi',
+    targetStage: 'to_issue' as const,
   },
   {
     id: '2',
     recipientUserId: 'Pao',
-    quotationId: 'FR-2025-003',
+    quotationId: '#10015',
     policyType: 'cmi',
     mentionTextPreview: '@Pao กรุณาตรวจสอบค่าเบี้ยประกันภัย CMI ให้ด้วยค่ะ',
     mentionedBy: 'Jenny',
@@ -64,32 +81,41 @@ const seedMentions: MentionNotification[] = [
     read: false,
     reworkRecordId: null,
     commentId: 'cmt-1',
+    leadId: '24',
+    policyId: 'pol-24-cmi',
+    targetStage: 'to_issue' as const,
   },
   {
     id: '3',
     recipientUserId: 'Pao',
-    quotationId: 'FR-2025-007',
+    quotationId: '#10008',
     policyType: 'vmi',
     mentionTextPreview: '@Pao เรื่องนี้จัดการเสร็จแล้วครับ ขอให้ช่วย verify อีกครั้ง',
-    mentionedBy: 'Tong',
+    mentionedBy: 'Lisa',
     mentionedByUserId: '5',
     mentionedAt: new Date(now.getTime() - 1 * 86400000).toISOString(),
     read: true,
-    reworkRecordId: 'rw-3',
-    commentId: null,
+    reworkRecordId: null,
+    commentId: 'cmt-3',
+    leadId: '19',
+    policyId: 'pol-19-vmi',
+    targetStage: 'to_report' as const,
   },
   {
     id: '4',
     recipientUserId: 'Pao',
-    quotationId: 'FR-2025-012',
-    policyType: 'cmi',
-    mentionTextPreview: '@Pao ลูกค้าต้องการเปลี่ยนแปลงรายละเอียดกรมธรรม์',
-    mentionedBy: 'Fern',
+    quotationId: '#10015',
+    policyType: 'vmi',
+    mentionTextPreview: '@Pao ลูกค้าต้องการเปลี่ยนแปลงรายละเอียดกรมธรรม์ VMI rework',
+    mentionedBy: 'Mike',
     mentionedByUserId: '3',
     mentionedAt: new Date(now.getTime() - 3 * 86400000).toISOString(),
     read: true,
-    reworkRecordId: null,
-    commentId: 'cmt-4',
+    reworkRecordId: 'rw-4',
+    commentId: null,
+    leadId: '24',
+    policyId: 'pol-24-vmi',
+    targetStage: 'to_issue' as const,
   },
 ];
 
@@ -97,29 +123,38 @@ const seedAssignments: AssignmentNotification[] = [
   {
     id: 'a1',
     assigneeUserId: 'Pao',
-    quotationId: 'FR-2025-001',
+    quotationId: '#10008',
     policyType: 'vmi',
     assignedAt: new Date(now.getTime() - 1 * 86400000).toISOString(),
-    saleStage: 'Pending Issuance',
+    saleStage: 'To Report',
     isActive: true,
+    leadId: '19',
+    policyId: 'pol-19-vmi',
+    targetStage: 'to_report' as const,
   },
   {
     id: 'a2',
     assigneeUserId: 'Pao',
-    quotationId: 'FR-2025-001',
+    quotationId: '#10008',
     policyType: 'cmi',
     assignedAt: new Date(now.getTime() - 1 * 86400000).toISOString(),
-    saleStage: 'Pending Issuance',
+    saleStage: 'To Report',
     isActive: true,
+    leadId: '19',
+    policyId: 'pol-19-cmi',
+    targetStage: 'to_report' as const,
   },
   {
     id: 'a3',
     assigneeUserId: 'Pao',
-    quotationId: 'FR-2025-003',
+    quotationId: '#10017',
     policyType: 'vmi',
     assignedAt: new Date(now.getTime() - 4 * 86400000).toISOString(),
-    saleStage: 'Policy Uploaded',
+    saleStage: 'To Issue',
     isActive: true,
+    leadId: '22',
+    policyId: 'pol-22-vmi',
+    targetStage: 'to_issue' as const,
   },
 ];
 
