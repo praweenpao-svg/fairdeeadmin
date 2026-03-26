@@ -44,6 +44,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 
 interface LeadsTableProps {
   leads: Lead[];
+  allLeads?: Lead[];
   stage: PipelineStage;
   reworkConfigs: ReworkConfig[];
   onLeadUpdate?: (leadId: string, updates: Partial<Lead>) => void;
