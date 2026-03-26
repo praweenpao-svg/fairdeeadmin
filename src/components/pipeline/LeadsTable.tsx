@@ -403,19 +403,15 @@ export function LeadsTable({ leads, stage, reworkConfigs, onLeadUpdate }: LeadsT
   // Auto-open remarks dialog when notification navigation target is set
   React.useEffect(() => {
     if (navTarget && navTarget.targetStage === stage) {
-      // Find the lead in the full leads list
-      const lead = leads.find(l => l.id === navTarget.leadId);
-      if (lead) {
-        setSelectedPolicyForRemarks({
-          leadId: navTarget.leadId,
-          policyId: navTarget.policyId,
-          kind: navTarget.policyKind,
-        });
-        setRemarksDialogOpen(true);
-      }
+      setSelectedPolicyForRemarks({
+        leadId: navTarget.leadId,
+        policyId: navTarget.policyId,
+        kind: navTarget.policyKind,
+      });
+      setRemarksDialogOpen(true);
       clearNavTarget();
     }
-  }, [navTarget, stage, leads, clearNavTarget]);
+  }, [navTarget, stage, clearNavTarget]);
 
   // Toggle expanded state for a lead
   const toggleLeadExpanded = (leadId: string) => {
