@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Check, Circle, ChevronDown, ChevronRight } from 'lucide-react';
+import { Check, Circle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguageStore } from '@/stores/languageStore';
 import { SaleDetail } from '@/data/mockSaleDetail';
@@ -15,6 +15,7 @@ interface SubStep {
 }
 
 interface Stage {
+  key: string;
   label: { en: string; th: string };
   subSteps: SubStep[];
   completedBy?: string;
@@ -22,30 +23,41 @@ interface Stage {
 }
 
 function getStages(sale: SaleDetail): Stage[] {
-  const hasMulti = sale.policies.length > 1;
   const vmi = sale.policies.find(p => p.kind === 'vmi');
   const cmi = sale.policies.find(p => p.kind === 'cmi');
 
   return [
     {
-      label: { en: 'Sale Created', th: 'สร้างงาน' },
+      key: 'leads',
+      label: { en: 'Leads', th: 'ลีด' },
       subSteps: [
-        { label: { en: 'Sale record exists', th: 'มีข้อมูลงาน' }, done: true },
+        { label: { en: 'Lead converted', th: 'แปลงลีดแล้ว' }, done: true },
       ],
-      completedBy: 'System',
+      completedBy: sale.assignment.sc || '—',
       completedAt: sale.createdAt,
     },
     {
-      label: { en: 'OPS Verification', th: 'ตรวจสอบ OPS' },
+      key: 'to_pay',
+      label: { en: 'To Pay Premium', th: 'รอชำระเบี้ย' },
       subSteps: [
-        { label: { en: 'OPS Step 1 complete', th: 'ขั้นตอน 1 เสร็จ' }, done: sale.opsStep1Complete },
-        { label: { en: 'OPS Step 2 complete', th: 'ขั้นตอน 2 เสร็จ' }, done: sale.opsStep2Complete },
+        { label: { en: 'Payment received', th: 'ได้รับชำระเงิน' }, done: sale.paymentStatus === 'paid' },
+      ],
+      completedBy: sale.paymentStatus === 'paid' ? 'System' : undefined,
+      completedAt: sale.paymentStatus === 'paid' ? sale.createdAt : undefined,
+    },
+    {
+      key: 'to_report',
+      label: { en: 'To Report Sale', th: 'รอแจ้งงาน' },
+      subSteps: [
+        { label: { en: 'OPS Step 1 complete', th: 'ขั้นตอน OPS 1 เสร็จ' }, done: sale.opsStep1Complete },
+        { label: { en: 'OPS Step 2 complete', th: 'ขั้นตอน OPS 2 เสร็จ' }, done: sale.opsStep2Complete },
       ],
       completedBy: sale.opsStep1Complete && sale.opsStep2Complete ? sale.assignment.admin || '—' : undefined,
       completedAt: sale.opsStep1Complete && sale.opsStep2Complete ? sale.createdAt : undefined,
     },
     {
-      label: { en: 'Policy Issuance', th: 'ออกกรมธรรม์' },
+      key: 'to_issue',
+      label: { en: 'To Issue Policy', th: 'รอออกกรมธรรม์' },
       subSteps: [
         ...(vmi ? [
           { label: { en: 'VMI — Notify insurer', th: 'VMI — แจ้ง บ.ประกัน' }, done: false, policyKind: 'vmi' as const },
@@ -60,7 +72,8 @@ function getStages(sale: SaleDetail): Stage[] {
       ],
     },
     {
-      label: { en: 'Policy Delivery', th: 'จัดส่งกรมธรรม์' },
+      key: 'to_deliver',
+      label: { en: 'To Deliver Policy', th: 'รอจัดส่ง' },
       subSteps: [
         ...(vmi ? [
           { label: { en: 'VMI — Delivery method', th: 'VMI — วิธีจัดส่ง' }, done: !!vmi.deliveryMethod, policyKind: 'vmi' as const },
@@ -73,6 +86,7 @@ function getStages(sale: SaleDetail): Stage[] {
       ],
     },
     {
+      key: 'completed',
       label: { en: 'Completed', th: 'เสร็จสิ้น' },
       subSteps: [
         { label: { en: 'All policies delivered', th: 'จัดส่งครบทุกกรมธรรม์' }, done: false },
@@ -109,14 +123,14 @@ export function ProgressionTimeline({ sale }: ProgressionTimelineProps) {
           const isLast = idx === stages.length - 1;
 
           return (
-            <React.Fragment key={idx}>
+            <React.Fragment key={stage.key}>
               <div className="flex flex-col items-center flex-1 min-w-0">
                 {/* Node */}
                 <button
                   className={cn(
                     'w-9 h-9 rounded-full flex items-center justify-center border-2 transition-all shrink-0',
                     isCompleted && 'bg-primary border-primary text-primary-foreground cursor-pointer hover:ring-2 hover:ring-primary/30',
-                    isActive && 'border-primary bg-primary/10 text-primary animate-pulse',
+                    isActive && 'border-primary bg-primary/10 text-primary',
                     isPending && 'border-muted-foreground/30 text-muted-foreground bg-muted/20 cursor-default',
                   )}
                   onClick={() => {
