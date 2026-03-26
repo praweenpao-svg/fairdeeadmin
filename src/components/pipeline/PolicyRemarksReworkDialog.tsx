@@ -159,7 +159,7 @@ export function PolicyRemarksReworkDialog({
       // when they view as themselves, so we should still create the notification
       addNotification({
         recipientUserId: mentionedName,
-        saleId: leadNumber || policyId,
+        quotationId: leadNumber || policyId,
         mentionTextPreview: comment.slice(0, 80),
         mentionedBy: CURRENT_USER,
         mentionedByUserId: CURRENT_USER,
