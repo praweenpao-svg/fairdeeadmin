@@ -257,6 +257,7 @@ const Index = () => {
         {/* Table */}
         <LeadsTable
           leads={filteredLeads}
+          allLeads={leads}
           stage={activeStage}
           reworkConfigs={reworkConfigs}
           onLeadUpdate={handleLeadUpdate}
