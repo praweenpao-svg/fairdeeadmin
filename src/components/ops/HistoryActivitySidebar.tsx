@@ -222,7 +222,7 @@ export function HistoryActivitySidebar({ open, onClose, quotationId, availablePo
       {/* Activity feed */}
       <ScrollArea className="flex-1">
         <div className="px-4 py-3 space-y-3">
-          {mockHistory.map((entry) => {
+          {filteredHistory.map((entry) => {
             const config = typeConfig[entry.type] || typeConfig.field_update;
             const Icon = config.icon;
             return (
