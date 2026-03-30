@@ -1030,8 +1030,12 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
 
   const handleStatusChange = (lead: Lead, newStatus: string) => {
     if (newStatus === 'rework_required') {
-      setSelectedLead(lead);
-      setReworkDialogOpen(true);
+      const firstPolicy = lead.policyRecords?.[0];
+      if (firstPolicy) {
+        setSelectedPolicyForRemarks({ leadId: lead.id, policyId: firstPolicy.id, kind: firstPolicy.kind });
+        setRemarksDialogOpen(true);
+      }
+      return;
     } else {
       const timestamp = new Date().toLocaleString('en-US', {
         year: 'numeric',
