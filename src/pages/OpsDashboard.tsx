@@ -3,7 +3,7 @@ import { useLanguageStore } from '@/stores/languageStore';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { MentionNotificationBell } from '@/components/notifications/MentionNotificationBell';
 import { mockSaleDetail } from '@/data/mockSaleDetail';
-import { SaleSummaryStrip } from '@/components/ops/SaleSummaryStrip';
+import { SaleOverviewCard, PolicyStatusCard, AgentDetailsCard } from '@/components/ops/SaleOverviewCard';
 import { ContentTabs } from '@/components/ops/ContentTabs';
 import { SaleDetailBar } from '@/components/ops/SaleDetailBar';
 import { UploadPolicyModal } from '@/components/ops/UploadPolicyModal';
@@ -198,9 +198,17 @@ export default function OpsDashboard() {
             onOpenEndorsement={() => handleToast(language === 'th' ? 'เปิด Record Endorsement' : 'Open Record Endorsement')}
             onOpenUploadDoc={() => handleToast(language === 'th' ? 'เปิด Upload Document' : 'Open Upload Document')}
           />
-          <SaleSummaryStrip sale={mockSaleDetail} />
-          <div className="mt-4">
-            <ContentTabs sale={mockSaleDetail} />
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mt-4">
+            {/* Left column: Agent Overview + Policy Status */}
+            <div className="lg:col-span-1 space-y-4">
+              <AgentDetailsCard sale={mockSaleDetail} />
+              <PolicyStatusCard sale={mockSaleDetail} />
+              <SaleOverviewCard sale={mockSaleDetail} />
+            </div>
+            {/* Right column: Content Tabs */}
+            <div className="lg:col-span-3">
+              <ContentTabs sale={mockSaleDetail} />
+            </div>
           </div>
         </div>
       )}
