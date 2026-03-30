@@ -141,8 +141,19 @@ export default function OpsDashboard() {
 
       {/* Mode A: Wizard step content (placeholder) */}
       {mode === 'A' && (
-        <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
-          {language === 'th' ? `ขั้นตอนที่ ${currentStep + 1}` : `Wizard Step ${currentStep + 1}`}
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center space-y-3 max-w-md">
+            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+              <span className="text-2xl font-bold text-primary">{currentStep + 1}</span>
+            </div>
+            <h3 className="text-lg font-semibold">
+              {language === 'th' ? steps[currentStep].th : steps[currentStep].en}
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              {language === 'th' ? 'เนื้อหา wizard จะถูกสร้างที่นี่' : 'Wizard step content will be built here'}
+            </p>
+            <p className="text-xs text-muted-foreground/60">Mode A — Pre-Sale (AST)</p>
+          </div>
         </div>
       )}
 
