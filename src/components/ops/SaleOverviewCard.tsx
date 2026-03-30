@@ -234,13 +234,29 @@ export function PolicyStatusCard({ sale }: SaleOverviewCardProps) {
       </CardHeader>
       <CardContent className="px-5 pb-4">
         <div className="space-y-3">
+          {/* Payment Status */}
+          <StatusDropdown
+            label={language === 'th' ? 'สถานะการชำระเงิน' : 'Payment Status'}
+            options={paymentStatuses}
+            defaultValue={sale.paymentStatus}
+            language={language}
+          />
+
+          {/* VMI row: status + owner */}
           {sale.policies.map((policy) => (
-            <div key={policy.kind} className="grid grid-cols-2 gap-x-4">
-              <PolicyStatusDropdown kind={policy.kind} language={language} />
-              <ReadOnlyField
-                label={`${policy.kind.toUpperCase()} ${language === 'th' ? 'ผู้รับผิดชอบ' : 'Owner'}`}
-                value="Pao"
+            <div key={policy.kind} className="grid grid-cols-2 gap-x-4 items-end">
+              <StatusDropdown
+                label={`${policy.kind.toUpperCase()} ${language === 'th' ? 'สถานะ' : 'Status'}`}
+                options={policyStatuses}
+                defaultValue="pending_payment"
+                language={language}
               />
+              <div className="space-y-0.5">
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                  {policy.kind.toUpperCase()} {language === 'th' ? 'ผู้รับผิดชอบ' : 'Owner'}
+                </span>
+                <p className="text-xs font-medium h-7 flex items-center">Pao</p>
+              </div>
             </div>
           ))}
         </div>
