@@ -781,21 +781,28 @@ export function PolicyRemarksReworkDialog({
     setNewReworkAutoResolveDate(undefined);
   };
 
+  if (!open) return null;
+
+  const handleClose = () => {
+    onOpenChange(false);
+    resetReassignForm();
+    resetAddReworkForm();
+    setReplyingTo(null);
+    setReplyComment('');
+    setReplyAttachments([]);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => {
-      onOpenChange(isOpen);
-      if (!isOpen) {
-        resetReassignForm();
-        resetAddReworkForm();
-        setReplyingTo(null);
-        setReplyComment('');
-        setReplyAttachments([]);
-      }
-    }}>
-      <DialogContent className="sm:max-w-[600px] max-h-[80vh]">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <MessageSquare className="w-5 h-5" />
+    <>
+      {/* Overlay */}
+      <div className="fixed inset-0 z-40 bg-black/20" onClick={handleClose} />
+
+      {/* Sidesheet */}
+      <div className="fixed right-0 top-0 z-50 h-screen w-[480px] bg-card border-l border-border shadow-xl flex flex-col animate-in slide-in-from-right-full duration-200">
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border shrink-0">
+          <div className="flex items-center gap-2">
+            <MessageSquare className="w-4 h-4" />
             <Badge 
               className={cn(
                 "text-[10px] h-5 px-1.5",
@@ -806,15 +813,20 @@ export function PolicyRemarksReworkDialog({
             >
               {policyKind.toUpperCase()}
             </Badge>
-            {language === 'th' ? 'หมายเหตุ & งานติดปัญหา' : 'Remarks & Rework'}
+            <h3 className="text-sm font-semibold">
+              {language === 'th' ? 'หมายเหตุ & งานติดปัญหา' : 'Remarks & Rework'}
+            </h3>
             {unresolvedEntries.length > 0 && (
-              <Badge variant="outline" className="ml-2 bg-warning/10 text-primary border-primary/30">
+              <Badge variant="outline" className="bg-warning/10 text-primary border-primary/30">
                 <AlertTriangle className="w-3 h-3 mr-1" />
                 {unresolvedEntries.length} {language === 'th' ? 'งานติดปัญหา' : 'Active'}
               </Badge>
             )}
-          </DialogTitle>
-        </DialogHeader>
+          </div>
+          <button onClick={handleClose} className="p-1 rounded-md hover:bg-muted transition-colors">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
 
         {reassignEntryId ? (
           // Reassign Form
