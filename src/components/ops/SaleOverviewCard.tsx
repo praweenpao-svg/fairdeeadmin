@@ -167,7 +167,7 @@ export function SaleOverviewCard({ sale }: SaleOverviewCardProps) {
         <div className="grid grid-cols-2 gap-x-6 gap-y-2 mb-3 pb-3 border-b border-border/50">
           <ReadOnlyField
             label={language === 'th' ? 'ชื่อตัวแทน' : 'Agent Name'}
-            value={sale.agent.name}
+            value={language === 'th' ? sale.agent.nameTh : sale.agent.name}
           />
           <ReadOnlyField
             label={language === 'th' ? 'ระดับ' : 'Level'}
