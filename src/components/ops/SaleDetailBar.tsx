@@ -1,5 +1,6 @@
 import React from 'react';
 import { ChevronDown, FileUp, XCircle, Mail, Upload, History } from 'lucide-react';
+import mtiLogo from '@/assets/insurer-mti.png';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useLanguageStore } from '@/stores/languageStore';
@@ -114,12 +115,8 @@ export function SaleDetailBar({
   return (
     <div className="bg-card border border-border rounded-lg p-4">
       <div className="flex items-center gap-4">
-        {/* Insurer logo placeholder */}
-        <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
-          <span className="text-[10px] font-bold text-muted-foreground">
-            {vmiPolicy?.insurer?.substring(0, 2).toUpperCase() || 'IN'}
-          </span>
-        </div>
+        {/* Insurer logo */}
+        <img src={mtiLogo} alt="Muang Thai Insurance" className="w-10 h-10 rounded-lg object-cover shrink-0" />
 
         {/* Quotation info */}
         <div className="min-w-0">
@@ -128,7 +125,7 @@ export function SaleDetailBar({
           </span>
           <p className="text-sm font-bold leading-tight">QS-{sale.qqId}</p>
           <span className="text-xs text-primary">
-            {vmiPolicy?.coverage.insurer || sale.policies[0]?.insurer} · {vmiPolicy?.coverage.insuranceClass || '—'} · {vmiPolicy?.garageType || '—'}
+            {language === 'th' ? 'เมืองไทยประกันภัย' : 'Muang Thai Insurance'} · {vmiPolicy?.coverage.insuranceClass || '—'} · {language === 'th' ? 'ซ่อมห้าง' : 'Authorized Garage'}
           </span>
         </div>
 

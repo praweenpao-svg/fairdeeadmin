@@ -170,7 +170,7 @@ export const mockSaleDetail: SaleDetail = {
       packageName: 'เมืองไทย 3+ Care',
       insurer: 'Muang Thai',
       sumInsured: 350000,
-      garageType: 'Approved Garage',
+      garageType: 'Authorized Garage',
       installmentType: '',
       affiliateCommission: 1524.80,
       premiumAfterTax: 7800.30,
