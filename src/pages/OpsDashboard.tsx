@@ -84,6 +84,81 @@ export default function OpsDashboard() {
   const [uploadPolicyOpen, setUploadPolicyOpen] = useState(false);
   const [historySidebarOpen, setHistorySidebarOpen] = useState(false);
 
+  // Mock rework/remarks state for the shared sidesheet
+  const [opsRemarks, setOpsRemarks] = useState<PolicyRemark[]>([
+    {
+      id: 'opr-1',
+      comment: 'ลูกค้าแจ้งว่าจะส่งเอกสารเพิ่มเติมภายในวันพรุ่งนี้',
+      createdBy: 'Pao',
+      createdAt: '2026-03-27T16:00:00',
+    },
+  ]);
+  const [opsReworkHistory, setOpsReworkHistory] = useState<PolicyReworkEntry[]>([
+    {
+      id: 'opw-1',
+      reasonId: 'rw-1',
+      reasonLabel: 'ระบุข้อมูลผู้เอาประกันภัย ไม่ถูกต้องหรือไม่ครบถ้วน',
+      details: 'กรุณาตรวจสอบชื่อและที่อยู่ @Pao',
+      savedBy: 'Rachel',
+      savedAt: '2026-03-28T14:30:00',
+      resolved: false,
+      assignedTo: 'Pao',
+    },
+  ]);
+
+  const handleAddRemark = (comment: string, attachments?: ReworkAttachment[]) => {
+    setOpsRemarks(prev => [...prev, {
+      id: `opr-${Date.now()}`,
+      comment,
+      createdBy: 'Current User',
+      createdAt: new Date().toISOString(),
+      attachments,
+    }]);
+  };
+
+  const handleReworkResolve = (entryId: string) => {
+    setOpsReworkHistory(prev => prev.map(e =>
+      e.id === entryId ? { ...e, resolved: true, resolvedBy: 'Current User', resolvedAt: new Date().toISOString() } : e
+    ));
+  };
+
+  const handleReworkReassign = (entryId: string, newReasonId: string, details: string, attachments: ReworkAttachment[]) => {
+    setOpsReworkHistory(prev => {
+      const updated = prev.map(e =>
+        e.id === entryId ? { ...e, resolved: true, resolvedBy: 'Current User (Reassigned)', resolvedAt: new Date().toISOString() } : e
+      );
+      const config = mockReworkConfigs.find(c => c.id === newReasonId);
+      updated.push({
+        id: `opw-${Date.now()}`,
+        reasonId: newReasonId,
+        reasonLabel: config?.descriptionEn || newReasonId,
+        details,
+        attachments,
+        savedBy: 'Current User',
+        savedAt: new Date().toISOString(),
+        resolved: false,
+        assignedTo: config?.stickyAssignee?.priority?.[0] || 'Unassigned',
+      });
+      return updated;
+    });
+  };
+
+  const handleAddRework = (policyId: string, reasonId: string, details: string, attachments: ReworkAttachment[], autoResolveDate?: string) => {
+    const config = mockReworkConfigs.find(c => c.id === reasonId);
+    setOpsReworkHistory(prev => [...prev, {
+      id: `opw-${Date.now()}`,
+      reasonId,
+      reasonLabel: config?.descriptionEn || reasonId,
+      details,
+      attachments,
+      savedBy: 'Current User',
+      savedAt: new Date().toISOString(),
+      resolved: false,
+      assignedTo: config?.stickyAssignee?.priority?.[0] || 'Unassigned',
+      autoResolveDate,
+    }]);
+  };
+
   const handleToast = (msg: string) => {
     toast.success(msg, {
       description: language === 'th' ? 'ฟีเจอร์นี้จะเชื่อมต่อกับระบบจริงในอนาคต' : 'This will connect to the real system.',
