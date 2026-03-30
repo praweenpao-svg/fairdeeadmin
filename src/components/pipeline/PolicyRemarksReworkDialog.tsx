@@ -70,6 +70,8 @@ export function PolicyRemarksReworkDialog({
   open,
   onOpenChange,
   policyKind,
+  onPolicyKindChange,
+  availablePolicies,
   policyId,
   leadNumber,
   remarks,
