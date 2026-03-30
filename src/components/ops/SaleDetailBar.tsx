@@ -112,15 +112,26 @@ export function SaleDetailBar({
   };
 
   return (
-    <div className="bg-card border border-border rounded-lg p-4 space-y-2">
-      {/* Row 1: QQ ID, Vehicle Details + Actions */}
-      <div className="flex items-center gap-3">
-        <Badge className="bg-primary text-primary-foreground text-sm px-3 py-0.5 font-bold">
-          #{sale.qqId}
-        </Badge>
-        <span className="text-sm font-semibold">
-          {sale.vehicle.brand} {sale.vehicle.model} {sale.vehicle.year}
-        </span>
+    <div className="bg-card border border-border rounded-lg p-4">
+      <div className="flex items-center gap-4">
+        {/* Insurer logo placeholder */}
+        <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
+          <span className="text-[10px] font-bold text-muted-foreground">
+            {vmiPolicy?.insurer?.substring(0, 2).toUpperCase() || 'IN'}
+          </span>
+        </div>
+
+        {/* Quotation info */}
+        <div className="min-w-0">
+          <span className="text-[10px] text-muted-foreground">
+            {language === 'th' ? 'เลขใบเสนอราคา' : 'Quotation Number'}
+          </span>
+          <p className="text-sm font-bold leading-tight">QS-{sale.qqId}</p>
+          <span className="text-xs text-primary">
+            {vmiPolicy?.coverage.insurer || sale.policies[0]?.insurer} · {vmiPolicy?.coverage.insuranceClass || '—'} · {vmiPolicy?.garageType || '—'}
+          </span>
+        </div>
+
         <div className="flex-1" />
 
         {primaryAction && (
@@ -196,23 +207,6 @@ export function SaleDetailBar({
             </DropdownMenuSub>
           </DropdownMenuContent>
         </DropdownMenu>
-      </div>
-
-      {/* Row 2: Stage + VMI/CMI status badges */}
-      <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
-        <Badge variant="outline" className="border-primary text-primary text-[10px] font-semibold">
-          {language === 'th' ? stageLabel.th : stageLabel.en}
-        </Badge>
-        {vmiPolicy && (
-          <Badge variant="outline" className={cn('text-[10px] font-semibold', policyStatusColorMap[vmiPolicy.status] || '')}>
-            VMI: {policyStatusLabels[vmiPolicy.status] || vmiPolicy.status}
-          </Badge>
-        )}
-        {cmiPolicy && (
-          <Badge variant="outline" className={cn('text-[10px] font-semibold', policyStatusColorMap[cmiPolicy.status] || '')}>
-            CMI: {policyStatusLabels[cmiPolicy.status] || cmiPolicy.status}
-          </Badge>
-        )}
       </div>
     </div>
   );
