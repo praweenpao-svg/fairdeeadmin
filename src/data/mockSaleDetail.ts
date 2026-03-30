@@ -128,7 +128,7 @@ export interface SaleDetail {
 
 export const mockSaleDetail: SaleDetail = {
   id: 'sale-001',
-  qqId: '43589',
+  qqId: '112233',
   agentCode: 'FM-5369',
   typeOfSale: 'งานใหม่',
   paymentMethod: 'QR Code (Full Payment)',
@@ -244,12 +244,12 @@ export const mockSaleDetail: SaleDetail = {
     delivery: 'Dao',
   },
   agent: {
-    name: 'นิภาพร เกตุอรุณ',
-    level: 2,
-    phone: '813290646',
-    code: 'FM-147825',
-    membershipDuration: '4 เดือน',
-    sumInsured: 70000,
+    name: 'Praween Imchokchai',
+    level: 3,
+    phone: '865044433',
+    code: 'FM-72482',
+    membershipDuration: '1 ปี',
+    sumInsured: 500000,
     sumInsuredFromOriginal: '- บาท',
     originalSumInsured: '-',
     bestPremium: false,
