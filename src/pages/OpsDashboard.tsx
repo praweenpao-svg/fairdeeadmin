@@ -22,11 +22,11 @@ const steps = [
   { en: 'Admin Actions', th: 'จัดการงาน' },
 ];
 
-function StepperBar({ currentStep }: { currentStep: number }) {
+function StepperBar({ currentStep, onStepClick }: { currentStep: number; onStepClick: (step: number) => void }) {
   const { language } = useLanguageStore();
 
   return (
-    <div className="flex items-center justify-center gap-0 px-8 py-3 bg-muted/30 border-b border-border">
+    <div className="flex items-center gap-0 px-6 py-3 bg-muted/30 border-b border-border">
       {steps.map((step, idx) => {
         const isCompleted = idx < currentStep;
         const isCurrent = idx === currentStep;
@@ -34,7 +34,7 @@ function StepperBar({ currentStep }: { currentStep: number }) {
 
         return (
           <React.Fragment key={idx}>
-            <div className="flex items-center gap-2">
+            <button onClick={() => onStepClick(idx)} className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
               <div
                 className={cn(
                   'w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold border-2 transition-colors shrink-0',
@@ -59,7 +59,7 @@ function StepperBar({ currentStep }: { currentStep: number }) {
               >
                 {language === 'th' ? step.th : step.en}
               </span>
-            </div>
+            </button>
             {!isLast && (
               <div
                 className={cn(
