@@ -184,7 +184,7 @@ export default function OpsDashboard() {
 
 
       {/* 4-Step Stepper */}
-      <StepperBar currentStep={currentStep} />
+      <StepperBar currentStep={currentStep} onStepClick={setCurrentStep} />
 
       {/* Mode B: Full-width scrollable content */}
       {mode === 'B' && (
