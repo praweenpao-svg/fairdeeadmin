@@ -159,42 +159,63 @@ export function SaleOverviewCard({ sale }: SaleOverviewCardProps) {
     <Card>
       <CardHeader className="pb-2 pt-3 px-5">
         <CardTitle className="text-sm font-semibold">
-          {language === 'th' ? 'ข้อมูลงาน' : 'Sale Overview'}
+          {language === 'th' ? 'ข้อมูลตัวแทน' : 'Agent Details'}
         </CardTitle>
       </CardHeader>
       <CardContent className="px-5 pb-4">
-        {/* Row 1: Editable fields + key identifiers */}
-        <div className="grid grid-cols-4 gap-x-6 gap-y-3 mb-3 pb-3 border-b border-border/50">
+        {/* Agent info section */}
+        <div className="grid grid-cols-2 gap-x-6 gap-y-2 mb-3 pb-3 border-b border-border/50">
           <ReadOnlyField
-            label={language === 'th' ? 'เลขใบเสนอราคา' : 'Quotation ID'}
-            value={sale.qqId}
+            label={language === 'th' ? 'ชื่อตัวแทน' : 'Agent Name'}
+            value={sale.agent.name}
           />
+          <ReadOnlyField
+            label={language === 'th' ? 'ระดับ' : 'Level'}
+            value={String(sale.agent.level)}
+          />
+          <ReadOnlyField
+            label={language === 'th' ? 'เบอร์โทรศัพท์ตัวแทน' : 'Agent Phone'}
+            value={sale.agent.phone}
+          />
+          <ReadOnlyField
+            label={language === 'th' ? 'รหัสตัวแทน' : 'Agent Code'}
+            value={sale.agent.code}
+          />
+          <ReadOnlyField
+            label={language === 'th' ? 'ระยะเวลาการเป็นสมาชิก' : 'Membership Duration'}
+            value={sale.agent.membershipDuration}
+          />
+          <ReadOnlyField
+            label={language === 'th' ? 'ทุนแนะนำ' : 'Sum Insured'}
+            value={`${sale.agent.sumInsured.toLocaleString()} ${language === 'th' ? 'บาท' : 'THB'}`}
+          />
+        </div>
+
+        {/* Sale details section */}
+        <div className="grid grid-cols-2 gap-x-6 gap-y-2 mb-3 pb-3 border-b border-border/50">
           <EditableField
-            label={language === 'th' ? 'ประเภทงาน' : 'Sale Type'}
+            label={language === 'th' ? 'ประเภทการขาย' : 'Sale Type'}
             value={saleType}
             type="select"
             options={saleTypeOptions}
             onSave={(v) => { setSaleType(v); handleFieldSave('Sale Type', v); }}
           />
-          <EditableField
-            label={language === 'th' ? 'วันที่ขาย' : 'Sold On'}
-            value={soldOn}
-            type="text"
-            onSave={(v) => { setSoldOn(v); handleFieldSave('Sold On', v); }}
+          <ReadOnlyField
+            label={language === 'th' ? 'เบี้ยประกันภัยคุ้มที่สุด' : 'Best Premium'}
+            value={sale.agent.bestPremium ? (language === 'th' ? 'ใช่' : 'Yes') : (language === 'th' ? 'ไม่' : 'No')}
           />
-          <EditableField
-            label={language === 'th' ? 'เลข QID บ.ประกัน' : 'Insurer QID'}
-            value={insurerQid}
-            type="text"
-            onSave={(v) => { setInsurerQid(v); handleFieldSave('Insurer QID', v); }}
+          <ReadOnlyField
+            label={language === 'th' ? 'สมัครเมื่อ' : 'Created At'}
+            value={sale.createdAt}
+          />
+          <ReadOnlyField
+            label={language === 'th' ? 'รายละเอียดการจ่ายค่าคอมมิชชั่น' : 'Commission Detail'}
+            value={sale.agent.commissionDetail}
           />
         </div>
 
-        {/* Row 2: Attribution + per-policy owners + statuses */}
-        <div className="grid grid-cols-4 gap-x-6 gap-y-3">
-          <ReadOnlyField label={language === 'th' ? 'สร้างโดย' : 'Created by'} value="—" />
-          <ReadOnlyField label={language === 'th' ? 'สร้างเมื่อ' : 'Created at'} value={sale.createdAt} />
-          <ReadOnlyField label="KYC Status" value="—" />
+        {/* Per-policy owners + statuses */}
+        <div className="grid grid-cols-2 gap-x-6 gap-y-2">
           {sale.policies.map((policy) => (
             <ReadOnlyField
               key={policy.kind}
@@ -202,20 +223,14 @@ export function SaleOverviewCard({ sale }: SaleOverviewCardProps) {
               value={policy.kind === 'vmi' ? 'Pao' : 'Lisa'}
             />
           ))}
+          {sale.policies.map((policy) => (
+            <PolicyStatusDropdown
+              key={policy.kind}
+              kind={policy.kind}
+              language={language}
+            />
+          ))}
         </div>
-
-        {/* Row 3: Per-policy status dropdowns */}
-        {sale.policies.length > 0 && (
-          <div className="grid grid-cols-4 gap-x-6 gap-y-3 mt-3 pt-3 border-t border-border/50">
-            {sale.policies.map((policy) => (
-              <PolicyStatusDropdown
-                key={policy.kind}
-                kind={policy.kind}
-                language={language}
-              />
-            ))}
-          </div>
-        )}
       </CardContent>
     </Card>
   );
