@@ -41,6 +41,8 @@ interface PolicyRemarksReworkDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   policyKind: 'vmi' | 'cmi';
+  onPolicyKindChange?: (kind: 'vmi' | 'cmi') => void;
+  availablePolicies?: ('vmi' | 'cmi')[];
   policyId: string;
   leadNumber?: string; // Sale ID for notification
   remarks: PolicyRemark[];
