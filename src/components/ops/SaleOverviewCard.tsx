@@ -145,7 +145,6 @@ function PolicyStatusDropdown({ kind, language }: { kind: string; language: stri
 
 export function SaleOverviewCard({ sale }: SaleOverviewCardProps) {
   const { language } = useLanguageStore();
-  const [saleType, setSaleType] = useState(sale.typeOfSale);
 
   const handleFieldSave = (field: string, value: string) => {
     toast.success(language === 'th' ? 'บันทึกแล้ว' : 'Saved', {
@@ -175,20 +174,7 @@ export function SaleOverviewCard({ sale }: SaleOverviewCardProps) {
           <SummaryRow label={language === 'th' ? 'ทะเบียนรถ' : 'Vehicle Number'} value={sale.vehicle.licensePlate} />
           <SummaryRow label={language === 'th' ? 'บริษัทประกัน' : 'Insurer'} value={vmiPolicy?.coverage.insurer || '—'} />
           <SummaryRow label={language === 'th' ? 'เบี้ยรวม' : 'Total Premium'} value={`${totalPremium.toLocaleString()} ${language === 'th' ? 'บาท' : 'THB'}`} />
-          <div className="flex items-center justify-between py-1">
-            <span className="text-xs text-muted-foreground">{language === 'th' ? 'ประเภทการขาย' : 'Sale Type'}</span>
-            <div className="max-w-[140px]">
-              <EditableField
-                label=""
-                value={saleType}
-                type="select"
-                options={saleTypeOptions}
-                onSave={(v) => { setSaleType(v); handleFieldSave('Sale Type', v); }}
-              />
-            </div>
-          </div>
-          <SummaryRow label={language === 'th' ? 'วิธีชำระเงิน' : 'Payment Method'} value={sale.paymentMethod} />
-          <SummaryRow label={language === 'th' ? 'โอนใบเสนอราคาให้' : 'Transferred Quote For'} value="—" />
+          <SummaryRow label={language === 'th' ? 'ประเภทการขาย' : 'Sale Type'} value={sale.typeOfSale} />
         </div>
       </CardContent>
     </Card>
@@ -237,20 +223,15 @@ export function PolicyStatusCard({ sale }: SaleOverviewCardProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="px-5 pb-4">
-        <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+        <div className="space-y-3">
           {sale.policies.map((policy) => (
-            <ReadOnlyField
-              key={`owner-${policy.kind}`}
-              label={`${policy.kind.toUpperCase()} ${language === 'th' ? 'ผู้รับผิดชอบ' : 'Owner'}`}
-              value={policy.kind === 'vmi' ? 'Pao' : 'Lisa'}
-            />
-          ))}
-          {sale.policies.map((policy) => (
-            <PolicyStatusDropdown
-              key={`status-${policy.kind}`}
-              kind={policy.kind}
-              language={language}
-            />
+            <div key={policy.kind} className="grid grid-cols-2 gap-x-4">
+              <PolicyStatusDropdown kind={policy.kind} language={language} />
+              <ReadOnlyField
+                label={`${policy.kind.toUpperCase()} ${language === 'th' ? 'ผู้รับผิดชอบ' : 'Owner'}`}
+                value="Pao"
+              />
+            </div>
           ))}
         </div>
       </CardContent>

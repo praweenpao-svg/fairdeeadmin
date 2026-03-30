@@ -201,9 +201,9 @@ export default function OpsDashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mt-4">
             {/* Left column: Agent Overview + Policy Status */}
             <div className="lg:col-span-1 space-y-4">
-              <SaleOverviewCard sale={mockSaleDetail} />
-              <PolicyStatusCard sale={mockSaleDetail} />
               <AgentDetailsCard sale={mockSaleDetail} />
+              <PolicyStatusCard sale={mockSaleDetail} />
+              <SaleOverviewCard sale={mockSaleDetail} />
             </div>
             {/* Right column: Content Tabs */}
             <div className="lg:col-span-3">
