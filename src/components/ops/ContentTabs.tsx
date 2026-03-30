@@ -352,26 +352,26 @@ function PackageSelectionTab({ sale }: { sale: SaleDetail }) {
         <div className="space-y-4">
           {isInstallment && (
             <div className="space-y-3">
-              <SectionLabel>{language === 'th' ? 'ตัวเลือกผ่อนชำระ' : 'Instalment Options'}</SectionLabel>
+              <SectionLabel>{language === 'th' ? 'ตัวเลือกผ่อนชำระ' : 'Installment Options'}</SectionLabel>
               
               <ToggleSelect
-                label={language === 'th' ? 'เลือกแผนผ่อนชำระ' : 'Instalment Plan'}
+                label={language === 'th' ? 'เลือกแผนผ่อนชำระ' : 'Installment Plan'}
                 options={[
-                  { value: 'equal', label: language === 'th' ? 'ผ่อนเท่ากัน' : 'Equal Instalments' },
+                  { value: 'equal', label: language === 'th' ? 'ผ่อนเท่ากัน' : 'Equal Installments' },
                   { value: 'downpayment', label: language === 'th' ? 'ดาวน์ 25%' : '25% Downpayment' },
                 ]}
-                value={instalmentPlan}
-                onChange={setInstalmentPlan}
+                value={installmentPlan}
+                onChange={setInstallmentPlan}
               />
 
               <div className="space-y-1">
-                <p className="text-xs text-muted-foreground">{language === 'th' ? 'จำนวนงวด' : 'No. of Instalments'}</p>
-                <Select defaultValue={instalmentOptions[0].value}>
+                <p className="text-xs text-muted-foreground">{language === 'th' ? 'จำนวนงวด' : 'No. of Installments'}</p>
+                <Select defaultValue={installmentOptions[0].value}>
                   <SelectTrigger className="text-xs h-9">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {instalmentOptions.map(opt => (
+                    {installmentOptions.map(opt => (
                       <SelectItem key={opt.value} value={opt.value}>{language === 'th' ? opt.th : opt.en}</SelectItem>
                     ))}
                   </SelectContent>
