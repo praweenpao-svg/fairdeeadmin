@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronDown, FileUp, AlertTriangle, XCircle, MessageSquare, Mail, Upload, History, FileText } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useLanguageStore } from '@/stores/languageStore';
 import { SaleDetail } from '@/data/mockSaleDetail';
@@ -130,7 +129,7 @@ export function StickyPageHeader({
   onOpenEndorsement,
   onOpenUploadDoc,
 }: StickyPageHeaderProps) {
-  const navigate = useNavigate();
+  const { language } = useLanguageStore();
   const { language } = useLanguageStore();
 
   const vmiPolicy = sale.policies.find(p => p.kind === 'vmi');
