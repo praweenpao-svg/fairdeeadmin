@@ -1,4 +1,5 @@
 import React from 'react';
+import mtiLogo from '@/assets/insurer-mti.png';
 import { useLanguageStore } from '@/stores/languageStore';
 import { SaleDetail } from '@/data/mockSaleDetail';
 import { CoveragePanel } from './CoveragePanel';
