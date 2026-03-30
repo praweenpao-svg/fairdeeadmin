@@ -7,6 +7,7 @@ import { StickyPageHeader } from '@/components/ops/StickyPageHeader';
 import { SaleOverviewCard } from '@/components/ops/SaleOverviewCard';
 import { PolicyDetailsZone } from '@/components/ops/PolicyDetailsZone';
 import { ContentTabs } from '@/components/ops/ContentTabs';
+import { SaleDetailBar } from '@/components/ops/SaleDetailBar';
 import { UploadPolicyModal } from '@/components/ops/UploadPolicyModal';
 import { HistoryActivitySidebar } from '@/components/ops/HistoryActivitySidebar';
 import { cn } from '@/lib/utils';
@@ -116,16 +117,8 @@ export default function OpsDashboard() {
         </div>
       </div>
 
-      {/* Sticky Page Header with top-right actions (Section 13A v3) */}
-      <StickyPageHeader
-        sale={mockSaleDetail}
-        mode={mode}
-        hasActiveRework={false}
-        onOpenUploadPolicy={() => setUploadPolicyOpen(true)}
-        onOpenHistoryLog={() => setHistorySidebarOpen(true)}
-        onOpenEndorsement={() => handleToast(language === 'th' ? 'เปิด Record Endorsement' : 'Open Record Endorsement')}
-        onOpenUploadDoc={() => handleToast(language === 'th' ? 'เปิด Upload Document' : 'Open Upload Document')}
-      />
+      {/* Sticky Page Header — license plate only */}
+      <StickyPageHeader sale={mockSaleDetail} />
 
       {/* 4-Step Stepper */}
       <StepperBar currentStep={currentStep} />
@@ -133,6 +126,15 @@ export default function OpsDashboard() {
       {/* Mode B: Full-width scrollable content */}
       {mode === 'B' && (
         <div className="flex-1 overflow-y-auto p-4 max-w-6xl mx-auto w-full space-y-4">
+          {/* Detail bar: Name, QQ ID, Status, Actions — inside step 4 content */}
+          <SaleDetailBar
+            sale={mockSaleDetail}
+            hasActiveRework={false}
+            onOpenUploadPolicy={() => setUploadPolicyOpen(true)}
+            onOpenHistoryLog={() => setHistorySidebarOpen(true)}
+            onOpenEndorsement={() => handleToast(language === 'th' ? 'เปิด Record Endorsement' : 'Open Record Endorsement')}
+            onOpenUploadDoc={() => handleToast(language === 'th' ? 'เปิด Upload Document' : 'Open Upload Document')}
+          />
           <SaleOverviewCard sale={mockSaleDetail} />
           <PolicyDetailsZone sale={mockSaleDetail} />
           <ContentTabs sale={mockSaleDetail} />
