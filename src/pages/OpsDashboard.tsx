@@ -1,11 +1,8 @@
 import React, { useState } from 'react';
 import { useLanguageStore } from '@/stores/languageStore';
-import { LanguageToggle } from '@/components/LanguageToggle';
 import { mockSaleDetail } from '@/data/mockSaleDetail';
-import { ActionPanel } from '@/components/ops/ActionPanel';
 import { StickyPageHeader } from '@/components/ops/StickyPageHeader';
 import { SaleOverviewCard } from '@/components/ops/SaleOverviewCard';
-import { ProgressionTimeline } from '@/components/ops/ProgressionTimeline';
 import { PolicyDetailsZone } from '@/components/ops/PolicyDetailsZone';
 import { ContentTabs } from '@/components/ops/ContentTabs';
 import { cn } from '@/lib/utils';
@@ -73,35 +70,37 @@ function StepperBar({ currentStep }: { currentStep: number }) {
 
 export default function OpsDashboard() {
   const [currentStep] = useState(3);
+  // Mode B: post-sale (Step 4+). Mock sale is in post-sale stage.
+  const mode: 'A' | 'B' = currentStep >= 3 ? 'B' : 'A';
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Sticky Page Header (R-05, R-06) */}
-      <StickyPageHeader sale={mockSaleDetail} />
+      {/* Sticky Page Header with top-right action buttons (Mode B) */}
+      <StickyPageHeader sale={mockSaleDetail} mode={mode} />
 
       {/* 4-Step Stepper */}
       <StepperBar currentStep={currentStep} />
 
-      {/* Two-column body: Left Panel (sticky) + Main Content (scrollable) */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Left Panel — §13A Action Panel */}
-        <ActionPanel sale={mockSaleDetail} />
-
-        {/* Main Content Area (R-02: Overview → Timeline → Policy Details → Tabs) */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+      {/* Mode B: Full-width scrollable content */}
+      {mode === 'B' && (
+        <div className="flex-1 overflow-y-auto p-6 max-w-5xl mx-auto w-full space-y-6">
           {/* A. Sale Overview Card */}
           <SaleOverviewCard sale={mockSaleDetail} />
 
-          {/* B. Progression Timeline (Q+) */}
-          <ProgressionTimeline sale={mockSaleDetail} />
-
-          {/* C. Policy Details Zone */}
+          {/* B. Policy Details Zone */}
           <PolicyDetailsZone sale={mockSaleDetail} />
 
-          {/* D. Content Tabs */}
+          {/* C. Content Tabs */}
           <ContentTabs sale={mockSaleDetail} />
         </div>
-      </div>
+      )}
+
+      {/* Mode A: Wizard step content (placeholder) */}
+      {mode === 'A' && (
+        <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
+          Wizard Step {currentStep + 1} content
+        </div>
+      )}
     </div>
   );
 }
