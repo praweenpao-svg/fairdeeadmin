@@ -100,13 +100,13 @@ export default function OpsDashboard() {
               key={step}
               onClick={() => setCurrentStep(step)}
               className={cn(
-                'px-2 py-0.5 rounded text-[10px] font-medium transition-colors',
+              'px-2 py-0.5 rounded text-[10px] font-medium transition-colors',
                 currentStep === step
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:bg-muted'
               )}
             >
-              {step < 3 ? `Step ${step + 1}` : 'Mode B'}
+              Step {step + 1}
             </button>
           ))}
         </div>
