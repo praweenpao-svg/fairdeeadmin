@@ -146,12 +146,12 @@ function ToggleSelect({ label, options, value, onChange }: {
   return (
     <div className="space-y-2">
       <SectionLabel>{label}</SectionLabel>
-      <div className="flex gap-2">
+      <div className="grid grid-cols-2 gap-2" style={{ maxWidth: '280px' }}>
         {options.map(opt => (
           <button
             key={opt.value}
             onClick={() => onChange(opt.value)}
-            className={`px-4 py-1.5 rounded-md text-xs font-medium border transition-colors ${
+            className={`py-1.5 rounded-md text-xs font-medium border transition-colors text-center ${
               value === opt.value
                 ? 'bg-primary text-primary-foreground border-primary'
                 : 'bg-card text-foreground border-border hover:bg-accent'
