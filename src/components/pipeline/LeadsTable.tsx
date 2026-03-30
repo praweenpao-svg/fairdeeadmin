@@ -2605,39 +2605,6 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
         />
       </div>
 
-      {/* Rework Dialog */}
-      <ReworkDialog
-        open={reworkDialogOpen}
-        onOpenChange={(open) => {
-          setReworkDialogOpen(open);
-          if (!open) {
-            setSelectedLead(null);
-            setSelectedPolicyId(null);
-          }
-        }}
-        reworkConfigs={(() => {
-          // Filter rework configs by policy's actual stage for correct filtering in "All" tab
-          if (!selectedLead || !selectedPolicyId) return stageReworkConfigs;
-          const policy = selectedLead.policyRecords?.find(p => p.id === selectedPolicyId);
-          if (policy) {
-            const policyStage = getPolicyStage(policy);
-            if (policyStage) {
-              return reworkConfigs.filter(config => 
-                config.stages.includes(policyStage) && 
-                (config.policyScope === 'both' || config.policyScope === policy.kind)
-              );
-            }
-          }
-          return stageReworkConfigs;
-        })()}
-        onConfirm={handleReworkConfirm}
-        leadNumber={selectedLead?.leadNumber}
-        policyKind={(() => {
-          if (!selectedLead || !selectedPolicyId) return undefined;
-          const policy = selectedLead.policyRecords?.find(p => p.id === selectedPolicyId);
-          return policy?.kind;
-        })()}
-      />
 
       {/* History Log Dialog */}
       {selectedLead && (
