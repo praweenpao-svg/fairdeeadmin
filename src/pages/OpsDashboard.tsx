@@ -198,7 +198,7 @@ export default function OpsDashboard() {
             onOpenEndorsement={() => handleToast(language === 'th' ? 'เปิด Record Endorsement' : 'Open Record Endorsement')}
             onOpenUploadDoc={() => handleToast(language === 'th' ? 'เปิด Upload Document' : 'Open Upload Document')}
           />
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mt-4">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mt-4">
             {/* Left column: Agent Overview + Policy Status */}
             <div className="lg:col-span-1 space-y-4">
               <AgentDetailsCard sale={mockSaleDetail} />
