@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, AlertTriangle, MessageSquare, CheckCircle2, Send, Clock } from 'lucide-react';
+import { X, AlertTriangle, MessageSquare, CheckCircle2, Send, Clock, Filter } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguageStore } from '@/stores/languageStore';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MentionTextarea } from '@/components/ui/mention-textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { toast } from 'sonner';
 
 export interface HistoryEntry {
@@ -24,6 +31,7 @@ interface HistoryActivitySidebarProps {
   open: boolean;
   onClose: () => void;
   quotationId?: string;
+  availablePolicies?: ('vmi' | 'cmi')[];
 }
 
 const mockHistory: HistoryEntry[] = [
@@ -99,12 +107,19 @@ function formatDateTime(ts: string) {
  * used identically across Admin Portal and OPS Dashboard.
  * Data model, rework taxonomy, and @mention behaviour per Section 8.
  */
-export function HistoryActivitySidebar({ open, onClose, quotationId }: HistoryActivitySidebarProps) {
+export function HistoryActivitySidebar({ open, onClose, quotationId, availablePolicies }: HistoryActivitySidebarProps) {
   const { language } = useLanguageStore();
   const [compositionMode, setCompositionMode] = useState<'none' | 'rework' | 'remark'>('none');
   const [draftText, setDraftText] = useState('');
+  const [policyFilter, setPolicyFilter] = useState<'all' | 'vmi' | 'cmi'>('all');
 
   if (!open) return null;
+
+  const hasBothPolicies = availablePolicies && availablePolicies.includes('vmi') && availablePolicies.includes('cmi');
+
+  const filteredHistory = policyFilter === 'all'
+    ? mockHistory
+    : mockHistory.filter(e => !e.policyKind || e.policyKind === policyFilter);
 
   const handleSubmit = (type: 'rework' | 'remark') => {
     if (!draftText.trim()) return;
@@ -134,11 +149,24 @@ export function HistoryActivitySidebar({ open, onClose, quotationId }: HistoryAc
             <p className="text-[10px] text-muted-foreground">QQ #{quotationId}</p>
           )}
         </div>
-        <button onClick={onClose} className="p-1 rounded-md hover:bg-muted transition-colors">
-          <X className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-2">
+          {hasBothPolicies && (
+            <Select value={policyFilter} onValueChange={(v) => setPolicyFilter(v as 'all' | 'vmi' | 'cmi')}>
+              <SelectTrigger className="h-7 w-[90px] text-[10px] border-border">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-popover z-50">
+                <SelectItem value="all" className="text-xs">{language === 'th' ? 'ทั้งหมด' : 'All'}</SelectItem>
+                <SelectItem value="vmi" className="text-xs">VMI</SelectItem>
+                <SelectItem value="cmi" className="text-xs">CMI</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
+          <button onClick={onClose} className="p-1 rounded-md hover:bg-muted transition-colors">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
       </div>
-
       {/* Composition mode selector */}
       <div className="flex gap-2 px-4 py-2 border-b border-border shrink-0">
         <Button
@@ -194,7 +222,7 @@ export function HistoryActivitySidebar({ open, onClose, quotationId }: HistoryAc
       {/* Activity feed */}
       <ScrollArea className="flex-1">
         <div className="px-4 py-3 space-y-3">
-          {mockHistory.map((entry) => {
+          {filteredHistory.map((entry) => {
             const config = typeConfig[entry.type] || typeConfig.field_update;
             const Icon = config.icon;
             return (

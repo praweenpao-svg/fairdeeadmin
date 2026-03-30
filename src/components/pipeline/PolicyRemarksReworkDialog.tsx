@@ -41,6 +41,8 @@ interface PolicyRemarksReworkDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   policyKind: 'vmi' | 'cmi';
+  onPolicyKindChange?: (kind: 'vmi' | 'cmi') => void;
+  availablePolicies?: ('vmi' | 'cmi')[];
   policyId: string;
   leadNumber?: string; // Sale ID for notification
   remarks: PolicyRemark[];
@@ -68,6 +70,8 @@ export function PolicyRemarksReworkDialog({
   open,
   onOpenChange,
   policyKind,
+  onPolicyKindChange,
+  availablePolicies,
   policyId,
   leadNumber,
   remarks,
@@ -803,16 +807,34 @@ export function PolicyRemarksReworkDialog({
         <div className="flex items-center justify-between px-4 py-3 border-b border-border shrink-0">
           <div className="flex items-center gap-2">
             <MessageSquare className="w-4 h-4" />
-            <Badge 
-              className={cn(
-                "text-[10px] h-5 px-1.5",
-                policyKind === 'vmi' 
-                  ? "bg-blue-500/20 text-blue-600 border-blue-500/30" 
-                  : "bg-purple-500/20 text-purple-600 border-purple-500/30"
-              )}
-            >
-              {policyKind.toUpperCase()}
-            </Badge>
+            {availablePolicies && availablePolicies.length > 1 && onPolicyKindChange ? (
+              <Select value={policyKind} onValueChange={(v) => onPolicyKindChange(v as 'vmi' | 'cmi')}>
+                <SelectTrigger className={cn(
+                  "h-6 w-[72px] text-[10px] font-semibold border",
+                  policyKind === 'vmi' 
+                    ? "bg-blue-500/20 text-blue-600 border-blue-500/30" 
+                    : "bg-purple-500/20 text-purple-600 border-purple-500/30"
+                )}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-popover z-50">
+                  {availablePolicies.map(k => (
+                    <SelectItem key={k} value={k} className="text-xs">{k.toUpperCase()}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <Badge 
+                className={cn(
+                  "text-[10px] h-5 px-1.5",
+                  policyKind === 'vmi' 
+                    ? "bg-blue-500/20 text-blue-600 border-blue-500/30" 
+                    : "bg-purple-500/20 text-purple-600 border-purple-500/30"
+                )}
+              >
+                {policyKind.toUpperCase()}
+              </Badge>
+            )}
             <h3 className="text-sm font-semibold">
               {language === 'th' ? 'หมายเหตุ & งานติดปัญหา' : 'Remarks & Rework'}
             </h3>

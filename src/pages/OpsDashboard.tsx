@@ -83,6 +83,7 @@ export default function OpsDashboard() {
   // Modal / sidebar states
   const [uploadPolicyOpen, setUploadPolicyOpen] = useState(false);
   const [historySidebarOpen, setHistorySidebarOpen] = useState(false);
+  const [historySidebarPolicyKind, setHistorySidebarPolicyKind] = useState<'vmi' | 'cmi'>('vmi');
 
   // Mock rework/remarks state for the shared sidesheet
   const [opsRemarks, setOpsRemarks] = useState<PolicyRemark[]>([
@@ -237,7 +238,9 @@ export default function OpsDashboard() {
       <PolicyRemarksReworkDialog
         open={historySidebarOpen}
         onOpenChange={setHistorySidebarOpen}
-        policyKind="vmi"
+        policyKind={historySidebarPolicyKind}
+        onPolicyKindChange={setHistorySidebarPolicyKind}
+        availablePolicies={mockSaleDetail.policies.map(p => p.kind)}
         policyId="ops-vmi-1"
         leadNumber={mockSaleDetail.qqId}
         remarks={opsRemarks}
