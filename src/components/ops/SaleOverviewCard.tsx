@@ -146,14 +146,66 @@ function PolicyStatusDropdown({ kind, language }: { kind: string; language: stri
 export function SaleOverviewCard({ sale }: SaleOverviewCardProps) {
   const { language } = useLanguageStore();
   const [saleType, setSaleType] = useState(sale.typeOfSale);
-  const [soldOn, setSoldOn] = useState(sale.createdAt);
-  const [insurerQid, setInsurerQid] = useState('');
 
   const handleFieldSave = (field: string, value: string) => {
     toast.success(language === 'th' ? 'บันทึกแล้ว' : 'Saved', {
       description: `${field}: ${value}`,
     });
   };
+
+  const totalPremium = sale.policies.reduce((s, p) => s + p.premiumAfterTax, 0);
+  const vmiPolicy = sale.policies.find(p => p.kind === 'vmi');
+
+  const paymentStatusLabel = sale.paymentStatus === 'paid' ? (language === 'th' ? 'ยืนยันการชำระเงินแล้ว' : 'Payment Verified') :
+    sale.paymentStatus === 'pending' ? (language === 'th' ? 'รอชำระ' : 'Pending') :
+    sale.paymentStatus === 'partial' ? (language === 'th' ? 'ชำระบางส่วน' : 'Partial') :
+    (language === 'th' ? 'ยังไม่ชำระ' : 'Unpaid');
+
+  return (
+    <Card>
+      <CardHeader className="pb-2 pt-3 px-5">
+        <CardTitle className="text-sm font-semibold">
+          {language === 'th' ? 'สรุปงาน' : 'Sale Summary'}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="px-5 pb-4">
+        <div className="space-y-2.5">
+          <SummaryRow label={language === 'th' ? 'เลขงาน' : 'Sale ID'} value={sale.qqId} />
+          <SummaryRow label={language === 'th' ? 'สถานะการชำระเงิน' : 'Payment Status'} value={paymentStatusLabel} />
+          <SummaryRow label={language === 'th' ? 'ทะเบียนรถ' : 'Vehicle Number'} value={sale.vehicle.licensePlate} />
+          <SummaryRow label={language === 'th' ? 'บริษัทประกัน' : 'Insurer'} value={vmiPolicy?.coverage.insurer || '—'} />
+          <SummaryRow label={language === 'th' ? 'เบี้ยรวม' : 'Total Premium'} value={`${totalPremium.toLocaleString()} ${language === 'th' ? 'บาท' : 'THB'}`} />
+          <div className="flex items-center justify-between py-1">
+            <span className="text-xs text-muted-foreground">{language === 'th' ? 'ประเภทการขาย' : 'Sale Type'}</span>
+            <div className="max-w-[140px]">
+              <EditableField
+                label=""
+                value={saleType}
+                type="select"
+                options={saleTypeOptions}
+                onSave={(v) => { setSaleType(v); handleFieldSave('Sale Type', v); }}
+              />
+            </div>
+          </div>
+          <SummaryRow label={language === 'th' ? 'วิธีชำระเงิน' : 'Payment Method'} value={sale.paymentMethod} />
+          <SummaryRow label={language === 'th' ? 'โอนใบเสนอราคาให้' : 'Transferred Quote For'} value="—" />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function SummaryRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between py-1 border-b border-border/30 last:border-0">
+      <span className="text-xs text-muted-foreground">{label}</span>
+      <span className="text-xs font-medium text-right">{value || '—'}</span>
+    </div>
+  );
+}
+
+export function AgentDetailsCard({ sale }: SaleOverviewCardProps) {
+  const { language } = useLanguageStore();
 
   return (
     <Card>
@@ -163,57 +215,15 @@ export function SaleOverviewCard({ sale }: SaleOverviewCardProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="px-5 pb-4">
-        {/* Agent info section */}
-        <div className="grid grid-cols-2 gap-x-6 gap-y-2 mb-3 pb-3 border-b border-border/50">
-          <ReadOnlyField
-            label={language === 'th' ? 'ชื่อตัวแทน' : 'Agent Name'}
-            value={language === 'th' ? sale.agent.nameTh : sale.agent.name}
-          />
-          <ReadOnlyField
-            label={language === 'th' ? 'ระดับ' : 'Level'}
-            value={String(sale.agent.level)}
-          />
-          <ReadOnlyField
-            label={language === 'th' ? 'เบอร์โทรศัพท์ตัวแทน' : 'Agent Phone'}
-            value={sale.agent.phone}
-          />
-          <ReadOnlyField
-            label={language === 'th' ? 'รหัสตัวแทน' : 'Agent Code'}
-            value={sale.agent.code}
-          />
-          <ReadOnlyField
-            label={language === 'th' ? 'ระยะเวลาการเป็นสมาชิก' : 'Membership Duration'}
-            value={sale.agent.membershipDuration}
-          />
-          <ReadOnlyField
-            label={language === 'th' ? 'ทุนแนะนำ' : 'Sum Insured'}
-            value={`${sale.agent.sumInsured.toLocaleString()} ${language === 'th' ? 'บาท' : 'THB'}`}
-          />
+        <div className="space-y-2.5">
+          <SummaryRow label={language === 'th' ? 'ชื่อตัวแทน' : 'Agent Name'} value={language === 'th' ? sale.agent.nameTh : sale.agent.name} />
+          <SummaryRow label={language === 'th' ? 'ระดับ' : 'Level'} value={String(sale.agent.level)} />
+          <SummaryRow label={language === 'th' ? 'เบอร์โทรศัพท์' : 'Phone'} value={sale.agent.phone} />
+          <SummaryRow label={language === 'th' ? 'รหัสตัวแทน' : 'Agent Code'} value={sale.agent.code} />
+          <SummaryRow label={language === 'th' ? 'ระยะเวลาสมาชิก' : 'Membership'} value={sale.agent.membershipDuration} />
+          <SummaryRow label={language === 'th' ? 'ทุนแนะนำ' : 'Sum Insured'} value={`${sale.agent.sumInsured.toLocaleString()} ${language === 'th' ? 'บาท' : 'THB'}`} />
+          <SummaryRow label={language === 'th' ? 'ค่าคอมมิชชั่น' : 'Commission'} value={sale.agent.commissionDetail} />
         </div>
-
-        {/* Sale details section */}
-        <div className="grid grid-cols-2 gap-x-6 gap-y-2 mb-3 pb-3 border-b border-border/50">
-          <EditableField
-            label={language === 'th' ? 'ประเภทการขาย' : 'Sale Type'}
-            value={saleType}
-            type="select"
-            options={saleTypeOptions}
-            onSave={(v) => { setSaleType(v); handleFieldSave('Sale Type', v); }}
-          />
-          <ReadOnlyField
-            label={language === 'th' ? 'เบี้ยประกันภัยคุ้มที่สุด' : 'Best Premium'}
-            value={sale.agent.bestPremium ? (language === 'th' ? 'ใช่' : 'Yes') : (language === 'th' ? 'ไม่' : 'No')}
-          />
-          <ReadOnlyField
-            label={language === 'th' ? 'สมัครเมื่อ' : 'Created At'}
-            value={sale.createdAt}
-          />
-          <ReadOnlyField
-            label={language === 'th' ? 'รายละเอียดการจ่ายค่าคอมมิชชั่น' : 'Commission Detail'}
-            value={sale.agent.commissionDetail}
-          />
-        </div>
-
       </CardContent>
     </Card>
   );
