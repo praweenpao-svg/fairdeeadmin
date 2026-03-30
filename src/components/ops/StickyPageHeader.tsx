@@ -159,7 +159,7 @@ export function StickyPageHeader({
 
   return (
     <div className="sticky top-0 z-30 bg-card border-b border-border shadow-sm">
-      {/* Row 1: License Plate, QQ ID, Customer Name + Action Buttons */}
+      {/* Row 1: License Plate + QQ ID (always) + Name/Actions (Mode B only) */}
       <div className="flex items-center gap-3 px-6 py-2.5">
         <Badge className="bg-foreground text-background text-sm px-3 py-0.5 font-bold tracking-wider">
           UO6872
@@ -169,14 +169,14 @@ export function StickyPageHeader({
           #{sale.qqId}
         </Badge>
 
-        <span className="text-sm font-semibold">
-          {sale.customer.firstName} {sale.customer.lastName}
-        </span>
+        {mode === 'B' && (
+          <span className="text-sm font-semibold">
+            {sale.customer.firstName} {sale.customer.lastName}
+          </span>
+        )}
 
-        {/* Spacer */}
         <div className="flex-1" />
 
-        {/* Mode B: Primary Button + More Actions */}
         {mode === 'B' && (
           <div className="flex items-center gap-2">
             {primaryAction && (
@@ -283,43 +283,45 @@ export function StickyPageHeader({
         )}
       </div>
 
-      {/* Row 2: Stage, Policy Status, Insurer, Class, Premium, Payment */}
-      <div className="flex items-center gap-3 px-6 pb-2.5 text-xs text-muted-foreground flex-wrap">
-        <Badge variant="outline" className="border-primary text-primary text-[10px] font-semibold">
-          {language === 'th' ? stageLabel.th : stageLabel.en}
-        </Badge>
+      {/* Row 2: Stage, Policy Status, Insurer, Class, Premium, Payment — Mode B only */}
+      {mode === 'B' && (
+        <div className="flex items-center gap-3 px-6 pb-2.5 text-xs text-muted-foreground flex-wrap">
+          <Badge variant="outline" className="border-primary text-primary text-[10px] font-semibold">
+            {language === 'th' ? stageLabel.th : stageLabel.en}
+          </Badge>
 
-        {vmiPolicy && (
-          <StatusBadge
-            label="VMI"
-            status={policyStatusLabels[vmiPolicy.status] || vmiPolicy.status}
-            color={policyStatusColorMap[vmiPolicy.status] || ''}
-          />
-        )}
-        {cmiPolicy && (
-          <StatusBadge
-            label="CMI"
-            status={policyStatusLabels[cmiPolicy.status] || cmiPolicy.status}
-            color={policyStatusColorMap[cmiPolicy.status] || ''}
-          />
-        )}
+          {vmiPolicy && (
+            <StatusBadge
+              label="VMI"
+              status={policyStatusLabels[vmiPolicy.status] || vmiPolicy.status}
+              color={policyStatusColorMap[vmiPolicy.status] || ''}
+            />
+          )}
+          {cmiPolicy && (
+            <StatusBadge
+              label="CMI"
+              status={policyStatusLabels[cmiPolicy.status] || cmiPolicy.status}
+              color={policyStatusColorMap[cmiPolicy.status] || ''}
+            />
+          )}
 
-        <span className="text-muted-foreground">·</span>
+          <span className="text-muted-foreground">·</span>
 
-        <span>{vmiPolicy?.insurer || '—'}</span>
-        <span className="text-foreground font-medium">
-          {language === 'th' ? 'ชั้น' : 'Class'} {vmiPolicy?.coverage.insuranceClass || '—'}
-        </span>
-        <span className="text-foreground font-semibold">
-          {sale.policies.reduce((sum, p) => sum + p.premiumAfterTax, 0).toLocaleString()} ฿
-        </span>
-        <Badge
-          variant="outline"
-          className={cn('text-[10px] font-semibold', paymentStatusColors[sale.paymentStatus] || '')}
-        >
-          {sale.paymentStatus.charAt(0).toUpperCase() + sale.paymentStatus.slice(1)}
-        </Badge>
-      </div>
+          <span>{vmiPolicy?.insurer || '—'}</span>
+          <span className="text-foreground font-medium">
+            {language === 'th' ? 'ชั้น' : 'Class'} {vmiPolicy?.coverage.insuranceClass || '—'}
+          </span>
+          <span className="text-foreground font-semibold">
+            {sale.policies.reduce((sum, p) => sum + p.premiumAfterTax, 0).toLocaleString()} ฿
+          </span>
+          <Badge
+            variant="outline"
+            className={cn('text-[10px] font-semibold', paymentStatusColors[sale.paymentStatus] || '')}
+          >
+            {sale.paymentStatus.charAt(0).toUpperCase() + sale.paymentStatus.slice(1)}
+          </Badge>
+        </div>
+      )}
     </div>
   );
 }

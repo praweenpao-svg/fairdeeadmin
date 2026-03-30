@@ -122,8 +122,8 @@ export const mockSaleDetail: SaleDetail = {
   customer: {
     customerType: 'individual',
     title: 'นาย',
-    firstName: 'ตัวอย่าง บานรวจ',
-    lastName: 'สาธิตสกุล',
+    firstName: 'Praween',
+    lastName: 'Imchokchai',
     idType: 'National Id',
     nationalId: '1234567890123',
     birthday: '30/03/1958',
@@ -214,7 +214,7 @@ export const mockSaleDetail: SaleDetail = {
   ],
   shipping: {
     receiverType: 'policy_holder',
-    receiverName: 'ตัวอย่าง บานรวจ สาธิตสกุล',
+    receiverName: 'Praween Imchokchai',
     addressLine: '111 หมู่ที่ 1 ปฐมนท : ก.สุนวิก',
     province: 'กรุงเทพมหานคร',
     district: 'บางขุนเทียน',
