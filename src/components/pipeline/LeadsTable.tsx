@@ -33,7 +33,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { TablePagination } from '@/components/ui/table-pagination';
 import { mockStaffMembers } from '@/data/mockStaff';
-import { ReworkDialog } from './ReworkDialog';
+
 import { HistoryLogDialog } from './HistoryLogDialog';
 import { InlineReworkActions } from './InlineReworkActions';
 import { PolicyStatusCell } from './PolicyStatusCell';
@@ -391,7 +391,7 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
   const CURRENT_USER = useCurrentUserStore(s => s.name);
   const navTarget = useNotificationNavigationStore(s => s.target);
   const clearNavTarget = useNotificationNavigationStore(s => s.clearTarget);
-  const [reworkDialogOpen, setReworkDialogOpen] = useState(false);
+  
   const [historyLogDialogOpen, setHistoryLogDialogOpen] = useState(false);
   const [remarksDialogOpen, setRemarksDialogOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
