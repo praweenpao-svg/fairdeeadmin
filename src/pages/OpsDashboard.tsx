@@ -103,7 +103,7 @@ export default function OpsDashboard() {
 
       {/* Mode B: Full-width scrollable content */}
       {mode === 'B' && (
-        <div className="flex-1 overflow-y-auto p-6 max-w-5xl mx-auto w-full space-y-6">
+        <div className="flex-1 overflow-y-auto p-4 max-w-6xl mx-auto w-full space-y-4">
           <SaleOverviewCard sale={mockSaleDetail} />
           <PolicyDetailsZone sale={mockSaleDetail} />
           <ContentTabs sale={mockSaleDetail} />
