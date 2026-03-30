@@ -1,4 +1,5 @@
 import React from 'react';
+import mtiLogo from '@/assets/insurer-mti.png';
 import { useLanguageStore } from '@/stores/languageStore';
 import { SaleDetail } from '@/data/mockSaleDetail';
 import { CoveragePanel } from './CoveragePanel';
@@ -237,19 +238,20 @@ function PackageSelectionTab({ sale }: { sale: SaleDetail }) {
                 <p className="text-sm font-semibold">{language === 'th' ? 'ชั้น 1 อีซี่' : 'Easy Type 1'}</p>
                 <p className="text-xs text-muted-foreground">{language === 'th' ? 'เมืองไทยประกันภัย' : 'Muang Thai Insurance'}</p>
               </div>
+              <img src={mtiLogo} alt="MTI" className="w-8 h-8 rounded object-cover" />
             </div>
             <div className="space-y-1 text-xs">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">{language === 'th' ? 'ค่าคอมมิชชั่น' : 'Commission'}</span>
-                <span className="font-semibold text-primary">2,000 ฿</span>
+                <span className="font-semibold text-sidebar-background">2,000 ฿</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">{language === 'th' ? 'ราคาเบี้ยประกันรวม' : 'Total Premium'}</span>
-                <span className="font-semibold">10,000 ฿</span>
+                <span className="font-semibold text-sidebar-background">10,000 ฿</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">{language === 'th' ? 'ทุนประกัน' : 'Sum Insured'}</span>
-                <span className="font-semibold">500,000 ฿</span>
+                <span className="font-semibold text-sidebar-background">500,000 ฿</span>
               </div>
             </div>
           </CardContent>
