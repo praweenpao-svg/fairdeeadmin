@@ -95,6 +95,7 @@ export interface SaleAssignment {
 
 export interface SaleAgent {
   name: string;
+  nameTh: string;
   level: number;
   phone: string;
   code: string;
@@ -245,6 +246,7 @@ export const mockSaleDetail: SaleDetail = {
   },
   agent: {
     name: 'Praween Imchokchai',
+    nameTh: 'ประวีณ อิ่มโชคชัย',
     level: 3,
     phone: '865044433',
     code: 'FM-72482',
