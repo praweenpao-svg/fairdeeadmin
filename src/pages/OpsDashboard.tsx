@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { useLanguageStore } from '@/stores/languageStore';
 import { LanguageToggle } from '@/components/LanguageToggle';
+import { MentionNotificationBell } from '@/components/notifications/MentionNotificationBell';
 import { mockSaleDetail } from '@/data/mockSaleDetail';
 import { StickyPageHeader } from '@/components/ops/StickyPageHeader';
 import { SaleOverviewCard } from '@/components/ops/SaleOverviewCard';
 import { PolicyDetailsZone } from '@/components/ops/PolicyDetailsZone';
 import { ContentTabs } from '@/components/ops/ContentTabs';
 import { UploadPolicyModal } from '@/components/ops/UploadPolicyModal';
+import { HistoryActivitySidebar } from '@/components/ops/HistoryActivitySidebar';
 import { cn } from '@/lib/utils';
 import { Check } from 'lucide-react';
 import { toast } from 'sonner';
@@ -76,8 +78,9 @@ export default function OpsDashboard() {
   const [currentStep] = useState(3);
   const mode: 'A' | 'B' = currentStep >= 3 ? 'B' : 'A';
 
-  // Modal states
+  // Modal / sidebar states
   const [uploadPolicyOpen, setUploadPolicyOpen] = useState(false);
+  const [historySidebarOpen, setHistorySidebarOpen] = useState(false);
 
   const handleToast = (msg: string) => {
     toast.success(msg, {
@@ -87,13 +90,19 @@ export default function OpsDashboard() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      {/* Global bar: bell + language toggle */}
+      <div className="flex items-center justify-end gap-2 px-4 py-1.5 border-b border-border bg-card">
+        <MentionNotificationBell />
+        <LanguageToggle />
+      </div>
+
       {/* Sticky Page Header with top-right actions (Section 13A v3) */}
       <StickyPageHeader
         sale={mockSaleDetail}
         mode={mode}
         hasActiveRework={false}
         onOpenUploadPolicy={() => setUploadPolicyOpen(true)}
-        onOpenHistoryLog={() => handleToast(language === 'th' ? 'เปิด History & Activity Log sidebar' : 'Open History & Activity Log sidebar')}
+        onOpenHistoryLog={() => setHistorySidebarOpen(true)}
         onOpenEndorsement={() => handleToast(language === 'th' ? 'เปิด Record Endorsement' : 'Open Record Endorsement')}
         onOpenUploadDoc={() => handleToast(language === 'th' ? 'เปิด Upload Document' : 'Open Upload Document')}
       />
@@ -117,12 +126,27 @@ export default function OpsDashboard() {
         </div>
       )}
 
-      {/* Upload Policy Modal (G2 — R-12 through R-19) */}
+      {/* Upload Policy Modal (G2) */}
       <UploadPolicyModal
         sale={mockSaleDetail}
         open={uploadPolicyOpen}
         onOpenChange={setUploadPolicyOpen}
       />
+
+      {/* History & Activity Log Sidebar (Section 8/14 — shared component) */}
+      <HistoryActivitySidebar
+        open={historySidebarOpen}
+        onClose={() => setHistorySidebarOpen(false)}
+        quotationId={mockSaleDetail.qqId}
+      />
+
+      {/* Overlay when sidebar is open */}
+      {historySidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/20"
+          onClick={() => setHistorySidebarOpen(false)}
+        />
+      )}
     </div>
   );
 }
