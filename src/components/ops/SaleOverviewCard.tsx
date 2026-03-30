@@ -100,6 +100,49 @@ function EditableField({ label, value, onSave, type = 'text', options }: {
   );
 }
 
+const policyStatuses = [
+  { value: 'pending', en: 'Pending', th: 'รอดำเนินการ' },
+  { value: 'pending_review', en: 'Pending Review', th: 'รอตรวจสอบ' },
+  { value: 'pending_issuance', en: 'Pending Issuance', th: 'รอออกกรมธรรม์' },
+  { value: 'policy_uploaded', en: 'Policy Uploaded', th: 'อัปโหลดกรมธรรม์แล้ว' },
+  { value: 'policy_shipped', en: 'Policy Shipped', th: 'จัดส่งแล้ว' },
+  { value: 'policy_delivered', en: 'Policy Delivered', th: 'จัดส่งถึงแล้ว' },
+  { value: 'policy_cancelled', en: 'Policy Cancelled', th: 'ยกเลิกกรมธรรม์' },
+  { value: 'rework_required', en: 'Rework Required', th: 'ต้องแก้ไข' },
+];
+
+function PolicyStatusDropdown({ kind, language }: { kind: string; language: string }) {
+  const [status, setStatus] = useState('pending');
+
+  const handleChange = (val: string) => {
+    setStatus(val);
+    const label = policyStatuses.find(s => s.value === val);
+    toast.success(language === 'th' ? 'อัปเดตสถานะแล้ว' : 'Status updated', {
+      description: `${kind.toUpperCase()}: ${label ? (language === 'th' ? label.th : label.en) : val}`,
+    });
+  };
+
+  return (
+    <div className="space-y-0.5">
+      <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
+        {kind.toUpperCase()} {language === 'th' ? 'สถานะ' : 'Status'}
+      </span>
+      <Select value={status} onValueChange={handleChange}>
+        <SelectTrigger className="h-7 text-xs">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent className="bg-popover z-50">
+          {policyStatuses.map(s => (
+            <SelectItem key={s.value} value={s.value} className="text-xs">
+              {language === 'th' ? s.th : s.en}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
+
 export function SaleOverviewCard({ sale }: SaleOverviewCardProps) {
   const { language } = useLanguageStore();
   const [saleType, setSaleType] = useState(sale.typeOfSale);
@@ -147,7 +190,7 @@ export function SaleOverviewCard({ sale }: SaleOverviewCardProps) {
           />
         </div>
 
-        {/* Row 2: Attribution + per-policy owners */}
+        {/* Row 2: Attribution + per-policy owners + statuses */}
         <div className="grid grid-cols-4 gap-x-6 gap-y-3">
           <ReadOnlyField label={language === 'th' ? 'สร้างโดย' : 'Created by'} value="—" />
           <ReadOnlyField label={language === 'th' ? 'สร้างเมื่อ' : 'Created at'} value={sale.createdAt} />
@@ -160,6 +203,19 @@ export function SaleOverviewCard({ sale }: SaleOverviewCardProps) {
             />
           ))}
         </div>
+
+        {/* Row 3: Per-policy status dropdowns */}
+        {sale.policies.length > 0 && (
+          <div className="grid grid-cols-4 gap-x-6 gap-y-3 mt-3 pt-3 border-t border-border/50">
+            {sale.policies.map((policy) => (
+              <PolicyStatusDropdown
+                key={policy.kind}
+                kind={policy.kind}
+                language={language}
+              />
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
