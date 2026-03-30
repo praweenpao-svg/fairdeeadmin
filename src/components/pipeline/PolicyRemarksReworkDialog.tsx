@@ -1068,7 +1068,7 @@ export function PolicyRemarksReworkDialog({
             </ScrollArea>
 
             {/* Add New Remark */}
-            <div className="border-t pt-4 mt-2 shrink-0">
+            <div className="border-t px-4 py-3 shrink-0">
               <div className="space-y-2">
                 <MentionTextarea
                   placeholder={language === 'th' ? 'เพิ่มหมายเหตุ... (พิมพ์ @ เพื่อ tag คน)' : 'Add a remark... (type @ to tag someone)'}
