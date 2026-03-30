@@ -217,7 +217,7 @@ function PackageSelectionTab({ sale }: { sale: SaleDetail }) {
   const [paymentMethod, setPaymentMethod] = React.useState('qr_code_full');
   const [instalmentPlan, setInstalmentPlan] = React.useState('equal');
   const [addCmi, setAddCmi] = React.useState(sale.hasCompulsoryInsurance ? 'yes' : 'no');
-  const [customerType, setCustomerType] = React.useState(sale.customer.customerType);
+  const [customerType, setCustomerType] = React.useState<string>(sale.customer.customerType);
   const [commercialVehicle, setCommercialVehicle] = React.useState(sale.forCommercialVehicle ? 'yes' : 'no');
   const [kycMode, setKycMode] = React.useState('manual');
 
