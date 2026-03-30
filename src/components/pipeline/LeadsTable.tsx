@@ -33,7 +33,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { TablePagination } from '@/components/ui/table-pagination';
 import { mockStaffMembers } from '@/data/mockStaff';
-import { ReworkDialog } from './ReworkDialog';
+
 import { HistoryLogDialog } from './HistoryLogDialog';
 import { InlineReworkActions } from './InlineReworkActions';
 import { PolicyStatusCell } from './PolicyStatusCell';
@@ -391,7 +391,7 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
   const CURRENT_USER = useCurrentUserStore(s => s.name);
   const navTarget = useNotificationNavigationStore(s => s.target);
   const clearNavTarget = useNotificationNavigationStore(s => s.clearTarget);
-  const [reworkDialogOpen, setReworkDialogOpen] = useState(false);
+  
   const [historyLogDialogOpen, setHistoryLogDialogOpen] = useState(false);
   const [remarksDialogOpen, setRemarksDialogOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
@@ -526,9 +526,8 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
     
     // If changing to rework_required, open rework dialog (always allowed manually)
     if (newStatus === 'rework_required') {
-      setSelectedLead(lead);
-      setSelectedPolicyId(policyId);
-      setReworkDialogOpen(true);
+      setSelectedPolicyForRemarks({ leadId: lead.id, policyId, kind: lead.policyRecords?.find(p => p.id === policyId)?.kind || 'vmi' });
+      setRemarksDialogOpen(true);
       return;
     }
 
@@ -1031,8 +1030,12 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
 
   const handleStatusChange = (lead: Lead, newStatus: string) => {
     if (newStatus === 'rework_required') {
-      setSelectedLead(lead);
-      setReworkDialogOpen(true);
+      const firstPolicy = lead.policyRecords?.[0];
+      if (firstPolicy) {
+        setSelectedPolicyForRemarks({ leadId: lead.id, policyId: firstPolicy.id, kind: firstPolicy.kind });
+        setRemarksDialogOpen(true);
+      }
+      return;
     } else {
       const timestamp = new Date().toLocaleString('en-US', {
         year: 'numeric',
@@ -2602,39 +2605,6 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
         />
       </div>
 
-      {/* Rework Dialog */}
-      <ReworkDialog
-        open={reworkDialogOpen}
-        onOpenChange={(open) => {
-          setReworkDialogOpen(open);
-          if (!open) {
-            setSelectedLead(null);
-            setSelectedPolicyId(null);
-          }
-        }}
-        reworkConfigs={(() => {
-          // Filter rework configs by policy's actual stage for correct filtering in "All" tab
-          if (!selectedLead || !selectedPolicyId) return stageReworkConfigs;
-          const policy = selectedLead.policyRecords?.find(p => p.id === selectedPolicyId);
-          if (policy) {
-            const policyStage = getPolicyStage(policy);
-            if (policyStage) {
-              return reworkConfigs.filter(config => 
-                config.stages.includes(policyStage) && 
-                (config.policyScope === 'both' || config.policyScope === policy.kind)
-              );
-            }
-          }
-          return stageReworkConfigs;
-        })()}
-        onConfirm={handleReworkConfirm}
-        leadNumber={selectedLead?.leadNumber}
-        policyKind={(() => {
-          if (!selectedLead || !selectedPolicyId) return undefined;
-          const policy = selectedLead.policyRecords?.find(p => p.id === selectedPolicyId);
-          return policy?.kind;
-        })()}
-      />
 
       {/* History Log Dialog */}
       {selectedLead && (
