@@ -99,10 +99,12 @@ export default function OpsDashboard() {
       reasonId: 'rw-1',
       reasonLabel: 'ระบุข้อมูลผู้เอาประกันภัย ไม่ถูกต้องหรือไม่ครบถ้วน',
       details: 'กรุณาตรวจสอบชื่อและที่อยู่ @Pao',
+      attachments: [],
       savedBy: 'Rachel',
       savedAt: '2026-03-28T14:30:00',
       resolved: false,
       assignedTo: 'Pao',
+      previousStatus: 'pending_review',
     },
   ]);
 
@@ -128,7 +130,7 @@ export default function OpsDashboard() {
         e.id === entryId ? { ...e, resolved: true, resolvedBy: 'Current User (Reassigned)', resolvedAt: new Date().toISOString() } : e
       );
       const config = mockReworkConfigs.find(c => c.id === newReasonId);
-      updated.push({
+      const newEntry: PolicyReworkEntry = {
         id: `opw-${Date.now()}`,
         reasonId: newReasonId,
         reasonLabel: config?.descriptionEn || newReasonId,
@@ -137,15 +139,16 @@ export default function OpsDashboard() {
         savedBy: 'Current User',
         savedAt: new Date().toISOString(),
         resolved: false,
-        assignedTo: config?.stickyAssignee?.priority?.[0] || 'Unassigned',
-      });
-      return updated;
+        assignedTo: 'Unassigned',
+        previousStatus: 'pending_review',
+      };
+      return [...updated, newEntry];
     });
   };
 
   const handleAddRework = (policyId: string, reasonId: string, details: string, attachments: ReworkAttachment[], autoResolveDate?: string) => {
     const config = mockReworkConfigs.find(c => c.id === reasonId);
-    setOpsReworkHistory(prev => [...prev, {
+    const newEntry: PolicyReworkEntry = {
       id: `opw-${Date.now()}`,
       reasonId,
       reasonLabel: config?.descriptionEn || reasonId,
@@ -154,9 +157,11 @@ export default function OpsDashboard() {
       savedBy: 'Current User',
       savedAt: new Date().toISOString(),
       resolved: false,
-      assignedTo: config?.stickyAssignee?.priority?.[0] || 'Unassigned',
+      assignedTo: 'Unassigned',
       autoResolveDate,
-    }]);
+      previousStatus: 'pending_review',
+    };
+    setOpsReworkHistory(prev => [...prev, newEntry]);
   };
 
   const handleToast = (msg: string) => {
