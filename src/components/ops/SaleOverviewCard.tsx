@@ -220,9 +220,6 @@ export function AgentDetailsCard({ sale }: SaleOverviewCardProps) {
           <SummaryRow label={language === 'th' ? 'ระดับ' : 'Level'} value={String(sale.agent.level)} />
           <SummaryRow label={language === 'th' ? 'เบอร์โทรศัพท์' : 'Phone'} value={sale.agent.phone} />
           <SummaryRow label={language === 'th' ? 'รหัสตัวแทน' : 'Agent Code'} value={sale.agent.code} />
-          <SummaryRow label={language === 'th' ? 'ระยะเวลาสมาชิก' : 'Membership'} value={sale.agent.membershipDuration} />
-          <SummaryRow label={language === 'th' ? 'ทุนแนะนำ' : 'Sum Insured'} value={`${sale.agent.sumInsured.toLocaleString()} ${language === 'th' ? 'บาท' : 'THB'}`} />
-          <SummaryRow label={language === 'th' ? 'ค่าคอมมิชชั่น' : 'Commission'} value={sale.agent.commissionDetail} />
         </div>
       </CardContent>
     </Card>
