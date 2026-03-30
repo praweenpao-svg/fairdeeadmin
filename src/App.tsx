@@ -6,8 +6,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AppSidebar } from '@/components/layout/AppSidebar';
 import { cn } from '@/lib/utils';
-import { LanguageToggle } from '@/components/LanguageToggle';
-import { MentionNotificationBell } from '@/components/notifications/MentionNotificationBell';
 import Index from "./pages/Index";
 import StaffTiming from "./pages/StaffTiming";
 import ReworkConsole from "./pages/ReworkConsole";
@@ -31,13 +29,6 @@ function AppLayout() {
           sidebarCollapsed ? 'ml-16' : 'ml-64'
         )}
       >
-        {/* Global top bar with bell + language toggle */}
-        <div className="sticky top-0 z-30 bg-card border-b border-border flex items-center justify-end px-6 py-2">
-          <div className="flex items-center gap-3">
-            <MentionNotificationBell />
-            <LanguageToggle />
-          </div>
-        </div>
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/staff-timing" element={<StaffTiming />} />

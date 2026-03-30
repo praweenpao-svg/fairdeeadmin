@@ -13,12 +13,12 @@ import { OtherStagesFilterPanel, OtherStagesFilterState, defaultOtherStagesFilte
 import { LeadsStageFilters, LeadsFilterState, defaultLeadsFilterState } from '@/components/pipeline/LeadsStageFilters';
 import { FilterChips } from '@/components/pipeline/FilterChips';
 import { LeadSubTabs, LeadSubTab } from '@/components/pipeline/LeadSubTabs';
-
+import { LanguageToggle } from '@/components/LanguageToggle';
 import { useLanguageStore } from '@/stores/languageStore';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { applyAllFilters } from '@/utils/leadFilters';
-
+import { MentionNotificationBell } from '@/components/notifications/MentionNotificationBell';
 import { mockStaffMembers } from '@/data/mockStaff';
 
 const Index = () => {
@@ -167,6 +167,12 @@ const Index = () => {
     <>
       {/* Header */}
       <header className="sticky top-0 z-30 bg-card border-b border-border">
+        <div className="flex items-center justify-end px-6 py-3">
+          <div className="flex items-center gap-3">
+            <MentionNotificationBell />
+            <LanguageToggle />
+          </div>
+        </div>
 
         {/* Pipeline Tabs */}
         <PipelineTabs
