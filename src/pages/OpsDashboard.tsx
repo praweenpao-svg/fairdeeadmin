@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useLanguageStore } from '@/stores/languageStore';
-import { LanguageToggle } from '@/components/LanguageToggle';
+
 import { mockSaleDetail } from '@/data/mockSaleDetail';
 import { ActionPanel } from '@/components/ops/ActionPanel';
 import { StickyPageHeader } from '@/components/ops/StickyPageHeader';
