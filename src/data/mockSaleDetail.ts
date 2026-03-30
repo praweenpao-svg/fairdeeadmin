@@ -93,6 +93,19 @@ export interface SaleAssignment {
   delivery?: string;
 }
 
+export interface SaleAgent {
+  name: string;
+  level: number;
+  phone: string;
+  code: string;
+  membershipDuration: string;
+  sumInsured: number;
+  sumInsuredFromOriginal: string;
+  originalSumInsured: string;
+  bestPremium: boolean;
+  commissionDetail: string;
+}
+
 export interface SaleDetail {
   id: string;
   qqId: string;
@@ -105,6 +118,7 @@ export interface SaleDetail {
   policies: SalePolicy[];
   shipping: SaleShipping;
   assignment: SaleAssignment;
+  agent: SaleAgent;
   opsStep1Complete: boolean;
   opsStep2Complete: boolean;
   hasCompulsoryInsurance: boolean;
