@@ -198,13 +198,13 @@ export default function OpsDashboard() {
             onOpenEndorsement={() => handleToast(language === 'th' ? 'เปิด Record Endorsement' : 'Open Record Endorsement')}
             onOpenUploadDoc={() => handleToast(language === 'th' ? 'เปิด Upload Document' : 'Open Upload Document')}
           />
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mt-4">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mt-4">
             {/* Left column: Agent Overview + Policy Status */}
-            <div className="lg:col-span-2 space-y-4">
+            <div className="lg:col-span-1 space-y-4">
               <SaleOverviewCard sale={mockSaleDetail} />
               <PolicyStatusCard sale={mockSaleDetail} />
             </div>
-            {/* Right column: Content Tabs (Customer & Vehicle, Invoice, Documents, Benefits) */}
+            {/* Right column: Content Tabs */}
             <div className="lg:col-span-3">
               <ContentTabs sale={mockSaleDetail} />
             </div>
