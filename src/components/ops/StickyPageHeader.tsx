@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, ChevronDown, FileUp, AlertTriangle, XCircle, MessageSquare, Mail, Upload, History, FileText } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { ChevronDown, FileUp, AlertTriangle, XCircle, MessageSquare, Mail, Upload, History, FileText } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useLanguageStore } from '@/stores/languageStore';
@@ -130,7 +129,6 @@ export function StickyPageHeader({
   onOpenEndorsement,
   onOpenUploadDoc,
 }: StickyPageHeaderProps) {
-  const navigate = useNavigate();
   const { language } = useLanguageStore();
 
   const vmiPolicy = sale.policies.find(p => p.kind === 'vmi');
@@ -161,14 +159,11 @@ export function StickyPageHeader({
 
   return (
     <div className="sticky top-0 z-30 bg-card border-b border-border shadow-sm">
-      {/* Row 1: Navigation, Identity & Status */}
+      {/* Row 1: License Plate, QQ ID, Customer Name + Action Buttons */}
       <div className="flex items-center gap-3 px-6 py-2.5">
-        <button
-          onClick={() => navigate(-1)}
-          className="p-1 rounded-md hover:bg-muted transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-        </button>
+        <Badge className="bg-foreground text-background text-sm px-3 py-0.5 font-bold tracking-wider">
+          UO6872
+        </Badge>
 
         <Badge className="bg-primary text-primary-foreground text-sm px-3 py-0.5 font-bold">
           #{sale.qqId}
@@ -178,32 +173,12 @@ export function StickyPageHeader({
           {sale.customer.firstName} {sale.customer.lastName}
         </span>
 
-        <Badge variant="outline" className="border-primary text-primary text-[10px] font-semibold">
-          {language === 'th' ? stageLabel.th : stageLabel.en}
-        </Badge>
-
-        {vmiPolicy && (
-          <StatusBadge
-            label="VMI"
-            status={policyStatusLabels[vmiPolicy.status] || vmiPolicy.status}
-            color={policyStatusColorMap[vmiPolicy.status] || ''}
-          />
-        )}
-        {cmiPolicy && (
-          <StatusBadge
-            label="CMI"
-            status={policyStatusLabels[cmiPolicy.status] || cmiPolicy.status}
-            color={policyStatusColorMap[cmiPolicy.status] || ''}
-          />
-        )}
-
         {/* Spacer */}
         <div className="flex-1" />
 
-        {/* Mode B: Primary Button + More Actions (R-06 → R-11) */}
+        {/* Mode B: Primary Button + More Actions */}
         {mode === 'B' && (
           <div className="flex items-center gap-2">
-            {/* Primary Button — stage-governed (R-07, R-56–R-60) */}
             {primaryAction && (
               <Button
                 size="sm"
@@ -218,7 +193,6 @@ export function StickyPageHeader({
               </Button>
             )}
 
-            {/* More Actions dropdown — G2, G4, G5, G8 (R-09) */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="text-xs gap-1">
@@ -227,7 +201,6 @@ export function StickyPageHeader({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-64 bg-popover z-50">
-                {/* ── G2 — Policy Issuance ── */}
                 <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">
                   G2 · {language === 'th' ? 'ออกกรมธรรม์' : 'Policy Issuance'}
                 </DropdownMenuLabel>
@@ -245,7 +218,6 @@ export function StickyPageHeader({
 
                 <DropdownMenuSeparator />
 
-                {/* ── G4 — History & Activity Log ── */}
                 <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">
                   G4 · {language === 'th' ? 'ประวัติและกิจกรรม' : 'History & Activity Log'}
                 </DropdownMenuLabel>
@@ -264,7 +236,6 @@ export function StickyPageHeader({
 
                 <DropdownMenuSeparator />
 
-                {/* ── G5 — Record Endorsement ── */}
                 <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">
                   G5 · {language === 'th' ? 'สลักหลัง' : 'Endorsement'}
                 </DropdownMenuLabel>
@@ -278,7 +249,6 @@ export function StickyPageHeader({
 
                 <DropdownMenuSeparator />
 
-                {/* ── G8 — Documents & Communications ── */}
                 <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">
                   G8 · {language === 'th' ? 'เอกสารและสื่อสาร' : 'Docs & Comms'}
                 </DropdownMenuLabel>
@@ -290,7 +260,6 @@ export function StickyPageHeader({
                   {language === 'th' ? 'อัปโหลดเอกสาร' : 'Upload Document'}
                 </DropdownMenuItem>
 
-                {/* G8 Send Email — sub-options */}
                 <DropdownMenuSub>
                   <DropdownMenuSubTrigger className="text-xs gap-2">
                     <Mail className="w-3.5 h-3.5" />
@@ -314,8 +283,29 @@ export function StickyPageHeader({
         )}
       </div>
 
-      {/* Row 2: Sale Summary */}
-      <div className="flex items-center gap-4 px-6 pb-2.5 text-xs text-muted-foreground">
+      {/* Row 2: Stage, Policy Status, Insurer, Class, Premium, Payment */}
+      <div className="flex items-center gap-3 px-6 pb-2.5 text-xs text-muted-foreground flex-wrap">
+        <Badge variant="outline" className="border-primary text-primary text-[10px] font-semibold">
+          {language === 'th' ? stageLabel.th : stageLabel.en}
+        </Badge>
+
+        {vmiPolicy && (
+          <StatusBadge
+            label="VMI"
+            status={policyStatusLabels[vmiPolicy.status] || vmiPolicy.status}
+            color={policyStatusColorMap[vmiPolicy.status] || ''}
+          />
+        )}
+        {cmiPolicy && (
+          <StatusBadge
+            label="CMI"
+            status={policyStatusLabels[cmiPolicy.status] || cmiPolicy.status}
+            color={policyStatusColorMap[cmiPolicy.status] || ''}
+          />
+        )}
+
+        <span className="text-muted-foreground">·</span>
+
         <span>{vmiPolicy?.insurer || '—'}</span>
         <span className="text-foreground font-medium">
           {language === 'th' ? 'ชั้น' : 'Class'} {vmiPolicy?.coverage.insuranceClass || '—'}
