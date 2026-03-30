@@ -234,13 +234,6 @@ export function PolicyStatusCard({ sale }: SaleOverviewCardProps) {
       </CardHeader>
       <CardContent className="px-5 pb-4">
         <div className="space-y-3">
-          {/* Payment Status */}
-          <StatusDropdown
-            label={language === 'th' ? 'สถานะการชำระเงิน' : 'Payment Status'}
-            options={paymentStatuses}
-            defaultValue={sale.paymentStatus}
-            language={language}
-          />
 
           {/* VMI row: status + owner */}
           {sale.policies.map((policy) => (
