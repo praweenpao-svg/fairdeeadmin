@@ -346,9 +346,22 @@ function PackageSelectionTab({ sale }: { sale: SaleDetail }) {
               </SelectContent>
             </Select>
           </div>
+        </div>
 
-        {/* Right column: Instalment + KYC (conditional) */}
+        {/* Right column: KYC + Installment (conditional) */}
         <div className="space-y-4">
+          {showKyc && (
+            <ToggleSelect
+              label={language === 'th' ? 'ข้อมูล KYC' : 'KYC Information'}
+              options={[
+                { value: 'manual', label: 'Manual KYC' },
+                { value: 'auto', label: 'Auto KYC' },
+              ]}
+              value={kycMode}
+              onChange={setKycMode}
+            />
+          )}
+
           {isInstallment && (
             <div className="space-y-3">
               <SectionLabel>{language === 'th' ? 'ตัวเลือกผ่อนชำระ' : 'Installment Options'}</SectionLabel>
@@ -365,9 +378,9 @@ function PackageSelectionTab({ sale }: { sale: SaleDetail }) {
 
               <div className="space-y-1">
                 <p className="text-xs text-muted-foreground">{language === 'th' ? 'จำนวนงวด' : 'No. of Installments'}</p>
-                <Select defaultValue={installmentOptions[0].value}>
+                <Select>
                   <SelectTrigger className="text-xs h-9">
-                    <SelectValue />
+                    <SelectValue placeholder={language === 'th' ? 'เลือกจำนวนงวด' : 'Select installments'} />
                   </SelectTrigger>
                   <SelectContent>
                     {installmentOptions.map(opt => (
@@ -377,19 +390,6 @@ function PackageSelectionTab({ sale }: { sale: SaleDetail }) {
                 </Select>
               </div>
             </div>
-          )}
-
-          {/* KYC - only for bank/QR installment */}
-          {showKyc && (
-            <ToggleSelect
-              label={language === 'th' ? 'ข้อมูล KYC' : 'KYC Information'}
-              options={[
-                { value: 'manual', label: 'Manual KYC' },
-                { value: 'auto', label: 'Auto KYC' },
-              ]}
-              value={kycMode}
-              onChange={setKycMode}
-            />
           )}
         </div>
       </div>
