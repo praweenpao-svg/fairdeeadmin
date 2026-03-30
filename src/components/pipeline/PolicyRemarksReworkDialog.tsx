@@ -904,7 +904,7 @@ export function PolicyRemarksReworkDialog({
           <>
             <ScrollArea className="flex-1">
               <div className="space-y-3 p-4">
-              <div className="space-y-3 py-2">
+              
                 {/* Show add rework button at top if no timeline items */}
                 {timeline.length === 0 && !showAddRework && stageFilteredConfigs.length > 0 && (
                   <div className="text-center py-8">
