@@ -149,7 +149,7 @@ export function SaleDetailBar({
               <Mail className="w-3.5 h-3.5" />
               {language === 'th' ? 'ส่งอีเมลถึง บ.ประกัน' : 'Send Email to Insurer'}
             </DropdownMenuItem>
-            <DropdownMenuItem className="text-xs gap-2" onClick={() => { onOpenUploadPolicy?.() || handleAction('Upload Policy'); }}>
+            <DropdownMenuItem className="text-xs gap-2" onClick={() => { if (onOpenUploadPolicy) onOpenUploadPolicy(); else handleAction('Upload Policy'); }}>
               <FileUp className="w-3.5 h-3.5" />
               {language === 'th' ? 'อัปโหลดกรมธรรม์' : 'Upload Policy'}
             </DropdownMenuItem>
@@ -157,7 +157,7 @@ export function SaleDetailBar({
             <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">
               G4 · {language === 'th' ? 'ประวัติและกิจกรรม' : 'History & Activity Log'}
             </DropdownMenuLabel>
-            <DropdownMenuItem className={cn('text-xs gap-2', hasActiveRework && 'text-orange-600')} onClick={() => { onOpenHistoryLog?.() || handleAction('History & Activity Log'); }}>
+            <DropdownMenuItem className={cn('text-xs gap-2', hasActiveRework && 'text-orange-600')} onClick={() => { if (onOpenHistoryLog) onOpenHistoryLog(); else handleAction('History & Activity Log'); }}>
               <History className={cn('w-3.5 h-3.5', hasActiveRework && 'text-orange-500')} />
               {language === 'th' ? 'ประวัติและกิจกรรม' : 'History & Activity Log'}
             </DropdownMenuItem>
@@ -165,7 +165,7 @@ export function SaleDetailBar({
             <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">
               G5 · {language === 'th' ? 'สลักหลัง' : 'Endorsement'}
             </DropdownMenuLabel>
-            <DropdownMenuItem className="text-xs gap-2" onClick={() => { onOpenEndorsement?.() || handleAction('Record Endorsement'); }}>
+            <DropdownMenuItem className="text-xs gap-2" onClick={() => { if (onOpenEndorsement) onOpenEndorsement(); else handleAction('Record Endorsement'); }}>
               <XCircle className="w-3.5 h-3.5" />
               {language === 'th' ? 'บันทึกสลักหลัง' : 'Record Endorsement'}
             </DropdownMenuItem>
@@ -173,7 +173,7 @@ export function SaleDetailBar({
             <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">
               G8 · {language === 'th' ? 'เอกสารและสื่อสาร' : 'Docs & Comms'}
             </DropdownMenuLabel>
-            <DropdownMenuItem className="text-xs gap-2" onClick={() => { onOpenUploadDoc?.() || handleAction('Upload Document'); }}>
+            <DropdownMenuItem className="text-xs gap-2" onClick={() => { if (onOpenUploadDoc) onOpenUploadDoc(); else handleAction('Upload Document'); }}>
               <Upload className="w-3.5 h-3.5" />
               {language === 'th' ? 'อัปโหลดเอกสาร' : 'Upload Document'}
             </DropdownMenuItem>
