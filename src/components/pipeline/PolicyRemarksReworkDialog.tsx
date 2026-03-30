@@ -830,7 +830,7 @@ export function PolicyRemarksReworkDialog({
 
         {reassignEntryId ? (
           // Reassign Form
-          <div className="space-y-4 py-2">
+          <div className="space-y-4 p-4 overflow-y-auto flex-1">
             <div className="flex items-center justify-between">
               <div className="text-sm font-medium">
                 {language === 'th' ? 'มอบหมายงานใหม่' : 'Reassign rework'}
@@ -902,8 +902,8 @@ export function PolicyRemarksReworkDialog({
         ) : (
           // Main timeline view
           <>
-            {/* ScrollArea height: ~95px per item, show 5 full + partial 6th = 520px */}
-            <ScrollArea className="h-[520px] pr-4">
+            <ScrollArea className="flex-1">
+              <div className="space-y-3 p-4">
               <div className="space-y-3 py-2">
                 {/* Show add rework button at top if no timeline items */}
                 {timeline.length === 0 && !showAddRework && stageFilteredConfigs.length > 0 && (
