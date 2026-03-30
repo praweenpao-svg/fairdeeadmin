@@ -75,7 +75,7 @@ function StepperBar({ currentStep }: { currentStep: number }) {
 
 export default function OpsDashboard() {
   const { language } = useLanguageStore();
-  const [currentStep] = useState(3);
+  const [currentStep, setCurrentStep] = useState(3);
   const mode: 'A' | 'B' = currentStep >= 3 ? 'B' : 'A';
 
   // Modal / sidebar states
