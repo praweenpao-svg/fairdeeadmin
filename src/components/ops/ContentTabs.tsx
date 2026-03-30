@@ -196,26 +196,26 @@ const PAYMENT_METHODS = [
   { value: 'credits_full', th: 'เครดิต (จ่ายเต็ม)', en: 'Credits (Full Payment)' },
 ];
 
-const EQUAL_INSTALMENT_OPTIONS = [
-  { value: '3', label: '3 (0%)', th: '3 งวด (0%) รับรายได้หลังงวดที่ 3', en: '3 instalments (0%) Income after 3rd' },
-  { value: '4', label: '4 (0%)', th: '4 งวด (0%) รับรายได้หลังงวดที่ 3', en: '4 instalments (0%) Income after 3rd' },
-  { value: '5', label: '5', th: '5 งวด รับรายได้หลังงวดที่ 3', en: '5 instalments Income after 3rd' },
-  { value: '6', label: '6 (0%)', th: '6 งวด (0%) รับรายได้หลังงวดที่ 3', en: '6 instalments (0%) Income after 3rd' },
-  { value: '8', label: '8 (4%)', th: '8 งวด (4%) รับรายได้หลังงวดที่ 3', en: '8 instalments (4%) Income after 3rd' },
-  { value: '10', label: '10 (6%)', th: '10 งวด (6%) รับรายได้หลังงวดที่ 3', en: '10 instalments (6%) Income after 3rd' },
+const EQUAL_INSTALLMENT_OPTIONS = [
+  { value: '3', label: '3 (0%)', th: '3 งวด (0%) รับรายได้หลังงวดที่ 3', en: '3 installments (0%) income after 3rd installment' },
+  { value: '4', label: '4 (0%)', th: '4 งวด (0%) รับรายได้หลังงวดที่ 3', en: '4 installments (0%) income after 3rd installment' },
+  { value: '5', label: '5 (0%)', th: '5 งวด (0%) รับรายได้หลังงวดที่ 3', en: '5 installments (0%) income after 3rd installment' },
+  { value: '6', label: '6 (0%)', th: '6 งวด (0%) รับรายได้หลังงวดที่ 3', en: '6 installments (0%) income after 3rd installment' },
+  { value: '8', label: '8 (4%)', th: '8 งวด (4%) รับรายได้หลังงวดที่ 3', en: '8 installments (4%) income after 3rd installment' },
+  { value: '10', label: '10 (6%)', th: '10 งวด (6%) รับรายได้หลังงวดที่ 3', en: '10 installments (6%) income after 3rd installment' },
 ];
 
-const DOWNPAYMENT_INSTALMENT_OPTIONS = [
-  { value: '6', label: '6 (0%)', th: '6 งวด (0%) รับรายได้หลังงวดที่ 2', en: '6 instalments (0%) Income after 2nd' },
-  { value: '8', label: '8 (4%)', th: '8 งวด (4%) รับรายได้หลังงวดที่ 2', en: '8 instalments (4%) Income after 2nd' },
-  { value: '10', label: '10 (6%)', th: '10 งวด (6%) รับรายได้หลังงวดที่ 2', en: '10 instalments (6%) Income after 2nd' },
+const DOWNPAYMENT_INSTALLMENT_OPTIONS = [
+  { value: '6', label: '6 (0%)', th: '6 งวด (0%) รับรายได้หลังงวดที่ 2', en: '6 installments (0%) income after 2nd installment' },
+  { value: '8', label: '8 (4%)', th: '8 งวด (4%) รับรายได้หลังงวดที่ 2', en: '8 installments (4%) income after 2nd installment' },
+  { value: '10', label: '10 (6%)', th: '10 งวด (6%) รับรายได้หลังงวดที่ 2', en: '10 installments (6%) income after 2nd installment' },
 ];
 
 function PackageSelectionTab({ sale }: { sale: SaleDetail }) {
   const { language } = useLanguageStore();
   const vmiPolicy = sale.policies.find(p => p.kind === 'vmi');
   const [paymentMethod, setPaymentMethod] = React.useState('qr_code_full');
-  const [instalmentPlan, setInstalmentPlan] = React.useState('equal');
+  const [installmentPlan, setInstallmentPlan] = React.useState('equal');
   const [addCmi, setAddCmi] = React.useState(sale.hasCompulsoryInsurance ? 'yes' : 'no');
   const [customerType, setCustomerType] = React.useState<string>(sale.customer.customerType);
   const [commercialVehicle, setCommercialVehicle] = React.useState(sale.forCommercialVehicle ? 'yes' : 'no');
@@ -223,7 +223,7 @@ function PackageSelectionTab({ sale }: { sale: SaleDetail }) {
 
   const isInstallment = paymentMethod === 'bank_account_installment' || paymentMethod === 'qr_code_installment' || paymentMethod === 'credit_card_installment';
   const showKyc = paymentMethod === 'bank_account_installment' || paymentMethod === 'qr_code_installment';
-  const instalmentOptions = instalmentPlan === 'equal' ? EQUAL_INSTALMENT_OPTIONS : DOWNPAYMENT_INSTALMENT_OPTIONS;
+  const installmentOptions = installmentPlan === 'equal' ? EQUAL_INSTALLMENT_OPTIONS : DOWNPAYMENT_INSTALLMENT_OPTIONS;
 
   return (
     <div className="space-y-6">
@@ -352,26 +352,26 @@ function PackageSelectionTab({ sale }: { sale: SaleDetail }) {
         <div className="space-y-4">
           {isInstallment && (
             <div className="space-y-3">
-              <SectionLabel>{language === 'th' ? 'ตัวเลือกผ่อนชำระ' : 'Instalment Options'}</SectionLabel>
+              <SectionLabel>{language === 'th' ? 'ตัวเลือกผ่อนชำระ' : 'Installment Options'}</SectionLabel>
               
               <ToggleSelect
-                label={language === 'th' ? 'เลือกแผนผ่อนชำระ' : 'Instalment Plan'}
+                label={language === 'th' ? 'เลือกแผนผ่อนชำระ' : 'Installment Plan'}
                 options={[
-                  { value: 'equal', label: language === 'th' ? 'ผ่อนเท่ากัน' : 'Equal Instalments' },
+                  { value: 'equal', label: language === 'th' ? 'ผ่อนเท่ากัน' : 'Equal Installments' },
                   { value: 'downpayment', label: language === 'th' ? 'ดาวน์ 25%' : '25% Downpayment' },
                 ]}
-                value={instalmentPlan}
-                onChange={setInstalmentPlan}
+                value={installmentPlan}
+                onChange={setInstallmentPlan}
               />
 
               <div className="space-y-1">
-                <p className="text-xs text-muted-foreground">{language === 'th' ? 'จำนวนงวด' : 'No. of Instalments'}</p>
-                <Select defaultValue={instalmentOptions[0].value}>
+                <p className="text-xs text-muted-foreground">{language === 'th' ? 'จำนวนงวด' : 'No. of Installments'}</p>
+                <Select defaultValue={installmentOptions[0].value}>
                   <SelectTrigger className="text-xs h-9">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {instalmentOptions.map(opt => (
+                    {installmentOptions.map(opt => (
                       <SelectItem key={opt.value} value={opt.value}>{language === 'th' ? opt.th : opt.en}</SelectItem>
                     ))}
                   </SelectContent>
