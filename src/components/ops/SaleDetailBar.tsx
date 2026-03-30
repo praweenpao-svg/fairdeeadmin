@@ -125,7 +125,7 @@ export function SaleDetailBar({
           </span>
           <p className="text-sm font-bold leading-tight">{sale.qqId}</p>
           <span className="text-xs text-primary">
-            {language === 'th' ? 'เมืองไทยประกันภัย' : 'Muang Thai Insurance'} · {language === 'th' ? `ชั้น ${vmiPolicy?.coverage.insuranceClass || '—'}` : `Type ${vmiPolicy?.coverage.insuranceClass || '—'}`} · {language === 'th' ? (vmiPolicy?.garageType === 'Dealership' ? 'Dealership' : 'Approved Garage') : (vmiPolicy?.garageType === 'Dealership' ? 'Dealership' : 'Approved Garage')}
+            {language === 'th' ? 'เมืองไทยประกันภัย' : 'Muang Thai Insurance'} · {language === 'th' ? `ชั้น ${vmiPolicy?.coverage.insuranceClass || '—'}` : `Type ${vmiPolicy?.coverage.insuranceClass || '—'}`} · {language === 'th' ? (vmiPolicy?.garageType === 'Dealership' ? 'ซ่อมห้าง' : 'ซ่อมอู่') : (vmiPolicy?.garageType === 'Dealership' ? 'Dealership' : 'Approved Garage')}
           </span>
         </div>
 
