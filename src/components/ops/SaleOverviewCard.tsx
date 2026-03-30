@@ -214,22 +214,48 @@ export function SaleOverviewCard({ sale }: SaleOverviewCardProps) {
           />
         </div>
 
-        {/* Per-policy owners + statuses */}
+      </CardContent>
+    </Card>
+  );
+}
+
+export function PolicyStatusCard({ sale }: SaleOverviewCardProps) {
+  const { language } = useLanguageStore();
+
+  return (
+    <Card>
+      <CardHeader className="pb-2 pt-3 px-5">
+        <CardTitle className="text-sm font-semibold">
+          {language === 'th' ? 'สถานะกรมธรรม์' : 'Policy Status'}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="px-5 pb-4">
         <div className="grid grid-cols-2 gap-x-6 gap-y-2">
           {sale.policies.map((policy) => (
             <ReadOnlyField
-              key={policy.kind}
+              key={`owner-${policy.kind}`}
               label={`${policy.kind.toUpperCase()} ${language === 'th' ? 'ผู้รับผิดชอบ' : 'Owner'}`}
               value={policy.kind === 'vmi' ? 'Pao' : 'Lisa'}
             />
           ))}
           {sale.policies.map((policy) => (
             <PolicyStatusDropdown
-              key={policy.kind}
+              key={`status-${policy.kind}`}
               kind={policy.kind}
               language={language}
             />
           ))}
+          <ReadOnlyField
+            label={language === 'th' ? 'สถานะการชำระเงิน' : 'Payment Status'}
+            value={sale.paymentStatus === 'paid' ? (language === 'th' ? 'ชำระแล้ว' : 'Paid') :
+                   sale.paymentStatus === 'pending' ? (language === 'th' ? 'รอชำระ' : 'Pending') :
+                   sale.paymentStatus === 'partial' ? (language === 'th' ? 'ชำระบางส่วน' : 'Partial') :
+                   (language === 'th' ? 'ยังไม่ชำระ' : 'Unpaid')}
+          />
+          <ReadOnlyField
+            label={language === 'th' ? 'วิธีชำระเงิน' : 'Payment Method'}
+            value={sale.paymentMethod}
+          />
         </div>
       </CardContent>
     </Card>
