@@ -241,20 +241,22 @@ export default function OpsDashboard() {
         onOpenChange={setUploadPolicyOpen}
       />
 
-      {/* History & Activity Log Sidebar (Section 8/14 — shared component) */}
-      <HistoryActivitySidebar
+      {/* Remarks & Rework Sidesheet (shared component — Section 8/14) */}
+      <PolicyRemarksReworkDialog
         open={historySidebarOpen}
-        onClose={() => setHistorySidebarOpen(false)}
-        quotationId={mockSaleDetail.qqId}
+        onOpenChange={setHistorySidebarOpen}
+        policyKind="vmi"
+        policyId="ops-vmi-1"
+        leadNumber={mockSaleDetail.qqId}
+        remarks={opsRemarks}
+        reworkHistory={opsReworkHistory}
+        reworkConfigs={mockReworkConfigs}
+        currentStage="to_issue"
+        onAddRemark={handleAddRemark}
+        onReworkResolve={handleReworkResolve}
+        onReworkReassign={handleReworkReassign}
+        onAddRework={handleAddRework}
       />
-
-      {/* Overlay when sidebar is open */}
-      {historySidebarOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/20"
-          onClick={() => setHistorySidebarOpen(false)}
-        />
-      )}
     </div>
   );
 }
