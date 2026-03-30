@@ -138,9 +138,60 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   return <h5 className="text-xs font-semibold text-foreground">{children}</h5>;
 }
 
+const VEHICLE_CODES = [
+  'E11 - รถยนต์ไฟฟ้า-ส่วนบุคคล',
+  '110 - รถยนต์ส่วนบุคคล-ส่วนบุคคล',
+  '120 - รถยนต์ส่วนบุคคล-เชิงพาณิชย์',
+  '210 - รถกระบะ-ส่วนบุคคล',
+  '210 - รถตู้-รถตู้ส่วนบุคคล',
+  '220 - รถตู้รับจ้าง รถตู้รับจ้างเชิงพาณิชย์ ไม่สาธารณะ',
+  '230 - รถตู้รับจ้าง-รถตู้รับจ้างสาธารณะ',
+  '320 - รถยนต์บรรทุก (รถกระบะ)',
+  '320.1 - รถบรรทุก (รถใหญ่)',
+  '327 - รถบรรทุกใช้ลากจูงรถพ่วง',
+  '420 - รถใหญ่-รถลากจูง รถหัวลาก',
+  '520 - รถใหญ่-รถพ่วงเชิงพาณิชย์',
+  '540 - รถใหญ่-รถพ่วงเชิงพาณิชย์พิเศษ',
+  '610 - รถมอเตอร์ไซค์-ส่วนบุคคล',
+  '620 - รถมอเตอร์ไซค์-เชิงพาณิชย์',
+  '630 - รถมอเตอร์ไซค์รับจ้างสาธารณะ',
+  '730 - รถแท็กซี่-รถแท็กซี่รับจ้างสาธารณะ',
+];
+
+const PAYMENT_METHODS = [
+  { value: 'bank_account_full', th: 'บัญชีธนาคาร (จ่ายเต็ม)', en: 'Bank Account (Full Payment)' },
+  { value: 'bank_account_installment', th: 'บัญชีธนาคาร (ผ่อนชำระ)', en: 'Bank Account (Installment)' },
+  { value: 'qr_code_full', th: 'QR โค้ด (จ่ายเต็ม)', en: 'QR Code (Full Payment)' },
+  { value: 'qr_code_installment', th: 'QR โค้ด (ผ่อนชำระ)', en: 'QR Code (Installment)' },
+  { value: 'credit_card_full', th: 'บัตรเครดิตออนไลน์ (จ่ายเต็ม)', en: 'Online Credit Card (Full Payment)' },
+  { value: 'credit_card_installment', th: 'บัตรเครดิตออนไลน์ (ผ่อนชำระ)', en: 'Online Credit Card (Installment)' },
+  { value: 'insurer_cc_bank', th: 'บัตรเครดิต/โอนเงินผ่านบริษัทประกัน', en: 'Insurer Credit Card / Insurer Bank Transfer' },
+  { value: 'credits_full', th: 'เครดิต (จ่ายเต็ม)', en: 'Credits (Full Payment)' },
+];
+
+const EQUAL_INSTALMENT_OPTIONS = [
+  { value: '3', label: '3 (0%)', th: '3 งวด (0%) รับรายได้หลังงวดที่ 3', en: '3 instalments (0%) Income after 3rd' },
+  { value: '4', label: '4 (0%)', th: '4 งวด (0%) รับรายได้หลังงวดที่ 3', en: '4 instalments (0%) Income after 3rd' },
+  { value: '5', label: '5', th: '5 งวด รับรายได้หลังงวดที่ 3', en: '5 instalments Income after 3rd' },
+  { value: '6', label: '6 (0%)', th: '6 งวด (0%) รับรายได้หลังงวดที่ 3', en: '6 instalments (0%) Income after 3rd' },
+  { value: '8', label: '8 (4%)', th: '8 งวด (4%) รับรายได้หลังงวดที่ 3', en: '8 instalments (4%) Income after 3rd' },
+  { value: '10', label: '10 (6%)', th: '10 งวด (6%) รับรายได้หลังงวดที่ 3', en: '10 instalments (6%) Income after 3rd' },
+];
+
+const DOWNPAYMENT_INSTALMENT_OPTIONS = [
+  { value: '6', label: '6 (0%)', th: '6 งวด (0%) รับรายได้หลังงวดที่ 2', en: '6 instalments (0%) Income after 2nd' },
+  { value: '8', label: '8 (4%)', th: '8 งวด (4%) รับรายได้หลังงวดที่ 2', en: '8 instalments (4%) Income after 2nd' },
+  { value: '10', label: '10 (6%)', th: '10 งวด (6%) รับรายได้หลังงวดที่ 2', en: '10 instalments (6%) Income after 2nd' },
+];
+
 function PackageSelectionTab({ sale }: { sale: SaleDetail }) {
   const { language } = useLanguageStore();
   const vmiPolicy = sale.policies.find(p => p.kind === 'vmi');
+  const [paymentMethod, setPaymentMethod] = React.useState('qr_code_full');
+  const [instalmentPlan, setInstalmentPlan] = React.useState('equal');
+
+  const isInstallment = paymentMethod === 'bank_account_installment' || paymentMethod === 'qr_code_installment' || paymentMethod === 'credit_card_installment';
+  const instalmentOptions = instalmentPlan === 'equal' ? EQUAL_INSTALMENT_OPTIONS : DOWNPAYMENT_INSTALMENT_OPTIONS;
 
   return (
     <div className="space-y-6">
@@ -173,22 +224,20 @@ function PackageSelectionTab({ sale }: { sale: SaleDetail }) {
         </Card>
       </div>
 
-      {/* Two-column: Payment Method + Instalment Options */}
+      {/* Two-column: Left config + Right instalment */}
       <div className="grid grid-cols-2 gap-6">
         <div className="space-y-4">
           {/* Payment Method */}
           <div className="space-y-2">
             <SectionLabel>{language === 'th' ? 'วิธีการชำระเงิน' : 'Payment Method'} <span className="text-destructive">*</span></SectionLabel>
-            <Select defaultValue={sale.paymentMethod}>
+            <Select value={paymentMethod} onValueChange={setPaymentMethod}>
               <SelectTrigger className="text-xs h-9">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="QR Code (Full Payment)">{language === 'th' ? 'QR โค้ด (จ่ายเต็ม)' : 'QR Code (Full Payment)'}</SelectItem>
-                <SelectItem value="QR Code (Installment)">{language === 'th' ? 'QR โค้ด (ผ่อนชำระ)' : 'QR Code (Installment)'}</SelectItem>
-                <SelectItem value="Bank Transfer">{language === 'th' ? 'โอนเงิน' : 'Bank Transfer'}</SelectItem>
-                <SelectItem value="Credit Card (Full)">{language === 'th' ? 'บัตรเครดิต (จ่ายเต็ม)' : 'Credit Card (Full)'}</SelectItem>
-                <SelectItem value="Credit (Full)">{language === 'th' ? 'เครดิต (จ่ายเต็ม)' : 'Credit (Full)'}</SelectItem>
+                {PAYMENT_METHODS.map(pm => (
+                  <SelectItem key={pm.value} value={pm.value}>{language === 'th' ? pm.th : pm.en}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -241,12 +290,13 @@ function PackageSelectionTab({ sale }: { sale: SaleDetail }) {
           <div className="space-y-2">
             <SectionLabel>{language === 'th' ? 'รหัสรถ' : 'Vehicle Code'} <span className="text-destructive">*</span></SectionLabel>
             <Select defaultValue={sale.vehicle.vehicleCode}>
-              <SelectTrigger className="text-xs h-9 w-48">
+              <SelectTrigger className="text-xs h-9">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="110 - รถยนต์ส่วนบุ">110 - รถยนต์ส่วนบุ</SelectItem>
-                <SelectItem value="120 - รถยนต์รับจ้าง">120 - รถยนต์รับจ้าง</SelectItem>
+                {VEHICLE_CODES.map(code => (
+                  <SelectItem key={code} value={code}>{code}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -255,7 +305,7 @@ function PackageSelectionTab({ sale }: { sale: SaleDetail }) {
           <div className="space-y-2">
             <SectionLabel>{language === 'th' ? 'ความคุ้มครองเพิ่มเติม' : 'Add-Ons'}</SectionLabel>
             <Select defaultValue="">
-              <SelectTrigger className="text-xs h-9 w-48">
+              <SelectTrigger className="text-xs h-9">
                 <SelectValue placeholder={language === 'th' ? 'เลือก Add-Ons' : 'Select Add-Ons'} />
               </SelectTrigger>
               <SelectContent>
@@ -269,51 +319,51 @@ function PackageSelectionTab({ sale }: { sale: SaleDetail }) {
           </div>
         </div>
 
-        {/* Right column: Instalment Options + KYC */}
+        {/* Right column: Instalment Options (conditional) + KYC */}
         <div className="space-y-4">
-          {/* Instalment Options */}
-          <div className="space-y-3">
-            <SectionLabel>{language === 'th' ? 'ตัวเลือกผ่อนชำระ' : 'Instalment Options'}</SectionLabel>
-            
-            <div className="space-y-2">
-              <p className="text-xs text-muted-foreground">{language === 'th' ? 'เลือกแผนผ่อนชำระ' : 'Select Instalment Plan'}</p>
-              <RadioGroup defaultValue="equal" className="flex gap-4">
-                <div className="flex items-center gap-2">
-                  <RadioGroupItem value="equal" id="equal-inst" />
-                  <Label htmlFor="equal-inst" className="text-xs">{language === 'th' ? 'ผ่อนเท่ากัน' : 'Equal Instalments'}</Label>
-                </div>
-                <div className="flex items-center gap-2">
-                  <RadioGroupItem value="downpayment" id="downpay-inst" />
-                  <Label htmlFor="downpay-inst" className="text-xs">{language === 'th' ? 'ดาวน์ 25%' : 'With 25% Downpayment'}</Label>
-                </div>
-              </RadioGroup>
-            </div>
+          {isInstallment && (
+            <div className="space-y-3">
+              <SectionLabel>{language === 'th' ? 'ตัวเลือกผ่อนชำระ' : 'Instalment Options'}</SectionLabel>
+              
+              <div className="space-y-2">
+                <p className="text-xs text-muted-foreground">{language === 'th' ? 'เลือกแผนผ่อนชำระ' : 'Select Instalment Plan'}</p>
+                <RadioGroup value={instalmentPlan} onValueChange={setInstalmentPlan} className="flex gap-4">
+                  <div className="flex items-center gap-2">
+                    <RadioGroupItem value="equal" id="equal-inst" />
+                    <Label htmlFor="equal-inst" className="text-xs">{language === 'th' ? 'ผ่อนเท่ากัน' : 'Equal Instalments'}</Label>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <RadioGroupItem value="downpayment" id="downpay-inst" />
+                    <Label htmlFor="downpay-inst" className="text-xs">{language === 'th' ? 'ดาวน์ 25%' : 'With 25% Downpayment'}</Label>
+                  </div>
+                </RadioGroup>
+              </div>
 
-            <div className="space-y-1">
-              <p className="text-xs text-muted-foreground">{language === 'th' ? 'จำนวนงวด' : 'No. of Instalments'}</p>
-              <Select defaultValue="3">
-                <SelectTrigger className="text-xs h-9">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="3">{language === 'th' ? '3 งวด หักรายได้ 0.00% รับรายได้หลังงวดที่ 3' : '3 instalments 0.00% Receive income after 3rd'}</SelectItem>
-                  <SelectItem value="4">{language === 'th' ? '4 งวด หักรายได้ 0.00% รับรายได้หลังงวดที่ 3' : '4 instalments 0.00% Receive income after 3rd'}</SelectItem>
-                  <SelectItem value="5">{language === 'th' ? '5 งวด หักรายได้ 0.00% รับรายได้หลังงวดที่ 3' : '5 instalments 0.00% Receive income after 3rd'}</SelectItem>
-                  <SelectItem value="6">{language === 'th' ? '6 งวด หักรายได้ 0.00% รับรายได้หลังงวดที่ 3' : '6 instalments 0.00% Receive income after 3rd'}</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground">{language === 'th' ? 'จำนวนงวด' : 'No. of Instalments'}</p>
+                <Select defaultValue={instalmentOptions[0].value}>
+                  <SelectTrigger className="text-xs h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {instalmentOptions.map(opt => (
+                      <SelectItem key={opt.value} value={opt.value}>{language === 'th' ? opt.th : opt.en}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* KYC Information */}
           <div className="space-y-2">
-            <p className="text-xs text-muted-foreground">{language === 'th' ? 'ข้อมูล KYC' : 'KYC Information'}</p>
+            <SectionLabel>{language === 'th' ? 'ข้อมูล KYC' : 'KYC Information'}</SectionLabel>
             <div className="flex gap-2">
               {['manual', 'auto'].map(val => (
                 <button key={val} className={`px-4 py-1.5 rounded-md text-xs font-medium border transition-colors ${
                   val === 'manual' ? 'bg-primary text-primary-foreground border-primary' : 'bg-card text-foreground border-border'
                 }`}>
-                  {val === 'manual' ? (language === 'th' ? 'Manual KYC' : 'Manual KYC') : 'Auto KYC'}
+                  {val === 'manual' ? 'Manual KYC' : 'Auto KYC'}
                   {val === 'manual' && ' ✓'}
                 </button>
               ))}
