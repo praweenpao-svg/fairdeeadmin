@@ -184,8 +184,8 @@ export default function OpsDashboard() {
       </header>
 
 
-      {/* 4-Step Stepper */}
-      <StepperBar currentStep={currentStep} onStepClick={setCurrentStep} />
+      {/* 4-Step Stepper — hidden for now, to be brought back later */}
+      {/* <StepperBar currentStep={currentStep} onStepClick={setCurrentStep} /> */}
 
       {/* Step 4: Two-column layout */}
       {mode === 'B' && (
