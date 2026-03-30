@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, AlertTriangle, MessageSquare, CheckCircle2, Send, Clock } from 'lucide-react';
+import { X, AlertTriangle, MessageSquare, CheckCircle2, Send, Clock, Filter } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguageStore } from '@/stores/languageStore';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MentionTextarea } from '@/components/ui/mention-textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { toast } from 'sonner';
 
 export interface HistoryEntry {
