@@ -3,16 +3,17 @@ import { useLanguageStore } from '@/stores/languageStore';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { MentionNotificationBell } from '@/components/notifications/MentionNotificationBell';
 import { mockSaleDetail } from '@/data/mockSaleDetail';
-import { StickyPageHeader } from '@/components/ops/StickyPageHeader';
 import { SaleOverviewCard } from '@/components/ops/SaleOverviewCard';
 import { PolicyDetailsZone } from '@/components/ops/PolicyDetailsZone';
 import { ContentTabs } from '@/components/ops/ContentTabs';
 import { SaleDetailBar } from '@/components/ops/SaleDetailBar';
 import { UploadPolicyModal } from '@/components/ops/UploadPolicyModal';
-import { HistoryActivitySidebar } from '@/components/ops/HistoryActivitySidebar';
+import { PolicyRemarksReworkDialog } from '@/components/pipeline/PolicyRemarksReworkDialog';
 import { cn } from '@/lib/utils';
 import { Check } from 'lucide-react';
 import { toast } from 'sonner';
+import { mockReworkConfigs } from '@/data/mockLeads';
+import { PolicyRemark, PolicyReworkEntry, ReworkAttachment } from '@/types/pipeline';
 
 const steps = [
   { en: 'Package Selection', th: 'เลือกแพ็คเกจ' },
@@ -82,6 +83,86 @@ export default function OpsDashboard() {
   // Modal / sidebar states
   const [uploadPolicyOpen, setUploadPolicyOpen] = useState(false);
   const [historySidebarOpen, setHistorySidebarOpen] = useState(false);
+
+  // Mock rework/remarks state for the shared sidesheet
+  const [opsRemarks, setOpsRemarks] = useState<PolicyRemark[]>([
+    {
+      id: 'opr-1',
+      comment: 'ลูกค้าแจ้งว่าจะส่งเอกสารเพิ่มเติมภายในวันพรุ่งนี้',
+      createdBy: 'Pao',
+      createdAt: '2026-03-27T16:00:00',
+    },
+  ]);
+  const [opsReworkHistory, setOpsReworkHistory] = useState<PolicyReworkEntry[]>([
+    {
+      id: 'opw-1',
+      reasonId: 'rw-1',
+      reasonLabel: 'ระบุข้อมูลผู้เอาประกันภัย ไม่ถูกต้องหรือไม่ครบถ้วน',
+      details: 'กรุณาตรวจสอบชื่อและที่อยู่ @Pao',
+      attachments: [],
+      savedBy: 'Rachel',
+      savedAt: '2026-03-28T14:30:00',
+      resolved: false,
+      assignedTo: 'Pao',
+      previousStatus: 'pending_review',
+    },
+  ]);
+
+  const handleAddRemark = (comment: string, attachments?: ReworkAttachment[]) => {
+    setOpsRemarks(prev => [...prev, {
+      id: `opr-${Date.now()}`,
+      comment,
+      createdBy: 'Current User',
+      createdAt: new Date().toISOString(),
+      attachments,
+    }]);
+  };
+
+  const handleReworkResolve = (entryId: string) => {
+    setOpsReworkHistory(prev => prev.map(e =>
+      e.id === entryId ? { ...e, resolved: true, resolvedBy: 'Current User', resolvedAt: new Date().toISOString() } : e
+    ));
+  };
+
+  const handleReworkReassign = (entryId: string, newReasonId: string, details: string, attachments: ReworkAttachment[]) => {
+    setOpsReworkHistory(prev => {
+      const updated = prev.map(e =>
+        e.id === entryId ? { ...e, resolved: true, resolvedBy: 'Current User (Reassigned)', resolvedAt: new Date().toISOString() } : e
+      );
+      const config = mockReworkConfigs.find(c => c.id === newReasonId);
+      const newEntry: PolicyReworkEntry = {
+        id: `opw-${Date.now()}`,
+        reasonId: newReasonId,
+        reasonLabel: config?.descriptionEn || newReasonId,
+        details,
+        attachments,
+        savedBy: 'Current User',
+        savedAt: new Date().toISOString(),
+        resolved: false,
+        assignedTo: 'Unassigned',
+        previousStatus: 'pending_review',
+      };
+      return [...updated, newEntry];
+    });
+  };
+
+  const handleAddRework = (policyId: string, reasonId: string, details: string, attachments: ReworkAttachment[], autoResolveDate?: string) => {
+    const config = mockReworkConfigs.find(c => c.id === reasonId);
+    const newEntry: PolicyReworkEntry = {
+      id: `opw-${Date.now()}`,
+      reasonId,
+      reasonLabel: config?.descriptionEn || reasonId,
+      details,
+      attachments,
+      savedBy: 'Current User',
+      savedAt: new Date().toISOString(),
+      resolved: false,
+      assignedTo: 'Unassigned',
+      autoResolveDate,
+      previousStatus: 'pending_review',
+    };
+    setOpsReworkHistory(prev => [...prev, newEntry]);
+  };
 
   const handleToast = (msg: string) => {
     toast.success(msg, {
@@ -160,20 +241,22 @@ export default function OpsDashboard() {
         onOpenChange={setUploadPolicyOpen}
       />
 
-      {/* History & Activity Log Sidebar (Section 8/14 — shared component) */}
-      <HistoryActivitySidebar
+      {/* Remarks & Rework Sidesheet (shared component — Section 8/14) */}
+      <PolicyRemarksReworkDialog
         open={historySidebarOpen}
-        onClose={() => setHistorySidebarOpen(false)}
-        quotationId={mockSaleDetail.qqId}
+        onOpenChange={setHistorySidebarOpen}
+        policyKind="vmi"
+        policyId="ops-vmi-1"
+        leadNumber={mockSaleDetail.qqId}
+        remarks={opsRemarks}
+        reworkHistory={opsReworkHistory}
+        reworkConfigs={mockReworkConfigs}
+        currentStage="to_issue"
+        onAddRemark={handleAddRemark}
+        onReworkResolve={handleReworkResolve}
+        onReworkReassign={handleReworkReassign}
+        onAddRework={handleAddRework}
       />
-
-      {/* Overlay when sidebar is open */}
-      {historySidebarOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/20"
-          onClick={() => setHistorySidebarOpen(false)}
-        />
-      )}
     </div>
   );
 }
