@@ -145,7 +145,6 @@ function PolicyStatusDropdown({ kind, language }: { kind: string; language: stri
 
 export function SaleOverviewCard({ sale }: SaleOverviewCardProps) {
   const { language } = useLanguageStore();
-  const [saleType, setSaleType] = useState(sale.typeOfSale);
 
   const handleFieldSave = (field: string, value: string) => {
     toast.success(language === 'th' ? 'บันทึกแล้ว' : 'Saved', {

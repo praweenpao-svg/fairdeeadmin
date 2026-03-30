@@ -183,7 +183,7 @@ export const mockSaleDetail: SaleDetail = {
         insuranceClass: '1',
         coverageType: 'Comprehensive',
         sumInsured: 350000,
-        annualPremium: 7800.30,
+        annualPremium: 10000,
         ownDamage: 350000,
         deductible: 3000,
         thirdPartyBodilyInjury: '500,000/person, 10,000,000/incident',
