@@ -2,10 +2,11 @@ import React from 'react';
 import { useLanguageStore } from '@/stores/languageStore';
 import { SaleDetail } from '@/data/mockSaleDetail';
 import { CoveragePanel } from './CoveragePanel';
+import { PolicyDetailsZone } from './PolicyDetailsZone';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { FileText, Image, CreditCard } from 'lucide-react';
+import { FileText, Image, CreditCard, User } from 'lucide-react';
 
 interface ContentTabsProps {
   sale: SaleDetail;
@@ -133,8 +134,12 @@ export function ContentTabs({ sale }: ContentTabsProps) {
   const { language } = useLanguageStore();
 
   return (
-    <Tabs defaultValue="invoice" className="w-full">
+    <Tabs defaultValue="details" className="w-full">
       <TabsList className="w-full justify-start bg-muted/30 border border-border rounded-lg p-1">
+        <TabsTrigger value="details" className="text-xs gap-1.5">
+          <User className="w-3.5 h-3.5" />
+          {language === 'th' ? 'ข้อมูลลูกค้าและรถ' : 'Customer & Vehicle'}
+        </TabsTrigger>
         <TabsTrigger value="invoice" className="text-xs gap-1.5">
           <CreditCard className="w-3.5 h-3.5" />
           {language === 'th' ? 'ใบแจ้งหนี้และชำระเงิน' : 'Invoice & Payments'}
@@ -149,6 +154,9 @@ export function ContentTabs({ sale }: ContentTabsProps) {
         </TabsTrigger>
       </TabsList>
 
+      <TabsContent value="details" className="mt-4">
+        <PolicyDetailsZone sale={sale} />
+      </TabsContent>
       <TabsContent value="invoice" className="mt-4">
         <InvoiceTab sale={sale} />
       </TabsContent>
