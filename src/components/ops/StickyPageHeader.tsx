@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { ArrowLeft, ChevronDown, FileUp, AlertTriangle, XCircle, MessageSquare, Mail, Upload, History, FileText } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { ChevronDown, FileUp, AlertTriangle, XCircle, MessageSquare, Mail, Upload, History, FileText } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useLanguageStore } from '@/stores/languageStore';
