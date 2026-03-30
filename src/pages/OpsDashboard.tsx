@@ -172,31 +172,33 @@ export default function OpsDashboard() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Global bar: demo toggle + bell + language toggle */}
-      <div className="flex items-center justify-between px-4 py-1.5 border-b border-border bg-card">
-        {/* Demo mode switcher */}
-        <div className="flex items-center gap-2 bg-muted/50 rounded-md px-2 py-1">
-          <span className="text-[10px] text-muted-foreground font-medium">Demo:</span>
-          {[0, 1, 2, 3].map(step => (
-            <button
-              key={step}
-              onClick={() => setCurrentStep(step)}
-              className={cn(
-              'px-2 py-0.5 rounded text-[10px] font-medium transition-colors',
-                currentStep === step
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:bg-muted'
-              )}
-            >
-              Step {step + 1}
-            </button>
-          ))}
+      {/* Header — identical to motor policy */}
+      <header className="sticky top-0 z-30 bg-card border-b border-border">
+        <div className="flex items-center justify-end px-6 py-3">
+          <div className="flex items-center gap-3">
+            {/* Demo mode switcher — small, unobtrusive */}
+            <div className="flex items-center gap-1.5 bg-muted/50 rounded-md px-2 py-1 mr-2">
+              <span className="text-[10px] text-muted-foreground font-medium">Demo:</span>
+              {[0, 1, 2, 3].map(step => (
+                <button
+                  key={step}
+                  onClick={() => setCurrentStep(step)}
+                  className={cn(
+                    'px-2 py-0.5 rounded text-[10px] font-medium transition-colors',
+                    currentStep === step
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:bg-muted'
+                  )}
+                >
+                  Step {step + 1}
+                </button>
+              ))}
+            </div>
+            <MentionNotificationBell />
+            <LanguageToggle />
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          <MentionNotificationBell />
-          <LanguageToggle />
-        </div>
-      </div>
+      </header>
 
 
       {/* 4-Step Stepper */}
