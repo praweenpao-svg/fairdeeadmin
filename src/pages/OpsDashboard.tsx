@@ -117,16 +117,8 @@ export default function OpsDashboard() {
         </div>
       </div>
 
-      {/* Sticky Page Header with top-right actions (Section 13A v3) */}
-      <StickyPageHeader
-        sale={mockSaleDetail}
-        mode={mode}
-        hasActiveRework={false}
-        onOpenUploadPolicy={() => setUploadPolicyOpen(true)}
-        onOpenHistoryLog={() => setHistorySidebarOpen(true)}
-        onOpenEndorsement={() => handleToast(language === 'th' ? 'เปิด Record Endorsement' : 'Open Record Endorsement')}
-        onOpenUploadDoc={() => handleToast(language === 'th' ? 'เปิด Upload Document' : 'Open Upload Document')}
-      />
+      {/* Sticky Page Header — license plate only */}
+      <StickyPageHeader sale={mockSaleDetail} />
 
       {/* 4-Step Stepper */}
       <StepperBar currentStep={currentStep} />
