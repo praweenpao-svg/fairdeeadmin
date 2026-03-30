@@ -90,10 +90,30 @@ export default function OpsDashboard() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Global bar: bell + language toggle */}
-      <div className="flex items-center justify-end gap-2 px-4 py-1.5 border-b border-border bg-card">
-        <MentionNotificationBell />
-        <LanguageToggle />
+      {/* Global bar: demo toggle + bell + language toggle */}
+      <div className="flex items-center justify-between px-4 py-1.5 border-b border-border bg-card">
+        {/* Demo mode switcher */}
+        <div className="flex items-center gap-2 bg-muted/50 rounded-md px-2 py-1">
+          <span className="text-[10px] text-muted-foreground font-medium">Demo:</span>
+          {[0, 1, 2, 3].map(step => (
+            <button
+              key={step}
+              onClick={() => setCurrentStep(step)}
+              className={cn(
+                'px-2 py-0.5 rounded text-[10px] font-medium transition-colors',
+                currentStep === step
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:bg-muted'
+              )}
+            >
+              {step < 3 ? `Step ${step + 1}` : 'Mode B'}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-2">
+          <MentionNotificationBell />
+          <LanguageToggle />
+        </div>
       </div>
 
       {/* Sticky Page Header with top-right actions (Section 13A v3) */}
