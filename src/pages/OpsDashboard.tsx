@@ -186,10 +186,10 @@ export default function OpsDashboard() {
       {/* 4-Step Stepper */}
       <StepperBar currentStep={currentStep} onStepClick={setCurrentStep} />
 
-      {/* Mode B: Full-width scrollable content */}
+      {/* Step 4: Two-column layout */}
       {mode === 'B' && (
-        <div className="flex-1 overflow-y-auto px-6 py-4 w-full space-y-4">
-          {/* Detail bar: Name, QQ ID, Status, Actions — inside step 4 content */}
+        <div className="flex-1 overflow-y-auto px-6 py-4 w-full">
+          {/* Detail bar spans full width */}
           <SaleDetailBar
             sale={mockSaleDetail}
             hasActiveRework={false}
@@ -198,9 +198,17 @@ export default function OpsDashboard() {
             onOpenEndorsement={() => handleToast(language === 'th' ? 'เปิด Record Endorsement' : 'Open Record Endorsement')}
             onOpenUploadDoc={() => handleToast(language === 'th' ? 'เปิด Upload Document' : 'Open Upload Document')}
           />
-          <SaleOverviewCard sale={mockSaleDetail} />
-          <PolicyDetailsZone sale={mockSaleDetail} />
-          <ContentTabs sale={mockSaleDetail} />
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mt-4">
+            {/* Left column: Overview + Policy Details */}
+            <div className="lg:col-span-2 space-y-4">
+              <SaleOverviewCard sale={mockSaleDetail} />
+              <PolicyDetailsZone sale={mockSaleDetail} />
+            </div>
+            {/* Right column: Content Tabs */}
+            <div className="lg:col-span-3">
+              <ContentTabs sale={mockSaleDetail} />
+            </div>
+          </div>
         </div>
       )}
 
