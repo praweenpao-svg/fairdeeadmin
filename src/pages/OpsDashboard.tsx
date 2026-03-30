@@ -3,8 +3,7 @@ import { useLanguageStore } from '@/stores/languageStore';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { MentionNotificationBell } from '@/components/notifications/MentionNotificationBell';
 import { mockSaleDetail } from '@/data/mockSaleDetail';
-import { SaleOverviewCard } from '@/components/ops/SaleOverviewCard';
-import { PolicyDetailsZone } from '@/components/ops/PolicyDetailsZone';
+import { SaleOverviewCard, PolicyStatusCard } from '@/components/ops/SaleOverviewCard';
 import { ContentTabs } from '@/components/ops/ContentTabs';
 import { SaleDetailBar } from '@/components/ops/SaleDetailBar';
 import { UploadPolicyModal } from '@/components/ops/UploadPolicyModal';
@@ -200,12 +199,12 @@ export default function OpsDashboard() {
             onOpenUploadDoc={() => handleToast(language === 'th' ? 'เปิด Upload Document' : 'Open Upload Document')}
           />
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mt-4">
-            {/* Left column: Overview + Policy Details */}
+            {/* Left column: Agent Overview + Policy Status */}
             <div className="lg:col-span-2 space-y-4">
               <SaleOverviewCard sale={mockSaleDetail} />
-              <PolicyDetailsZone sale={mockSaleDetail} />
+              <PolicyStatusCard sale={mockSaleDetail} />
             </div>
-            {/* Right column: Content Tabs */}
+            {/* Right column: Content Tabs (Customer & Vehicle, Invoice, Documents, Benefits) */}
             <div className="lg:col-span-3">
               <ContentTabs sale={mockSaleDetail} />
             </div>
