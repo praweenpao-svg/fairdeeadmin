@@ -166,7 +166,7 @@ export function HistoryActivitySidebar({ open, onClose, quotationId, availablePo
             <X className="w-4 h-4" />
           </button>
         </div>
-
+      </div>
       {/* Composition mode selector */}
       <div className="flex gap-2 px-4 py-2 border-b border-border shrink-0">
         <Button
