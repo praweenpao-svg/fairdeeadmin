@@ -168,6 +168,3 @@ export function StickyPageHeader({
     </div>
   );
 }
-    </div>
-  );
-}
