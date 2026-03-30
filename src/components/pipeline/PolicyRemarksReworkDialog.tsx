@@ -5,12 +5,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { MentionTextarea } from '@/components/ui/mention-textarea';
 import { Label } from '@/components/ui/label';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
   Select,
   SelectContent,
   SelectItem,
