@@ -113,13 +113,13 @@ export function SaleDetailBar({
 
   return (
     <div className="bg-card border border-border rounded-lg p-4 space-y-2">
-      {/* Row 1: QQ ID, Name + Actions */}
+      {/* Row 1: QQ ID, Vehicle Details + Actions */}
       <div className="flex items-center gap-3">
         <Badge className="bg-primary text-primary-foreground text-sm px-3 py-0.5 font-bold">
           #{sale.qqId}
         </Badge>
         <span className="text-sm font-semibold">
-          {sale.customer.firstName} {sale.customer.lastName}
+          {sale.vehicle.brand} {sale.vehicle.model} {sale.vehicle.year}
         </span>
         <div className="flex-1" />
 
@@ -198,7 +198,7 @@ export function SaleDetailBar({
         </DropdownMenu>
       </div>
 
-      {/* Row 2: Stage, VMI/CMI status, Insurer, Class, Premium, Payment */}
+      {/* Row 2: Stage + VMI/CMI status badges */}
       <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
         <Badge variant="outline" className="border-primary text-primary text-[10px] font-semibold">
           {language === 'th' ? stageLabel.th : stageLabel.en}
@@ -213,17 +213,6 @@ export function SaleDetailBar({
             CMI: {policyStatusLabels[cmiPolicy.status] || cmiPolicy.status}
           </Badge>
         )}
-        <span className="text-muted-foreground">·</span>
-        <span>{vmiPolicy?.insurer || '—'}</span>
-        <span className="text-foreground font-medium">
-          {language === 'th' ? 'ชั้น' : 'Class'} {vmiPolicy?.coverage.insuranceClass || '—'}
-        </span>
-        <span className="text-foreground font-semibold">
-          {sale.policies.reduce((sum, p) => sum + p.premiumAfterTax, 0).toLocaleString()} ฿
-        </span>
-        <Badge variant="outline" className={cn('text-[10px] font-semibold', paymentStatusColors[sale.paymentStatus] || '')}>
-          {sale.paymentStatus.charAt(0).toUpperCase() + sale.paymentStatus.slice(1)}
-        </Badge>
       </div>
     </div>
   );
