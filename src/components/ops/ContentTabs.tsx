@@ -234,22 +234,22 @@ function PackageSelectionTab({ sale }: { sale: SaleDetail }) {
           <CardContent className="p-4">
             <div className="flex items-start justify-between mb-3">
               <div>
-                <p className="text-sm font-semibold">{vmiPolicy?.packageName || '-'}</p>
-                <p className="text-xs text-muted-foreground">{vmiPolicy?.insurer || '-'}</p>
+                <p className="text-sm font-semibold">Easy Type 1, ชั้น 1 อีซี่</p>
+                <p className="text-xs text-muted-foreground">เมืองไทยประกันชีวิต | Muang Thai Insurance</p>
               </div>
             </div>
             <div className="space-y-1 text-xs">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">{language === 'th' ? 'ค่าคอมมิชชั่น' : 'Affiliate Commission'}</span>
-                <span className="font-semibold text-primary">{vmiPolicy?.affiliateCommission.toLocaleString()} ฿</span>
+                <span className="text-muted-foreground">{language === 'th' ? 'ค่าคอมมิชชั่น' : 'Commission'}</span>
+                <span className="font-semibold text-primary">2,000 ฿</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">{language === 'th' ? 'เบี้ยหลังภาษี' : 'Premium After Tax'}</span>
-                <span className="font-semibold">{vmiPolicy?.premiumAfterTax.toLocaleString()} ฿</span>
+                <span className="text-muted-foreground">{language === 'th' ? 'ราคาเบี้ยประกันรวม' : 'Total Premium'}</span>
+                <span className="font-semibold">10,000 ฿</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">{language === 'th' ? 'ทุนประกัน' : 'Sum Insured'}</span>
-                <span className="font-semibold">{vmiPolicy?.sumInsured.toLocaleString()} ฿</span>
+                <span className="font-semibold">500,000 ฿</span>
               </div>
             </div>
           </CardContent>
@@ -364,8 +364,6 @@ function PackageSelectionTab({ sale }: { sale: SaleDetail }) {
 
           {isInstallment && (
             <div className="space-y-3">
-              <SectionLabel>{language === 'th' ? 'ตัวเลือกผ่อนชำระ' : 'Installment Options'}</SectionLabel>
-              
               <ToggleSelect
                 label={language === 'th' ? 'เลือกแผนผ่อนชำระ' : 'Installment Plan'}
                 options={[
