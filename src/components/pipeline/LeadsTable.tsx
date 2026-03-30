@@ -526,9 +526,8 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
     
     // If changing to rework_required, open rework dialog (always allowed manually)
     if (newStatus === 'rework_required') {
-      setSelectedLead(lead);
-      setSelectedPolicyId(policyId);
-      setReworkDialogOpen(true);
+      setSelectedPolicyForRemarks({ leadId: lead.id, policyId, kind: lead.policyRecords?.find(p => p.id === policyId)?.kind || 'vmi' });
+      setRemarksDialogOpen(true);
       return;
     }
 
