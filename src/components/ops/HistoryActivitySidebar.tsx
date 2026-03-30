@@ -31,6 +31,7 @@ interface HistoryActivitySidebarProps {
   open: boolean;
   onClose: () => void;
   quotationId?: string;
+  availablePolicies?: ('vmi' | 'cmi')[];
 }
 
 const mockHistory: HistoryEntry[] = [
