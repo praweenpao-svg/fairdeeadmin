@@ -188,7 +188,7 @@ export default function OpsDashboard() {
 
       {/* Mode B: Full-width scrollable content */}
       {mode === 'B' && (
-        <div className="flex-1 overflow-y-auto p-4 max-w-6xl mx-auto w-full space-y-4">
+        <div className="flex-1 overflow-y-auto px-6 py-4 w-full space-y-4">
           {/* Detail bar: Name, QQ ID, Status, Actions — inside step 4 content */}
           <SaleDetailBar
             sale={mockSaleDetail}
