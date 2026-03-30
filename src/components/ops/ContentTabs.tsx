@@ -7,9 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { FileText, Image, CreditCard, User, Package } from 'lucide-react';
 
 interface ContentTabsProps {
@@ -138,6 +137,34 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   return <h5 className="text-xs font-semibold text-foreground">{children}</h5>;
 }
 
+function ToggleSelect({ label, options, value, onChange }: {
+  label: React.ReactNode;
+  options: { value: string; label: string }[];
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <div className="space-y-2">
+      <SectionLabel>{label}</SectionLabel>
+      <div className="flex gap-2">
+        {options.map(opt => (
+          <button
+            key={opt.value}
+            onClick={() => onChange(opt.value)}
+            className={`px-4 py-1.5 rounded-md text-xs font-medium border transition-colors ${
+              value === opt.value
+                ? 'bg-primary text-primary-foreground border-primary'
+                : 'bg-card text-foreground border-border hover:bg-accent'
+            }`}
+          >
+            {opt.label}{value === opt.value && ' ✓'}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 const VEHICLE_CODES = [
   'E11 - รถยนต์ไฟฟ้า-ส่วนบุคคล',
   '110 - รถยนต์ส่วนบุคคล-ส่วนบุคคล',
@@ -189,8 +216,13 @@ function PackageSelectionTab({ sale }: { sale: SaleDetail }) {
   const vmiPolicy = sale.policies.find(p => p.kind === 'vmi');
   const [paymentMethod, setPaymentMethod] = React.useState('qr_code_full');
   const [instalmentPlan, setInstalmentPlan] = React.useState('equal');
+  const [addCmi, setAddCmi] = React.useState(sale.hasCompulsoryInsurance ? 'yes' : 'no');
+  const [customerType, setCustomerType] = React.useState<string>(sale.customer.customerType);
+  const [commercialVehicle, setCommercialVehicle] = React.useState(sale.forCommercialVehicle ? 'yes' : 'no');
+  const [kycMode, setKycMode] = React.useState('manual');
 
   const isInstallment = paymentMethod === 'bank_account_installment' || paymentMethod === 'qr_code_installment' || paymentMethod === 'credit_card_installment';
+  const showKyc = paymentMethod === 'bank_account_installment' || paymentMethod === 'qr_code_installment';
   const instalmentOptions = instalmentPlan === 'equal' ? EQUAL_INSTALMENT_OPTIONS : DOWNPAYMENT_INSTALMENT_OPTIONS;
 
   return (
@@ -224,7 +256,7 @@ function PackageSelectionTab({ sale }: { sale: SaleDetail }) {
         </Card>
       </div>
 
-      {/* Two-column: Left config + Right instalment */}
+      {/* Two-column layout */}
       <div className="grid grid-cols-2 gap-6">
         <div className="space-y-4">
           {/* Payment Method */}
@@ -242,49 +274,46 @@ function PackageSelectionTab({ sale }: { sale: SaleDetail }) {
             </Select>
           </div>
 
-          {/* Add Compulsory Insurance */}
-          <div className="space-y-2">
-            <SectionLabel>{language === 'th' ? 'ซื้อ พ.ร.บ. เพิ่ม?' : 'Add Compulsory Insurance?'}</SectionLabel>
-            <div className="flex gap-2">
-              {['yes', 'no'].map(val => {
-                const isActive = val === 'yes' ? sale.hasCompulsoryInsurance : !sale.hasCompulsoryInsurance;
-                return (
-                  <button key={val} className={`px-4 py-1.5 rounded-md text-xs font-medium border transition-colors ${
-                    isActive ? 'bg-primary text-primary-foreground border-primary' : 'bg-card text-foreground border-border'
-                  }`}>
-                    {val === 'yes' ? (language === 'th' ? 'ใช่' : 'Yes') : (language === 'th' ? 'ไม่ใช่' : 'No')}
-                    {isActive && ' ✓'}
-                  </button>
-                );
-              })}
+          {/* Add CMI */}
+          <ToggleSelect
+            label={language === 'th' ? 'ซื้อ พ.ร.บ. เพิ่ม?' : 'Add Compulsory Insurance?'}
+            options={[
+              { value: 'yes', label: language === 'th' ? 'ใช่' : 'Yes' },
+              { value: 'no', label: language === 'th' ? 'ไม่ใช่' : 'No' },
+            ]}
+            value={addCmi}
+            onChange={setAddCmi}
+          />
+
+          {/* CMI Start Date - only when CMI = yes */}
+          {addCmi === 'yes' && (
+            <div className="space-y-2">
+              <SectionLabel>{language === 'th' ? 'วันเริ่มต้น พ.ร.บ.' : 'Compulsory Start Date'}</SectionLabel>
+              <Input type="date" className="text-xs h-9" defaultValue="2026-04-01" />
             </div>
-          </div>
+          )}
 
           {/* Customer Type */}
-          <div className="space-y-2">
-            <SectionLabel>{language === 'th' ? 'ประเภทลูกค้า' : 'Customer Type'}</SectionLabel>
-            <RadioGroup defaultValue={sale.customer.customerType} className="flex gap-4">
-              <div className="flex items-center gap-2">
-                <RadioGroupItem value="individual" id="individual" />
-                <Label htmlFor="individual" className="text-xs">{language === 'th' ? 'บุคคลธรรมดา' : 'Individual'}</Label>
-              </div>
-              <div className="flex items-center gap-2">
-                <RadioGroupItem value="corporation" id="corporation" />
-                <Label htmlFor="corporation" className="text-xs">{language === 'th' ? 'บริษัท' : 'Corporation'}</Label>
-              </div>
-            </RadioGroup>
-          </div>
+          <ToggleSelect
+            label={language === 'th' ? 'ประเภทลูกค้า' : 'Customer Type'}
+            options={[
+              { value: 'individual', label: language === 'th' ? 'บุคคลธรรมดา' : 'Individual' },
+              { value: 'corporation', label: language === 'th' ? 'บริษัท' : 'Corporation' },
+            ]}
+            value={customerType}
+            onChange={setCustomerType}
+          />
 
           {/* Commercial Vehicle */}
-          <div className="space-y-2">
-            <SectionLabel>{language === 'th' ? 'สำหรับรถพาณิชย์' : 'For Commercial Vehicle'}</SectionLabel>
-            <div className="flex items-center gap-2">
-              <Checkbox id="commercial" checked={sale.forCommercialVehicle} />
-              <Label htmlFor="commercial" className="text-xs text-muted-foreground">
-                {language === 'th' ? 'รถใช้เพื่อการพาณิชย์' : 'Vehicle is for commercial use'}
-              </Label>
-            </div>
-          </div>
+          <ToggleSelect
+            label={language === 'th' ? 'สำหรับรถพาณิชย์' : 'For Commercial Vehicle'}
+            options={[
+              { value: 'yes', label: language === 'th' ? 'ใช่' : 'Yes' },
+              { value: 'no', label: language === 'th' ? 'ไม่ใช่' : 'No' },
+            ]}
+            value={commercialVehicle}
+            onChange={setCommercialVehicle}
+          />
 
           {/* Vehicle Code */}
           <div className="space-y-2">
@@ -319,25 +348,21 @@ function PackageSelectionTab({ sale }: { sale: SaleDetail }) {
           </div>
         </div>
 
-        {/* Right column: Instalment Options (conditional) + KYC */}
+        {/* Right column: Instalment + KYC (conditional) */}
         <div className="space-y-4">
           {isInstallment && (
             <div className="space-y-3">
               <SectionLabel>{language === 'th' ? 'ตัวเลือกผ่อนชำระ' : 'Instalment Options'}</SectionLabel>
               
-              <div className="space-y-2">
-                <p className="text-xs text-muted-foreground">{language === 'th' ? 'เลือกแผนผ่อนชำระ' : 'Select Instalment Plan'}</p>
-                <RadioGroup value={instalmentPlan} onValueChange={setInstalmentPlan} className="flex gap-4">
-                  <div className="flex items-center gap-2">
-                    <RadioGroupItem value="equal" id="equal-inst" />
-                    <Label htmlFor="equal-inst" className="text-xs">{language === 'th' ? 'ผ่อนเท่ากัน' : 'Equal Instalments'}</Label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <RadioGroupItem value="downpayment" id="downpay-inst" />
-                    <Label htmlFor="downpay-inst" className="text-xs">{language === 'th' ? 'ดาวน์ 25%' : 'With 25% Downpayment'}</Label>
-                  </div>
-                </RadioGroup>
-              </div>
+              <ToggleSelect
+                label={language === 'th' ? 'เลือกแผนผ่อนชำระ' : 'Instalment Plan'}
+                options={[
+                  { value: 'equal', label: language === 'th' ? 'ผ่อนเท่ากัน' : 'Equal Instalments' },
+                  { value: 'downpayment', label: language === 'th' ? 'ดาวน์ 25%' : '25% Downpayment' },
+                ]}
+                value={instalmentPlan}
+                onChange={setInstalmentPlan}
+              />
 
               <div className="space-y-1">
                 <p className="text-xs text-muted-foreground">{language === 'th' ? 'จำนวนงวด' : 'No. of Instalments'}</p>
@@ -355,20 +380,18 @@ function PackageSelectionTab({ sale }: { sale: SaleDetail }) {
             </div>
           )}
 
-          {/* KYC Information */}
-          <div className="space-y-2">
-            <SectionLabel>{language === 'th' ? 'ข้อมูล KYC' : 'KYC Information'}</SectionLabel>
-            <div className="flex gap-2">
-              {['manual', 'auto'].map(val => (
-                <button key={val} className={`px-4 py-1.5 rounded-md text-xs font-medium border transition-colors ${
-                  val === 'manual' ? 'bg-primary text-primary-foreground border-primary' : 'bg-card text-foreground border-border'
-                }`}>
-                  {val === 'manual' ? 'Manual KYC' : 'Auto KYC'}
-                  {val === 'manual' && ' ✓'}
-                </button>
-              ))}
-            </div>
-          </div>
+          {/* KYC - only for bank/QR installment */}
+          {showKyc && (
+            <ToggleSelect
+              label={language === 'th' ? 'ข้อมูล KYC' : 'KYC Information'}
+              options={[
+                { value: 'manual', label: 'Manual KYC' },
+                { value: 'auto', label: 'Auto KYC' },
+              ]}
+              value={kycMode}
+              onChange={setKycMode}
+            />
+          )}
         </div>
       </div>
     </div>
