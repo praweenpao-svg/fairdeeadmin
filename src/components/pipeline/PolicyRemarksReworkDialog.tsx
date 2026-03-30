@@ -1100,7 +1100,7 @@ export function PolicyRemarksReworkDialog({
             </div>
           </>
         )}
-      </DialogContent>
-    </Dialog>
+      </div>
+    </>
   );
 }
