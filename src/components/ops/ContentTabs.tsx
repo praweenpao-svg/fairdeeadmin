@@ -134,12 +134,148 @@ function PolicyBenefitsTab({ sale }: { sale: SaleDetail }) {
   );
 }
 
+function PackageSelectionTab({ sale }: { sale: SaleDetail }) {
+  const { language } = useLanguageStore();
+  const vmiPolicy = sale.policies.find(p => p.kind === 'vmi');
+
+  return (
+    <div className="space-y-5">
+      {/* Selected Package */}
+      <div>
+        <h5 className="text-xs font-semibold mb-3">{language === 'th' ? 'แพ็กเกจที่เลือก' : 'Selected Package'}</h5>
+        <Card className="border-primary/30">
+          <CardContent className="p-4">
+            <div className="flex items-start justify-between">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-2 h-2 rounded-full bg-primary" />
+                  <span className="text-sm font-semibold">{vmiPolicy?.packageName || '-'}</span>
+                </div>
+                <span className="text-xs text-muted-foreground">{vmiPolicy?.insurer || '-'}</span>
+              </div>
+            </div>
+            <div className="mt-3 space-y-1.5 text-xs">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">{language === 'th' ? 'ค่าคอมมิชชั่น' : 'Affiliate Commission'}</span>
+                <span className="font-semibold text-primary">{vmiPolicy?.affiliateCommission.toLocaleString()} ฿</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">{language === 'th' ? 'เบี้ยหลังภาษี' : 'Premium After Tax'}</span>
+                <span className="font-semibold">{vmiPolicy?.premiumAfterTax.toLocaleString()} ฿</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">{language === 'th' ? 'ทุนประกัน' : 'Sum Insured'}</span>
+                <span className="font-semibold">{vmiPolicy?.sumInsured.toLocaleString()} ฿</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Payment Method */}
+      <div>
+        <h5 className="text-xs font-semibold mb-2">{language === 'th' ? 'วิธีการชำระเงิน' : 'Payment Method'}</h5>
+        <Select defaultValue={sale.paymentMethod}>
+          <SelectTrigger className="text-xs h-9">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="QR Code (Full Payment)">{language === 'th' ? 'QR โค้ด (แบบจ่ายเต็ม)' : 'QR Code (Full Payment)'}</SelectItem>
+            <SelectItem value="QR Code (Installment)">{language === 'th' ? 'QR โค้ด (แบบผ่อนชำระ)' : 'QR Code (Installment)'}</SelectItem>
+            <SelectItem value="Bank Transfer">{language === 'th' ? 'บัญชีธนาคาร' : 'Bank Transfer'}</SelectItem>
+            <SelectItem value="Credit Card (Full)">{language === 'th' ? 'ตัดบัตรเครดิต (แบบจ่ายเต็ม)' : 'Credit Card (Full Payment)'}</SelectItem>
+            <SelectItem value="Credit Card (Installment)">{language === 'th' ? 'ตัดบัตรเครดิต (แบบผ่อนชำระ)' : 'Credit Card (Installment)'}</SelectItem>
+            <SelectItem value="Credit (Full)">{language === 'th' ? 'เครดิต (แบบจ่ายเต็ม)' : 'Credit (Full Payment)'}</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Add Compulsory Insurance */}
+      <div>
+        <h5 className="text-xs font-semibold mb-2">{language === 'th' ? 'ต้องการซื้อ พ.ร.บ. เพิ่มหรือไม่?' : 'Add Compulsory Insurance?'}</h5>
+        <div className="flex gap-2">
+          <button className={`px-4 py-1.5 rounded-md text-xs font-medium border transition-colors ${
+            sale.hasCompulsoryInsurance 
+              ? 'bg-primary text-primary-foreground border-primary' 
+              : 'bg-card text-foreground border-border'
+          }`}>
+            {language === 'th' ? 'ใช่' : 'Yes'} {sale.hasCompulsoryInsurance && '✓'}
+          </button>
+          <button className={`px-4 py-1.5 rounded-md text-xs font-medium border transition-colors ${
+            !sale.hasCompulsoryInsurance 
+              ? 'bg-primary text-primary-foreground border-primary' 
+              : 'bg-card text-foreground border-border'
+          }`}>
+            {language === 'th' ? 'ไม่ใช่' : 'No'} {!sale.hasCompulsoryInsurance && '✓'}
+          </button>
+        </div>
+      </div>
+
+      {/* Customer Type */}
+      <div>
+        <h5 className="text-xs font-semibold mb-2">{language === 'th' ? 'ประเภทลูกค้า' : 'Customer Type'}</h5>
+        <RadioGroup defaultValue={sale.customer.customerType} className="flex gap-4">
+          <div className="flex items-center gap-2">
+            <RadioGroupItem value="individual" id="individual" />
+            <Label htmlFor="individual" className="text-xs">{language === 'th' ? 'บุคคลธรรมดา' : 'Individual'}</Label>
+          </div>
+          <div className="flex items-center gap-2">
+            <RadioGroupItem value="corporation" id="corporation" />
+            <Label htmlFor="corporation" className="text-xs">{language === 'th' ? 'บริษัท' : 'Corporation'}</Label>
+          </div>
+        </RadioGroup>
+      </div>
+
+      {/* For Commercial Vehicle */}
+      <div>
+        <h5 className="text-xs font-semibold mb-2">{language === 'th' ? 'สำหรับรถพาณิชย์' : 'For Commercial Vehicle'}</h5>
+        <div className="flex items-center gap-2">
+          <Checkbox id="commercial" checked={sale.forCommercialVehicle} />
+          <Label htmlFor="commercial" className="text-xs text-muted-foreground">
+            {language === 'th' ? 'รถใช้เพื่อการพาณิชย์' : 'Vehicle is for commercial use'}
+          </Label>
+        </div>
+      </div>
+
+      {/* Vehicle Code */}
+      <div>
+        <h5 className="text-xs font-semibold mb-2">{language === 'th' ? 'รหัสรถ' : 'Vehicle Code'} *</h5>
+        <Select defaultValue={sale.vehicle.vehicleCode}>
+          <SelectTrigger className="text-xs h-9 w-48">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="110 - รถยนต์ส่วนบุ">110 - รถยนต์ส่วนบุ</SelectItem>
+            <SelectItem value="120 - รถยนต์รับจ้าง">120 - รถยนต์รับจ้าง</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Add-Ons */}
+      {vmiPolicy?.coverage.addOns && vmiPolicy.coverage.addOns.length > 0 && (
+        <div>
+          <h5 className="text-xs font-semibold mb-2">{language === 'th' ? 'ความคุ้มครองเพิ่มเติม' : 'Add-Ons'}</h5>
+          <div className="flex flex-wrap gap-2">
+            {vmiPolicy.coverage.addOns.map((addon, idx) => (
+              <Badge key={idx} variant="outline" className="text-[10px]">{addon}</Badge>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function ContentTabs({ sale }: ContentTabsProps) {
   const { language } = useLanguageStore();
 
   return (
-    <Tabs defaultValue="details" className="w-full">
+    <Tabs defaultValue="package" className="w-full">
       <TabsList className="w-full justify-start bg-muted/30 border border-border rounded-lg p-1">
+        <TabsTrigger value="package" className="text-xs gap-1.5">
+          <Package className="w-3.5 h-3.5" />
+          {language === 'th' ? 'เลือกแพ็กเกจ' : 'Package Selection'}
+        </TabsTrigger>
         <TabsTrigger value="details" className="text-xs gap-1.5">
           <User className="w-3.5 h-3.5" />
           {language === 'th' ? 'ข้อมูลลูกค้าและรถ' : 'Customer & Vehicle'}
@@ -158,6 +294,9 @@ export function ContentTabs({ sale }: ContentTabsProps) {
         </TabsTrigger>
       </TabsList>
 
+      <TabsContent value="package" className="mt-4">
+        <PackageSelectionTab sale={sale} />
+      </TabsContent>
       <TabsContent value="details" className="mt-4">
         <PolicyDetailsZone sale={sale} />
       </TabsContent>
