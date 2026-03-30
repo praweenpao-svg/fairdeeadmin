@@ -137,6 +137,34 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   return <h5 className="text-xs font-semibold text-foreground">{children}</h5>;
 }
 
+function ToggleSelect({ label, options, value, onChange }: {
+  label: React.ReactNode;
+  options: { value: string; label: string }[];
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <div className="space-y-2">
+      <SectionLabel>{label}</SectionLabel>
+      <div className="flex gap-2">
+        {options.map(opt => (
+          <button
+            key={opt.value}
+            onClick={() => onChange(opt.value)}
+            className={`px-4 py-1.5 rounded-md text-xs font-medium border transition-colors ${
+              value === opt.value
+                ? 'bg-primary text-primary-foreground border-primary'
+                : 'bg-card text-foreground border-border hover:bg-accent'
+            }`}
+          >
+            {opt.label}{value === opt.value && ' ✓'}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 const VEHICLE_CODES = [
   'E11 - รถยนต์ไฟฟ้า-ส่วนบุคคล',
   '110 - รถยนต์ส่วนบุคคล-ส่วนบุคคล',
