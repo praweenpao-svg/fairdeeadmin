@@ -235,7 +235,7 @@ function PackageSelectionTab({ sale }: { sale: SaleDetail }) {
             <div className="flex items-start justify-between mb-3">
               <div>
                 <p className="text-sm font-semibold">{language === 'th' ? 'ชั้น 1 อีซี่' : 'Easy Type 1'}</p>
-                <p className="text-xs text-muted-foreground">{language === 'th' ? 'เมืองไทยประกันชีวิต' : 'Muang Thai Insurance'}</p>
+                <p className="text-xs text-muted-foreground">{language === 'th' ? 'เมืองไทยประกันภัย' : 'Muang Thai Insurance'}</p>
               </div>
             </div>
             <div className="space-y-1 text-xs">
