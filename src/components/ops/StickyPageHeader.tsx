@@ -237,7 +237,7 @@ export function StickyPageHeader({
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="text-xs gap-2"
-                  onClick={() => onOpenUploadPolicy?.() || handleAction('Upload Policy')}
+                  onClick={() => { if (onOpenUploadPolicy) onOpenUploadPolicy(); else handleAction('Upload Policy'); }}
                 >
                   <FileUp className="w-3.5 h-3.5" />
                   {language === 'th' ? 'อัปโหลดกรมธรรม์' : 'Upload Policy'}
@@ -251,7 +251,7 @@ export function StickyPageHeader({
                 </DropdownMenuLabel>
                 <DropdownMenuItem
                   className={cn('text-xs gap-2', hasActiveRework && 'text-orange-600')}
-                  onClick={() => onOpenHistoryLog?.() || handleAction('History & Activity Log')}
+                  onClick={() => { if (onOpenHistoryLog) onOpenHistoryLog(); else handleAction('History & Activity Log'); }}
                 >
                   <History className={cn('w-3.5 h-3.5', hasActiveRework && 'text-orange-500')} />
                   {language === 'th' ? 'ประวัติและกิจกรรม' : 'History & Activity Log'}
@@ -270,7 +270,7 @@ export function StickyPageHeader({
                 </DropdownMenuLabel>
                 <DropdownMenuItem
                   className="text-xs gap-2"
-                  onClick={() => onOpenEndorsement?.() || handleAction('Record Endorsement')}
+                  onClick={() => { if (onOpenEndorsement) onOpenEndorsement(); else handleAction('Record Endorsement'); }}
                 >
                   <XCircle className="w-3.5 h-3.5" />
                   {language === 'th' ? 'บันทึกสลักหลัง' : 'Record Endorsement'}
@@ -284,7 +284,7 @@ export function StickyPageHeader({
                 </DropdownMenuLabel>
                 <DropdownMenuItem
                   className="text-xs gap-2"
-                  onClick={() => onOpenUploadDoc?.() || handleAction('Upload Document')}
+                  onClick={() => { if (onOpenUploadDoc) onOpenUploadDoc(); else handleAction('Upload Document'); }}
                 >
                   <Upload className="w-3.5 h-3.5" />
                   {language === 'th' ? 'อัปโหลดเอกสาร' : 'Upload Document'}
