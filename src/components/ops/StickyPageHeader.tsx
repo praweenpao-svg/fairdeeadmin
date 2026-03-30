@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { ArrowLeft, ChevronDown, FileUp, AlertTriangle, XCircle, ArrowRightLeft, MessageSquare, CheckCircle2, Hash, Truck, Package } from 'lucide-react';
+import { ArrowLeft, ChevronDown, FileUp, AlertTriangle, XCircle, MessageSquare, Mail, Upload, History, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useLanguageStore } from '@/stores/languageStore';
-import { SaleDetail, SalePolicy } from '@/data/mockSaleDetail';
+import { SaleDetail } from '@/data/mockSaleDetail';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import {
@@ -14,11 +14,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
 } from '@/components/ui/dropdown-menu';
 
 interface StickyPageHeaderProps {
   sale: SaleDetail;
   mode?: 'A' | 'B';
+  hasActiveRework?: boolean;
+  onOpenUploadPolicy?: () => void;
+  onOpenHistoryLog?: () => void;
+  onOpenEndorsement?: () => void;
+  onOpenUploadDoc?: () => void;
 }
 
 function StatusBadge({ label, status, color }: { label: string; status: string; color: string }) {
@@ -30,17 +38,22 @@ function StatusBadge({ label, status, color }: { label: string; status: string; 
 }
 
 const stageLabels: Record<string, { en: string; th: string }> = {
+  pending_review: { en: 'Pending Review', th: 'รอตรวจสอบ' },
+  pending_issuance: { en: 'Pending Issuance', th: 'รออนุมัติ' },
+  pending_delivery: { en: 'Pending Delivery', th: 'รอจัดส่ง' },
+  completed: { en: 'Completed', th: 'เสร็จสิ้น' },
+  rework_required: { en: 'Rework Required', th: 'ต้องแก้ไข' },
   to_pay: { en: 'To Pay Premium', th: 'รอชำระเบี้ย' },
   to_report: { en: 'To Report Sale', th: 'รอแจ้งงาน' },
   to_issue: { en: 'To Issue Policy', th: 'รอออกกรมธรรม์' },
   to_deliver: { en: 'To Deliver Policy', th: 'รอจัดส่ง' },
-  completed: { en: 'Completed', th: 'เสร็จสิ้น' },
 };
 
 const policyStatusLabels: Record<string, string> = {
   pending_payment: 'Pending Payment',
   pending_review: 'Pending Review',
   pending_issuance: 'Pending Issuance',
+  policy_uploaded: 'Policy Uploaded',
   policy_issued: 'Policy Issued',
   policy_shipped: 'Shipped',
   policy_delivered: 'Delivered',
@@ -56,52 +69,94 @@ const paymentStatusColors: Record<string, string> = {
 };
 
 const policyStatusColorMap: Record<string, string> = {
-  pending_payment: 'border-blue-500 text-blue-600',
+  pending_payment: 'border-muted-foreground text-muted-foreground',
   pending_review: 'border-blue-500 text-blue-600',
-  pending_issuance: 'border-blue-500 text-blue-600',
+  pending_issuance: 'border-amber-500 text-amber-600',
+  policy_uploaded: 'border-teal-500 text-teal-600',
   policy_issued: 'border-green-500 text-green-600',
-  policy_shipped: 'border-green-500 text-green-600',
+  policy_shipped: 'border-indigo-500 text-indigo-600',
   policy_delivered: 'border-green-500 text-green-600',
   policy_cancelled: 'border-red-500 text-red-600',
-  rework_required: 'border-amber-500 text-amber-600',
+  rework_required: 'border-orange-500 text-orange-600',
 };
 
-// Determine the stage-governed primary action based on current stage
-function getPrimaryAction(sale: SaleDetail, language: string): { label: string; icon: React.ElementType; action: string } {
-  // Check stage progression
-  if (sale.paymentStatus !== 'paid') {
-    return { label: language === 'th' ? 'บันทึกการชำระ' : 'Record Payment', icon: CheckCircle2, action: 'record_payment' };
+/**
+ * Stage → Primary Button mapping per Section 13A v3 US-11 R-57
+ */
+function getPrimaryAction(
+  saleStage: string,
+  hasActiveRework: boolean,
+  language: string,
+): { label: string; icon: React.ElementType; group: string } | null {
+  // R-58: Rework override
+  if (hasActiveRework) {
+    return {
+      label: language === 'th' ? 'ประวัติและกิจกรรม' : 'History & Activity Log',
+      icon: History,
+      group: 'G4',
+    };
   }
-  if (!sale.opsStep1Complete || !sale.opsStep2Complete) {
-    return { label: language === 'th' ? 'ตรวจสอบ OPS' : 'Complete OPS Verification', icon: CheckCircle2, action: 'ops_verify' };
+
+  switch (saleStage) {
+    case 'pending_review':
+    case 'to_report':
+      return {
+        label: language === 'th' ? 'ส่งอีเมลถึง บ.ประกัน' : 'Send Email to Insurer',
+        icon: Mail,
+        group: 'G2',
+      };
+    case 'pending_issuance':
+    case 'to_issue':
+      return {
+        label: language === 'th' ? 'อัปโหลดกรมธรรม์' : 'Upload Policy',
+        icon: FileUp,
+        group: 'G2',
+      };
+    case 'pending_delivery':
+    case 'to_deliver':
+    case 'completed':
+      return null; // No primary — R-57
+    default:
+      return null;
   }
-  // Check if any policy needs issuance
-  const needsIssuance = sale.policies.some(p => !p.policyNumber);
-  if (needsIssuance) {
-    return { label: language === 'th' ? 'อัปโหลดกรมธรรม์' : 'Upload Policy', icon: FileUp, action: 'upload_policy' };
-  }
-  // Check delivery
-  const needsDelivery = sale.policies.some(p => !p.trackingNumber && p.deliveryMethod !== 'e_policy');
-  if (needsDelivery) {
-    return { label: language === 'th' ? 'จัดส่งกรมธรรม์' : 'Ship Policy', icon: Truck, action: 'ship_policy' };
-  }
-  return { label: language === 'th' ? 'ดำเนินการเสร็จสิ้น' : 'Mark Completed', icon: CheckCircle2, action: 'complete' };
 }
 
-export function StickyPageHeader({ sale, mode = 'B' }: StickyPageHeaderProps) {
+export function StickyPageHeader({
+  sale,
+  mode = 'B',
+  hasActiveRework = false,
+  onOpenUploadPolicy,
+  onOpenHistoryLog,
+  onOpenEndorsement,
+  onOpenUploadDoc,
+}: StickyPageHeaderProps) {
   const navigate = useNavigate();
   const { language } = useLanguageStore();
 
   const vmiPolicy = sale.policies.find(p => p.kind === 'vmi');
   const cmiPolicy = sale.policies.find(p => p.kind === 'cmi');
-  const currentStage = 'to_issue';
+  const currentStage = 'to_issue'; // Mock: derive from sale state
   const stageLabel = stageLabels[currentStage] || stageLabels.to_issue;
-  const primaryAction = getPrimaryAction(sale, language);
+
+  const primaryAction = getPrimaryAction(currentStage, hasActiveRework, language);
 
   const handleAction = (actionName: string) => {
-    toast.success(`${actionName}`, {
+    toast.success(actionName, {
       description: language === 'th' ? 'ฟีเจอร์นี้จะเชื่อมต่อกับระบบจริงในอนาคต' : 'This will connect to the real system.',
     });
+  };
+
+  const handlePrimaryClick = () => {
+    if (!primaryAction) return;
+    if (primaryAction.group === 'G4') {
+      onOpenHistoryLog?.();
+      return;
+    }
+    if (primaryAction.group === 'G2' && currentStage === 'to_issue') {
+      onOpenUploadPolicy?.();
+      return;
+    }
+    handleAction(primaryAction.label);
   };
 
   return (
@@ -142,17 +197,28 @@ export function StickyPageHeader({ sale, mode = 'B' }: StickyPageHeaderProps) {
           />
         )}
 
-        {/* Spacer to push actions right */}
+        {/* Spacer */}
         <div className="flex-1" />
 
-        {/* Mode B: Primary Button + More Actions */}
+        {/* Mode B: Primary Button + More Actions (R-06 → R-11) */}
         {mode === 'B' && (
           <div className="flex items-center gap-2">
-            <Button size="sm" className="text-xs gap-1.5" onClick={() => handleAction(primaryAction.label)}>
-              <primaryAction.icon className="w-3.5 h-3.5" />
-              {primaryAction.label}
-            </Button>
+            {/* Primary Button — stage-governed (R-07, R-56–R-60) */}
+            {primaryAction && (
+              <Button
+                size="sm"
+                className={cn(
+                  'text-xs gap-1.5',
+                  hasActiveRework && 'bg-orange-500 hover:bg-orange-600 text-white',
+                )}
+                onClick={handlePrimaryClick}
+              >
+                <primaryAction.icon className="w-3.5 h-3.5" />
+                {primaryAction.label}
+              </Button>
+            )}
 
+            {/* More Actions dropdown — G2, G4, G5, G8 (R-09) */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="text-xs gap-1">
@@ -160,72 +226,88 @@ export function StickyPageHeader({ sale, mode = 'B' }: StickyPageHeaderProps) {
                   <ChevronDown className="w-3 h-3" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 bg-popover z-50">
-                {/* G2 — Policy Issuance */}
+              <DropdownMenuContent align="end" className="w-64 bg-popover z-50">
+                {/* ── G2 — Policy Issuance ── */}
                 <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                  {language === 'th' ? 'ออกกรมธรรม์' : 'Policy Issuance'}
+                  G2 · {language === 'th' ? 'ออกกรมธรรม์' : 'Policy Issuance'}
                 </DropdownMenuLabel>
-                {sale.policies.map(p => (
-                  <React.Fragment key={`g2-${p.kind}`}>
-                    <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction(`Notify Insurer (${p.kind.toUpperCase()})`)}>
-                      <FileUp className="w-3 h-3" />
-                      {p.kind.toUpperCase()} — {language === 'th' ? 'แจ้ง บ.ประกัน' : 'Notify Insurer'}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction(`Upload Policy (${p.kind.toUpperCase()})`)}>
-                      <FileUp className="w-3 h-3" />
-                      {p.kind.toUpperCase()} — {language === 'th' ? 'อัปโหลดกรมธรรม์' : 'Upload Policy'}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction(`Policy Number (${p.kind.toUpperCase()})`)}>
-                      <Hash className="w-3 h-3" />
-                      {p.kind.toUpperCase()} — {language === 'th' ? 'เลขกรมธรรม์' : 'Policy Number'}
-                    </DropdownMenuItem>
-                  </React.Fragment>
-                ))}
-
-                <DropdownMenuSeparator />
-
-                {/* G4 — Rework & Remarks */}
-                <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                  {language === 'th' ? 'Rework และหมายเหตุ' : 'Rework & Remarks'}
-                </DropdownMenuLabel>
-                <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Log Rework')}>
-                  <AlertTriangle className="w-3 h-3" />
-                  {language === 'th' ? 'บันทึก Rework' : 'Log Rework'}
+                <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Send Email to Insurer')}>
+                  <Mail className="w-3.5 h-3.5" />
+                  {language === 'th' ? 'ส่งอีเมลถึง บ.ประกัน' : 'Send Email to Insurer'}
                 </DropdownMenuItem>
-                <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Add Remark')}>
-                  <MessageSquare className="w-3 h-3" />
-                  {language === 'th' ? 'เพิ่มหมายเหตุ' : 'Add Remark'}
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Resolve Rework')}>
-                  <CheckCircle2 className="w-3 h-3" />
-                  {language === 'th' ? 'แก้ไข Rework' : 'Resolve Rework'}
+                <DropdownMenuItem
+                  className="text-xs gap-2"
+                  onClick={() => onOpenUploadPolicy?.() || handleAction('Upload Policy')}
+                >
+                  <FileUp className="w-3.5 h-3.5" />
+                  {language === 'th' ? 'อัปโหลดกรมธรรม์' : 'Upload Policy'}
                 </DropdownMenuItem>
 
                 <DropdownMenuSeparator />
 
-                {/* G5 — Cancellation & Transfer */}
+                {/* ── G4 — History & Activity Log ── */}
                 <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                  {language === 'th' ? 'ยกเลิกและโอน' : 'Cancel & Transfer'}
+                  G4 · {language === 'th' ? 'ประวัติและกิจกรรม' : 'History & Activity Log'}
                 </DropdownMenuLabel>
-                <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Request Endorsement/Cancel')}>
-                  <XCircle className="w-3 h-3" />
-                  {language === 'th' ? 'ขอสลักหลัง/ยกเลิก' : 'Endorsement / Cancel'}
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Transfer Sale')}>
-                  <ArrowRightLeft className="w-3 h-3" />
-                  {language === 'th' ? 'โอนงาน' : 'Transfer Sale'}
+                <DropdownMenuItem
+                  className={cn('text-xs gap-2', hasActiveRework && 'text-orange-600')}
+                  onClick={() => onOpenHistoryLog?.() || handleAction('History & Activity Log')}
+                >
+                  <History className={cn('w-3.5 h-3.5', hasActiveRework && 'text-orange-500')} />
+                  {language === 'th' ? 'ประวัติและกิจกรรม' : 'History & Activity Log'}
+                  {hasActiveRework && (
+                    <Badge variant="outline" className="ml-auto text-[9px] border-orange-500 text-orange-600">
+                      {language === 'th' ? 'มี Rework' : 'Rework'}
+                    </Badge>
+                  )}
                 </DropdownMenuItem>
 
                 <DropdownMenuSeparator />
 
-                {/* G8 — Docs & Comms */}
+                {/* ── G5 — Record Endorsement ── */}
                 <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                  {language === 'th' ? 'เอกสารและสื่อสาร' : 'Docs & Comms'}
+                  G5 · {language === 'th' ? 'สลักหลัง' : 'Endorsement'}
                 </DropdownMenuLabel>
-                <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Send Document')}>
-                  <Package className="w-3 h-3" />
-                  {language === 'th' ? 'ส่งเอกสาร' : 'Send Document'}
+                <DropdownMenuItem
+                  className="text-xs gap-2"
+                  onClick={() => onOpenEndorsement?.() || handleAction('Record Endorsement')}
+                >
+                  <XCircle className="w-3.5 h-3.5" />
+                  {language === 'th' ? 'บันทึกสลักหลัง' : 'Record Endorsement'}
                 </DropdownMenuItem>
+
+                <DropdownMenuSeparator />
+
+                {/* ── G8 — Documents & Communications ── */}
+                <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                  G8 · {language === 'th' ? 'เอกสารและสื่อสาร' : 'Docs & Comms'}
+                </DropdownMenuLabel>
+                <DropdownMenuItem
+                  className="text-xs gap-2"
+                  onClick={() => onOpenUploadDoc?.() || handleAction('Upload Document')}
+                >
+                  <Upload className="w-3.5 h-3.5" />
+                  {language === 'th' ? 'อัปโหลดเอกสาร' : 'Upload Document'}
+                </DropdownMenuItem>
+
+                {/* G8 Send Email — sub-options */}
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger className="text-xs gap-2">
+                    <Mail className="w-3.5 h-3.5" />
+                    {language === 'th' ? 'ส่งอีเมล' : 'Send Email'}
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent className="bg-popover z-50">
+                    <DropdownMenuItem className="text-xs" onClick={() => handleAction('Send: Docs Rejection')}>
+                      {language === 'th' ? 'แจ้งเอกสารไม่ถูกต้อง' : 'Docs Rejection'}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="text-xs" onClick={() => handleAction('Send: Docs Approved + Invoice')}>
+                      {language === 'th' ? 'เอกสารถูกต้อง + ใบแจ้งหนี้' : 'Docs Approved with Invoice'}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="text-xs" onClick={() => handleAction('Send: Vehicle Docs to Affiliate')}>
+                      {language === 'th' ? 'ส่งเอกสารรถให้ตัวแทน' : 'Vehicle Docs to Affiliate'}
+                    </DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

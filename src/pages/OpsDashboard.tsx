@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { useLanguageStore } from '@/stores/languageStore';
+import { LanguageToggle } from '@/components/LanguageToggle';
 import { mockSaleDetail } from '@/data/mockSaleDetail';
 import { StickyPageHeader } from '@/components/ops/StickyPageHeader';
 import { SaleOverviewCard } from '@/components/ops/SaleOverviewCard';
 import { PolicyDetailsZone } from '@/components/ops/PolicyDetailsZone';
 import { ContentTabs } from '@/components/ops/ContentTabs';
+import { UploadPolicyModal } from '@/components/ops/UploadPolicyModal';
 import { cn } from '@/lib/utils';
 import { Check } from 'lucide-react';
+import { toast } from 'sonner';
 
 const steps = [
   { en: 'Package Selection', th: 'เลือกแพ็คเกจ' },
@@ -69,14 +72,31 @@ function StepperBar({ currentStep }: { currentStep: number }) {
 }
 
 export default function OpsDashboard() {
+  const { language } = useLanguageStore();
   const [currentStep] = useState(3);
-  // Mode B: post-sale (Step 4+). Mock sale is in post-sale stage.
   const mode: 'A' | 'B' = currentStep >= 3 ? 'B' : 'A';
+
+  // Modal states
+  const [uploadPolicyOpen, setUploadPolicyOpen] = useState(false);
+
+  const handleToast = (msg: string) => {
+    toast.success(msg, {
+      description: language === 'th' ? 'ฟีเจอร์นี้จะเชื่อมต่อกับระบบจริงในอนาคต' : 'This will connect to the real system.',
+    });
+  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Sticky Page Header with top-right action buttons (Mode B) */}
-      <StickyPageHeader sale={mockSaleDetail} mode={mode} />
+      {/* Sticky Page Header with top-right actions (Section 13A v3) */}
+      <StickyPageHeader
+        sale={mockSaleDetail}
+        mode={mode}
+        hasActiveRework={false}
+        onOpenUploadPolicy={() => setUploadPolicyOpen(true)}
+        onOpenHistoryLog={() => handleToast(language === 'th' ? 'เปิด History & Activity Log sidebar' : 'Open History & Activity Log sidebar')}
+        onOpenEndorsement={() => handleToast(language === 'th' ? 'เปิด Record Endorsement' : 'Open Record Endorsement')}
+        onOpenUploadDoc={() => handleToast(language === 'th' ? 'เปิด Upload Document' : 'Open Upload Document')}
+      />
 
       {/* 4-Step Stepper */}
       <StepperBar currentStep={currentStep} />
@@ -84,13 +104,8 @@ export default function OpsDashboard() {
       {/* Mode B: Full-width scrollable content */}
       {mode === 'B' && (
         <div className="flex-1 overflow-y-auto p-6 max-w-5xl mx-auto w-full space-y-6">
-          {/* A. Sale Overview Card */}
           <SaleOverviewCard sale={mockSaleDetail} />
-
-          {/* B. Policy Details Zone */}
           <PolicyDetailsZone sale={mockSaleDetail} />
-
-          {/* C. Content Tabs */}
           <ContentTabs sale={mockSaleDetail} />
         </div>
       )}
@@ -98,9 +113,16 @@ export default function OpsDashboard() {
       {/* Mode A: Wizard step content (placeholder) */}
       {mode === 'A' && (
         <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
-          Wizard Step {currentStep + 1} content
+          {language === 'th' ? `ขั้นตอนที่ ${currentStep + 1}` : `Wizard Step ${currentStep + 1}`}
         </div>
       )}
+
+      {/* Upload Policy Modal (G2 — R-12 through R-19) */}
+      <UploadPolicyModal
+        sale={mockSaleDetail}
+        open={uploadPolicyOpen}
+        onOpenChange={setUploadPolicyOpen}
+      />
     </div>
   );
 }
