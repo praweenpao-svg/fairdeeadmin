@@ -117,8 +117,6 @@ export default function OpsDashboard() {
         </div>
       </div>
 
-      {/* Sticky Page Header — license plate only */}
-      <StickyPageHeader sale={mockSaleDetail} />
 
       {/* 4-Step Stepper */}
       <StepperBar currentStep={currentStep} />
