@@ -147,7 +147,7 @@ export function SaleOverviewCard({ sale }: SaleOverviewCardProps) {
           />
         </div>
 
-        {/* Row 2: Attribution + per-policy owners */}
+        {/* Row 2: Attribution + per-policy owners + statuses */}
         <div className="grid grid-cols-4 gap-x-6 gap-y-3">
           <ReadOnlyField label={language === 'th' ? 'สร้างโดย' : 'Created by'} value="—" />
           <ReadOnlyField label={language === 'th' ? 'สร้างเมื่อ' : 'Created at'} value={sale.createdAt} />
@@ -160,6 +160,19 @@ export function SaleOverviewCard({ sale }: SaleOverviewCardProps) {
             />
           ))}
         </div>
+
+        {/* Row 3: Per-policy status dropdowns */}
+        {sale.policies.length > 0 && (
+          <div className="grid grid-cols-4 gap-x-6 gap-y-3 mt-3 pt-3 border-t border-border/50">
+            {sale.policies.map((policy) => (
+              <PolicyStatusDropdown
+                key={policy.kind}
+                kind={policy.kind}
+                language={language}
+              />
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
