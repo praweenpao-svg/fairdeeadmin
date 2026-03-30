@@ -252,17 +252,6 @@ export function PolicyStatusCard({ sale }: SaleOverviewCardProps) {
               language={language}
             />
           ))}
-          <ReadOnlyField
-            label={language === 'th' ? 'สถานะการชำระเงิน' : 'Payment Status'}
-            value={sale.paymentStatus === 'paid' ? (language === 'th' ? 'ชำระแล้ว' : 'Paid') :
-                   sale.paymentStatus === 'pending' ? (language === 'th' ? 'รอชำระ' : 'Pending') :
-                   sale.paymentStatus === 'partial' ? (language === 'th' ? 'ชำระบางส่วน' : 'Partial') :
-                   (language === 'th' ? 'ยังไม่ชำระ' : 'Unpaid')}
-          />
-          <ReadOnlyField
-            label={language === 'th' ? 'วิธีชำระเงิน' : 'Payment Method'}
-            value={sale.paymentMethod}
-          />
         </div>
       </CardContent>
     </Card>

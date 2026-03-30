@@ -214,16 +214,16 @@ const DOWNPAYMENT_INSTALLMENT_OPTIONS = [
 function PackageSelectionTab({ sale }: { sale: SaleDetail }) {
   const { language } = useLanguageStore();
   const vmiPolicy = sale.policies.find(p => p.kind === 'vmi');
-  const [paymentMethod, setPaymentMethod] = React.useState('qr_code_full');
-  const [installmentPlan, setInstallmentPlan] = React.useState('equal');
-  const [addCmi, setAddCmi] = React.useState(sale.hasCompulsoryInsurance ? 'yes' : 'no');
-  const [customerType, setCustomerType] = React.useState<string>(sale.customer.customerType);
-  const [commercialVehicle, setCommercialVehicle] = React.useState(sale.forCommercialVehicle ? 'yes' : 'no');
-  const [kycMode, setKycMode] = React.useState('manual');
+  const [paymentMethod, setPaymentMethod] = React.useState('');
+  const [installmentPlan, setInstallmentPlan] = React.useState('');
+  const [addCmi, setAddCmi] = React.useState('');
+  const [customerType, setCustomerType] = React.useState<string>('');
+  const [commercialVehicle, setCommercialVehicle] = React.useState('');
+  const [kycMode, setKycMode] = React.useState('');
 
   const isInstallment = paymentMethod === 'bank_account_installment' || paymentMethod === 'qr_code_installment' || paymentMethod === 'credit_card_installment';
   const showKyc = paymentMethod === 'bank_account_installment' || paymentMethod === 'qr_code_installment';
-  const installmentOptions = installmentPlan === 'equal' ? EQUAL_INSTALLMENT_OPTIONS : DOWNPAYMENT_INSTALLMENT_OPTIONS;
+  const installmentOptions = installmentPlan === 'downpayment' ? DOWNPAYMENT_INSTALLMENT_OPTIONS : EQUAL_INSTALLMENT_OPTIONS;
 
   return (
     <div className="space-y-6">
@@ -259,40 +259,6 @@ function PackageSelectionTab({ sale }: { sale: SaleDetail }) {
       {/* Two-column layout */}
       <div className="grid grid-cols-2 gap-6">
         <div className="space-y-4">
-          {/* Payment Method */}
-          <div className="space-y-2">
-            <SectionLabel>{language === 'th' ? 'วิธีการชำระเงิน' : 'Payment Method'} <span className="text-destructive">*</span></SectionLabel>
-            <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-              <SelectTrigger className="text-xs h-9">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {PAYMENT_METHODS.map(pm => (
-                  <SelectItem key={pm.value} value={pm.value}>{language === 'th' ? pm.th : pm.en}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Add CMI */}
-          <ToggleSelect
-            label={language === 'th' ? 'ซื้อ พ.ร.บ. เพิ่ม?' : 'Add Compulsory Insurance?'}
-            options={[
-              { value: 'yes', label: language === 'th' ? 'ใช่' : 'Yes' },
-              { value: 'no', label: language === 'th' ? 'ไม่ใช่' : 'No' },
-            ]}
-            value={addCmi}
-            onChange={setAddCmi}
-          />
-
-          {/* CMI Start Date - only when CMI = yes */}
-          {addCmi === 'yes' && (
-            <div className="space-y-2">
-              <SectionLabel>{language === 'th' ? 'วันเริ่มต้น พ.ร.บ.' : 'Compulsory Start Date'}</SectionLabel>
-              <Input type="date" className="text-xs h-9" defaultValue="2026-04-01" />
-            </div>
-          )}
-
           {/* Customer Type */}
           <ToggleSelect
             label={language === 'th' ? 'ประเภทลูกค้า' : 'Customer Type'}
@@ -315,12 +281,46 @@ function PackageSelectionTab({ sale }: { sale: SaleDetail }) {
             onChange={setCommercialVehicle}
           />
 
+          {/* Add CMI */}
+          <ToggleSelect
+            label={language === 'th' ? 'ซื้อ พ.ร.บ. เพิ่ม?' : 'Add Compulsory Insurance?'}
+            options={[
+              { value: 'yes', label: language === 'th' ? 'ใช่' : 'Yes' },
+              { value: 'no', label: language === 'th' ? 'ไม่ใช่' : 'No' },
+            ]}
+            value={addCmi}
+            onChange={setAddCmi}
+          />
+
+          {/* CMI Start Date - only when CMI = yes */}
+          {addCmi === 'yes' && (
+            <div className="space-y-2">
+              <SectionLabel>{language === 'th' ? 'วันเริ่มต้น พ.ร.บ.' : 'Compulsory Start Date'}</SectionLabel>
+              <Input type="date" className="text-xs h-9" />
+            </div>
+          )}
+
+          {/* Payment Method */}
+          <div className="space-y-2">
+            <SectionLabel>{language === 'th' ? 'วิธีการชำระเงิน' : 'Payment Method'} <span className="text-destructive">*</span></SectionLabel>
+            <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+              <SelectTrigger className="text-xs h-9">
+                <SelectValue placeholder={language === 'th' ? 'เลือกวิธีชำระเงิน' : 'Select payment method'} />
+              </SelectTrigger>
+              <SelectContent>
+                {PAYMENT_METHODS.map(pm => (
+                  <SelectItem key={pm.value} value={pm.value}>{language === 'th' ? pm.th : pm.en}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           {/* Vehicle Code */}
           <div className="space-y-2">
             <SectionLabel>{language === 'th' ? 'รหัสรถ' : 'Vehicle Code'} <span className="text-destructive">*</span></SectionLabel>
-            <Select defaultValue={sale.vehicle.vehicleCode}>
+            <Select>
               <SelectTrigger className="text-xs h-9">
-                <SelectValue />
+                <SelectValue placeholder={language === 'th' ? 'เลือกรหัสรถ' : 'Select vehicle code'} />
               </SelectTrigger>
               <SelectContent>
                 {VEHICLE_CODES.map(code => (
@@ -333,7 +333,7 @@ function PackageSelectionTab({ sale }: { sale: SaleDetail }) {
           {/* Add-Ons */}
           <div className="space-y-2">
             <SectionLabel>{language === 'th' ? 'ความคุ้มครองเพิ่มเติม' : 'Add-Ons'}</SectionLabel>
-            <Select defaultValue="">
+            <Select>
               <SelectTrigger className="text-xs h-9">
                 <SelectValue placeholder={language === 'th' ? 'เลือก Add-Ons' : 'Select Add-Ons'} />
               </SelectTrigger>
@@ -346,7 +346,6 @@ function PackageSelectionTab({ sale }: { sale: SaleDetail }) {
               </SelectContent>
             </Select>
           </div>
-        </div>
 
         {/* Right column: Instalment + KYC (conditional) */}
         <div className="space-y-4">
