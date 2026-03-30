@@ -149,10 +149,6 @@ export default function OpsDashboard() {
             <h3 className="text-lg font-semibold">
               {language === 'th' ? steps[currentStep].th : steps[currentStep].en}
             </h3>
-            <p className="text-sm text-muted-foreground">
-              {language === 'th' ? 'เนื้อหา wizard จะถูกสร้างที่นี่' : 'Wizard step content will be built here'}
-            </p>
-            <p className="text-xs text-muted-foreground/60">Mode A — Pre-Sale (AST)</p>
           </div>
         </div>
       )}
