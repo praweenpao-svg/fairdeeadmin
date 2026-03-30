@@ -107,12 +107,19 @@ function formatDateTime(ts: string) {
  * used identically across Admin Portal and OPS Dashboard.
  * Data model, rework taxonomy, and @mention behaviour per Section 8.
  */
-export function HistoryActivitySidebar({ open, onClose, quotationId }: HistoryActivitySidebarProps) {
+export function HistoryActivitySidebar({ open, onClose, quotationId, availablePolicies }: HistoryActivitySidebarProps) {
   const { language } = useLanguageStore();
   const [compositionMode, setCompositionMode] = useState<'none' | 'rework' | 'remark'>('none');
   const [draftText, setDraftText] = useState('');
+  const [policyFilter, setPolicyFilter] = useState<'all' | 'vmi' | 'cmi'>('all');
 
   if (!open) return null;
+
+  const hasBothPolicies = availablePolicies && availablePolicies.includes('vmi') && availablePolicies.includes('cmi');
+
+  const filteredHistory = policyFilter === 'all'
+    ? mockHistory
+    : mockHistory.filter(e => !e.policyKind || e.policyKind === policyFilter);
 
   const handleSubmit = (type: 'rework' | 'remark') => {
     if (!draftText.trim()) return;
