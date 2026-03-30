@@ -100,39 +100,50 @@ function EditableField({ label, value, onSave, type = 'text', options }: {
   );
 }
 
+// Exact match with motor policy page (PolicyStatusCell.tsx)
 const policyStatuses = [
-  { value: 'pending', en: 'Pending', th: 'รอดำเนินการ' },
-  { value: 'pending_review', en: 'Pending Review', th: 'รอตรวจสอบ' },
+  { value: 'pending_payment', en: 'Pending', th: 'รอดำเนินการ' },
+  { value: 'pending_review', en: 'Pending Review', th: 'รอตรวจเอกสาร' },
   { value: 'pending_issuance', en: 'Pending Issuance', th: 'รอออกกรมธรรม์' },
-  { value: 'policy_uploaded', en: 'Policy Uploaded', th: 'อัปโหลดกรมธรรม์แล้ว' },
-  { value: 'policy_shipped', en: 'Policy Shipped', th: 'จัดส่งแล้ว' },
-  { value: 'policy_delivered', en: 'Policy Delivered', th: 'จัดส่งถึงแล้ว' },
-  { value: 'policy_cancelled', en: 'Policy Cancelled', th: 'ยกเลิกกรมธรรม์' },
-  { value: 'rework_required', en: 'Rework Required', th: 'ต้องแก้ไข' },
+  { value: 'policy_issued', en: 'Policy Uploaded', th: 'กรมธรรม์ออกแล้ว' },
+  { value: 'policy_shipped', en: 'Policy Shipped', th: 'กรมธรรม์ถูกจัดส่ง' },
+  { value: 'policy_delivered', en: 'Policy Delivered', th: 'กรมธรรม์จัดส่งสำเร็จ' },
+  { value: 'policy_cancelled', en: 'Policy Cancelled', th: 'กรมธรรม์ยกเลิก' },
+  { value: 'rework_required', en: 'Rework Required', th: 'งานติดปัญหา' },
 ];
 
-function PolicyStatusDropdown({ kind, language }: { kind: string; language: string }) {
-  const [status, setStatus] = useState('pending');
+const paymentStatuses = [
+  { value: 'unpaid', en: 'Unpaid', th: 'ยังไม่ชำระ' },
+  { value: 'pending', en: 'Pending', th: 'รอชำระ' },
+  { value: 'partial', en: 'Partial', th: 'ชำระบางส่วน' },
+  { value: 'paid', en: 'Payment Verified', th: 'ยืนยันการชำระเงินแล้ว' },
+];
+
+function StatusDropdown({ label, options, defaultValue, language }: {
+  label: string;
+  options: { value: string; en: string; th: string }[];
+  defaultValue: string;
+  language: string;
+}) {
+  const [status, setStatus] = useState(defaultValue);
 
   const handleChange = (val: string) => {
     setStatus(val);
-    const label = policyStatuses.find(s => s.value === val);
+    const opt = options.find(s => s.value === val);
     toast.success(language === 'th' ? 'อัปเดตสถานะแล้ว' : 'Status updated', {
-      description: `${kind.toUpperCase()}: ${label ? (language === 'th' ? label.th : label.en) : val}`,
+      description: `${label}: ${opt ? (language === 'th' ? opt.th : opt.en) : val}`,
     });
   };
 
   return (
     <div className="space-y-0.5">
-      <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
-        {kind.toUpperCase()} {language === 'th' ? 'สถานะ' : 'Status'}
-      </span>
+      <span className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</span>
       <Select value={status} onValueChange={handleChange}>
         <SelectTrigger className="h-7 text-xs">
           <SelectValue />
         </SelectTrigger>
         <SelectContent className="bg-popover z-50">
-          {policyStatuses.map(s => (
+          {options.map(s => (
             <SelectItem key={s.value} value={s.value} className="text-xs">
               {language === 'th' ? s.th : s.en}
             </SelectItem>
@@ -170,7 +181,6 @@ export function SaleOverviewCard({ sale }: SaleOverviewCardProps) {
       <CardContent className="px-5 pb-4">
         <div className="space-y-2.5">
           <SummaryRow label={language === 'th' ? 'เลขงาน' : 'Sale ID'} value={sale.qqId} />
-          <SummaryRow label={language === 'th' ? 'สถานะการชำระเงิน' : 'Payment Status'} value={paymentStatusLabel} />
           <SummaryRow label={language === 'th' ? 'ทะเบียนรถ' : 'Vehicle Number'} value={sale.vehicle.licensePlate} />
           <SummaryRow label={language === 'th' ? 'บริษัทประกัน' : 'Insurer'} value={vmiPolicy?.coverage.insurer || '—'} />
           <SummaryRow label={language === 'th' ? 'เบี้ยรวม' : 'Total Premium'} value={`${totalPremium.toLocaleString()} ${language === 'th' ? 'บาท' : 'THB'}`} />
