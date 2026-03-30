@@ -13,12 +13,12 @@ import { OtherStagesFilterPanel, OtherStagesFilterState, defaultOtherStagesFilte
 import { LeadsStageFilters, LeadsFilterState, defaultLeadsFilterState } from '@/components/pipeline/LeadsStageFilters';
 import { FilterChips } from '@/components/pipeline/FilterChips';
 import { LeadSubTabs, LeadSubTab } from '@/components/pipeline/LeadSubTabs';
-import { LanguageToggle } from '@/components/LanguageToggle';
+
 import { useLanguageStore } from '@/stores/languageStore';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { applyAllFilters } from '@/utils/leadFilters';
-import { MentionNotificationBell } from '@/components/notifications/MentionNotificationBell';
+
 import { mockStaffMembers } from '@/data/mockStaff';
 
 const Index = () => {
