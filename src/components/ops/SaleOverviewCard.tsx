@@ -147,16 +147,18 @@ export function SaleOverviewCard({ sale }: SaleOverviewCardProps) {
           />
         </div>
 
-        {/* Row 2: Attribution + assignments */}
+        {/* Row 2: Attribution + per-policy owners */}
         <div className="grid grid-cols-4 gap-x-6 gap-y-3">
           <ReadOnlyField label={language === 'th' ? 'สร้างโดย' : 'Created by'} value="—" />
           <ReadOnlyField label={language === 'th' ? 'สร้างเมื่อ' : 'Created at'} value={sale.createdAt} />
           <ReadOnlyField label="KYC Status" value="—" />
-          <ReadOnlyField label="RF" value={sale.assignment.rf || '—'} />
-          <ReadOnlyField label="SC" value={sale.assignment.sc || '—'} />
-          <ReadOnlyField label="DE" value={sale.assignment.de || '—'} />
-          <ReadOnlyField label="Admin" value={sale.assignment.admin || '—'} />
-          <ReadOnlyField label="Delivery" value={sale.assignment.delivery || '—'} />
+          {sale.policies.map((policy) => (
+            <ReadOnlyField
+              key={policy.kind}
+              label={`${policy.kind.toUpperCase()} ${language === 'th' ? 'ผู้รับผิดชอบ' : 'Owner'}`}
+              value={policy.kind === 'vmi' ? 'Pao' : 'Lisa'}
+            />
+          ))}
         </div>
       </CardContent>
     </Card>
