@@ -130,7 +130,6 @@ export function StickyPageHeader({
   onOpenUploadDoc,
 }: StickyPageHeaderProps) {
   const { language } = useLanguageStore();
-  const { language } = useLanguageStore();
 
   const vmiPolicy = sale.policies.find(p => p.kind === 'vmi');
   const cmiPolicy = sale.policies.find(p => p.kind === 'cmi');
