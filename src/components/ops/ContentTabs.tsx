@@ -134,27 +134,28 @@ function PolicyBenefitsTab({ sale }: { sale: SaleDetail }) {
   );
 }
 
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return <h5 className="text-xs font-semibold text-foreground">{children}</h5>;
+}
+
 function PackageSelectionTab({ sale }: { sale: SaleDetail }) {
   const { language } = useLanguageStore();
   const vmiPolicy = sale.policies.find(p => p.kind === 'vmi');
 
   return (
-    <div className="space-y-5">
-      {/* Selected Package */}
-      <div>
-        <h5 className="text-xs font-semibold mb-3">{language === 'th' ? 'แพ็กเกจที่เลือก' : 'Selected Package'}</h5>
-        <Card className="border-primary/30">
+    <div className="space-y-6">
+      {/* Selected Package Card */}
+      <div className="space-y-2">
+        <SectionLabel>{language === 'th' ? 'แพ็กเกจที่เลือก' : 'Select a package'}</SectionLabel>
+        <Card className="border-border">
           <CardContent className="p-4">
-            <div className="flex items-start justify-between">
+            <div className="flex items-start justify-between mb-3">
               <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <div className="w-2 h-2 rounded-full bg-primary" />
-                  <span className="text-sm font-semibold">{vmiPolicy?.packageName || '-'}</span>
-                </div>
-                <span className="text-xs text-muted-foreground">{vmiPolicy?.insurer || '-'}</span>
+                <p className="text-sm font-semibold">{vmiPolicy?.packageName || '-'}</p>
+                <p className="text-xs text-muted-foreground">{vmiPolicy?.insurer || '-'}</p>
               </div>
             </div>
-            <div className="mt-3 space-y-1.5 text-xs">
+            <div className="space-y-1 text-xs">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">{language === 'th' ? 'ค่าคอมมิชชั่น' : 'Affiliate Commission'}</span>
                 <span className="font-semibold text-primary">{vmiPolicy?.affiliateCommission.toLocaleString()} ฿</span>
@@ -172,96 +173,154 @@ function PackageSelectionTab({ sale }: { sale: SaleDetail }) {
         </Card>
       </div>
 
-      {/* Payment Method */}
-      <div>
-        <h5 className="text-xs font-semibold mb-2">{language === 'th' ? 'วิธีการชำระเงิน' : 'Payment Method'}</h5>
-        <Select defaultValue={sale.paymentMethod}>
-          <SelectTrigger className="text-xs h-9">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="QR Code (Full Payment)">{language === 'th' ? 'QR โค้ด (แบบจ่ายเต็ม)' : 'QR Code (Full Payment)'}</SelectItem>
-            <SelectItem value="QR Code (Installment)">{language === 'th' ? 'QR โค้ด (แบบผ่อนชำระ)' : 'QR Code (Installment)'}</SelectItem>
-            <SelectItem value="Bank Transfer">{language === 'th' ? 'บัญชีธนาคาร' : 'Bank Transfer'}</SelectItem>
-            <SelectItem value="Credit Card (Full)">{language === 'th' ? 'ตัดบัตรเครดิต (แบบจ่ายเต็ม)' : 'Credit Card (Full Payment)'}</SelectItem>
-            <SelectItem value="Credit Card (Installment)">{language === 'th' ? 'ตัดบัตรเครดิต (แบบผ่อนชำระ)' : 'Credit Card (Installment)'}</SelectItem>
-            <SelectItem value="Credit (Full)">{language === 'th' ? 'เครดิต (แบบจ่ายเต็ม)' : 'Credit (Full Payment)'}</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      {/* Two-column: Payment Method + Instalment Options */}
+      <div className="grid grid-cols-2 gap-6">
+        <div className="space-y-4">
+          {/* Payment Method */}
+          <div className="space-y-2">
+            <SectionLabel>{language === 'th' ? 'วิธีการชำระเงิน' : 'Payment Method'} <span className="text-destructive">*</span></SectionLabel>
+            <Select defaultValue={sale.paymentMethod}>
+              <SelectTrigger className="text-xs h-9">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="QR Code (Full Payment)">{language === 'th' ? 'QR โค้ด (จ่ายเต็ม)' : 'QR Code (Full Payment)'}</SelectItem>
+                <SelectItem value="QR Code (Installment)">{language === 'th' ? 'QR โค้ด (ผ่อนชำระ)' : 'QR Code (Installment)'}</SelectItem>
+                <SelectItem value="Bank Transfer">{language === 'th' ? 'โอนเงิน' : 'Bank Transfer'}</SelectItem>
+                <SelectItem value="Credit Card (Full)">{language === 'th' ? 'บัตรเครดิต (จ่ายเต็ม)' : 'Credit Card (Full)'}</SelectItem>
+                <SelectItem value="Credit (Full)">{language === 'th' ? 'เครดิต (จ่ายเต็ม)' : 'Credit (Full)'}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-      {/* Add Compulsory Insurance */}
-      <div>
-        <h5 className="text-xs font-semibold mb-2">{language === 'th' ? 'ต้องการซื้อ พ.ร.บ. เพิ่มหรือไม่?' : 'Add Compulsory Insurance?'}</h5>
-        <div className="flex gap-2">
-          <button className={`px-4 py-1.5 rounded-md text-xs font-medium border transition-colors ${
-            sale.hasCompulsoryInsurance 
-              ? 'bg-primary text-primary-foreground border-primary' 
-              : 'bg-card text-foreground border-border'
-          }`}>
-            {language === 'th' ? 'ใช่' : 'Yes'} {sale.hasCompulsoryInsurance && '✓'}
-          </button>
-          <button className={`px-4 py-1.5 rounded-md text-xs font-medium border transition-colors ${
-            !sale.hasCompulsoryInsurance 
-              ? 'bg-primary text-primary-foreground border-primary' 
-              : 'bg-card text-foreground border-border'
-          }`}>
-            {language === 'th' ? 'ไม่ใช่' : 'No'} {!sale.hasCompulsoryInsurance && '✓'}
-          </button>
+          {/* Add Compulsory Insurance */}
+          <div className="space-y-2">
+            <SectionLabel>{language === 'th' ? 'ซื้อ พ.ร.บ. เพิ่ม?' : 'Add Compulsory Insurance?'}</SectionLabel>
+            <div className="flex gap-2">
+              {['yes', 'no'].map(val => {
+                const isActive = val === 'yes' ? sale.hasCompulsoryInsurance : !sale.hasCompulsoryInsurance;
+                return (
+                  <button key={val} className={`px-4 py-1.5 rounded-md text-xs font-medium border transition-colors ${
+                    isActive ? 'bg-primary text-primary-foreground border-primary' : 'bg-card text-foreground border-border'
+                  }`}>
+                    {val === 'yes' ? (language === 'th' ? 'ใช่' : 'Yes') : (language === 'th' ? 'ไม่ใช่' : 'No')}
+                    {isActive && ' ✓'}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Customer Type */}
+          <div className="space-y-2">
+            <SectionLabel>{language === 'th' ? 'ประเภทลูกค้า' : 'Customer Type'}</SectionLabel>
+            <RadioGroup defaultValue={sale.customer.customerType} className="flex gap-4">
+              <div className="flex items-center gap-2">
+                <RadioGroupItem value="individual" id="individual" />
+                <Label htmlFor="individual" className="text-xs">{language === 'th' ? 'บุคคลธรรมดา' : 'Individual'}</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <RadioGroupItem value="corporation" id="corporation" />
+                <Label htmlFor="corporation" className="text-xs">{language === 'th' ? 'บริษัท' : 'Corporation'}</Label>
+              </div>
+            </RadioGroup>
+          </div>
+
+          {/* Commercial Vehicle */}
+          <div className="space-y-2">
+            <SectionLabel>{language === 'th' ? 'สำหรับรถพาณิชย์' : 'For Commercial Vehicle'}</SectionLabel>
+            <div className="flex items-center gap-2">
+              <Checkbox id="commercial" checked={sale.forCommercialVehicle} />
+              <Label htmlFor="commercial" className="text-xs text-muted-foreground">
+                {language === 'th' ? 'รถใช้เพื่อการพาณิชย์' : 'Vehicle is for commercial use'}
+              </Label>
+            </div>
+          </div>
+
+          {/* Vehicle Code */}
+          <div className="space-y-2">
+            <SectionLabel>{language === 'th' ? 'รหัสรถ' : 'Vehicle Code'} <span className="text-destructive">*</span></SectionLabel>
+            <Select defaultValue={sale.vehicle.vehicleCode}>
+              <SelectTrigger className="text-xs h-9 w-48">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="110 - รถยนต์ส่วนบุ">110 - รถยนต์ส่วนบุ</SelectItem>
+                <SelectItem value="120 - รถยนต์รับจ้าง">120 - รถยนต์รับจ้าง</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Add-Ons */}
+          <div className="space-y-2">
+            <SectionLabel>{language === 'th' ? 'ความคุ้มครองเพิ่มเติม' : 'Add-Ons'}</SectionLabel>
+            <Select defaultValue="">
+              <SelectTrigger className="text-xs h-9 w-48">
+                <SelectValue placeholder={language === 'th' ? 'เลือก Add-Ons' : 'Select Add-Ons'} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">{language === 'th' ? 'ไม่ติดตั้ง' : 'None'}</SelectItem>
+                <SelectItem value="roadside">{language === 'th' ? 'ล้อแม็กซ์ สเกิร์ต ฝากระโปรง' : 'Alloy Wheels & Skirt'}</SelectItem>
+                <SelectItem value="searchlight">{language === 'th' ? 'สเกิร์ตรอบคัน' : 'Full Body Kit'}</SelectItem>
+                <SelectItem value="headlight">{language === 'th' ? 'ไฟหน้าแต่ง' : 'Custom Headlights'}</SelectItem>
+                <SelectItem value="taillight">{language === 'th' ? 'ไฟท้ายแต่ง' : 'Custom Taillights'}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* Right column: Instalment Options + KYC */}
+        <div className="space-y-4">
+          {/* Instalment Options */}
+          <div className="space-y-3">
+            <SectionLabel>{language === 'th' ? 'ตัวเลือกผ่อนชำระ' : 'Instalment Options'}</SectionLabel>
+            
+            <div className="space-y-2">
+              <p className="text-xs text-muted-foreground">{language === 'th' ? 'เลือกแผนผ่อนชำระ' : 'Select Instalment Plan'}</p>
+              <RadioGroup defaultValue="equal" className="flex gap-4">
+                <div className="flex items-center gap-2">
+                  <RadioGroupItem value="equal" id="equal-inst" />
+                  <Label htmlFor="equal-inst" className="text-xs">{language === 'th' ? 'ผ่อนเท่ากัน' : 'Equal Instalments'}</Label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <RadioGroupItem value="downpayment" id="downpay-inst" />
+                  <Label htmlFor="downpay-inst" className="text-xs">{language === 'th' ? 'ดาวน์ 25%' : 'With 25% Downpayment'}</Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground">{language === 'th' ? 'จำนวนงวด' : 'No. of Instalments'}</p>
+              <Select defaultValue="3">
+                <SelectTrigger className="text-xs h-9">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="3">{language === 'th' ? '3 งวด หักรายได้ 0.00% รับรายได้หลังงวดที่ 3' : '3 instalments 0.00% Receive income after 3rd'}</SelectItem>
+                  <SelectItem value="4">{language === 'th' ? '4 งวด หักรายได้ 0.00% รับรายได้หลังงวดที่ 3' : '4 instalments 0.00% Receive income after 3rd'}</SelectItem>
+                  <SelectItem value="5">{language === 'th' ? '5 งวด หักรายได้ 0.00% รับรายได้หลังงวดที่ 3' : '5 instalments 0.00% Receive income after 3rd'}</SelectItem>
+                  <SelectItem value="6">{language === 'th' ? '6 งวด หักรายได้ 0.00% รับรายได้หลังงวดที่ 3' : '6 instalments 0.00% Receive income after 3rd'}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* KYC Information */}
+          <div className="space-y-2">
+            <p className="text-xs text-muted-foreground">{language === 'th' ? 'ข้อมูล KYC' : 'KYC Information'}</p>
+            <div className="flex gap-2">
+              {['manual', 'auto'].map(val => (
+                <button key={val} className={`px-4 py-1.5 rounded-md text-xs font-medium border transition-colors ${
+                  val === 'manual' ? 'bg-primary text-primary-foreground border-primary' : 'bg-card text-foreground border-border'
+                }`}>
+                  {val === 'manual' ? (language === 'th' ? 'Manual KYC' : 'Manual KYC') : 'Auto KYC'}
+                  {val === 'manual' && ' ✓'}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
-
-      {/* Customer Type */}
-      <div>
-        <h5 className="text-xs font-semibold mb-2">{language === 'th' ? 'ประเภทลูกค้า' : 'Customer Type'}</h5>
-        <RadioGroup defaultValue={sale.customer.customerType} className="flex gap-4">
-          <div className="flex items-center gap-2">
-            <RadioGroupItem value="individual" id="individual" />
-            <Label htmlFor="individual" className="text-xs">{language === 'th' ? 'บุคคลธรรมดา' : 'Individual'}</Label>
-          </div>
-          <div className="flex items-center gap-2">
-            <RadioGroupItem value="corporation" id="corporation" />
-            <Label htmlFor="corporation" className="text-xs">{language === 'th' ? 'บริษัท' : 'Corporation'}</Label>
-          </div>
-        </RadioGroup>
-      </div>
-
-      {/* For Commercial Vehicle */}
-      <div>
-        <h5 className="text-xs font-semibold mb-2">{language === 'th' ? 'สำหรับรถพาณิชย์' : 'For Commercial Vehicle'}</h5>
-        <div className="flex items-center gap-2">
-          <Checkbox id="commercial" checked={sale.forCommercialVehicle} />
-          <Label htmlFor="commercial" className="text-xs text-muted-foreground">
-            {language === 'th' ? 'รถใช้เพื่อการพาณิชย์' : 'Vehicle is for commercial use'}
-          </Label>
-        </div>
-      </div>
-
-      {/* Vehicle Code */}
-      <div>
-        <h5 className="text-xs font-semibold mb-2">{language === 'th' ? 'รหัสรถ' : 'Vehicle Code'} *</h5>
-        <Select defaultValue={sale.vehicle.vehicleCode}>
-          <SelectTrigger className="text-xs h-9 w-48">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="110 - รถยนต์ส่วนบุ">110 - รถยนต์ส่วนบุ</SelectItem>
-            <SelectItem value="120 - รถยนต์รับจ้าง">120 - รถยนต์รับจ้าง</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Add-Ons */}
-      {vmiPolicy?.coverage.addOns && vmiPolicy.coverage.addOns.length > 0 && (
-        <div>
-          <h5 className="text-xs font-semibold mb-2">{language === 'th' ? 'ความคุ้มครองเพิ่มเติม' : 'Add-Ons'}</h5>
-          <div className="flex flex-wrap gap-2">
-            {vmiPolicy.coverage.addOns.map((addon, idx) => (
-              <Badge key={idx} variant="outline" className="text-[10px]">{addon}</Badge>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
