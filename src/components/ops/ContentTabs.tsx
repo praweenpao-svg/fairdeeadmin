@@ -215,7 +215,7 @@ function PackageSelectionTab({ sale }: { sale: SaleDetail }) {
   const { language } = useLanguageStore();
   const vmiPolicy = sale.policies.find(p => p.kind === 'vmi');
   const [paymentMethod, setPaymentMethod] = React.useState('qr_code_full');
-  const [instalmentPlan, setInstalmentPlan] = React.useState('equal');
+  const [installmentPlan, setInstallmentPlan] = React.useState('equal');
   const [addCmi, setAddCmi] = React.useState(sale.hasCompulsoryInsurance ? 'yes' : 'no');
   const [customerType, setCustomerType] = React.useState<string>(sale.customer.customerType);
   const [commercialVehicle, setCommercialVehicle] = React.useState(sale.forCommercialVehicle ? 'yes' : 'no');
@@ -223,7 +223,7 @@ function PackageSelectionTab({ sale }: { sale: SaleDetail }) {
 
   const isInstallment = paymentMethod === 'bank_account_installment' || paymentMethod === 'qr_code_installment' || paymentMethod === 'credit_card_installment';
   const showKyc = paymentMethod === 'bank_account_installment' || paymentMethod === 'qr_code_installment';
-  const instalmentOptions = instalmentPlan === 'equal' ? EQUAL_INSTALMENT_OPTIONS : DOWNPAYMENT_INSTALMENT_OPTIONS;
+  const installmentOptions = installmentPlan === 'equal' ? EQUAL_INSTALLMENT_OPTIONS : DOWNPAYMENT_INSTALLMENT_OPTIONS;
 
   return (
     <div className="space-y-6">
