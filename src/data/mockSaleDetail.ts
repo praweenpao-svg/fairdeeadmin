@@ -179,8 +179,8 @@ export const mockSaleDetail: SaleDetail = {
       policyEndDate: '01/04/2027',
       coverage: {
         insurer: 'Muang Thai Insurance',
-        insuranceClass: '3+',
-        coverageType: 'Third Party Fire & Theft',
+        insuranceClass: '1',
+        coverageType: 'Comprehensive',
         sumInsured: 350000,
         annualPremium: 7800.30,
         ownDamage: 350000,
