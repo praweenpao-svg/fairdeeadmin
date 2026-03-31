@@ -14,9 +14,10 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { FileText, Image, CreditCard, User, Package, Link2, Plus, X, RefreshCw, Upload, ShieldCheck } from 'lucide-react';
+import { FileText, Image, CreditCard, User, Package, Link2, Plus, X, RefreshCw, Upload, ShieldCheck, Check, ChevronRight } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 interface ContentTabsProps {
   sale: SaleDetail;
@@ -963,21 +964,69 @@ function PackageSelectionTab({ sale }: { sale: SaleDetail }) {
 
 export function ContentTabs({ sale }: ContentTabsProps) {
   const { language } = useLanguageStore();
+  const [activeTab, setActiveTab] = React.useState('package');
+  const [completedSteps, setCompletedSteps] = React.useState<Set<string>>(new Set());
+
+  const tabOrder = ['package', 'link-docs', 'verify'];
+
+  const handleNext = (currentTab: string) => {
+    // Mock validation: for demo, always pass
+    const hasErrors = false; // Replace with real validation
+    if (hasErrors) {
+      toast.error(language === 'th' ? 'กรุณากรอกข้อมูลที่จำเป็นให้ครบ' : 'Please fill in all required fields');
+      return;
+    }
+    setCompletedSteps(prev => new Set(prev).add(currentTab));
+    const idx = tabOrder.indexOf(currentTab);
+    if (idx < tabOrder.length - 1) {
+      setActiveTab(tabOrder[idx + 1]);
+    }
+  };
+
+  const tabLabel = (key: string, thLabel: string, enLabel: string) => {
+    const done = completedSteps.has(key);
+    return (
+      <span className="flex items-center gap-1">
+        {language === 'th' ? thLabel : enLabel}
+        {done && <Check className="w-3.5 h-3.5 text-green-600" />}
+      </span>
+    );
+  };
+
+  const NextButton = ({ tabKey }: { tabKey: string }) => {
+    const done = completedSteps.has(tabKey);
+    return (
+      <div className="flex justify-end mt-4 pt-3 border-t border-border">
+        <Button
+          size="sm"
+          className="text-xs gap-1.5"
+          disabled={done}
+          onClick={() => handleNext(tabKey)}
+        >
+          {done
+            ? (language === 'th' ? 'เสร็จสิ้น' : 'Completed')
+            : (language === 'th' ? 'ถัดไป' : 'Next')
+          }
+          {!done && <ChevronRight className="w-3.5 h-3.5" />}
+        </Button>
+      </div>
+    );
+  };
 
   return (
-    <Tabs defaultValue="package" className="w-full">
+    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
       <TabsList className="w-full justify-start bg-card border border-border rounded-lg p-1">
         <TabsTrigger value="package" className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
           <Package className="w-3.5 h-3.5" />
-          {language === 'th' ? 'เลือกแพ็กเกจ' : 'Package Selection'}
+          {tabLabel('package', 'เลือกแพ็กเกจ', 'Package Selection')}
         </TabsTrigger>
         <TabsTrigger value="link-docs" className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
           <Link2 className="w-3.5 h-3.5" />
-          {language === 'th' ? 'เชื่อมโยงเอกสาร' : 'Link Documents'}
+          {tabLabel('link-docs', 'เชื่อมโยงเอกสาร', 'Link Documents')}
         </TabsTrigger>
         <TabsTrigger value="verify" className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
           <ShieldCheck className="w-3.5 h-3.5" />
-          {language === 'th' ? 'ตรวจสอบข้อมูล' : 'Verify Information'}
+          {tabLabel('verify', 'ตรวจสอบข้อมูล', 'Verify Information')}
         </TabsTrigger>
         <TabsTrigger value="invoice" className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
           <CreditCard className="w-3.5 h-3.5" />
@@ -995,12 +1044,15 @@ export function ContentTabs({ sale }: ContentTabsProps) {
 
       <TabsContent value="package" className="mt-4">
         <PackageSelectionTab sale={sale} />
+        <NextButton tabKey="package" />
       </TabsContent>
       <TabsContent value="link-docs" className="mt-4">
         <LinkDocumentsTab sale={sale} />
+        <NextButton tabKey="link-docs" />
       </TabsContent>
       <TabsContent value="verify" className="mt-4">
         <VerifyInformationTab sale={sale} />
+        <NextButton tabKey="verify" />
       </TabsContent>
       <TabsContent value="invoice" className="mt-4">
         <InvoiceListTab sale={sale} />
