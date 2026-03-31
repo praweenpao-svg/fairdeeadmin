@@ -201,7 +201,7 @@ export function SaleDetailBar({
             className={cn('text-xs gap-1.5', action.group === 'G4' && 'bg-orange-500 hover:bg-orange-600 text-white')}
             onClick={() => handlePrimaryClick(action)}
           >
-            <action.icon className="w-3.5 h-3.5" />
+            {action.icon && <action.icon className="w-3.5 h-3.5" />}
             {action.label}
           </Button>
         ))}
