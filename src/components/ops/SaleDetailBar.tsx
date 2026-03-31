@@ -154,7 +154,7 @@ export function SaleDetailBar({
   const cmiPolicy = sale.policies.find(p => p.kind === 'cmi');
   const currentStage = 'to_issue';
   const stageLabel = stageLabels[currentStage] || stageLabels.to_issue;
-  const primaryAction = getPrimaryAction(currentStage, hasActiveRework, language);
+  const primaryAction = getPrimaryAction(vmiPolicy, cmiPolicy, language);
 
   const handleAction = (actionName: string) => {
     toast.success(actionName, {
