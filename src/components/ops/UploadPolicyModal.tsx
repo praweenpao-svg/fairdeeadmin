@@ -109,10 +109,10 @@ function PolicyForm({
       <div>
         <Label className="text-xs">{language === 'th' ? 'บริษัทประกัน' : 'Insurer'}</Label>
         <Select value={form.insurer} onValueChange={v => setForm(f => ({ ...f, insurer: v }))}>
-          <SelectTrigger className="h-9 text-xs mt-1 bg-white dark:bg-background">
-            <SelectValue />
+          <SelectTrigger className="h-9 text-xs mt-1 bg-white dark:bg-background border border-input">
+            <SelectValue placeholder={language === 'th' ? 'เลือกบริษัทประกัน' : 'Select insurer'} />
           </SelectTrigger>
-          <SelectContent className="bg-popover z-50">
+          <SelectContent className="bg-popover z-[100]">
             {insurerOptions.map(o => (
               <SelectItem key={o} value={o} className="text-xs">{o}</SelectItem>
             ))}
@@ -125,7 +125,7 @@ function PolicyForm({
         <Label className="text-xs">{language === 'th' ? 'อัปโหลดไฟล์กรมธรรม์' : 'Upload Policy File'}</Label>
         <Input
           type="file"
-          className="h-9 text-xs mt-1 bg-muted cursor-pointer"
+          className="h-9 text-xs mt-1 bg-muted border border-input cursor-pointer file:text-xs file:font-medium"
           onChange={e => setForm(f => ({ ...f, policyFile: e.target.files?.[0] || null }))}
         />
       </div>
