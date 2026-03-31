@@ -40,7 +40,7 @@ const mockInvoiceSections: InvoiceSection[] = [
       {
         id: '63881',
         source: 'Customer | Fairdee',
-        amountPayable: '6,500.00 @ 23/01/2569',
+        amountPayable: '6,500 @ 23/01/2569',
         clawbackSubject: 'Voluntary Insurance',
         invoiceDetails: 'Voluntary Insurance',
         paymentStatus: 'Fully Paid',
