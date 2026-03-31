@@ -882,7 +882,7 @@ export function ContentTabs({ sale }: ContentTabsProps) {
           {language === 'th' ? 'เชื่อมโยงเอกสาร' : 'Link Documents'}
         </TabsTrigger>
         <TabsTrigger value="verify" className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
-          <User className="w-3.5 h-3.5" />
+          <ShieldCheck className="w-3.5 h-3.5" />
           {language === 'th' ? 'ตรวจสอบข้อมูล' : 'Verify Information'}
         </TabsTrigger>
         <TabsTrigger value="details" className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
