@@ -1,4 +1,7 @@
 import React from 'react';
+import sampleNationalId from '@/assets/sample-national-id.jpeg';
+import sampleCarRegistration from '@/assets/sample-car-registration.jpg';
+import samplePaymentProof from '@/assets/sample-payment-proof.png';
 import mtiLogo from '@/assets/insurer-mti.png';
 import { useLanguageStore } from '@/stores/languageStore';
 import { SaleDetail } from '@/data/mockSaleDetail';
