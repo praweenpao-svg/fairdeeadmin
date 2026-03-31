@@ -165,7 +165,7 @@ export function SaleDetailBar({
   const handlePrimaryClick = () => {
     if (!primaryAction) return;
     if (primaryAction.group === 'G4') { onOpenHistoryLog?.(); return; }
-    if (primaryAction.group === 'G2' && currentStage === 'to_issue') { onOpenUploadPolicy?.(); return; }
+    if (primaryAction.group === 'G2') { onOpenUploadPolicy?.(); return; }
     handleAction(primaryAction.label);
   };
 
