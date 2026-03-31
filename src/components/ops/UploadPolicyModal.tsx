@@ -167,14 +167,9 @@ function PolicyForm({
         <Input
           value={form.trackingCode}
           onChange={e => setForm(f => ({ ...f, trackingCode: e.target.value }))}
-          className="h-9 text-xs mt-1"
-          placeholder={language === 'th' ? 'กรอกเลขพัสดุ หรือ "epolicy"' : 'Tracking # or "epolicy"'}
+          className="h-9 text-xs mt-1 bg-white dark:bg-background"
+          placeholder={language === 'th' ? 'กรอกเลขพัสดุ' : 'Enter tracking code'}
         />
-        <p className="text-[10px] text-muted-foreground mt-1">
-          {language === 'th'
-            ? 'epolicy = ส่งทางอิเล็กทรอนิกส์ · เว้นว่าง = print by myself · เลขพัสดุ = print by fairdee'
-            : '"epolicy" = electronic · empty = print by myself · tracking # = print by fairdee'}
-        </p>
       </div>
 
       {/* VMI-only: Garage Type + Insurance Class — R-14/R-15 */}
