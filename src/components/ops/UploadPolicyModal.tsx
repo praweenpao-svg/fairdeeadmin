@@ -6,6 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { CalendarIcon } from 'lucide-react';
+import { format, parse } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import {
@@ -121,7 +125,7 @@ function PolicyForm({
         <Label className="text-xs">{language === 'th' ? 'อัปโหลดไฟล์กรมธรรม์' : 'Upload Policy File'}</Label>
         <Input
           type="file"
-          className="h-9 text-xs mt-1 bg-white dark:bg-background"
+          className="h-9 text-xs mt-1 bg-muted cursor-pointer"
           onChange={e => setForm(f => ({ ...f, policyFile: e.target.files?.[0] || null }))}
         />
       </div>
@@ -133,7 +137,7 @@ function PolicyForm({
           value={form.policyNumber}
           onChange={e => setForm(f => ({ ...f, policyNumber: e.target.value }))}
           className="h-9 text-xs mt-1 bg-white dark:bg-background"
-          placeholder="e.g. VMI-2026-XXXXX"
+          placeholder={language === 'th' ? 'กรอกเลขกรมธรรม์' : 'Enter policy number'}
         />
       </div>
 
@@ -141,21 +145,55 @@ function PolicyForm({
       <div className="grid grid-cols-2 gap-3">
         <div>
           <Label className="text-xs">{language === 'th' ? 'วันเริ่มต้น' : 'Start Date'}</Label>
-          <Input
-            value={form.startDate}
-            onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))}
-            className="h-9 text-xs mt-1 bg-white dark:bg-background"
-            placeholder="DD/MM/YYYY"
-          />
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-full h-9 text-xs mt-1 bg-white dark:bg-background justify-start text-left font-normal",
+                  !form.startDate && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-3.5 w-3.5" />
+                {form.startDate || (language === 'th' ? 'เลือกวันที่' : 'Pick a date')}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0 z-[100]" align="start">
+              <Calendar
+                mode="single"
+                selected={form.startDate ? parse(form.startDate, 'dd/MM/yyyy', new Date()) : undefined}
+                onSelect={(date) => setForm(f => ({ ...f, startDate: date ? format(date, 'dd/MM/yyyy') : '' }))}
+                initialFocus
+                className={cn("p-3 pointer-events-auto")}
+              />
+            </PopoverContent>
+          </Popover>
         </div>
         <div>
           <Label className="text-xs">{language === 'th' ? 'วันสิ้นสุด' : 'End Date'}</Label>
-          <Input
-            value={form.endDate}
-            onChange={e => setForm(f => ({ ...f, endDate: e.target.value }))}
-            className="h-9 text-xs mt-1 bg-white dark:bg-background"
-            placeholder="DD/MM/YYYY"
-          />
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-full h-9 text-xs mt-1 bg-white dark:bg-background justify-start text-left font-normal",
+                  !form.endDate && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-3.5 w-3.5" />
+                {form.endDate || (language === 'th' ? 'เลือกวันที่' : 'Pick a date')}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0 z-[100]" align="start">
+              <Calendar
+                mode="single"
+                selected={form.endDate ? parse(form.endDate, 'dd/MM/yyyy', new Date()) : undefined}
+                onSelect={(date) => setForm(f => ({ ...f, endDate: date ? format(date, 'dd/MM/yyyy') : '' }))}
+                initialFocus
+                className={cn("p-3 pointer-events-auto")}
+              />
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
 
