@@ -272,28 +272,27 @@ export function PaymentStatusCard({ sale }: SaleOverviewCardProps) {
   return (
     <Card>
       <CardHeader className="pb-2 pt-3 px-5">
-        <CardTitle className="text-sm font-semibold flex items-center gap-2">
-          <DollarSign className="w-4 h-4" />
-          {language === 'th' ? 'สรุปการชำระเงิน' : 'Payment Summary'}
+        <CardTitle className="text-sm font-semibold">
+          {language === 'th' ? 'การชำระเงิน' : 'Payment'}
         </CardTitle>
       </CardHeader>
-      <CardContent className="px-5 pb-4 space-y-3">
-        <div className="space-y-1.5">
-          <div className="flex justify-between text-xs">
-            <span className="text-muted-foreground">{language === 'th' ? 'ยอดที่ต้องชำระ' : 'Amount Payable'}</span>
-            <span className="font-medium">6,500.00 Baht</span>
-          </div>
-          <div className="flex justify-between text-xs">
-            <span className="text-muted-foreground">{language === 'th' ? 'ยอดที่ชำระแล้ว' : 'Amount Paid'}</span>
-            <span className="font-medium">6,500.00 Baht</span>
-          </div>
+      <CardContent className="px-5 pb-4 space-y-0">
+        <div className="flex items-center justify-between py-1.5 border-b border-border/30">
+          <span className="text-xs text-muted-foreground">{language === 'th' ? 'ยอดที่ต้องชำระ' : 'Amount Payable'}</span>
+          <span className="text-xs font-medium">6,500.00 Baht</span>
         </div>
-        <StatusDropdown
-          label={language === 'th' ? 'สถานะ' : 'Status'}
-          options={pmtStatuses}
-          defaultValue="payment_verified"
-          language={language}
-        />
+        <div className="flex items-center justify-between py-1.5 border-b border-border/30">
+          <span className="text-xs text-muted-foreground">{language === 'th' ? 'ยอดที่ชำระแล้ว' : 'Amount Paid'}</span>
+          <span className="text-xs font-medium">6,500.00 Baht</span>
+        </div>
+        <div className="pt-2">
+          <StatusDropdown
+            label={language === 'th' ? 'สถานะ' : 'Status'}
+            options={pmtStatuses}
+            defaultValue="payment_verified"
+            language={language}
+          />
+        </div>
       </CardContent>
     </Card>
   );
