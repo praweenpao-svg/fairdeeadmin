@@ -276,22 +276,20 @@ export function PaymentStatusCard({ sale }: SaleOverviewCardProps) {
           {language === 'th' ? 'การชำระเงิน' : 'Payment'}
         </CardTitle>
       </CardHeader>
-      <CardContent className="px-5 pb-4 space-y-0">
-        <div className="flex items-center justify-between py-1.5 border-b border-border/30">
+      <CardContent className="px-5 pb-4">
+        <StatusDropdown
+          label={language === 'th' ? 'สถานะ' : 'Status'}
+          options={pmtStatuses}
+          defaultValue="payment_verified"
+          language={language}
+        />
+        <div className="flex items-center justify-between py-1 border-b border-border/30">
           <span className="text-xs text-muted-foreground">{language === 'th' ? 'ยอดที่ต้องชำระ' : 'Amount Payable'}</span>
           <span className="text-xs font-medium">6,500.00 Baht</span>
         </div>
-        <div className="flex items-center justify-between py-1.5 border-b border-border/30">
+        <div className="flex items-center justify-between py-1 border-b border-border/30 last:border-0">
           <span className="text-xs text-muted-foreground">{language === 'th' ? 'ยอดที่ชำระแล้ว' : 'Amount Paid'}</span>
           <span className="text-xs font-medium">6,500.00 Baht</span>
-        </div>
-        <div className="pt-2">
-          <StatusDropdown
-            label={language === 'th' ? 'สถานะ' : 'Status'}
-            options={pmtStatuses}
-            defaultValue="payment_verified"
-            language={language}
-          />
         </div>
       </CardContent>
     </Card>
