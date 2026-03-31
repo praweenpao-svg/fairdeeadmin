@@ -4,7 +4,7 @@ import { useLanguageStore } from '@/stores/languageStore';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { MentionNotificationBell } from '@/components/notifications/MentionNotificationBell';
 import { mockSaleDetail } from '@/data/mockSaleDetail';
-import { SaleOverviewCard, PolicyStatusCard, AgentDetailsCard, PaymentStatusCard } from '@/components/ops/SaleOverviewCard';
+import { SaleOverviewCard, PolicyStatusCard, AgentDetailsCard, PaymentStatusCard, DownloadsCard, HistoryCard } from '@/components/ops/SaleOverviewCard';
 import { ContentTabs } from '@/components/ops/ContentTabs';
 import { SaleDetailBar } from '@/components/ops/SaleDetailBar';
 import { UploadPolicyModal } from '@/components/ops/UploadPolicyModal';
@@ -209,6 +209,8 @@ export default function OpsDashboard() {
               <PolicyStatusCard sale={mockSaleDetail} />
               <PaymentStatusCard sale={mockSaleDetail} />
               <SaleOverviewCard sale={mockSaleDetail} />
+              <DownloadsCard />
+              <HistoryCard />
             </div>
             {/* Right column: Content Tabs */}
             <div className="lg:col-span-4 bg-card rounded-lg p-4 border border-border">
