@@ -263,10 +263,9 @@ export function PaymentStatusCard({ sale }: SaleOverviewCardProps) {
   const { language } = useLanguageStore();
 
   const pmtStatuses = [
-    { value: 'unpaid', en: 'Unpaid', th: 'ยังไม่ชำระ' },
-    { value: 'pending', en: 'Pending', th: 'รอชำระ' },
-    { value: 'partial', en: 'Partial', th: 'ชำระบางส่วน' },
     { value: 'payment_verified', en: 'Payment Verified', th: 'ยืนยันการชำระเงินแล้ว' },
+    { value: 'credit_approved', en: 'Credit Approved', th: 'อนุมัติเครดิตแล้ว' },
+    { value: 'insurer_notified', en: 'Insurer Notified', th: 'แจ้งบริษัทประกันแล้ว' },
   ];
 
   return (
