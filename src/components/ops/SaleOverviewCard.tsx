@@ -321,9 +321,8 @@ export function DownloadsCard() {
             <button
               key={idx}
               onClick={() => toast.success(language === 'th' ? `กำลังดาวน์โหลด ${item.th}` : `Downloading ${item.en}`)}
-              className="flex items-center gap-2 px-3 py-2.5 rounded-md border border-border hover:bg-accent/50 transition-colors text-left"
+              className="flex items-center justify-center px-3 py-2.5 rounded-md border border-border hover:bg-accent/50 transition-colors text-center"
             >
-              <FileText className="w-4 h-4 text-muted-foreground shrink-0" />
               <span className="text-xs font-medium truncate">{language === 'th' ? item.th : item.en}</span>
             </button>
           ))}
