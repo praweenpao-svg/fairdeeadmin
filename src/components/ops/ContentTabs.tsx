@@ -121,12 +121,19 @@ function DocumentsTab({ sale }: { sale: SaleDetail }) {
   );
 }
 
+interface DocFile {
+  id: string;
+  name: string;
+  preview?: string;
+  type?: string;
+}
+
 interface DocCategory {
   key: string;
   en: string;
   th: string;
   required?: boolean;
-  docs: { id: string; name: string }[];
+  docs: DocFile[];
 }
 
 function UploadDocumentsDialog({ 
@@ -138,7 +145,7 @@ function UploadDocumentsDialog({
   open: boolean; 
   onOpenChange: (open: boolean) => void; 
   categoryLabel: string;
-  onUpload: (files: { id: string; name: string; size: string; type: string }[]) => void;
+  onUpload: (files: { id: string; name: string; size: string; type: string; preview?: string }[]) => void;
 }) {
   const { language } = useLanguageStore();
   const [selectedFiles, setSelectedFiles] = React.useState<{ id: string; name: string; size: string; type: string; preview?: string }[]>([]);
@@ -164,7 +171,7 @@ function UploadDocumentsDialog({
   };
 
   const handleUpload = () => {
-    onUpload(selectedFiles.map(f => ({ id: f.id, name: f.name, size: f.size, type: f.type })));
+    onUpload(selectedFiles.map(f => ({ id: f.id, name: f.name, size: f.size, type: f.type, preview: f.preview })));
     setSelectedFiles([]);
     onOpenChange(false);
   };
@@ -285,15 +292,13 @@ function LinkDocumentsTab({ sale }: { sale: SaleDetail }) {
     setUploadDialogOpen(true);
   };
 
-  const handleUploadFiles = (files: { id: string; name: string; size: string; type: string }[]) => {
+  const handleUploadFiles = (files: { id: string; name: string; size: string; type: string; preview?: string }[]) => {
     if (uploadTarget) {
-      // Upload directly to a category
       setCategories(prev => prev.map(cat =>
-        cat.key === uploadTarget ? { ...cat, docs: [...cat.docs, ...files.map(f => ({ id: f.id, name: f.name }))] } : cat
+        cat.key === uploadTarget ? { ...cat, docs: [...cat.docs, ...files.map(f => ({ id: f.id, name: f.name, preview: f.preview, type: f.type }))] } : cat
       ));
     } else {
-      // Upload to unlinked
-      setUnlinkedDocs(prev => [...prev, ...files.map(f => ({ id: f.id, name: f.name, size: f.size }))]);
+      setUnlinkedDocs(prev => [...prev, ...files.map(f => ({ id: f.id, name: f.name, size: f.size, preview: f.preview }))]);
     }
   };
 
@@ -318,7 +323,7 @@ function LinkDocumentsTab({ sale }: { sale: SaleDetail }) {
     const doc = unlinkedDocs.find(d => d.id === docId);
     if (doc) {
       setCategories(prev => prev.map(cat =>
-        cat.key === categoryKey ? { ...cat, docs: [...cat.docs, { id: doc.id, name: doc.name }] } : cat
+        cat.key === categoryKey ? { ...cat, docs: [...cat.docs, { id: doc.id, name: doc.name, preview: doc.preview }] } : cat
       ));
       setUnlinkedDocs(prev => prev.filter(d => d.id !== docId));
     }
@@ -361,12 +366,21 @@ function LinkDocumentsTab({ sale }: { sale: SaleDetail }) {
               </button>
             </div>
             {cat.docs.length > 0 && (
-              <div className="mt-2 space-y-1">
+              <div className="mt-2 grid grid-cols-4 gap-2">
                 {cat.docs.map(doc => (
-                  <div key={doc.id} className="flex items-center justify-between px-2 py-1 bg-muted/30 rounded text-[10px]">
-                    <span>{doc.name}</span>
-                    <button onClick={() => handleRemoveDoc(cat.key, doc.id)} className="text-muted-foreground hover:text-destructive">
-                      <X className="w-3 h-3" />
+                  <div key={doc.id} className="relative border border-border rounded-lg overflow-hidden bg-muted/30">
+                    {doc.preview ? (
+                      <img src={doc.preview} alt={doc.name} className="w-full h-16 object-cover" />
+                    ) : (
+                      <div className="w-full h-16 flex items-center justify-center">
+                        <FileText className="w-6 h-6 text-muted-foreground" />
+                      </div>
+                    )}
+                    <div className="px-1.5 py-1">
+                      <p className="text-[9px] font-medium truncate">{doc.name}</p>
+                    </div>
+                    <button onClick={() => handleRemoveDoc(cat.key, doc.id)} className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-background/80 flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground transition-colors">
+                      <X className="w-2.5 h-2.5" />
                     </button>
                   </div>
                 ))}
@@ -422,9 +436,13 @@ function LinkDocumentsTab({ sale }: { sale: SaleDetail }) {
                     onDragStart={(e) => handleDragStart(e, doc.id)}
                     className="relative border border-border rounded-lg overflow-hidden bg-muted/20 cursor-grab active:cursor-grabbing hover:border-primary/50 transition-colors"
                   >
-                    <div className="w-full h-24 flex items-center justify-center bg-muted/30">
-                      <FileText className="w-8 h-8 text-muted-foreground" />
-                    </div>
+                    {doc.preview ? (
+                      <img src={doc.preview} alt={doc.name} className="w-full h-24 object-cover" />
+                    ) : (
+                      <div className="w-full h-24 flex items-center justify-center bg-muted/30">
+                        <FileText className="w-8 h-8 text-muted-foreground" />
+                      </div>
+                    )}
                     <div className="p-1.5">
                       <p className="text-[9px] font-medium truncate">{doc.name}</p>
                       {doc.size && <p className="text-[8px] text-muted-foreground">{doc.size}</p>}

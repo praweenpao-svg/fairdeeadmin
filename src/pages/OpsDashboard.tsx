@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { RefreshCw } from 'lucide-react';
 import { useLanguageStore } from '@/stores/languageStore';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { MentionNotificationBell } from '@/components/notifications/MentionNotificationBell';
@@ -176,6 +177,9 @@ export default function OpsDashboard() {
       <header className="sticky top-0 z-30 bg-card border-b border-border">
         <div className="flex items-center justify-end px-6 py-3">
           <div className="flex items-center gap-3">
+            <button className="w-8 h-8 rounded-md border border-border flex items-center justify-center hover:bg-accent transition-colors">
+              <RefreshCw className="w-4 h-4 text-muted-foreground" />
+            </button>
             <MentionNotificationBell />
             <LanguageToggle />
           </div>
