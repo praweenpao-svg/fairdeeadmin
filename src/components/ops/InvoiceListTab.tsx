@@ -74,7 +74,7 @@ const mockInvoiceSections: InvoiceSection[] = [
       {
         id: '63883',
         source: 'Fairdee | 1913',
-        amountPayable: '117.37 @ 12/02/2569',
+        amountPayable: '117 @ 12/02/2569',
         clawbackSubject: 'Affiliate Commission',
         invoiceDetails: 'Referral Bonus',
         paymentStatus: 'Unpaid',
