@@ -146,7 +146,7 @@ export function StickyPageHeader({
   const currentStage = 'to_issue'; // Mock: derive from sale state
   const stageLabel = stageLabels[currentStage] || stageLabels.to_issue;
 
-  const primaryAction = getPrimaryAction(currentStage, hasActiveRework, language);
+  const primaryAction = getPrimaryAction(vmiPolicy, cmiPolicy, language);
 
   const handleAction = (actionName: string) => {
     toast.success(actionName, {
