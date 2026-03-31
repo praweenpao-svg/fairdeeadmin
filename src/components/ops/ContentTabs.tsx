@@ -8,6 +8,7 @@ import { SaleDetail } from '@/data/mockSaleDetail';
 import { CoveragePanel } from './CoveragePanel';
 import { PolicyDetailsZone } from './PolicyDetailsZone';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { InvoiceListTab } from './InvoiceListTab';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -980,7 +981,7 @@ export function ContentTabs({ sale }: ContentTabsProps) {
         </TabsTrigger>
         <TabsTrigger value="invoice" className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
           <CreditCard className="w-3.5 h-3.5" />
-          {language === 'th' ? 'ใบแจ้งหนี้และชำระเงิน' : 'Invoice & Payments'}
+          {language === 'th' ? 'รายการใบแจ้งหนี้' : 'Invoice List'}
         </TabsTrigger>
         <TabsTrigger value="documents" className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
           <FileText className="w-3.5 h-3.5" />
@@ -1002,7 +1003,7 @@ export function ContentTabs({ sale }: ContentTabsProps) {
         <VerifyInformationTab sale={sale} />
       </TabsContent>
       <TabsContent value="invoice" className="mt-4">
-        <InvoiceTab sale={sale} />
+        <InvoiceListTab sale={sale} />
       </TabsContent>
       <TabsContent value="documents" className="mt-4">
         <DocumentsTab sale={sale} />
