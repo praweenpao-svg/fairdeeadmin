@@ -123,7 +123,7 @@ const mockHistoricalChanges = [
     changedOn: '23/01/2569 13:47',
     changes: [
       { key: 'Invoice Number', oldValue: '-', newValue: 'INV-10167-63881' },
-      { key: 'Amount Payable', oldValue: '0.00', newValue: '6500.00' },
+      { key: 'Amount Payable', oldValue: '0', newValue: '6,500' },
     ],
     reason: 'POST /utils/fairdee-quotation',
   },
