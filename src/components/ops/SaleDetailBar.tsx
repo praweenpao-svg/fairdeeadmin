@@ -161,7 +161,7 @@ export function SaleDetailBar({
   const cmiPolicy = sale.policies.find(p => p.kind === 'cmi');
   const currentStage = 'to_issue';
   const stageLabel = stageLabels[currentStage] || stageLabels.to_issue;
-  const primaryAction = getPrimaryAction(vmiPolicy, cmiPolicy, language);
+  const primaryActions = getPrimaryActions(vmiPolicy, cmiPolicy, language);
 
   const handleAction = (actionName: string) => {
     toast.success(actionName, {
@@ -169,11 +169,10 @@ export function SaleDetailBar({
     });
   };
 
-  const handlePrimaryClick = () => {
-    if (!primaryAction) return;
-    if (primaryAction.group === 'G4') { onOpenHistoryLog?.(); return; }
-    if (primaryAction.group === 'G2') { onOpenUploadPolicy?.(); return; }
-    handleAction(primaryAction.label);
+  const handlePrimaryClick = (action: PrimaryAction) => {
+    if (action.group === 'G4') { onOpenHistoryLog?.(); return; }
+    if (action.group === 'G2' && action.label === 'Upload Policy' || action.label === 'อัปโหลดกรมธรรม์') { onOpenUploadPolicy?.(); return; }
+    handleAction(action.label);
   };
 
   return (
