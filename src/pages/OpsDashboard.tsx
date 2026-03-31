@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { RefreshCw } from 'lucide-react';
 import { useLanguageStore } from '@/stores/languageStore';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { MentionNotificationBell } from '@/components/notifications/MentionNotificationBell';
