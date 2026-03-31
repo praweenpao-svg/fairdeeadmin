@@ -296,8 +296,8 @@ export function PaymentStatusCard({ sale }: SaleOverviewCardProps) {
 const downloadItems = [
   { en: 'Cover Note', th: 'ใบคุ้มครอง' },
   { en: 'Invoice', th: 'ใบแจ้งหนี้' },
-  { en: 'Corporate Invoice', th: 'ใบแจ้งหนี้องค์กร' },
-  { en: 'Temporary Receipt', th: 'ใบเสร็จชั่วคราว' },
+  { en: 'Corporate', th: 'องค์กร' },
+  { en: 'Receipt', th: 'ใบเสร็จ' },
 ];
 
 export function DownloadsCard() {
