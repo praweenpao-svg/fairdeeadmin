@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { FileText, Image, CreditCard, User, Package } from 'lucide-react';
+import { FileText, Image, CreditCard, User, Package, Link2, Plus, X, RefreshCw } from 'lucide-react';
 
 interface ContentTabsProps {
   sale: SaleDetail;
