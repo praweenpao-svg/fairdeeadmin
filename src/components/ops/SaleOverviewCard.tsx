@@ -264,8 +264,8 @@ export function PaymentStatusCard({ sale }: SaleOverviewCardProps) {
 
   const pmtStatuses = [
     { value: 'payment_verified', en: 'Payment Verified', th: 'ยืนยันการชำระเงินแล้ว' },
-    { value: 'credit_approved', en: 'Credit Approved', th: 'อนุมัติเครดิตแล้ว' },
     { value: 'insurer_notified', en: 'Insurer Notified', th: 'แจ้งบริษัทประกันแล้ว' },
+    { value: 'credit_approved', en: 'Credit Approved', th: 'อนุมัติเครดิตแล้ว' },
   ];
 
   return (
