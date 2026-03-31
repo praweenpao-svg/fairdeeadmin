@@ -1032,14 +1032,6 @@ export function ContentTabs({ sale }: ContentTabsProps) {
           <CreditCard className="w-3.5 h-3.5" />
           {language === 'th' ? 'รายการใบแจ้งหนี้' : 'Invoice List'}
         </TabsTrigger>
-        <TabsTrigger value="documents" className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
-          <FileText className="w-3.5 h-3.5" />
-          {language === 'th' ? 'เอกสาร' : 'Documents'}
-        </TabsTrigger>
-        <TabsTrigger value="benefits" className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
-          <Image className="w-3.5 h-3.5" />
-          {language === 'th' ? 'สิทธิประโยชน์กรมธรรม์' : 'Policy Benefits'}
-        </TabsTrigger>
       </TabsList>
 
       <TabsContent value="package" className="mt-4">
