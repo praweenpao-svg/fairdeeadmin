@@ -738,27 +738,27 @@ export function ContentTabs({ sale }: ContentTabsProps) {
   return (
     <Tabs defaultValue="package" className="w-full">
       <TabsList className="w-full justify-start bg-muted/30 border border-border rounded-lg p-1">
-        <TabsTrigger value="package" className="text-xs gap-1.5">
+        <TabsTrigger value="package" className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
           <Package className="w-3.5 h-3.5" />
           {language === 'th' ? 'เลือกแพ็กเกจ' : 'Package Selection'}
         </TabsTrigger>
-        <TabsTrigger value="link-docs" className="text-xs gap-1.5">
+        <TabsTrigger value="link-docs" className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
           <Link2 className="w-3.5 h-3.5" />
           {language === 'th' ? 'เชื่อมโยงเอกสาร' : 'Link Documents'}
         </TabsTrigger>
-        <TabsTrigger value="details" className="text-xs gap-1.5">
+        <TabsTrigger value="details" className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
           <User className="w-3.5 h-3.5" />
           {language === 'th' ? 'ข้อมูลลูกค้าและรถ' : 'Customer & Vehicle'}
         </TabsTrigger>
-        <TabsTrigger value="invoice" className="text-xs gap-1.5">
+        <TabsTrigger value="invoice" className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
           <CreditCard className="w-3.5 h-3.5" />
           {language === 'th' ? 'ใบแจ้งหนี้และชำระเงิน' : 'Invoice & Payments'}
         </TabsTrigger>
-        <TabsTrigger value="documents" className="text-xs gap-1.5">
+        <TabsTrigger value="documents" className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
           <FileText className="w-3.5 h-3.5" />
           {language === 'th' ? 'เอกสาร' : 'Documents'}
         </TabsTrigger>
-        <TabsTrigger value="benefits" className="text-xs gap-1.5">
+        <TabsTrigger value="benefits" className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
           <Image className="w-3.5 h-3.5" />
           {language === 'th' ? 'สิทธิประโยชน์กรมธรรม์' : 'Policy Benefits'}
         </TabsTrigger>
