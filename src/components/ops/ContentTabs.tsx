@@ -651,7 +651,7 @@ function PackageSelectionTab({ sale }: { sale: SaleDetail }) {
           {addCmi === 'yes' && (
             <div className="space-y-2">
               <SectionLabel>{language === 'th' ? 'วันเริ่มต้น พ.ร.บ.' : 'Compulsory Start Date'}</SectionLabel>
-              <Input type="date" className="text-xs h-9" />
+              <Input type="date" className="text-xs h-9 bg-card" />
             </div>
           )}
 
@@ -755,7 +755,7 @@ export function ContentTabs({ sale }: ContentTabsProps) {
 
   return (
     <Tabs defaultValue="package" className="w-full">
-      <TabsList className="w-full justify-start bg-muted/30 border border-border rounded-lg p-1">
+      <TabsList className="w-full justify-start bg-card border border-border rounded-lg p-1">
         <TabsTrigger value="package" className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
           <Package className="w-3.5 h-3.5" />
           {language === 'th' ? 'เลือกแพ็กเกจ' : 'Package Selection'}
