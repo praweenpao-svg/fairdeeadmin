@@ -334,10 +334,10 @@ export function DownloadsCard() {
 
 // History Section
 const historyItems = [
-  { en: 'Creation By Details', th: 'รายละเอียดผู้สร้าง' },
-  { en: 'Quotation Query Changes', th: 'การเปลี่ยนแปลง Query ใบเสนอราคา' },
-  { en: 'Quotation Changes', th: 'การเปลี่ยนแปลงใบเสนอราคา' },
-  { en: 'Sale Changes', th: 'การเปลี่ยนแปลงการขาย' },
+  { en: 'Created By', th: 'สร้างโดย' },
+  { en: 'Quotation Query', th: 'Query ใบเสนอราคา' },
+  { en: 'Quotation', th: 'ใบเสนอราคา' },
+  { en: 'Sale', th: 'การขาย' },
 ];
 
 const mockCreationDetails = [
