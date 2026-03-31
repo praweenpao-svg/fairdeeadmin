@@ -105,7 +105,7 @@ function getLeastProgressedStatus(vmiStatus?: string, cmiStatus?: string): strin
 
 interface PrimaryAction {
   label: string;
-  icon: React.ElementType;
+  icon?: React.ElementType;
   group: string;
 }
 
@@ -135,8 +135,8 @@ function getPrimaryActions(
       return [{ label: language === 'th' ? 'ส่งใบแจ้งหนี้' : 'Send Billing Report', icon: CreditCard, group: 'G1' }];
     case 'pending_review':
       return [
-        { label: 'API', icon: FileText, group: 'G2' },
-        { label: language === 'th' ? 'อีเมล' : 'Email', icon: Mail, group: 'G2' },
+        { label: 'API', group: 'G2' },
+        { label: language === 'th' ? 'อีเมล' : 'Email', group: 'G2' },
       ];
     case 'pending_issuance':
     case 'policy_issued':
@@ -201,7 +201,7 @@ export function SaleDetailBar({
             className={cn('text-xs gap-1.5', action.group === 'G4' && 'bg-orange-500 hover:bg-orange-600 text-white')}
             onClick={() => handlePrimaryClick(action)}
           >
-            <action.icon className="w-3.5 h-3.5" />
+            {action.icon && <action.icon className="w-3.5 h-3.5" />}
             {action.label}
           </Button>
         ))}

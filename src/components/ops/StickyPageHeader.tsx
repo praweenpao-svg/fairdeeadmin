@@ -104,7 +104,7 @@ function getPrimaryActions(
   vmiPolicy: SalePolicy | undefined,
   cmiPolicy: SalePolicy | undefined,
   language: string,
-): { label: string; icon: React.ElementType; group: string }[] {
+): { label: string; icon?: React.ElementType; group: string }[] {
   const vmiStatus = vmiPolicy?.status;
   const cmiStatus = cmiPolicy?.status;
   if (vmiStatus === 'rework_required' || cmiStatus === 'rework_required') {
@@ -120,8 +120,8 @@ function getPrimaryActions(
       return [{ label: language === 'th' ? 'ส่งใบแจ้งหนี้' : 'Send Billing Report', icon: CreditCard, group: 'G1' }];
     case 'pending_review':
       return [
-        { label: 'API', icon: FileText, group: 'G2' },
-        { label: language === 'th' ? 'อีเมล' : 'Email', icon: Mail, group: 'G2' },
+        { label: 'API', group: 'G2' },
+        { label: language === 'th' ? 'อีเมล' : 'Email', group: 'G2' },
       ];
     case 'pending_issuance':
     case 'policy_issued':
