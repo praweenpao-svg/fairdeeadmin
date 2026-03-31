@@ -47,12 +47,7 @@ const garageTypeOptions = [
 ];
 
 const insuranceClassOptions = [
-  '1',
-  '2+',
-  '3+',
-  '1 ราคาถูกพิเศษ',
-  '2+ ราคาถูกพิเศษ',
-  '3+ ราคาถูกพิเศษ',
+  '1', '1+', '2', '2+', '3', '3+',
 ];
 
 interface PolicyFormState {
@@ -260,13 +255,11 @@ export function UploadPolicyModal({ sale, open, onOpenChange }: UploadPolicyModa
           <Tabs defaultValue="vmi" className="w-full">
             <TabsList className="w-full justify-start">
               <TabsTrigger value="vmi" className="text-xs gap-1.5">
-                <Badge variant="outline" className="border-primary text-primary text-[9px]">VMI</Badge>
-                {vmiPolicy?.packageName}
+                VMI
               </TabsTrigger>
               {cmiPolicy && (
                 <TabsTrigger value="cmi" className="text-xs gap-1.5">
-                  <Badge variant="outline" className="border-orange-500 text-orange-600 text-[9px]">CMI</Badge>
-                  {cmiPolicy.packageName}
+                  CMI
                 </TabsTrigger>
               )}
             </TabsList>
