@@ -119,16 +119,23 @@ const paymentStatuses = [
   { value: 'credit_approved', en: 'Credit Approved', th: 'อนุมัติเครดิตแล้ว' },
 ];
 
-function StatusDropdown({ label, options, defaultValue, language }: {
+function StatusDropdown({ label, options, defaultValue, language, onChange }: {
   label: string;
   options: { value: string; en: string; th: string }[];
   defaultValue: string;
   language: string;
+  onChange?: (val: string) => void;
 }) {
   const [status, setStatus] = useState(defaultValue);
 
+  // Sync with external default if it changes
+  React.useEffect(() => {
+    setStatus(defaultValue);
+  }, [defaultValue]);
+
   const handleChange = (val: string) => {
     setStatus(val);
+    onChange?.(val);
     const opt = options.find(s => s.value === val);
     toast.success(language === 'th' ? 'อัปเดตสถานะแล้ว' : 'Status updated', {
       description: `${label}: ${opt ? (language === 'th' ? opt.th : opt.en) : val}`,
