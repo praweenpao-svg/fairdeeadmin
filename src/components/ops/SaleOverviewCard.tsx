@@ -283,13 +283,9 @@ export function PaymentStatusCard({ sale }: SaleOverviewCardProps) {
           defaultValue="payment_verified"
           language={language}
         />
-        <div className="flex items-center justify-between py-1 border-b border-border/30">
-          <span className="text-xs text-muted-foreground">{language === 'th' ? 'ยอดที่ต้องชำระ' : 'Amount Payable'}</span>
-          <span className="text-xs font-medium">6,500.00 Baht</span>
-        </div>
-        <div className="flex items-center justify-between py-1 border-b border-border/30 last:border-0">
-          <span className="text-xs text-muted-foreground">{language === 'th' ? 'ยอดที่ชำระแล้ว' : 'Amount Paid'}</span>
-          <span className="text-xs font-medium">6,500.00 Baht</span>
+        <div className="mt-2">
+          <SummaryRow label={language === 'th' ? 'ยอดที่ต้องชำระ' : 'Amount Payable'} value="6,500.00 Baht" />
+          <SummaryRow label={language === 'th' ? 'ยอดที่ชำระแล้ว' : 'Amount Paid'} value="6,500.00 Baht" />
         </div>
       </CardContent>
     </Card>
@@ -300,8 +296,8 @@ export function PaymentStatusCard({ sale }: SaleOverviewCardProps) {
 const downloadItems = [
   { en: 'Cover Note', th: 'ใบคุ้มครอง' },
   { en: 'Invoice', th: 'ใบแจ้งหนี้' },
-  { en: 'Corporate Invoice', th: 'ใบแจ้งหนี้องค์กร' },
-  { en: 'Temporary Receipt', th: 'ใบเสร็จชั่วคราว' },
+  { en: 'Corporate', th: 'องค์กร' },
+  { en: 'Receipt', th: 'ใบเสร็จ' },
 ];
 
 export function DownloadsCard() {
@@ -335,7 +331,7 @@ export function DownloadsCard() {
 // History Section
 const historyItems = [
   { en: 'Created By', th: 'สร้างโดย' },
-  { en: 'Quotation Query', th: 'Query ใบเสนอราคา' },
+  { en: 'Lead', th: 'ลีด' },
   { en: 'Quotation', th: 'ใบเสนอราคา' },
   { en: 'Sale', th: 'การขาย' },
 ];
