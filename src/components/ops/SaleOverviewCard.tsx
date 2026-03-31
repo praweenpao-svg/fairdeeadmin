@@ -331,7 +331,7 @@ export function DownloadsCard() {
 // History Section
 const historyItems = [
   { en: 'Created By', th: 'สร้างโดย' },
-  { en: 'Quotation Query', th: 'Query ใบเสนอราคา' },
+  { en: 'Lead', th: 'ลีด' },
   { en: 'Quotation', th: 'ใบเสนอราคา' },
   { en: 'Sale', th: 'การขาย' },
 ];
