@@ -100,33 +100,36 @@ function getLeastProgressedStatus(vmiStatus?: string, cmiStatus?: string): strin
   return least;
 }
 
-function getPrimaryAction(
+function getPrimaryActions(
   vmiPolicy: SalePolicy | undefined,
   cmiPolicy: SalePolicy | undefined,
   language: string,
-): { label: string; icon: React.ElementType; group: string } | null {
+): { label: string; icon: React.ElementType; group: string }[] {
   const vmiStatus = vmiPolicy?.status;
   const cmiStatus = cmiPolicy?.status;
   if (vmiStatus === 'rework_required' || cmiStatus === 'rework_required') {
-    return { label: language === 'th' ? 'ประวัติและกิจกรรม' : 'History & Activity Log', icon: History, group: 'G4' };
+    return [{ label: language === 'th' ? 'ประวัติและกิจกรรม' : 'History & Activity Log', icon: History, group: 'G4' }];
   }
   const vmiCancelled = !vmiPolicy || vmiStatus === 'policy_cancelled';
   const cmiCancelled = !cmiPolicy || cmiStatus === 'policy_cancelled';
-  if (vmiCancelled && cmiCancelled) return null;
+  if (vmiCancelled && cmiCancelled) return [];
   const least = getLeastProgressedStatus(vmiStatus, cmiStatus);
-  if (!least) return null;
+  if (!least) return [];
   switch (least) {
     case 'pending_payment':
-      return { label: language === 'th' ? 'แชร์ใบแจ้งหนี้ / ชำระเงิน' : 'Share Invoice / Make Payment', icon: CreditCard, group: 'G1' };
+      return [{ label: language === 'th' ? 'ส่งใบแจ้งหนี้' : 'Send Billing Report', icon: CreditCard, group: 'G1' }];
     case 'pending_review':
-      return { label: language === 'th' ? 'ซื้อกรมธรรม์ / เอกสารรถ' : 'Purchase Policy / Vehicle Documents', icon: FileText, group: 'G2' };
+      return [
+        { label: 'API', icon: FileText, group: 'G2' },
+        { label: language === 'th' ? 'อีเมล' : 'Email', icon: Mail, group: 'G2' },
+      ];
     case 'pending_issuance':
     case 'policy_issued':
     case 'policy_shipped':
     case 'policy_delivered':
-      return { label: language === 'th' ? 'อัปโหลดกรมธรรม์' : 'Upload Policy', icon: FileUp, group: 'G2' };
+      return [{ label: language === 'th' ? 'อัปโหลดกรมธรรม์' : 'Upload Policy', icon: FileUp, group: 'G2' }];
     default:
-      return null;
+      return [];
   }
 }
 
