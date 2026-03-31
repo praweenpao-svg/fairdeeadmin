@@ -808,7 +808,7 @@ function PackageSelectionTab({ sale }: { sale: SaleDetail }) {
             <div className="space-y-1 text-xs">
               <div className="flex items-center justify-between py-1">
                 <span className="text-muted-foreground">{language === 'th' ? 'ค่าคอมมิชชั่น' : 'Commission'}</span>
-                <span className="font-semibold text-sidebar-background">222 Baht</span>
+                <span className="font-semibold text-sidebar-background">850 Baht</span>
               </div>
               <div className="flex items-center justify-between py-1">
                 <span className="text-muted-foreground">{language === 'th' ? 'ราคาเบี้ยประกันรวม' : 'Total Premium'}</span>
