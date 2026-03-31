@@ -540,9 +540,9 @@ function VerifyInformationTab({ sale }: { sale: SaleDetail }) {
           <div className="px-4 py-2 border-b border-border">
             <span className="text-sm font-semibold">Car Registration</span>
           </div>
-          <div className="grid grid-cols-2">
-            <div className="border-r border-border p-4 flex flex-col">
-              <div className="flex-1 bg-muted/20 rounded-lg overflow-hidden flex items-center justify-center min-h-[320px]">
+          <div className="grid grid-cols-3">
+            <div className="col-span-1 border-r border-border p-3 flex flex-col">
+              <div className="flex-1 bg-muted/20 rounded-lg overflow-hidden flex items-center justify-center min-h-[240px]">
                 <img
                   src={sampleCarRegistration}
                   alt="Car Registration"
@@ -552,17 +552,19 @@ function VerifyInformationTab({ sale }: { sale: SaleDetail }) {
               </div>
               <ImageZoomControls zoom={zoom.car_reg || 100} onZoom={(d) => handleZoom('car_reg', d)} />
             </div>
-            <div className="p-4 space-y-4">
-              <h5 className="text-sm font-semibold text-primary">{language === 'th' ? 'ข้อมูลรถยนต์' : 'Policy Details'}</h5>
-              <VerifyField label={language === 'th' ? 'ประเภททะเบียน' : 'License Type'} value="Registered" source="" isSelect options={['Registered', 'Red Plate', 'Not Registered']} />
-              <VerifyField label={language === 'th' ? 'เลขทะเบียน' : 'License Plate'} value={vehicle.licensePlate} source="Portal" />
-              <VerifyField label={language === 'th' ? 'จังหวัดจดทะเบียน' : 'Registration Province'} value={vehicle.registrationProvince} source="Car Registration" />
-              <VerifyField label={language === 'th' ? 'เลขตัวถัง' : 'Chassis Number'} value={vehicle.chassisNumber} source="" />
-              <VerifyField label={language === 'th' ? 'เลขเครื่องยนต์' : 'Engine Number'} value={vehicle.engineNumber} source="" />
-              <VerifyField label={language === 'th' ? 'น้ำหนักรถ' : 'Vehicle Weight'} value={vehicle.vehicleWeight} source="Car Registration" />
-              <VerifyField label={language === 'th' ? 'สี' : 'Color'} value={vehicle.color} source="Car Registration" isSelect options={['ขาว', 'ดำ', 'เทา', 'แดง', 'น้ำเงิน', 'เขียว']} />
-              <VerifyField label={language === 'th' ? 'ข้อกำหนดผู้ขับ' : 'Driver Specification'} value="Not specified" source="Car Registration" isSelect options={['Not specified', 'Named Driver', 'Any Driver']} />
-              <VerifyField label={language === 'th' ? 'ผู้รับผลประโยชน์' : 'Beneficiary Type'} value="Legal Owner" source="Car Registration" isSelect options={['Legal Owner', 'Named Person', 'Financial Institution']} />
+            <div className="col-span-2 p-4">
+              <h5 className="text-sm font-semibold text-primary mb-3">{language === 'th' ? 'ข้อมูลรถยนต์' : 'Policy Details'}</h5>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+                <VerifyField label={language === 'th' ? 'ประเภททะเบียน' : 'License Type'} value="Registered" source="" isSelect options={['Registered', 'Red Plate', 'Not Registered']} />
+                <VerifyField label={language === 'th' ? 'เลขทะเบียน' : 'License Plate'} value={vehicle.licensePlate} source="Portal" />
+                <VerifyField label={language === 'th' ? 'จังหวัดจดทะเบียน' : 'Registration Province'} value={vehicle.registrationProvince} source="Car Registration" />
+                <VerifyField label={language === 'th' ? 'เลขตัวถัง' : 'Chassis Number'} value={vehicle.chassisNumber} source="" />
+                <VerifyField label={language === 'th' ? 'เลขเครื่องยนต์' : 'Engine Number'} value={vehicle.engineNumber} source="" />
+                <VerifyField label={language === 'th' ? 'น้ำหนักรถ' : 'Vehicle Weight'} value={vehicle.vehicleWeight} source="Car Registration" />
+                <VerifyField label={language === 'th' ? 'สี' : 'Color'} value={vehicle.color} source="Car Registration" isSelect options={['ขาว', 'ดำ', 'เทา', 'แดง', 'น้ำเงิน', 'เขียว']} />
+                <VerifyField label={language === 'th' ? 'ข้อกำหนดผู้ขับ' : 'Driver Specification'} value="Not specified" source="Car Registration" isSelect options={['Not specified', 'Named Driver', 'Any Driver']} />
+                <VerifyField label={language === 'th' ? 'ผู้รับผลประโยชน์' : 'Beneficiary Type'} value="Legal Owner" source="Car Registration" isSelect options={['Legal Owner', 'Named Person', 'Financial Institution']} />
+              </div>
             </div>
           </div>
         </CardContent>
