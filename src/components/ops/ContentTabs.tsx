@@ -129,28 +129,172 @@ interface DocCategory {
   docs: { id: string; name: string }[];
 }
 
+function UploadDocumentsDialog({ 
+  open, 
+  onOpenChange, 
+  categoryLabel,
+  onUpload 
+}: { 
+  open: boolean; 
+  onOpenChange: (open: boolean) => void; 
+  categoryLabel: string;
+  onUpload: (files: { id: string; name: string; size: string; type: string }[]) => void;
+}) {
+  const { language } = useLanguageStore();
+  const [selectedFiles, setSelectedFiles] = React.useState<{ id: string; name: string; size: string; type: string; preview?: string }[]>([]);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const newFiles = files
+      .filter(f => ['image/jpeg', 'image/png', 'application/pdf'].includes(f.type))
+      .map(f => ({
+        id: `file-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        name: f.name,
+        size: `${(f.size / (1024 * 1024)).toFixed(2)} MB`,
+        type: f.type,
+        preview: f.type.startsWith('image/') ? URL.createObjectURL(f) : undefined,
+      }));
+    setSelectedFiles(prev => [...prev, ...newFiles]);
+    if (e.target) e.target.value = '';
+  };
+
+  const handleRemoveFile = (id: string) => {
+    setSelectedFiles(prev => prev.filter(f => f.id !== id));
+  };
+
+  const handleUpload = () => {
+    onUpload(selectedFiles.map(f => ({ id: f.id, name: f.name, size: f.size, type: f.type })));
+    setSelectedFiles([]);
+    onOpenChange(false);
+  };
+
+  const handleClose = () => {
+    setSelectedFiles([]);
+    onOpenChange(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={handleClose}>
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-sm font-semibold">
+            {categoryLabel 
+              ? `${language === 'th' ? 'อัปโหลดเอกสาร' : 'Upload Documents'} - ${categoryLabel}`
+              : (language === 'th' ? 'อัปโหลดเอกสาร' : 'Upload Documents')
+            }
+          </DialogTitle>
+        </DialogHeader>
+
+        {/* Drop zone */}
+        <div
+          className="border-2 border-dashed border-border rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 transition-colors"
+          onClick={() => fileInputRef.current?.click()}
+        >
+          <Upload className="w-8 h-8 text-muted-foreground mb-2" />
+          <p className="text-xs text-muted-foreground">
+            {language === 'th' ? 'ลากไฟล์มาวางที่นี่ หรือคลิกเพื่อเลือกไฟล์' : 'Drag and drop files here, or click to select files'}
+          </p>
+          <p className="text-[10px] text-muted-foreground mt-1">
+            {language === 'th' ? 'รองรับ: JPG, PNG, PDF' : 'Supports: JPG, PNG, PDF'}
+          </p>
+          <Button variant="outline" size="sm" className="mt-3 text-xs" onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}>
+            {language === 'th' ? 'เลือกไฟล์' : 'Select Files'}
+          </Button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            className="hidden"
+            accept=".jpg,.jpeg,.png,.pdf"
+            multiple
+            onChange={handleFileSelect}
+          />
+        </div>
+
+        {/* Selected files */}
+        {selectedFiles.length > 0 && (
+          <div className="space-y-2">
+            <p className="text-xs font-semibold">{language === 'th' ? 'ไฟล์ที่เลือก' : 'Selected Files'}</p>
+            <div className="grid grid-cols-3 gap-3">
+              {selectedFiles.map(f => (
+                <div key={f.id} className="relative border border-border rounded-lg overflow-hidden bg-card">
+                  {f.preview ? (
+                    <img src={f.preview} alt={f.name} className="w-full h-32 object-cover" />
+                  ) : (
+                    <div className="w-full h-32 flex items-center justify-center bg-muted/30">
+                      <FileText className="w-10 h-10 text-muted-foreground" />
+                    </div>
+                  )}
+                  <div className="p-2">
+                    <p className="text-[10px] font-medium truncate">{f.name}</p>
+                    <p className="text-[9px] text-muted-foreground">{f.size}</p>
+                  </div>
+                  <button
+                    onClick={() => handleRemoveFile(f.id)}
+                    className="absolute top-1 right-1 w-5 h-5 rounded-full bg-background/80 flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground transition-colors"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="flex justify-end gap-2 pt-2">
+          <Button variant="outline" size="sm" className="text-xs" onClick={handleClose}>
+            {language === 'th' ? 'ยกเลิก' : 'Cancel'}
+          </Button>
+          <Button size="sm" className="text-xs" disabled={selectedFiles.length === 0} onClick={handleUpload}>
+            {language === 'th' ? 'อัปโหลด' : 'Upload'}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function LinkDocumentsTab({ sale }: { sale: SaleDetail }) {
   const { language } = useLanguageStore();
-  const vmiPolicy = sale.policies.find(p => p.kind === 'vmi');
 
   const [categories, setCategories] = React.useState<DocCategory[]>([
     { key: 'car_reg', en: 'Car registration', th: 'ทะเบียนรถ', required: true, docs: [] },
     { key: 'national_id', en: 'National ID', th: 'บัตรประชาชน', required: true, docs: [] },
     { key: 'old_policy', en: 'Old policy document', th: 'เอกสารกรมธรรม์เดิม', docs: [] },
     { key: 'manual_quote', en: 'Manual quotation from insurer', th: 'ใบเสนอราคาจากบริษัทประกัน', docs: [] },
+    { key: 'payment_proof', en: 'Payment proof to fairdee', th: 'หลักฐานการชำระเงินให้แฟร์ดี', docs: [] },
     { key: 'national_id_undertaking', en: 'National ID with undertaking', th: 'บัตรประชาชนพร้อมหนังสือมอบอำนาจ', docs: [] },
     { key: 'national_id_selfie', en: 'National ID with selfie', th: 'บัตรประชาชนพร้อมเซลฟี่', docs: [] },
     { key: 'general', en: 'General documents', th: 'เอกสารทั่วไป', docs: [] },
   ]);
 
-  const [unlinkedDocs] = React.useState<{ id: string; name: string }[]>([]);
+  const [unlinkedDocs, setUnlinkedDocs] = React.useState<{ id: string; name: string; size?: string; preview?: string }[]>([]);
 
-  const handleAddDoc = (categoryKey: string) => {
-    // In real implementation, this would open a file picker or link from unlinked docs
-    const newDoc = { id: `doc-${Date.now()}`, name: `Document_${Date.now().toString().slice(-4)}` };
-    setCategories(prev => prev.map(cat =>
-      cat.key === categoryKey ? { ...cat, docs: [...cat.docs, newDoc] } : cat
-    ));
+  // Upload dialog state
+  const [uploadDialogOpen, setUploadDialogOpen] = React.useState(false);
+  const [uploadTarget, setUploadTarget] = React.useState<string | null>(null); // category key or null for unlinked
+
+  const handleOpenUploadForCategory = (categoryKey: string) => {
+    setUploadTarget(categoryKey);
+    setUploadDialogOpen(true);
+  };
+
+  const handleOpenUploadForUnlinked = () => {
+    setUploadTarget(null);
+    setUploadDialogOpen(true);
+  };
+
+  const handleUploadFiles = (files: { id: string; name: string; size: string; type: string }[]) => {
+    if (uploadTarget) {
+      // Upload directly to a category
+      setCategories(prev => prev.map(cat =>
+        cat.key === uploadTarget ? { ...cat, docs: [...cat.docs, ...files.map(f => ({ id: f.id, name: f.name }))] } : cat
+      ));
+    } else {
+      // Upload to unlinked
+      setUnlinkedDocs(prev => [...prev, ...files.map(f => ({ id: f.id, name: f.name, size: f.size }))]);
+    }
   };
 
   const handleRemoveDoc = (categoryKey: string, docId: string) => {
@@ -159,49 +303,77 @@ function LinkDocumentsTab({ sale }: { sale: SaleDetail }) {
     ));
   };
 
-  const packageName = language === 'th' ? 'ชั้น 1 อีซี่' : 'Easy Type 1';
+  const handleRemoveUnlinked = (docId: string) => {
+    setUnlinkedDocs(prev => prev.filter(d => d.id !== docId));
+  };
+
+  // Drag & drop from unlinked to category
+  const handleDragStart = (e: React.DragEvent, docId: string) => {
+    e.dataTransfer.setData('text/plain', docId);
+  };
+
+  const handleDrop = (e: React.DragEvent, categoryKey: string) => {
+    e.preventDefault();
+    const docId = e.dataTransfer.getData('text/plain');
+    const doc = unlinkedDocs.find(d => d.id === docId);
+    if (doc) {
+      setCategories(prev => prev.map(cat =>
+        cat.key === categoryKey ? { ...cat, docs: [...cat.docs, { id: doc.id, name: doc.name }] } : cat
+      ));
+      setUnlinkedDocs(prev => prev.filter(d => d.id !== docId));
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const uploadCategoryLabel = uploadTarget
+    ? (language === 'th'
+      ? categories.find(c => c.key === uploadTarget)?.th || ''
+      : categories.find(c => c.key === uploadTarget)?.en || '')
+    : '';
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
       {/* Left: document categories */}
-      <div className="lg:col-span-3 space-y-4">
-        <h5 className="text-xs font-semibold">
-          {language === 'th' ? `เอกสารที่ต้องเชื่อมโยงสำหรับ ${packageName}` : `Link Documents Required for ${packageName}`}
-        </h5>
-
-        <div className="space-y-2">
-          {categories.map(cat => (
-            <div key={cat.key} className="border border-border rounded-lg p-3 bg-card">
-              <div className="flex items-center justify-between">
-                <div>
-                  <span className="text-xs font-medium">
-                    {language === 'th' ? cat.th : cat.en}
-                    {cat.required && <span className="text-destructive ml-0.5">*</span>}
-                  </span>
-                  <p className="text-[10px] text-muted-foreground">{cat.docs.length} {language === 'th' ? 'เอกสาร' : 'Documents'}</p>
-                </div>
-                <button
-                  onClick={() => handleAddDoc(cat.key)}
-                  className="w-7 h-7 rounded-md border border-border flex items-center justify-center hover:bg-accent transition-colors"
-                >
-                  <Plus className="w-3.5 h-3.5 text-muted-foreground" />
-                </button>
+      <div className="lg:col-span-3 space-y-2">
+        {categories.map(cat => (
+          <div
+            key={cat.key}
+            className="border border-border rounded-lg p-3 bg-card"
+            onDrop={(e) => handleDrop(e, cat.key)}
+            onDragOver={handleDragOver}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-xs font-medium">
+                  {language === 'th' ? cat.th : cat.en}
+                  {cat.required && <span className="text-destructive ml-0.5">*</span>}
+                </span>
+                <p className="text-[10px] text-muted-foreground">{cat.docs.length} {language === 'th' ? 'เอกสาร' : 'Documents'}</p>
               </div>
-              {cat.docs.length > 0 && (
-                <div className="mt-2 space-y-1">
-                  {cat.docs.map(doc => (
-                    <div key={doc.id} className="flex items-center justify-between px-2 py-1 bg-muted/30 rounded text-[10px]">
-                      <span>{doc.name}</span>
-                      <button onClick={() => handleRemoveDoc(cat.key, doc.id)} className="text-muted-foreground hover:text-destructive">
-                        <X className="w-3 h-3" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
+              <button
+                onClick={() => handleOpenUploadForCategory(cat.key)}
+                className="w-7 h-7 rounded-md border border-border flex items-center justify-center hover:bg-accent transition-colors"
+              >
+                <Plus className="w-3.5 h-3.5 text-muted-foreground" />
+              </button>
             </div>
-          ))}
-        </div>
+            {cat.docs.length > 0 && (
+              <div className="mt-2 space-y-1">
+                {cat.docs.map(doc => (
+                  <div key={doc.id} className="flex items-center justify-between px-2 py-1 bg-muted/30 rounded text-[10px]">
+                    <span>{doc.name}</span>
+                    <button onClick={() => handleRemoveDoc(cat.key, doc.id)} className="text-muted-foreground hover:text-destructive">
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
       </div>
 
       {/* Right: unlinked documents */}
@@ -214,6 +386,13 @@ function LinkDocumentsTab({ sale }: { sale: SaleDetail }) {
                 <p className="text-[10px] text-muted-foreground">{language === 'th' ? 'ลากรูปไปยังช่องทางซ้ายเพื่อเชื่อมโยง' : 'Drag image into respective box on the left to link it'}</p>
               </div>
               <div className="flex items-center gap-1">
+                <button
+                  onClick={handleOpenUploadForUnlinked}
+                  className="w-7 h-7 rounded-md border border-border flex items-center justify-center hover:bg-accent transition-colors"
+                  title={language === 'th' ? 'อัปโหลดเอกสาร' : 'Upload documents'}
+                >
+                  <Upload className="w-3 h-3 text-muted-foreground" />
+                </button>
                 <button className="w-7 h-7 rounded-md border border-border flex items-center justify-center hover:bg-accent transition-colors">
                   <RefreshCw className="w-3 h-3 text-muted-foreground" />
                 </button>
@@ -225,19 +404,52 @@ function LinkDocumentsTab({ sale }: { sale: SaleDetail }) {
 
             {unlinkedDocs.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
-                <X className="w-8 h-8 mb-2" />
+                <Upload className="w-8 h-8 mb-2" />
                 <span className="text-xs">{language === 'th' ? 'ไม่มีเอกสารที่ยังไม่ได้เชื่อมโยง' : 'No unlinked documents'}</span>
+                <button
+                  onClick={handleOpenUploadForUnlinked}
+                  className="mt-2 text-[10px] text-primary hover:underline"
+                >
+                  {language === 'th' ? 'อัปโหลดเอกสาร' : 'Upload documents'}
+                </button>
               </div>
             ) : (
-              <div className="space-y-2">
+              <div className="grid grid-cols-2 gap-2">
                 {unlinkedDocs.map(doc => (
-                  <div key={doc.id} className="p-2 border border-border rounded text-xs">{doc.name}</div>
+                  <div
+                    key={doc.id}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, doc.id)}
+                    className="relative border border-border rounded-lg overflow-hidden bg-muted/20 cursor-grab active:cursor-grabbing hover:border-primary/50 transition-colors"
+                  >
+                    <div className="w-full h-24 flex items-center justify-center bg-muted/30">
+                      <FileText className="w-8 h-8 text-muted-foreground" />
+                    </div>
+                    <div className="p-1.5">
+                      <p className="text-[9px] font-medium truncate">{doc.name}</p>
+                      {doc.size && <p className="text-[8px] text-muted-foreground">{doc.size}</p>}
+                    </div>
+                    <button
+                      onClick={() => handleRemoveUnlinked(doc.id)}
+                      className="absolute top-1 right-1 w-4 h-4 rounded-full bg-background/80 flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground transition-colors"
+                    >
+                      <X className="w-2.5 h-2.5" />
+                    </button>
+                  </div>
                 ))}
               </div>
             )}
           </CardContent>
         </Card>
       </div>
+
+      {/* Upload Dialog */}
+      <UploadDocumentsDialog
+        open={uploadDialogOpen}
+        onOpenChange={setUploadDialogOpen}
+        categoryLabel={uploadCategoryLabel}
+        onUpload={handleUploadFiles}
+      />
     </div>
   );
 }
