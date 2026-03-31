@@ -66,18 +66,75 @@ const paymentStatusColors: Record<string, string> = {
   partial: 'border-orange-500 text-orange-600 bg-orange-500/10',
 };
 
+// Status progression order (lower index = less progressed)
+const statusProgression: string[] = [
+  'pending_payment',
+  'pending_review',
+  'pending_issuance',
+  'policy_issued',    // aka "Policy Uploaded"
+  'policy_shipped',
+  'policy_delivered',
+];
+
+function getLeastProgressedStatus(vmiStatus?: string, cmiStatus?: string): string | null {
+  const vmi = vmiStatus || null;
+  const cmi = cmiStatus || null;
+
+  // Filter out cancelled and rework — treat as "ignore"
+  const activeStatuses = [vmi, cmi].filter(
+    s => s && s !== 'policy_cancelled' && s !== 'rework_required'
+  ) as string[];
+
+  if (activeStatuses.length === 0) return null;
+
+  // Return the one with the lowest progression index
+  let least = activeStatuses[0];
+  let leastIdx = statusProgression.indexOf(least);
+  if (leastIdx === -1) leastIdx = 999;
+
+  for (let i = 1; i < activeStatuses.length; i++) {
+    let idx = statusProgression.indexOf(activeStatuses[i]);
+    if (idx === -1) idx = 999;
+    if (idx < leastIdx) {
+      least = activeStatuses[i];
+      leastIdx = idx;
+    }
+  }
+  return least;
+}
+
 function getPrimaryAction(
-  saleStage: string,
-  hasActiveRework: boolean,
+  vmiPolicy: SalePolicy | undefined,
+  cmiPolicy: SalePolicy | undefined,
   language: string,
 ): { label: string; icon: React.ElementType; group: string } | null {
-  if (hasActiveRework) {
+  const vmiStatus = vmiPolicy?.status;
+  const cmiStatus = cmiPolicy?.status;
+
+  // Priority override: either policy in rework_required
+  if (vmiStatus === 'rework_required' || cmiStatus === 'rework_required') {
     return { label: language === 'th' ? 'ประวัติและกิจกรรม' : 'History & Activity Log', icon: History, group: 'G4' };
   }
-  switch (saleStage) {
-    case 'to_report':
-      return { label: language === 'th' ? 'ส่งอีเมลถึง บ.ประกัน' : 'Send Email to Insurer', icon: Mail, group: 'G2' };
-    case 'to_issue':
+
+  // Both cancelled → no primary
+  const vmiCancelled = !vmiPolicy || vmiStatus === 'policy_cancelled';
+  const cmiCancelled = !cmiPolicy || cmiStatus === 'policy_cancelled';
+  if (vmiCancelled && cmiCancelled) return null;
+
+  const least = getLeastProgressedStatus(vmiStatus, cmiStatus);
+  if (!least) return null;
+
+  switch (least) {
+    case 'pending_payment':
+      return { label: language === 'th' ? 'แชร์ใบแจ้งหนี้ / ชำระเงิน' : 'Share Invoice / Make Payment', icon: CreditCard, group: 'G1' };
+    case 'pending_review':
+      return { label: language === 'th' ? 'ซื้อกรมธรรม์ / เอกสารรถ' : 'Purchase Policy / Vehicle Documents', icon: FileText, group: 'G2' };
+    case 'pending_issuance':
+      return { label: language === 'th' ? 'อัปโหลดกรมธรรม์' : 'Upload Policy', icon: FileUp, group: 'G2' };
+    case 'policy_issued':
+    case 'policy_shipped':
+      return { label: language === 'th' ? 'อัปโหลดกรมธรรม์' : 'Upload Policy', icon: FileUp, group: 'G2' };
+    case 'policy_delivered':
       return { label: language === 'th' ? 'อัปโหลดกรมธรรม์' : 'Upload Policy', icon: FileUp, group: 'G2' };
     default:
       return null;
