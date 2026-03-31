@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronDown, FileUp, XCircle, Mail, Upload, History } from 'lucide-react';
+import { ChevronDown, FileUp, XCircle, Mail, Upload, History, CreditCard, FileText } from 'lucide-react';
 import mtiLogo from '@/assets/insurer-mti.png';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
