@@ -993,24 +993,37 @@ export function ContentTabs({ sale }: ContentTabsProps) {
     );
   };
 
+  const [sendToAgentOpen, setSendToAgentOpen] = React.useState(false);
+
   const NextButton = ({ tabKey }: { tabKey: string }) => {
     const done = completedSteps.has(tabKey);
     return (
       <div className="flex justify-end mt-4 pt-3 border-t border-border">
         <Button
           size="sm"
-          className="text-xs gap-1.5"
+          className="text-xs"
           disabled={done}
-          onClick={() => handleNext(tabKey)}
+          onClick={() => {
+            if (tabKey === 'verify') {
+              setSendToAgentOpen(true);
+            } else {
+              handleNext(tabKey);
+            }
+          }}
         >
           {done
             ? (language === 'th' ? 'เสร็จสิ้น' : 'Completed')
             : (language === 'th' ? 'ถัดไป' : 'Next')
           }
-          {!done && <ChevronRight className="w-3.5 h-3.5" />}
         </Button>
       </div>
     );
+  };
+
+  const handleSendToAgent = () => {
+    setSendToAgentOpen(false);
+    handleNext('verify');
+    toast.success(language === 'th' ? 'ส่งข้อมูลให้ตัวแทนเรียบร้อย' : 'Information sent to agent successfully');
   };
 
   return (
