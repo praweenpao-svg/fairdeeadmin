@@ -436,9 +436,13 @@ function LinkDocumentsTab({ sale }: { sale: SaleDetail }) {
                     onDragStart={(e) => handleDragStart(e, doc.id)}
                     className="relative border border-border rounded-lg overflow-hidden bg-muted/20 cursor-grab active:cursor-grabbing hover:border-primary/50 transition-colors"
                   >
-                    <div className="w-full h-24 flex items-center justify-center bg-muted/30">
-                      <FileText className="w-8 h-8 text-muted-foreground" />
-                    </div>
+                    {doc.preview ? (
+                      <img src={doc.preview} alt={doc.name} className="w-full h-24 object-cover" />
+                    ) : (
+                      <div className="w-full h-24 flex items-center justify-center bg-muted/30">
+                        <FileText className="w-8 h-8 text-muted-foreground" />
+                      </div>
+                    )}
                     <div className="p-1.5">
                       <p className="text-[9px] font-medium truncate">{doc.name}</p>
                       {doc.size && <p className="text-[8px] text-muted-foreground">{doc.size}</p>}
