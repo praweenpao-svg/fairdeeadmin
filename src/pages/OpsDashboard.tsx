@@ -209,6 +209,8 @@ export default function OpsDashboard() {
               <PolicyStatusCard sale={mockSaleDetail} />
               <PaymentStatusCard sale={mockSaleDetail} />
               <SaleOverviewCard sale={mockSaleDetail} />
+              <DownloadsCard />
+              <HistoryCard />
             </div>
             {/* Right column: Content Tabs */}
             <div className="lg:col-span-4 bg-card rounded-lg p-4 border border-border">
