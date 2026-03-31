@@ -121,12 +121,19 @@ function DocumentsTab({ sale }: { sale: SaleDetail }) {
   );
 }
 
+interface DocFile {
+  id: string;
+  name: string;
+  preview?: string;
+  type?: string;
+}
+
 interface DocCategory {
   key: string;
   en: string;
   th: string;
   required?: boolean;
-  docs: { id: string; name: string }[];
+  docs: DocFile[];
 }
 
 function UploadDocumentsDialog({ 
