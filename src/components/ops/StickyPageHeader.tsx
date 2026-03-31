@@ -104,7 +104,7 @@ function getPrimaryActions(
   vmiPolicy: SalePolicy | undefined,
   cmiPolicy: SalePolicy | undefined,
   language: string,
-): { label: string; icon: React.ElementType; group: string }[] {
+): { label: string; icon?: React.ElementType; group: string }[] {
   const vmiStatus = vmiPolicy?.status;
   const cmiStatus = cmiPolicy?.status;
   if (vmiStatus === 'rework_required' || cmiStatus === 'rework_required') {
