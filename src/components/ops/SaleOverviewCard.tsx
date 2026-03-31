@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useLanguageStore } from '@/stores/languageStore';
 import { SaleDetail } from '@/data/mockSaleDetail';
+import { SaleOverviewCardProps } from './SaleOverviewCard';
+import { SaleDetail } from '@/data/mockSaleDetail';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Check, Pencil, X } from 'lucide-react';
