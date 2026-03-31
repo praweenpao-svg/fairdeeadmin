@@ -131,8 +131,8 @@ const mockHistoricalChanges = [
     changedBy: 'vijay+jennifer42@qoala.id',
     changedOn: '23/01/2569 13:47',
     changes: [
-      { key: 'Amount', oldValue: '0.00', newValue: '6049.77' },
-      { key: 'Tax', oldValue: '0.00', newValue: '425.23' },
+      { key: 'Amount', oldValue: '0', newValue: '6,050' },
+      { key: 'Tax', oldValue: '0', newValue: '425' },
       { key: 'Duty', oldValue: '0.00', newValue: '25.00' },
     ],
     reason: 'POST /utils/fairdee-quotation',
