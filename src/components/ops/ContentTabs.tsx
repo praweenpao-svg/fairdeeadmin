@@ -494,10 +494,10 @@ function VerifyInformationTab({ sale }: { sale: SaleDetail }) {
           <div className="px-4 py-2 border-b border-border">
             <span className="text-sm font-semibold">National ID</span>
           </div>
-          <div className="grid grid-cols-2">
-            {/* Left: Image viewer */}
-            <div className="border-r border-border p-4 flex flex-col">
-              <div className="flex-1 bg-muted/20 rounded-lg overflow-hidden flex items-center justify-center min-h-[320px]">
+          <div className="grid grid-cols-3">
+            {/* Left: Image viewer (1/3) */}
+            <div className="col-span-1 border-r border-border p-3 flex flex-col">
+              <div className="flex-1 bg-muted/20 rounded-lg overflow-hidden flex items-center justify-center min-h-[240px]">
                 <img
                   src={sampleNationalId}
                   alt="National ID"
@@ -507,25 +507,28 @@ function VerifyInformationTab({ sale }: { sale: SaleDetail }) {
               </div>
               <ImageZoomControls zoom={zoom.national_id || 100} onZoom={(d) => handleZoom('national_id', d)} />
             </div>
-            {/* Right: Form fields */}
-            <div className="p-4 space-y-4">
-              <h5 className="text-sm font-semibold text-primary">{language === 'th' ? 'ข้อมูลลูกค้า' : 'Customer Details'}</h5>
-              <VerifyField label={language === 'th' ? 'ประเภทลูกค้า' : 'Customer Type'} value={customer.customerType === 'individual' ? 'Individual' : 'Corporation'} source="Custom" isSelect options={['Individual', 'Corporation']} />
-              <VerifyField label={language === 'th' ? 'คำนำหน้า' : 'Title'} value={customer.title} source="National Id" />
-              <VerifyField label={language === 'th' ? 'ชื่อ' : 'First Name'} value={customer.firstName} source="National Id" />
-              <VerifyField label={language === 'th' ? 'นามสกุล' : 'Last Name'} value={customer.lastName} source="National Id" />
-              <VerifyField label={language === 'th' ? 'ประเภทบัตร' : 'Type of Identification'} value={customer.idType} source="National Id" isSelect options={['National Id', 'Passport', 'Other']} />
-              <VerifyField label={language === 'th' ? 'เลขบัตรประชาชน' : 'National Id'} value={customer.nationalId} source="National Id" />
-              <VerifyField label={language === 'th' ? 'วันเกิด' : 'Birthday (AD)'} value={customer.birthday} source="National Id" isDate />
-              <VerifyField label={language === 'th' ? 'เพศ' : 'Gender'} value={customer.gender} source="National Id" isSelect options={['M', 'F']} />
-
-              <h5 className="text-sm font-semibold text-primary pt-2">{language === 'th' ? 'ที่อยู่ผู้เอาประกันภัย' : 'Policy Holder Address'}</h5>
-              <VerifyField label={language === 'th' ? 'ที่อยู่' : 'Address Line'} value={customer.addressLine} source="National Id" />
-              <VerifyField label={language === 'th' ? 'จังหวัด' : 'Province'} value={customer.province} source="" />
-              <VerifyField label={language === 'th' ? 'เขต/อำเภอ' : 'District'} value={customer.district} source="" />
-              <VerifyField label={language === 'th' ? 'แขวง/ตำบล' : 'Sub District'} value={customer.subDistrict} source="" />
-              <VerifyField label={language === 'th' ? 'รหัสไปรษณีย์' : 'Postal Code'} value={customer.postalCode} source="" />
-              <VerifyField label={language === 'th' ? 'เบอร์โทรศัพท์' : 'Phone Number'} value={customer.phoneNumber} source="" />
+            {/* Right: Form fields (2/3) with 2-column grid */}
+            <div className="col-span-2 p-4">
+              <h5 className="text-sm font-semibold text-primary mb-3">{language === 'th' ? 'ข้อมูลลูกค้า' : 'Customer Details'}</h5>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+                <VerifyField label={language === 'th' ? 'ประเภทลูกค้า' : 'Customer Type'} value={customer.customerType === 'individual' ? 'Individual' : 'Corporation'} source="Custom" isSelect options={['Individual', 'Corporation']} />
+                <VerifyField label={language === 'th' ? 'คำนำหน้า' : 'Title'} value={customer.title} source="National Id" />
+                <VerifyField label={language === 'th' ? 'ชื่อ' : 'First Name'} value={customer.firstName} source="National Id" />
+                <VerifyField label={language === 'th' ? 'นามสกุล' : 'Last Name'} value={customer.lastName} source="National Id" />
+                <VerifyField label={language === 'th' ? 'ประเภทบัตร' : 'Type of Identification'} value={customer.idType} source="National Id" isSelect options={['National Id', 'Passport', 'Other']} />
+                <VerifyField label={language === 'th' ? 'เลขบัตรประชาชน' : 'National Id'} value={customer.nationalId} source="National Id" />
+                <VerifyField label={language === 'th' ? 'วันเกิด' : 'Birthday (AD)'} value={customer.birthday} source="National Id" isDate />
+                <VerifyField label={language === 'th' ? 'เพศ' : 'Gender'} value={customer.gender} source="National Id" isSelect options={['M', 'F']} />
+              </div>
+              <h5 className="text-sm font-semibold text-primary mt-4 mb-3">{language === 'th' ? 'ที่อยู่ผู้เอาประกันภัย' : 'Policy Holder Address'}</h5>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+                <VerifyField label={language === 'th' ? 'ที่อยู่' : 'Address Line'} value={customer.addressLine} source="National Id" />
+                <VerifyField label={language === 'th' ? 'จังหวัด' : 'Province'} value={customer.province} source="" />
+                <VerifyField label={language === 'th' ? 'เขต/อำเภอ' : 'District'} value={customer.district} source="" />
+                <VerifyField label={language === 'th' ? 'แขวง/ตำบล' : 'Sub District'} value={customer.subDistrict} source="" />
+                <VerifyField label={language === 'th' ? 'รหัสไปรษณีย์' : 'Postal Code'} value={customer.postalCode} source="" />
+                <VerifyField label={language === 'th' ? 'เบอร์โทรศัพท์' : 'Phone Number'} value={customer.phoneNumber} source="" />
+              </div>
             </div>
           </div>
         </CardContent>
