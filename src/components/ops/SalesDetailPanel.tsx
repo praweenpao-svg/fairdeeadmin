@@ -78,7 +78,7 @@ function PackageCard({ policy, isSelected }: { policy: SaleDetail['policies'][0]
         </div>
         <div className="flex justify-between">
           <span className="text-muted-foreground">{language === 'th' ? 'เบี้ยประกันหลังภาษี' : 'Premium After Tax'}</span>
-          <span className="font-semibold">{policy.premiumAfterTax.toLocaleString()} ฿</span>
+          <span className="font-semibold">{policy.premiumAfterTax.toLocaleString()} Baht</span>
         </div>
         {policy.sumInsured > 0 && (
           <div className="flex justify-between">
