@@ -576,9 +576,9 @@ function VerifyInformationTab({ sale }: { sale: SaleDetail }) {
           <div className="px-4 py-2 border-b border-border">
             <span className="text-sm font-semibold">{language === 'th' ? 'หลักฐานการชำระเงิน' : 'Payment proof to FairDee'}</span>
           </div>
-          <div className="grid grid-cols-2">
-            <div className="border-r border-border p-4 flex flex-col">
-              <div className="flex-1 bg-muted/20 rounded-lg overflow-hidden flex items-center justify-center min-h-[320px]">
+          <div className="grid grid-cols-3">
+            <div className="col-span-1 border-r border-border p-3 flex flex-col">
+              <div className="flex-1 bg-muted/20 rounded-lg overflow-hidden flex items-center justify-center min-h-[240px]">
                 <img
                   src={samplePaymentProof}
                   alt="Payment Proof"
@@ -588,11 +588,13 @@ function VerifyInformationTab({ sale }: { sale: SaleDetail }) {
               </div>
               <ImageZoomControls zoom={zoom.payment || 50} onZoom={(d) => handleZoom('payment', d)} />
             </div>
-            <div className="p-4 space-y-4">
-              <h5 className="text-sm font-semibold text-primary">{language === 'th' ? 'ข้อมูลการชำระเงิน' : 'Payment Information'}</h5>
-              <VerifyField label={language === 'th' ? 'เวลาทำรายการ' : 'Transaction Time'} value="" source="" isDate />
-              <VerifyField label={language === 'th' ? 'เลขที่ทำรายการ' : 'Transaction Id'} value="" source="" />
-              <VerifyField label={language === 'th' ? 'จำนวนเงิน' : 'Amount'} value="" source="" />
+            <div className="col-span-2 p-4">
+              <h5 className="text-sm font-semibold text-primary mb-3">{language === 'th' ? 'ข้อมูลการชำระเงิน' : 'Payment Information'}</h5>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+                <VerifyField label={language === 'th' ? 'เวลาทำรายการ' : 'Transaction Time'} value="" source="" isDate />
+                <VerifyField label={language === 'th' ? 'เลขที่ทำรายการ' : 'Transaction Id'} value="" source="" />
+                <VerifyField label={language === 'th' ? 'จำนวนเงิน' : 'Amount'} value="" source="" />
+              </div>
             </div>
           </div>
         </CardContent>
