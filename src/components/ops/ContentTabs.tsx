@@ -1062,6 +1062,49 @@ export function ContentTabs({ sale }: ContentTabsProps) {
       <TabsContent value="invoice" className="mt-4">
         <InvoiceListTab sale={sale} />
       </TabsContent>
+
+      {/* Send to Agent Modal */}
+      <Dialog open={sendToAgentOpen} onOpenChange={setSendToAgentOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold flex items-center justify-between">
+              {language === 'th' ? 'ยืนยันข้อมูล' : 'Verify Information'}
+              <Button size="sm" variant="default" className="text-xs" onClick={handleSendToAgent}>
+                {language === 'th' ? 'อัปเดต' : 'Update'}
+              </Button>
+            </DialogTitle>
+          </DialogHeader>
+          <div className="border border-border rounded-lg p-4 space-y-3 text-sm">
+            {[
+              { label: language === 'th' ? 'รหัสตัวแทน' : 'Agent Code', value: sale.agentCode },
+              { label: language === 'th' ? 'ประเภทงาน' : 'Type of Sale', value: sale.typeOfSale },
+              { label: language === 'th' ? 'บริษัทประกัน' : 'Insurer Name', value: sale.policies[0]?.insurer || '-' },
+              { label: language === 'th' ? 'ชั้นประกัน' : 'Insurance Class', value: sale.policies[0]?.coverage.insuranceClass || '-' },
+              { label: language === 'th' ? 'ดีดัคทิเบิ้ล' : 'Deductible', value: sale.policies[0]?.coverage.deductible ? `${sale.policies[0].coverage.deductible.toLocaleString()}` : 'N/A' },
+              { label: language === 'th' ? 'ประเภทอู่' : 'Garage Type', value: sale.policies[0]?.garageType || '-' },
+              { label: language === 'th' ? 'เบอร์โทร' : 'Phone Number', value: sale.customer.phoneNumber },
+              { label: language === 'th' ? 'ทะเบียนรถ' : 'Vehicle Number', value: sale.vehicle.licensePlate },
+              { label: language === 'th' ? 'รหัสรถ' : 'Car Code', value: sale.vehicle.vehicleCode.split(' - ')[0] || '-' },
+              { label: language === 'th' ? 'ทุนประกัน' : 'Sum Insured', value: `${sale.policies[0]?.sumInsured.toLocaleString() || '0'}` },
+              { label: language === 'th' ? 'วันคุ้มครอง' : 'Insurance Coverage Date', value: sale.policies[0]?.policyStartDate || '-' },
+              { label: language === 'th' ? 'ที่อยู่กรมธรรม์' : 'Address On Policy Schedule', value: `${sale.customer.addressLine} ${sale.customer.province} ${sale.customer.district} ${sale.customer.postalCode}` },
+              { label: language === 'th' ? 'ที่อยู่จัดส่ง' : 'Delivery Address', value: `${sale.shipping.addressLine} ${sale.shipping.province} ${sale.shipping.district} ${sale.shipping.postalCode}` },
+              { label: language === 'th' ? 'ชื่อผู้เอาประกัน' : 'Insured Name', value: `${sale.customer.title} ${sale.customer.firstName} ${sale.customer.lastName}` },
+              { label: language === 'th' ? 'พ.ร.บ.' : 'Compulsory Insurance', value: sale.hasCompulsoryInsurance ? (language === 'th' ? 'มี' : 'Yes') : (language === 'th' ? 'ไม่มี' : 'No') },
+            ].map((row, i) => (
+              <div key={i} className="flex justify-between py-1">
+                <span className="text-muted-foreground font-medium">{row.label}:</span>
+                <span className="text-right max-w-[55%]">{row.value}</span>
+              </div>
+            ))}
+          </div>
+          <div className="pt-2">
+            <Button className="w-full" onClick={handleSendToAgent}>
+              {language === 'th' ? 'ส่งให้ตัวแทน' : 'Send to Agent'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Tabs>
   );
 }
