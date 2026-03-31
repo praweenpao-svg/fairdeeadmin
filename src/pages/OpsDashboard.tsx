@@ -227,8 +227,7 @@ export default function OpsDashboard() {
             {/* Right column: Content Tabs */}
             <div className="lg:col-span-4 bg-card rounded-lg p-4 border border-border">
               <ContentTabs sale={sale} />
-            </div>
-            </div>
+          </div>
           </div>
         </div>
       )}
