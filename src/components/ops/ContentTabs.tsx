@@ -651,7 +651,7 @@ function PackageSelectionTab({ sale }: { sale: SaleDetail }) {
           {addCmi === 'yes' && (
             <div className="space-y-2">
               <SectionLabel>{language === 'th' ? 'วันเริ่มต้น พ.ร.บ.' : 'Compulsory Start Date'}</SectionLabel>
-              <Input type="date" className="text-xs h-9" />
+              <Input type="date" className="text-xs h-9 bg-card" />
             </div>
           )}
 
