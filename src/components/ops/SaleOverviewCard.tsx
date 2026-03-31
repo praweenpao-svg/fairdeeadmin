@@ -424,7 +424,7 @@ function HistoricalDataDialog({ open, onOpenChange, title }: { open: boolean; on
                               <span className="px-2 py-0.5 rounded bg-destructive/10 text-destructive text-[10px]">{row.oldValue}</span>}
                           </td>
                           <td className="py-1">
-                            <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[10px]">{row.newValue}</span>
+                            <span className="px-2 py-0.5 rounded bg-primary/10 text-primary text-[10px]">{row.newValue}</span>
                           </td>
                         </tr>
                       </tbody>
