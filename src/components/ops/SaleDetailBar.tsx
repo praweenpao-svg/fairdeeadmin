@@ -194,16 +194,17 @@ export function SaleDetailBar({
 
         <div className="flex-1" />
 
-        {primaryAction && (
+        {primaryActions.map((action, idx) => (
           <Button
+            key={idx}
             size="sm"
-            className={cn('text-xs gap-1.5', primaryAction.group === 'G4' && 'bg-orange-500 hover:bg-orange-600 text-white')}
-            onClick={handlePrimaryClick}
+            className={cn('text-xs gap-1.5', action.group === 'G4' && 'bg-orange-500 hover:bg-orange-600 text-white')}
+            onClick={() => handlePrimaryClick(action)}
           >
-            <primaryAction.icon className="w-3.5 h-3.5" />
-            {primaryAction.label}
+            <action.icon className="w-3.5 h-3.5" />
+            {action.label}
           </Button>
-        )}
+        ))}
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
