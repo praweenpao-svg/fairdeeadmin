@@ -163,34 +163,6 @@ function LinkDocumentsTab({ sale }: { sale: SaleDetail }) {
     <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
       {/* Left: document categories */}
       <div className="lg:col-span-3 space-y-4">
-        {/* Package summary bar */}
-        <Card className="border-border">
-          <CardContent className="p-3">
-            <div className="grid grid-cols-2 gap-4 text-xs">
-              <div>
-                <span className="text-muted-foreground">{language === 'th' ? 'ชื่อแพ็กเกจ' : 'Package Name'}: </span>
-                <span className="font-medium">{packageName}</span>
-              </div>
-              <div>
-                <span className="text-muted-foreground">{language === 'th' ? 'ทุนประกัน' : 'Sum Insured'}: </span>
-                <span className="font-medium">500,000.00 ฿</span>
-              </div>
-              <div>
-                <span className="text-muted-foreground">{language === 'th' ? 'ประเภทซ่อม' : 'Garage Type'}: </span>
-                <span className="font-medium">
-                  {language === 'th'
-                    ? (vmiPolicy?.garageType === 'Dealership' ? 'ซ่อมห้าง' : 'ซ่อมอู่')
-                    : (vmiPolicy?.garageType === 'Dealership' ? 'Dealership' : 'Approved Garage')}
-                </span>
-              </div>
-              <div>
-                <span className="text-muted-foreground">{language === 'th' ? 'ผ่อนชำระ' : 'Instalment Type'}: </span>
-                <span className="font-medium">{language === 'th' ? '10 งวด' : '10 instalments'}</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
         <h5 className="text-xs font-semibold">
           {language === 'th' ? `เอกสารที่ต้องเชื่อมโยงสำหรับ ${packageName}` : `Link Documents Required for ${packageName}`}
         </h5>
