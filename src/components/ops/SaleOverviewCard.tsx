@@ -241,7 +241,7 @@ export function PolicyStatusCard({ sale }: SaleOverviewCardProps) {
                 <StatusDropdown
                   label={`${policy.kind.toUpperCase()} ${language === 'th' ? 'สถานะ' : 'Status'}`}
                   options={policyStatuses}
-                  defaultValue="pending_payment"
+                  defaultValue="pending_review"
                   language={language}
                 />
               </div>
