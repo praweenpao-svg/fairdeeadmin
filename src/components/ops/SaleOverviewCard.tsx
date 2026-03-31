@@ -321,9 +321,8 @@ export function DownloadsCard() {
             <button
               key={idx}
               onClick={() => toast.success(language === 'th' ? `กำลังดาวน์โหลด ${item.th}` : `Downloading ${item.en}`)}
-              className="flex items-center gap-2 px-3 py-2.5 rounded-md border border-border hover:bg-accent/50 transition-colors text-left"
+              className="flex items-center justify-center px-3 py-2.5 rounded-md border border-border hover:bg-accent/50 transition-colors text-center"
             >
-              <FileText className="w-4 h-4 text-muted-foreground shrink-0" />
               <span className="text-xs font-medium truncate">{language === 'th' ? item.th : item.en}</span>
             </button>
           ))}
@@ -335,10 +334,10 @@ export function DownloadsCard() {
 
 // History Section
 const historyItems = [
-  { en: 'Creation By Details', th: 'รายละเอียดผู้สร้าง' },
-  { en: 'Quotation Query Changes', th: 'การเปลี่ยนแปลง Query ใบเสนอราคา' },
-  { en: 'Quotation Changes', th: 'การเปลี่ยนแปลงใบเสนอราคา' },
-  { en: 'Sale Changes', th: 'การเปลี่ยนแปลงการขาย' },
+  { en: 'Created By', th: 'สร้างโดย' },
+  { en: 'Quotation Query', th: 'Query ใบเสนอราคา' },
+  { en: 'Quotation', th: 'ใบเสนอราคา' },
+  { en: 'Sale', th: 'การขาย' },
 ];
 
 const mockCreationDetails = [
@@ -455,9 +454,8 @@ export function HistoryCard() {
               <button
                 key={idx}
                 onClick={() => idx === 0 ? setCreationOpen(true) : setActiveHistoryDialog(item.en)}
-                className="flex items-center gap-2 px-3 py-2.5 rounded-md border border-border hover:bg-accent/50 transition-colors text-left"
+                className="flex items-center justify-center px-3 py-2.5 rounded-md border border-border hover:bg-accent/50 transition-colors text-center"
               >
-                <History className="w-4 h-4 text-muted-foreground shrink-0" />
                 <span className="text-xs font-medium truncate">{language === 'th' ? item.th : item.en}</span>
               </button>
             ))}
