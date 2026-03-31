@@ -480,66 +480,127 @@ function VerifyInformationTab({ sale }: { sale: SaleDetail }) {
   const customer = sale.customer;
   const vehicle = sale.vehicle;
   const shipping = sale.shipping;
+  const [zoom, setZoom] = React.useState<Record<string, number>>({ national_id: 100, car_reg: 100, payment: 50 });
+
+  const handleZoom = (key: string, delta: number) => {
+    setZoom(prev => ({ ...prev, [key]: Math.max(25, Math.min(400, (prev[key] || 100) + delta)) }));
+  };
 
   return (
     <div className="space-y-6">
-      {/* National ID Section */}
+      {/* Section 1: National ID */}
       <Card className="border-border">
-        <CardContent className="p-4">
-          <h5 className="text-sm font-semibold text-primary mb-4">{language === 'th' ? 'ข้อมูลลูกค้า' : 'Customer Details'}</h5>
-          <div className="grid grid-cols-2 gap-4">
-            <VerifyField label={language === 'th' ? 'ประเภทลูกค้า' : 'Customer Type'} value={customer.customerType === 'individual' ? (language === 'th' ? 'บุคคลธรรมดา' : 'Individual') : (language === 'th' ? 'บริษัท' : 'Corporation')} source="Custom" />
-            <VerifyField label={language === 'th' ? 'คำนำหน้า' : 'Title'} value={customer.title} source="National Id" />
-            <VerifyField label={language === 'th' ? 'ชื่อ' : 'First Name'} value={customer.firstName} source="National Id" />
-            <VerifyField label={language === 'th' ? 'นามสกุล' : 'Last Name'} value={customer.lastName} source="National Id" />
-            <VerifyField label={language === 'th' ? 'ประเภทบัตร' : 'Type of Identification'} value={customer.idType} source="National Id" />
-            <VerifyField label={language === 'th' ? 'เลขบัตรประชาชน' : 'National Id'} value={customer.nationalId} source="National Id" />
-            <VerifyField label={language === 'th' ? 'วันเกิด' : 'Birthday (AD)'} value={customer.birthday} source="National Id" />
-            <VerifyField label={language === 'th' ? 'เพศ' : 'Gender'} value={customer.gender} source="National Id" />
+        <CardContent className="p-0">
+          <div className="px-4 py-2 border-b border-border">
+            <span className="text-sm font-semibold">National ID</span>
+          </div>
+          <div className="grid grid-cols-2">
+            {/* Left: Image viewer */}
+            <div className="border-r border-border p-4 flex flex-col">
+              <div className="flex-1 bg-muted/20 rounded-lg overflow-hidden flex items-center justify-center min-h-[320px]">
+                <img
+                  src={sampleNationalId}
+                  alt="National ID"
+                  className="max-w-full max-h-full object-contain transition-transform"
+                  style={{ transform: `scale(${(zoom.national_id || 100) / 100})` }}
+                />
+              </div>
+              <ImageZoomControls zoom={zoom.national_id || 100} onZoom={(d) => handleZoom('national_id', d)} />
+            </div>
+            {/* Right: Form fields */}
+            <div className="p-4 space-y-4">
+              <h5 className="text-sm font-semibold text-primary">{language === 'th' ? 'ข้อมูลลูกค้า' : 'Customer Details'}</h5>
+              <VerifyField label={language === 'th' ? 'ประเภทลูกค้า' : 'Customer Type'} value={customer.customerType === 'individual' ? 'Individual' : 'Corporation'} source="Custom" isSelect options={['Individual', 'Corporation']} />
+              <VerifyField label={language === 'th' ? 'คำนำหน้า' : 'Title'} value={customer.title} source="National Id" />
+              <VerifyField label={language === 'th' ? 'ชื่อ' : 'First Name'} value={customer.firstName} source="National Id" />
+              <VerifyField label={language === 'th' ? 'นามสกุล' : 'Last Name'} value={customer.lastName} source="National Id" />
+              <VerifyField label={language === 'th' ? 'ประเภทบัตร' : 'Type of Identification'} value={customer.idType} source="National Id" isSelect options={['National Id', 'Passport', 'Other']} />
+              <VerifyField label={language === 'th' ? 'เลขบัตรประชาชน' : 'National Id'} value={customer.nationalId} source="National Id" />
+              <VerifyField label={language === 'th' ? 'วันเกิด' : 'Birthday (AD)'} value={customer.birthday} source="National Id" isDate />
+              <VerifyField label={language === 'th' ? 'เพศ' : 'Gender'} value={customer.gender} source="National Id" isSelect options={['M', 'F']} />
+
+              <h5 className="text-sm font-semibold text-primary pt-2">{language === 'th' ? 'ที่อยู่ผู้เอาประกันภัย' : 'Policy Holder Address'}</h5>
+              <VerifyField label={language === 'th' ? 'ที่อยู่' : 'Address Line'} value={customer.addressLine} source="National Id" />
+              <VerifyField label={language === 'th' ? 'จังหวัด' : 'Province'} value={customer.province} source="" />
+              <VerifyField label={language === 'th' ? 'เขต/อำเภอ' : 'District'} value={customer.district} source="" />
+              <VerifyField label={language === 'th' ? 'แขวง/ตำบล' : 'Sub District'} value={customer.subDistrict} source="" />
+              <VerifyField label={language === 'th' ? 'รหัสไปรษณีย์' : 'Postal Code'} value={customer.postalCode} source="" />
+              <VerifyField label={language === 'th' ? 'เบอร์โทรศัพท์' : 'Phone Number'} value={customer.phoneNumber} source="" />
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Policy Holder Address */}
+      {/* Section 2: Car Registration */}
       <Card className="border-border">
-        <CardContent className="p-4">
-          <h5 className="text-sm font-semibold text-primary mb-4">{language === 'th' ? 'ที่อยู่ผู้เอาประกันภัย' : 'Policy Holder Address'}</h5>
-          <div className="grid grid-cols-2 gap-4">
-            <VerifyField label={language === 'th' ? 'ที่อยู่' : 'Address Line'} value={customer.addressLine} source="National Id" />
-            <VerifyField label={language === 'th' ? 'จังหวัด' : 'Province'} value={customer.province} source="National Id" />
-            <VerifyField label={language === 'th' ? 'เขต/อำเภอ' : 'District'} value={customer.district} source="National Id" />
-            <VerifyField label={language === 'th' ? 'แขวง/ตำบล' : 'Sub District'} value={customer.subDistrict} source="National Id" />
-            <VerifyField label={language === 'th' ? 'รหัสไปรษณีย์' : 'Postal Code'} value={customer.postalCode} source="National Id" />
-            <VerifyField label={language === 'th' ? 'เบอร์โทรศัพท์' : 'Phone Number'} value={customer.phoneNumber} source="National Id" />
+        <CardContent className="p-0">
+          <div className="px-4 py-2 border-b border-border">
+            <span className="text-sm font-semibold">Car Registration</span>
+          </div>
+          <div className="grid grid-cols-2">
+            <div className="border-r border-border p-4 flex flex-col">
+              <div className="flex-1 bg-muted/20 rounded-lg overflow-hidden flex items-center justify-center min-h-[320px]">
+                <img
+                  src={sampleCarRegistration}
+                  alt="Car Registration"
+                  className="max-w-full max-h-full object-contain transition-transform"
+                  style={{ transform: `scale(${(zoom.car_reg || 100) / 100})` }}
+                />
+              </div>
+              <ImageZoomControls zoom={zoom.car_reg || 100} onZoom={(d) => handleZoom('car_reg', d)} />
+            </div>
+            <div className="p-4 space-y-4">
+              <h5 className="text-sm font-semibold text-primary">{language === 'th' ? 'ข้อมูลรถยนต์' : 'Policy Details'}</h5>
+              <VerifyField label={language === 'th' ? 'ประเภททะเบียน' : 'License Type'} value="Registered" source="" isSelect options={['Registered', 'Red Plate', 'Not Registered']} />
+              <VerifyField label={language === 'th' ? 'เลขทะเบียน' : 'License Plate'} value={vehicle.licensePlate} source="Portal" />
+              <VerifyField label={language === 'th' ? 'จังหวัดจดทะเบียน' : 'Registration Province'} value={vehicle.registrationProvince} source="Car Registration" />
+              <VerifyField label={language === 'th' ? 'เลขตัวถัง' : 'Chassis Number'} value={vehicle.chassisNumber} source="" />
+              <VerifyField label={language === 'th' ? 'เลขเครื่องยนต์' : 'Engine Number'} value={vehicle.engineNumber} source="" />
+              <VerifyField label={language === 'th' ? 'น้ำหนักรถ' : 'Vehicle Weight'} value={vehicle.vehicleWeight} source="Car Registration" />
+              <VerifyField label={language === 'th' ? 'สี' : 'Color'} value={vehicle.color} source="Car Registration" isSelect options={['ขาว', 'ดำ', 'เทา', 'แดง', 'น้ำเงิน', 'เขียว']} />
+              <VerifyField label={language === 'th' ? 'ข้อกำหนดผู้ขับ' : 'Driver Specification'} value="Not specified" source="Car Registration" isSelect options={['Not specified', 'Named Driver', 'Any Driver']} />
+              <VerifyField label={language === 'th' ? 'ผู้รับผลประโยชน์' : 'Beneficiary Type'} value="Legal Owner" source="Car Registration" isSelect options={['Legal Owner', 'Named Person', 'Financial Institution']} />
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Car Registration / Policy Details */}
+      {/* Section 3: Payment Proof */}
       <Card className="border-border">
-        <CardContent className="p-4">
-          <h5 className="text-sm font-semibold text-primary mb-4">{language === 'th' ? 'ข้อมูลรถยนต์' : 'Policy Details'}</h5>
-          <div className="grid grid-cols-2 gap-4">
-            <VerifyField label={language === 'th' ? 'ประเภททะเบียน' : 'License Type'} value={vehicle.licenseType || 'Registered'} source="Portal" />
-            <VerifyField label={language === 'th' ? 'เลขทะเบียน' : 'License Plate'} value={vehicle.licensePlate} source="Portal" />
-            <VerifyField label={language === 'th' ? 'จังหวัดจดทะเบียน' : 'Registration Province'} value={vehicle.registrationProvince} source="Car Registration" />
-            <VerifyField label={language === 'th' ? 'เลขตัวถัง' : 'Chassis Number'} value={vehicle.chassisNumber} source="" />
-            <VerifyField label={language === 'th' ? 'เลขเครื่องยนต์' : 'Engine Number'} value={vehicle.engineNumber} source="" />
-            <VerifyField label={language === 'th' ? 'น้ำหนักรถ' : 'Vehicle Weight'} value={vehicle.vehicleWeight} source="Car Registration" />
-            <VerifyField label={language === 'th' ? 'สี' : 'Color'} value={vehicle.color} source="Car Registration" />
-            <VerifyField label={language === 'th' ? 'ข้อกำหนดผู้ขับ' : 'Driver Specification'} value={vehicle.driverSpec || 'Not specified'} source="Car Registration" />
-            <VerifyField label={language === 'th' ? 'ผู้รับผลประโยชน์' : 'Beneficiary Type'} value={vehicle.beneficiaryType || 'Legal Owner'} source="Car Registration" />
+        <CardContent className="p-0">
+          <div className="px-4 py-2 border-b border-border">
+            <span className="text-sm font-semibold">{language === 'th' ? 'หลักฐานการชำระเงิน' : 'Payment proof to FairDee'}</span>
+          </div>
+          <div className="grid grid-cols-2">
+            <div className="border-r border-border p-4 flex flex-col">
+              <div className="flex-1 bg-muted/20 rounded-lg overflow-hidden flex items-center justify-center min-h-[320px]">
+                <img
+                  src={samplePaymentProof}
+                  alt="Payment Proof"
+                  className="max-w-full max-h-full object-contain transition-transform"
+                  style={{ transform: `scale(${(zoom.payment || 50) / 100})` }}
+                />
+              </div>
+              <ImageZoomControls zoom={zoom.payment || 50} onZoom={(d) => handleZoom('payment', d)} />
+            </div>
+            <div className="p-4 space-y-4">
+              <h5 className="text-sm font-semibold text-primary">{language === 'th' ? 'ข้อมูลการชำระเงิน' : 'Payment Information'}</h5>
+              <VerifyField label={language === 'th' ? 'เวลาทำรายการ' : 'Transaction Time'} value="" source="" isDate />
+              <VerifyField label={language === 'th' ? 'เลขที่ทำรายการ' : 'Transaction Id'} value="" source="" />
+              <VerifyField label={language === 'th' ? 'จำนวนเงิน' : 'Amount'} value="" source="" />
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Insurance Information */}
+      {/* Customer Information / Insurance Info */}
       <Card className="border-border">
         <CardContent className="p-4">
-          <h5 className="text-sm font-semibold text-primary mb-4">{language === 'th' ? 'ข้อมูลประกันภัย' : 'Insurance Information'}</h5>
+          <h5 className="text-sm font-semibold mb-4">{language === 'th' ? 'ข้อมูลประกันภัย' : 'Customer Information'}</h5>
+          <h6 className="text-xs font-semibold text-primary mb-3">{language === 'th' ? 'ข้อมูลประกันภัย' : 'Insurance Information'}</h6>
           <div className="grid grid-cols-2 gap-4">
-            <VerifyField label={language === 'th' ? 'วันเริ่มต้นกรมธรรม์' : 'Policy Start Date (AD)'} value={sale.policies[0]?.policyStartDate || ''} source="" isDate />
-            <VerifyField label={language === 'th' ? 'เบอร์โทรศัพท์' : 'Phone Number'} value={customer.phoneNumber} source="" />
+            <VerifyField label={language === 'th' ? 'วันเริ่มต้นกรมธรรม์' : 'Policy Start Date (AD)*'} value="" source="" isDate />
+            <VerifyField label={language === 'th' ? 'เบอร์โทรศัพท์' : 'Phone Number*'} value={customer.phoneNumber} source="" />
           </div>
         </CardContent>
       </Card>
@@ -562,13 +623,13 @@ function VerifyInformationTab({ sale }: { sale: SaleDetail }) {
             ))}
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <VerifyField label={language === 'th' ? 'ชื่อผู้รับกรมธรรม์' : 'Policy Receiver Name'} value={shipping.receiverName} source="National Id Saved" />
-            <VerifyField label={language === 'th' ? 'ที่อยู่' : 'Address Line'} value={shipping.addressLine} source="National Id Saved" />
-            <VerifyField label={language === 'th' ? 'จังหวัด' : 'Province'} value={shipping.province} source="National Id Saved" />
-            <VerifyField label={language === 'th' ? 'เขต/อำเภอ' : 'District'} value={shipping.district} source="National Id Saved" />
-            <VerifyField label={language === 'th' ? 'แขวง/ตำบล' : 'Sub District'} value={shipping.subDistrict} source="National Id Saved" />
-            <VerifyField label={language === 'th' ? 'รหัสไปรษณีย์' : 'Postal Code'} value={shipping.postalCode} source="National Id Saved" />
-            <VerifyField label={language === 'th' ? 'เบอร์โทรศัพท์' : 'Phone Number'} value={shipping.phoneNumber} source="National Id Saved" />
+            <VerifyField label={language === 'th' ? 'ชื่อผู้รับกรมธรรม์' : 'Policy Receiver Name*'} value={shipping.receiverName} source="National Id Saved" />
+            <VerifyField label={language === 'th' ? 'ที่อยู่' : 'Address Line*'} value={shipping.addressLine} source="National Id Saved" />
+            <VerifyField label={language === 'th' ? 'จังหวัด' : 'Province*'} value={shipping.province} source="National Id Saved" />
+            <VerifyField label={language === 'th' ? 'เขต/อำเภอ' : 'District*'} value={shipping.district} source="National Id Saved" />
+            <VerifyField label={language === 'th' ? 'แขวง/ตำบล' : 'Sub District*'} value={shipping.subDistrict} source="National Id Saved" />
+            <VerifyField label={language === 'th' ? 'รหัสไปรษณีย์' : 'Postal Code*'} value={shipping.postalCode} source="National Id Saved" />
+            <VerifyField label={language === 'th' ? 'เบอร์โทรศัพท์' : 'Phone Number*'} value={shipping.phoneNumber} source="National Id Saved" />
           </div>
         </CardContent>
       </Card>
@@ -576,15 +637,35 @@ function VerifyInformationTab({ sale }: { sale: SaleDetail }) {
   );
 }
 
-function VerifyField({ label, value, source, isDate }: { label: string; value: string; source?: string; isDate?: boolean }) {
+function ImageZoomControls({ zoom, onZoom }: { zoom: number; onZoom: (delta: number) => void }) {
+  return (
+    <div className="flex items-center justify-center gap-2 pt-3">
+      <button onClick={() => onZoom(-25)} className="w-7 h-7 rounded-full border border-border flex items-center justify-center hover:bg-accent text-muted-foreground text-sm">−</button>
+      <span className="text-xs text-muted-foreground min-w-[40px] text-center">{zoom}%</span>
+      <button onClick={() => onZoom(25)} className="w-7 h-7 rounded-full border border-border flex items-center justify-center hover:bg-accent text-muted-foreground text-sm">+</button>
+      <button onClick={() => onZoom(100 - zoom)} className="w-7 h-7 rounded-full border border-border flex items-center justify-center hover:bg-accent text-muted-foreground text-xs">↻</button>
+    </div>
+  );
+}
+
+function VerifyField({ label, value, source, isDate, isSelect, options }: { label: string; value: string; source?: string; isDate?: boolean; isSelect?: boolean; options?: string[] }) {
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium">{label}{label.endsWith('*') ? '' : '*'}</span>
+        <span className="text-xs font-medium">{label}</span>
         {source && <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">ⓘ {source}</span>}
       </div>
       {isDate ? (
-        <Input type="date" defaultValue={value} className="text-xs h-9 bg-card" />
+        <Input type="datetime-local" defaultValue={value} className="text-xs h-9 bg-card" />
+      ) : isSelect && options ? (
+        <Select defaultValue={value}>
+          <SelectTrigger className="text-xs h-9 bg-card">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {options.map(o => <SelectItem key={o} value={o} className="text-xs">{o}</SelectItem>)}
+          </SelectContent>
+        </Select>
       ) : (
         <Input defaultValue={value} className="text-xs h-9 bg-card" placeholder={label} />
       )}
