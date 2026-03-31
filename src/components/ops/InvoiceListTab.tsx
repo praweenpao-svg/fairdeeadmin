@@ -319,7 +319,7 @@ function InvoiceSectionTable({ section }: { section: InvoiceSection }) {
       <h4 className="text-xs font-bold">{language === 'th' ? section.titleTh : section.title}</h4>
       <div className="border border-border rounded-lg overflow-hidden">
         {/* Header */}
-        <div className="grid grid-cols-[40px_80px_140px_130px_120px_120px_90px_80px_100px] gap-0 bg-muted/30 border-b border-border text-[10px] font-medium text-muted-foreground">
+        <div className="grid grid-cols-[40px_1fr_2fr_1.5fr_1.5fr_1.5fr_1fr_1fr_1fr] gap-0 bg-muted/30 border-b border-border text-[10px] font-medium text-muted-foreground">
           <div className="px-2 py-2" />
           <div className="px-2 py-2">ID</div>
           <div className="px-2 py-2">Amount Payable</div>
