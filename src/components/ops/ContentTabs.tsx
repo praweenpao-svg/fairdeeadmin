@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { FileText, Image, CreditCard, User, Package, Link2, Plus, X, RefreshCw, Upload } from 'lucide-react';
+import { FileText, Image, CreditCard, User, Package, Link2, Plus, X, RefreshCw, Upload, ShieldCheck } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 
@@ -472,6 +472,123 @@ function LinkDocumentsTab({ sale }: { sale: SaleDetail }) {
   );
 }
 
+function VerifyInformationTab({ sale }: { sale: SaleDetail }) {
+  const { language } = useLanguageStore();
+  const customer = sale.customer;
+  const vehicle = sale.vehicle;
+  const shipping = sale.shipping;
+
+  return (
+    <div className="space-y-6">
+      {/* National ID Section */}
+      <Card className="border-border">
+        <CardContent className="p-4">
+          <h5 className="text-sm font-semibold text-primary mb-4">{language === 'th' ? 'ข้อมูลลูกค้า' : 'Customer Details'}</h5>
+          <div className="grid grid-cols-2 gap-4">
+            <VerifyField label={language === 'th' ? 'ประเภทลูกค้า' : 'Customer Type'} value={customer.customerType === 'individual' ? (language === 'th' ? 'บุคคลธรรมดา' : 'Individual') : (language === 'th' ? 'บริษัท' : 'Corporation')} source="Custom" />
+            <VerifyField label={language === 'th' ? 'คำนำหน้า' : 'Title'} value={customer.title} source="National Id" />
+            <VerifyField label={language === 'th' ? 'ชื่อ' : 'First Name'} value={customer.firstName} source="National Id" />
+            <VerifyField label={language === 'th' ? 'นามสกุล' : 'Last Name'} value={customer.lastName} source="National Id" />
+            <VerifyField label={language === 'th' ? 'ประเภทบัตร' : 'Type of Identification'} value={customer.idType} source="National Id" />
+            <VerifyField label={language === 'th' ? 'เลขบัตรประชาชน' : 'National Id'} value={customer.nationalId} source="National Id" />
+            <VerifyField label={language === 'th' ? 'วันเกิด' : 'Birthday (AD)'} value={customer.birthday} source="National Id" />
+            <VerifyField label={language === 'th' ? 'เพศ' : 'Gender'} value={customer.gender} source="National Id" />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Policy Holder Address */}
+      <Card className="border-border">
+        <CardContent className="p-4">
+          <h5 className="text-sm font-semibold text-primary mb-4">{language === 'th' ? 'ที่อยู่ผู้เอาประกันภัย' : 'Policy Holder Address'}</h5>
+          <div className="grid grid-cols-2 gap-4">
+            <VerifyField label={language === 'th' ? 'ที่อยู่' : 'Address Line'} value={customer.addressLine} source="National Id" />
+            <VerifyField label={language === 'th' ? 'จังหวัด' : 'Province'} value={customer.province} source="National Id" />
+            <VerifyField label={language === 'th' ? 'เขต/อำเภอ' : 'District'} value={customer.district} source="National Id" />
+            <VerifyField label={language === 'th' ? 'แขวง/ตำบล' : 'Sub District'} value={customer.subDistrict} source="National Id" />
+            <VerifyField label={language === 'th' ? 'รหัสไปรษณีย์' : 'Postal Code'} value={customer.postalCode} source="National Id" />
+            <VerifyField label={language === 'th' ? 'เบอร์โทรศัพท์' : 'Phone Number'} value={customer.phoneNumber} source="National Id" />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Car Registration / Policy Details */}
+      <Card className="border-border">
+        <CardContent className="p-4">
+          <h5 className="text-sm font-semibold text-primary mb-4">{language === 'th' ? 'ข้อมูลรถยนต์' : 'Policy Details'}</h5>
+          <div className="grid grid-cols-2 gap-4">
+            <VerifyField label={language === 'th' ? 'ประเภททะเบียน' : 'License Type'} value={vehicle.licenseType || 'Registered'} source="Portal" />
+            <VerifyField label={language === 'th' ? 'เลขทะเบียน' : 'License Plate'} value={vehicle.licensePlate} source="Portal" />
+            <VerifyField label={language === 'th' ? 'จังหวัดจดทะเบียน' : 'Registration Province'} value={vehicle.registrationProvince} source="Car Registration" />
+            <VerifyField label={language === 'th' ? 'เลขตัวถัง' : 'Chassis Number'} value={vehicle.chassisNumber} source="" />
+            <VerifyField label={language === 'th' ? 'เลขเครื่องยนต์' : 'Engine Number'} value={vehicle.engineNumber} source="" />
+            <VerifyField label={language === 'th' ? 'น้ำหนักรถ' : 'Vehicle Weight'} value={vehicle.vehicleWeight} source="Car Registration" />
+            <VerifyField label={language === 'th' ? 'สี' : 'Color'} value={vehicle.color} source="Car Registration" />
+            <VerifyField label={language === 'th' ? 'ข้อกำหนดผู้ขับ' : 'Driver Specification'} value={vehicle.driverSpec || 'Not specified'} source="Car Registration" />
+            <VerifyField label={language === 'th' ? 'ผู้รับผลประโยชน์' : 'Beneficiary Type'} value={vehicle.beneficiaryType || 'Legal Owner'} source="Car Registration" />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Insurance Information */}
+      <Card className="border-border">
+        <CardContent className="p-4">
+          <h5 className="text-sm font-semibold text-primary mb-4">{language === 'th' ? 'ข้อมูลประกันภัย' : 'Insurance Information'}</h5>
+          <div className="grid grid-cols-2 gap-4">
+            <VerifyField label={language === 'th' ? 'วันเริ่มต้นกรมธรรม์' : 'Policy Start Date (AD)'} value={sale.policies[0]?.policyStartDate || ''} source="" isDate />
+            <VerifyField label={language === 'th' ? 'เบอร์โทรศัพท์' : 'Phone Number'} value={customer.phoneNumber} source="" />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Shipping Address */}
+      <Card className="border-border">
+        <CardContent className="p-4">
+          <h5 className="text-sm font-semibold mb-4">{language === 'th' ? 'ที่อยู่จัดส่ง' : 'Shipping Address'}</h5>
+          <div className="flex items-center gap-4 mb-4">
+            {[
+              { value: 'policy_holder', en: 'Policy Holder', th: 'ผู้เอาประกันภัย' },
+              { value: 'agent', en: 'Agent', th: 'ตัวแทน' },
+              { value: 'e_policy', en: 'E-Policy', th: 'E-Policy' },
+              { value: 'new_address', en: 'Add new address', th: 'เพิ่มที่อยู่ใหม่' },
+            ].map(opt => (
+              <label key={opt.value} className="flex items-center gap-1.5 text-xs cursor-pointer">
+                <input type="radio" name="shipping_type" defaultChecked={shipping.receiverType === opt.value} className="accent-primary" />
+                {language === 'th' ? opt.th : opt.en}
+              </label>
+            ))}
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <VerifyField label={language === 'th' ? 'ชื่อผู้รับกรมธรรม์' : 'Policy Receiver Name'} value={shipping.receiverName} source="National Id Saved" />
+            <VerifyField label={language === 'th' ? 'ที่อยู่' : 'Address Line'} value={shipping.addressLine} source="National Id Saved" />
+            <VerifyField label={language === 'th' ? 'จังหวัด' : 'Province'} value={shipping.province} source="National Id Saved" />
+            <VerifyField label={language === 'th' ? 'เขต/อำเภอ' : 'District'} value={shipping.district} source="National Id Saved" />
+            <VerifyField label={language === 'th' ? 'แขวง/ตำบล' : 'Sub District'} value={shipping.subDistrict} source="National Id Saved" />
+            <VerifyField label={language === 'th' ? 'รหัสไปรษณีย์' : 'Postal Code'} value={shipping.postalCode} source="National Id Saved" />
+            <VerifyField label={language === 'th' ? 'เบอร์โทรศัพท์' : 'Phone Number'} value={shipping.phoneNumber} source="National Id Saved" />
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function VerifyField({ label, value, source, isDate }: { label: string; value: string; source?: string; isDate?: boolean }) {
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-medium">{label}{label.endsWith('*') ? '' : '*'}</span>
+        {source && <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">ⓘ {source}</span>}
+      </div>
+      {isDate ? (
+        <Input type="date" defaultValue={value} className="text-xs h-9 bg-card" />
+      ) : (
+        <Input defaultValue={value} className="text-xs h-9 bg-card" placeholder={label} />
+      )}
+    </div>
+  );
+}
+
 function PolicyBenefitsTab({ sale }: { sale: SaleDetail }) {
   return (
     <div className="space-y-3">
@@ -764,6 +881,10 @@ export function ContentTabs({ sale }: ContentTabsProps) {
           <Link2 className="w-3.5 h-3.5" />
           {language === 'th' ? 'เชื่อมโยงเอกสาร' : 'Link Documents'}
         </TabsTrigger>
+        <TabsTrigger value="verify" className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
+          <ShieldCheck className="w-3.5 h-3.5" />
+          {language === 'th' ? 'ตรวจสอบข้อมูล' : 'Verify Information'}
+        </TabsTrigger>
         <TabsTrigger value="details" className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
           <User className="w-3.5 h-3.5" />
           {language === 'th' ? 'ข้อมูลลูกค้าและรถ' : 'Customer & Vehicle'}
@@ -787,6 +908,9 @@ export function ContentTabs({ sale }: ContentTabsProps) {
       </TabsContent>
       <TabsContent value="link-docs" className="mt-4">
         <LinkDocumentsTab sale={sale} />
+      </TabsContent>
+      <TabsContent value="verify" className="mt-4">
+        <VerifyInformationTab sale={sale} />
       </TabsContent>
       <TabsContent value="details" className="mt-4">
         <PolicyDetailsZone sale={sale} />

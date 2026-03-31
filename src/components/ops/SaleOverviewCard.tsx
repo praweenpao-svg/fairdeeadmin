@@ -259,3 +259,32 @@ export function PolicyStatusCard({ sale }: SaleOverviewCardProps) {
     </Card>
   );
 }
+
+export function PaymentStatusCard({ sale }: SaleOverviewCardProps) {
+  const { language } = useLanguageStore();
+
+  const paymentStatuses = [
+    { value: 'unpaid', en: 'Unpaid', th: 'ยังไม่ชำระ' },
+    { value: 'pending', en: 'Pending', th: 'รอชำระ' },
+    { value: 'partial', en: 'Partial', th: 'ชำระบางส่วน' },
+    { value: 'paid', en: 'Payment Verified', th: 'ยืนยันการชำระเงินแล้ว' },
+  ];
+
+  return (
+    <Card>
+      <CardHeader className="pb-2 pt-3 px-5">
+        <CardTitle className="text-sm font-semibold">
+          {language === 'th' ? 'สถานะการชำระเงิน' : 'Payment Status'}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="px-5 pb-4">
+        <StatusDropdown
+          label={language === 'th' ? 'สถานะ' : 'Status'}
+          options={paymentStatuses}
+          defaultValue={sale.paymentStatus || 'unpaid'}
+          language={language}
+        />
+      </CardContent>
+    </Card>
+  );
+}
