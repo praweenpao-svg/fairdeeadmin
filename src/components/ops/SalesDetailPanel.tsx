@@ -74,7 +74,7 @@ function PackageCard({ policy, isSelected }: { policy: SaleDetail['policies'][0]
       <div className="space-y-1.5 text-xs">
         <div className="flex justify-between">
           <span className="text-muted-foreground">{language === 'th' ? 'ค่าคอมมิชชั่น' : 'Affiliate Commission'}</span>
-          <span className="font-medium text-primary">{policy.affiliateCommission.toLocaleString()} ฿</span>
+          <span className="font-medium text-primary">{policy.affiliateCommission.toLocaleString()} Baht</span>
         </div>
         <div className="flex justify-between">
           <span className="text-muted-foreground">{language === 'th' ? 'เบี้ยประกันหลังภาษี' : 'Premium After Tax'}</span>
