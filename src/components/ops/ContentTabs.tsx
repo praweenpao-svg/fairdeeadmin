@@ -816,7 +816,7 @@ function PackageSelectionTab({ sale }: { sale: SaleDetail }) {
               </div>
               <div className="flex items-center justify-between py-1">
                 <span className="text-muted-foreground">{language === 'th' ? 'ทุนประกัน' : 'Sum Insured'}</span>
-                <span className="font-semibold text-sidebar-background">500,000 Baht</span>
+                <span className="font-semibold text-sidebar-background">100,000 Baht</span>
               </div>
             </div>
           </CardContent>
