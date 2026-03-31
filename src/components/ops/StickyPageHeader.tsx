@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, FileUp, AlertTriangle, XCircle, MessageSquare, Mail, Upload, History, FileText, CreditCard } from 'lucide-react';
+import { ChevronDown, FileUp, AlertTriangle, XCircle, MessageSquare, Mail, Upload, History, FileText, CreditCard, Plug } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useLanguageStore } from '@/stores/languageStore';
@@ -120,8 +120,8 @@ function getPrimaryActions(
       return [{ label: language === 'th' ? 'ส่งใบแจ้งหนี้' : 'Send Billing Report', icon: CreditCard, group: 'G1' }];
     case 'pending_review':
       return [
-        { label: 'API', group: 'G2' },
-        { label: language === 'th' ? 'อีเมล' : 'Email', group: 'G2' },
+        { label: 'API', icon: Plug, group: 'G2' },
+        { label: language === 'th' ? 'อีเมล' : 'Email', icon: Mail, group: 'G2' },
       ];
     case 'pending_issuance':
     case 'policy_issued':

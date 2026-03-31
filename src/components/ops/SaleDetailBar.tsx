@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronDown, FileUp, XCircle, Mail, Upload, History, CreditCard, FileText } from 'lucide-react';
+import { ChevronDown, FileUp, XCircle, Mail, Upload, History, CreditCard, FileText, Plug } from 'lucide-react';
 import mtiLogo from '@/assets/insurer-mti.png';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -135,8 +135,8 @@ function getPrimaryActions(
       return [{ label: language === 'th' ? 'ส่งใบแจ้งหนี้' : 'Send Billing Report', icon: CreditCard, group: 'G1' }];
     case 'pending_review':
       return [
-        { label: 'API', group: 'G2' },
-        { label: language === 'th' ? 'อีเมล' : 'Email', group: 'G2' },
+        { label: 'API', icon: Plug, group: 'G2' },
+        { label: language === 'th' ? 'อีเมล' : 'Email', icon: Mail, group: 'G2' },
       ];
     case 'pending_issuance':
     case 'policy_issued':
