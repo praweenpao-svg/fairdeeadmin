@@ -105,7 +105,7 @@ function getLeastProgressedStatus(vmiStatus?: string, cmiStatus?: string): strin
 
 interface PrimaryAction {
   label: string;
-  icon: React.ElementType;
+  icon?: React.ElementType;
   group: string;
 }
 
