@@ -204,13 +204,13 @@ export default function OpsDashboard() {
           />
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mt-4">
             {/* Left column: Agent Overview + Policy Status */}
-            <div className="lg:col-span-1 space-y-4">
+            <div className="lg:col-span-1 space-y-4 bg-muted/30 rounded-lg p-3 border border-border">
               <AgentDetailsCard sale={mockSaleDetail} />
               <PolicyStatusCard sale={mockSaleDetail} />
               <SaleOverviewCard sale={mockSaleDetail} />
             </div>
             {/* Right column: Content Tabs */}
-            <div className="lg:col-span-4">
+            <div className="lg:col-span-4 bg-card rounded-lg p-4 border border-border">
               <ContentTabs sale={mockSaleDetail} />
             </div>
           </div>
