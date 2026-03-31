@@ -47,12 +47,7 @@ const garageTypeOptions = [
 ];
 
 const insuranceClassOptions = [
-  '1',
-  '2+',
-  '3+',
-  '1 ราคาถูกพิเศษ',
-  '2+ ราคาถูกพิเศษ',
-  '3+ ราคาถูกพิเศษ',
+  '1', '1+', '2', '2+', '3', '3+',
 ];
 
 interface PolicyFormState {
