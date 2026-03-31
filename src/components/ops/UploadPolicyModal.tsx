@@ -253,12 +253,12 @@ export function UploadPolicyModal({ sale, open, onOpenChange }: UploadPolicyModa
 
         {isMultiPolicy ? (
           <Tabs defaultValue="vmi" className="w-full">
-            <TabsList className="w-full justify-start">
-              <TabsTrigger value="vmi" className="text-xs gap-1.5">
+            <TabsList className="w-auto mx-auto">
+              <TabsTrigger value="vmi" className="text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 VMI
               </TabsTrigger>
               {cmiPolicy && (
-                <TabsTrigger value="cmi" className="text-xs gap-1.5">
+                <TabsTrigger value="cmi" className="text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                   CMI
                 </TabsTrigger>
               )}
