@@ -105,7 +105,7 @@ function PolicyForm({
       <div>
         <Label className="text-xs">{language === 'th' ? 'บริษัทประกัน' : 'Insurer'}</Label>
         <Select value={form.insurer} onValueChange={v => setForm(f => ({ ...f, insurer: v }))}>
-          <SelectTrigger className="h-9 text-xs mt-1">
+          <SelectTrigger className="h-9 text-xs mt-1 bg-white dark:bg-background">
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="bg-popover z-50">
@@ -121,7 +121,7 @@ function PolicyForm({
         <Label className="text-xs">{language === 'th' ? 'อัปโหลดไฟล์กรมธรรม์' : 'Upload Policy File'}</Label>
         <Input
           type="file"
-          className="h-9 text-xs mt-1"
+          className="h-9 text-xs mt-1 bg-white dark:bg-background"
           onChange={e => setForm(f => ({ ...f, policyFile: e.target.files?.[0] || null }))}
         />
       </div>
@@ -132,7 +132,7 @@ function PolicyForm({
         <Input
           value={form.policyNumber}
           onChange={e => setForm(f => ({ ...f, policyNumber: e.target.value }))}
-          className="h-9 text-xs mt-1"
+          className="h-9 text-xs mt-1 bg-white dark:bg-background"
           placeholder="e.g. VMI-2026-XXXXX"
         />
       </div>
@@ -144,7 +144,7 @@ function PolicyForm({
           <Input
             value={form.startDate}
             onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))}
-            className="h-9 text-xs mt-1"
+            className="h-9 text-xs mt-1 bg-white dark:bg-background"
             placeholder="DD/MM/YYYY"
           />
         </div>
@@ -153,7 +153,7 @@ function PolicyForm({
           <Input
             value={form.endDate}
             onChange={e => setForm(f => ({ ...f, endDate: e.target.value }))}
-            className="h-9 text-xs mt-1"
+            className="h-9 text-xs mt-1 bg-white dark:bg-background"
             placeholder="DD/MM/YYYY"
           />
         </div>
@@ -167,14 +167,9 @@ function PolicyForm({
         <Input
           value={form.trackingCode}
           onChange={e => setForm(f => ({ ...f, trackingCode: e.target.value }))}
-          className="h-9 text-xs mt-1"
-          placeholder={language === 'th' ? 'กรอกเลขพัสดุ หรือ "epolicy"' : 'Tracking # or "epolicy"'}
+          className="h-9 text-xs mt-1 bg-white dark:bg-background"
+          placeholder={language === 'th' ? 'กรอกเลขพัสดุ' : 'Enter tracking code'}
         />
-        <p className="text-[10px] text-muted-foreground mt-1">
-          {language === 'th'
-            ? 'epolicy = ส่งทางอิเล็กทรอนิกส์ · เว้นว่าง = print by myself · เลขพัสดุ = print by fairdee'
-            : '"epolicy" = electronic · empty = print by myself · tracking # = print by fairdee'}
-        </p>
       </div>
 
       {/* VMI-only: Garage Type + Insurance Class — R-14/R-15 */}
