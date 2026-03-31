@@ -145,7 +145,7 @@ function UploadDocumentsDialog({
   open: boolean; 
   onOpenChange: (open: boolean) => void; 
   categoryLabel: string;
-  onUpload: (files: { id: string; name: string; size: string; type: string }[]) => void;
+  onUpload: (files: { id: string; name: string; size: string; type: string; preview?: string }[]) => void;
 }) {
   const { language } = useLanguageStore();
   const [selectedFiles, setSelectedFiles] = React.useState<{ id: string; name: string; size: string; type: string; preview?: string }[]>([]);
