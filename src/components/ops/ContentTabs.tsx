@@ -805,16 +805,16 @@ function PackageSelectionTab({ sale }: { sale: SaleDetail }) {
               </div>
               <img src={mtiLogo} alt="MTI" className="w-8 h-8 rounded object-cover" />
             </div>
-            <div className="space-y-1 text-xs">
-              <div className="flex justify-between">
+            <div className="space-y-2.5 text-xs">
+              <div className="flex items-center justify-between py-1 border-b border-border/30">
                 <span className="text-muted-foreground">{language === 'th' ? 'ค่าคอมมิชชั่น' : 'Commission'}</span>
                 <span className="font-semibold text-sidebar-background">2,000 Baht</span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex items-center justify-between py-1 border-b border-border/30">
                 <span className="text-muted-foreground">{language === 'th' ? 'ราคาเบี้ยประกันรวม' : 'Total Premium'}</span>
                 <span className="font-semibold text-sidebar-background">10,000 Baht</span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex items-center justify-between py-1 border-b border-border/30 last:border-0">
                 <span className="text-muted-foreground">{language === 'th' ? 'ทุนประกัน' : 'Sum Insured'}</span>
                 <span className="font-semibold text-sidebar-background">500,000 Baht</span>
               </div>
