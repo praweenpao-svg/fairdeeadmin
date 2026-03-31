@@ -103,41 +103,48 @@ function getLeastProgressedStatus(vmiStatus?: string, cmiStatus?: string): strin
   return least;
 }
 
-function getPrimaryAction(
+interface PrimaryAction {
+  label: string;
+  icon: React.ElementType;
+  group: string;
+}
+
+function getPrimaryActions(
   vmiPolicy: SalePolicy | undefined,
   cmiPolicy: SalePolicy | undefined,
   language: string,
-): { label: string; icon: React.ElementType; group: string } | null {
+): PrimaryAction[] {
   const vmiStatus = vmiPolicy?.status;
   const cmiStatus = cmiPolicy?.status;
 
   // Priority override: either policy in rework_required
   if (vmiStatus === 'rework_required' || cmiStatus === 'rework_required') {
-    return { label: language === 'th' ? 'ประวัติและกิจกรรม' : 'History & Activity Log', icon: History, group: 'G4' };
+    return [{ label: language === 'th' ? 'ประวัติและกิจกรรม' : 'History & Activity Log', icon: History, group: 'G4' }];
   }
 
   // Both cancelled → no primary
   const vmiCancelled = !vmiPolicy || vmiStatus === 'policy_cancelled';
   const cmiCancelled = !cmiPolicy || cmiStatus === 'policy_cancelled';
-  if (vmiCancelled && cmiCancelled) return null;
+  if (vmiCancelled && cmiCancelled) return [];
 
   const least = getLeastProgressedStatus(vmiStatus, cmiStatus);
-  if (!least) return null;
+  if (!least) return [];
 
   switch (least) {
     case 'pending_payment':
-      return { label: language === 'th' ? 'แชร์ใบแจ้งหนี้ / ชำระเงิน' : 'Share Invoice / Make Payment', icon: CreditCard, group: 'G1' };
+      return [{ label: language === 'th' ? 'ส่งใบแจ้งหนี้' : 'Send Billing Report', icon: CreditCard, group: 'G1' }];
     case 'pending_review':
-      return { label: language === 'th' ? 'ซื้อกรมธรรม์ / เอกสารรถ' : 'Purchase Policy / Vehicle Documents', icon: FileText, group: 'G2' };
+      return [
+        { label: 'API', icon: FileText, group: 'G2' },
+        { label: language === 'th' ? 'อีเมล' : 'Email', icon: Mail, group: 'G2' },
+      ];
     case 'pending_issuance':
-      return { label: language === 'th' ? 'อัปโหลดกรมธรรม์' : 'Upload Policy', icon: FileUp, group: 'G2' };
     case 'policy_issued':
     case 'policy_shipped':
-      return { label: language === 'th' ? 'อัปโหลดกรมธรรม์' : 'Upload Policy', icon: FileUp, group: 'G2' };
     case 'policy_delivered':
-      return { label: language === 'th' ? 'อัปโหลดกรมธรรม์' : 'Upload Policy', icon: FileUp, group: 'G2' };
+      return [{ label: language === 'th' ? 'อัปโหลดกรมธรรม์' : 'Upload Policy', icon: FileUp, group: 'G2' }];
     default:
-      return null;
+      return [];
   }
 }
 
@@ -154,7 +161,7 @@ export function SaleDetailBar({
   const cmiPolicy = sale.policies.find(p => p.kind === 'cmi');
   const currentStage = 'to_issue';
   const stageLabel = stageLabels[currentStage] || stageLabels.to_issue;
-  const primaryAction = getPrimaryAction(vmiPolicy, cmiPolicy, language);
+  const primaryActions = getPrimaryActions(vmiPolicy, cmiPolicy, language);
 
   const handleAction = (actionName: string) => {
     toast.success(actionName, {
@@ -162,11 +169,10 @@ export function SaleDetailBar({
     });
   };
 
-  const handlePrimaryClick = () => {
-    if (!primaryAction) return;
-    if (primaryAction.group === 'G4') { onOpenHistoryLog?.(); return; }
-    if (primaryAction.group === 'G2') { onOpenUploadPolicy?.(); return; }
-    handleAction(primaryAction.label);
+  const handlePrimaryClick = (action: PrimaryAction) => {
+    if (action.group === 'G4') { onOpenHistoryLog?.(); return; }
+    if (action.group === 'G2' && action.label === 'Upload Policy' || action.label === 'อัปโหลดกรมธรรม์') { onOpenUploadPolicy?.(); return; }
+    handleAction(action.label);
   };
 
   return (
@@ -188,16 +194,17 @@ export function SaleDetailBar({
 
         <div className="flex-1" />
 
-        {primaryAction && (
+        {primaryActions.map((action, idx) => (
           <Button
+            key={idx}
             size="sm"
-            className={cn('text-xs gap-1.5', primaryAction.group === 'G4' && 'bg-orange-500 hover:bg-orange-600 text-white')}
-            onClick={handlePrimaryClick}
+            className={cn('text-xs gap-1.5', action.group === 'G4' && 'bg-orange-500 hover:bg-orange-600 text-white')}
+            onClick={() => handlePrimaryClick(action)}
           >
-            <primaryAction.icon className="w-3.5 h-3.5" />
-            {primaryAction.label}
+            <action.icon className="w-3.5 h-3.5" />
+            {action.label}
           </Button>
-        )}
+        ))}
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
