@@ -279,8 +279,8 @@ export function PaymentStatusCard({ sale }: SaleOverviewCardProps) {
       <CardContent className="px-5 pb-4">
         <StatusDropdown
           label={language === 'th' ? 'สถานะ' : 'Status'}
-          options={paymentStatuses}
-          defaultValue={sale.paymentStatus || 'unpaid'}
+          options={pmtStatuses}
+          defaultValue="payment_verified"
           language={language}
         />
       </CardContent>
