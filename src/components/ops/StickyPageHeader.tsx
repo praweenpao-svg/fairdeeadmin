@@ -156,7 +156,6 @@ export function StickyPageHeader({
       description: language === 'th' ? 'ฟีเจอร์นี้จะเชื่อมต่อกับระบบจริงในอนาคต' : 'This will connect to the real system.',
     });
   };
-  };
 
   return (
     <div className="sticky top-0 z-30 bg-card border-b border-border shadow-sm">
