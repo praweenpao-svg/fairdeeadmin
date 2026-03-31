@@ -51,7 +51,7 @@ function InvoiceTab({ sale }: { sale: SaleDetail }) {
               </div>
               <div>
                 <span className="text-muted-foreground block">{language === 'th' ? 'คอมมิชชั่น' : 'Commission'}</span>
-                <span className="font-medium text-primary">{policy.affiliateCommission.toLocaleString()} ฿</span>
+                <span className="font-medium text-primary">{policy.affiliateCommission.toLocaleString()} Baht</span>
               </div>
               <div>
                 <span className="text-muted-foreground block">{language === 'th' ? 'วิธีชำระ' : 'Payment Method'}</span>
