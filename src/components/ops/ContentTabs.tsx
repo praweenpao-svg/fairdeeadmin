@@ -323,7 +323,7 @@ function LinkDocumentsTab({ sale }: { sale: SaleDetail }) {
     const doc = unlinkedDocs.find(d => d.id === docId);
     if (doc) {
       setCategories(prev => prev.map(cat =>
-        cat.key === categoryKey ? { ...cat, docs: [...cat.docs, { id: doc.id, name: doc.name }] } : cat
+        cat.key === categoryKey ? { ...cat, docs: [...cat.docs, { id: doc.id, name: doc.name, preview: doc.preview }] } : cat
       ));
       setUnlinkedDocs(prev => prev.filter(d => d.id !== docId));
     }
