@@ -132,7 +132,7 @@ function PolicyForm({
         <Input
           value={form.policyNumber}
           onChange={e => setForm(f => ({ ...f, policyNumber: e.target.value }))}
-          className="h-9 text-xs mt-1"
+          className="h-9 text-xs mt-1 bg-white dark:bg-background"
           placeholder="e.g. VMI-2026-XXXXX"
         />
       </div>
