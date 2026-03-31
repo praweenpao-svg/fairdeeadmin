@@ -119,16 +119,23 @@ const paymentStatuses = [
   { value: 'credit_approved', en: 'Credit Approved', th: 'อนุมัติเครดิตแล้ว' },
 ];
 
-function StatusDropdown({ label, options, defaultValue, language }: {
+function StatusDropdown({ label, options, defaultValue, language, onChange }: {
   label: string;
   options: { value: string; en: string; th: string }[];
   defaultValue: string;
   language: string;
+  onChange?: (val: string) => void;
 }) {
   const [status, setStatus] = useState(defaultValue);
 
+  // Sync with external default if it changes
+  React.useEffect(() => {
+    setStatus(defaultValue);
+  }, [defaultValue]);
+
   const handleChange = (val: string) => {
     setStatus(val);
+    onChange?.(val);
     const opt = options.find(s => s.value === val);
     toast.success(language === 'th' ? 'อัปเดตสถานะแล้ว' : 'Status updated', {
       description: `${label}: ${opt ? (language === 'th' ? opt.th : opt.en) : val}`,
@@ -222,7 +229,7 @@ export function AgentDetailsCard({ sale }: SaleOverviewCardProps) {
   );
 }
 
-export function PolicyStatusCard({ sale }: SaleOverviewCardProps) {
+export function PolicyStatusCard({ sale, onPolicyStatusChange }: SaleOverviewCardProps & { onPolicyStatusChange?: (kind: 'vmi' | 'cmi', status: string) => void }) {
   const { language } = useLanguageStore();
 
   return (
@@ -242,8 +249,9 @@ export function PolicyStatusCard({ sale }: SaleOverviewCardProps) {
                 <StatusDropdown
                   label={`${policy.kind.toUpperCase()} ${language === 'th' ? 'สถานะ' : 'Status'}`}
                   options={policyStatuses}
-                  defaultValue="pending_review"
+                  defaultValue={policy.status}
                   language={language}
+                  onChange={(val) => onPolicyStatusChange?.(policy.kind, val)}
                 />
               </div>
               <div className="space-y-0.5">
