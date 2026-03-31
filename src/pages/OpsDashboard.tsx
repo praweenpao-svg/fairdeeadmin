@@ -207,7 +207,7 @@ export default function OpsDashboard() {
         <div className="flex-1 overflow-y-auto px-6 py-4 w-full">
           {/* Detail bar spans full width */}
           <SaleDetailBar
-            sale={mockSaleDetail}
+            sale={sale}
             hasActiveRework={false}
             onOpenUploadPolicy={() => setUploadPolicyOpen(true)}
             onOpenHistoryLog={() => setHistorySidebarOpen(true)}
@@ -217,16 +217,17 @@ export default function OpsDashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mt-4">
             {/* Left column: Agent Overview + Policy Status */}
             <div className="lg:col-span-1 space-y-4 bg-card rounded-lg p-3 border border-border">
-              <AgentDetailsCard sale={mockSaleDetail} />
-              <PolicyStatusCard sale={mockSaleDetail} />
-              <PaymentStatusCard sale={mockSaleDetail} />
+              <AgentDetailsCard sale={sale} />
+              <PolicyStatusCard sale={sale} onPolicyStatusChange={handlePolicyStatusChange} />
+              <PaymentStatusCard sale={sale} />
               
               <DownloadsCard />
               <HistoryCard />
             </div>
             {/* Right column: Content Tabs */}
             <div className="lg:col-span-4 bg-card rounded-lg p-4 border border-border">
-              <ContentTabs sale={mockSaleDetail} />
+              <ContentTabs sale={sale} />
+            </div>
             </div>
           </div>
         </div>
