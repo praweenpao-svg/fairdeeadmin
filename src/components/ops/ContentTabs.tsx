@@ -47,11 +47,11 @@ function InvoiceTab({ sale }: { sale: SaleDetail }) {
             <div className="grid grid-cols-3 gap-4 text-xs">
               <div>
                 <span className="text-muted-foreground block">{language === 'th' ? 'เบี้ยหลังภาษี' : 'Premium After Tax'}</span>
-                <span className="font-semibold">{policy.premiumAfterTax.toLocaleString()} ฿</span>
+                <span className="font-semibold">{policy.premiumAfterTax.toLocaleString()} Baht</span>
               </div>
               <div>
                 <span className="text-muted-foreground block">{language === 'th' ? 'คอมมิชชั่น' : 'Commission'}</span>
-                <span className="font-medium text-primary">{policy.affiliateCommission.toLocaleString()} ฿</span>
+                <span className="font-medium text-primary">{policy.affiliateCommission.toLocaleString()} Baht</span>
               </div>
               <div>
                 <span className="text-muted-foreground block">{language === 'th' ? 'วิธีชำระ' : 'Payment Method'}</span>
@@ -69,7 +69,7 @@ function InvoiceTab({ sale }: { sale: SaleDetail }) {
             <div className="flex justify-between">
               <span className="text-muted-foreground">{language === 'th' ? 'รวมเบี้ยประกัน' : 'Total Premium'}</span>
               <span className="font-semibold">
-                {sale.policies.reduce((s, p) => s + p.premiumAfterTax, 0).toLocaleString()} ฿
+                {sale.policies.reduce((s, p) => s + p.premiumAfterTax, 0).toLocaleString()} Baht
               </span>
             </div>
             <div className="flex justify-between">
@@ -808,15 +808,15 @@ function PackageSelectionTab({ sale }: { sale: SaleDetail }) {
             <div className="space-y-1 text-xs">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">{language === 'th' ? 'ค่าคอมมิชชั่น' : 'Commission'}</span>
-                <span className="font-semibold text-sidebar-background">2,000 ฿</span>
+                <span className="font-semibold text-sidebar-background">2,000 Baht</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">{language === 'th' ? 'ราคาเบี้ยประกันรวม' : 'Total Premium'}</span>
-                <span className="font-semibold text-sidebar-background">10,000 ฿</span>
+                <span className="font-semibold text-sidebar-background">10,000 Baht</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">{language === 'th' ? 'ทุนประกัน' : 'Sum Insured'}</span>
-                <span className="font-semibold text-sidebar-background">500,000 ฿</span>
+                <span className="font-semibold text-sidebar-background">500,000 Baht</span>
               </div>
             </div>
           </CardContent>

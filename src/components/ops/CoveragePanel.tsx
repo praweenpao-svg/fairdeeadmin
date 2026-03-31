@@ -116,10 +116,10 @@ export function CoveragePanel({ coverage, policyKind, showLabel = true }: Covera
               <span className="font-medium">{language === 'th' ? 'ชั้น' : 'Class'} {coverage.insuranceClass}</span>
               <span>{coverage.coverageType}</span>
               <span className="font-semibold text-foreground">
-                {coverage.sumInsured > 0 ? `${coverage.sumInsured.toLocaleString()} ฿` : '—'}
+                {coverage.sumInsured > 0 ? `${coverage.sumInsured.toLocaleString()} Baht` : '—'}
               </span>
               <span className="font-semibold text-primary">
-                {coverage.annualPremium.toLocaleString()} ฿
+                {coverage.annualPremium.toLocaleString()} Baht
               </span>
             </div>
           </button>
