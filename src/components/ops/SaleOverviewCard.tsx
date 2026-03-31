@@ -229,7 +229,7 @@ export function AgentDetailsCard({ sale }: SaleOverviewCardProps) {
   );
 }
 
-export function PolicyStatusCard({ sale }: SaleOverviewCardProps) {
+export function PolicyStatusCard({ sale, onPolicyStatusChange }: SaleOverviewCardProps & { onPolicyStatusChange?: (kind: 'vmi' | 'cmi', status: string) => void }) {
   const { language } = useLanguageStore();
 
   return (
@@ -249,8 +249,9 @@ export function PolicyStatusCard({ sale }: SaleOverviewCardProps) {
                 <StatusDropdown
                   label={`${policy.kind.toUpperCase()} ${language === 'th' ? 'สถานะ' : 'Status'}`}
                   options={policyStatuses}
-                  defaultValue="pending_review"
+                  defaultValue={policy.status}
                   language={language}
+                  onChange={(val) => onPolicyStatusChange?.(policy.kind, val)}
                 />
               </div>
               <div className="space-y-0.5">
