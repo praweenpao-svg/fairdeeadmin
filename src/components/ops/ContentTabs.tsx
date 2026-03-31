@@ -8,6 +8,7 @@ import { SaleDetail } from '@/data/mockSaleDetail';
 import { CoveragePanel } from './CoveragePanel';
 import { PolicyDetailsZone } from './PolicyDetailsZone';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { InvoiceListTab } from './InvoiceListTab';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
