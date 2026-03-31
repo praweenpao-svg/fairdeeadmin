@@ -105,7 +105,7 @@ function PolicyForm({
       <div>
         <Label className="text-xs">{language === 'th' ? 'บริษัทประกัน' : 'Insurer'}</Label>
         <Select value={form.insurer} onValueChange={v => setForm(f => ({ ...f, insurer: v }))}>
-          <SelectTrigger className="h-9 text-xs mt-1">
+          <SelectTrigger className="h-9 text-xs mt-1 bg-white dark:bg-background">
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="bg-popover z-50">
