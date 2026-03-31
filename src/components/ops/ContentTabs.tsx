@@ -616,16 +616,18 @@ function VerifyInformationTab({ sale }: { sale: SaleDetail }) {
       <Card className="border-border">
         <CardContent className="p-4">
           <h5 className="text-sm font-semibold mb-4">{language === 'th' ? 'ที่อยู่จัดส่ง' : 'Shipping Address'}</h5>
-          <div className="flex items-center gap-4 mb-4">
+          <div className="flex items-center gap-2 mb-4">
             {[
               { value: 'policy_holder', en: 'Policy Holder', th: 'ผู้เอาประกันภัย' },
               { value: 'agent', en: 'Agent', th: 'ตัวแทน' },
               { value: 'e_policy', en: 'E-Policy', th: 'E-Policy' },
               { value: 'new_address', en: 'Add new address', th: 'เพิ่มที่อยู่ใหม่' },
             ].map(opt => (
-              <label key={opt.value} className="flex items-center gap-1.5 text-xs cursor-pointer">
-                <input type="radio" name="shipping_type" defaultChecked={shipping.receiverType === opt.value} className="accent-primary" />
-                {language === 'th' ? opt.th : opt.en}
+              <label key={opt.value} className="flex items-center gap-0 cursor-pointer">
+                <input type="radio" name="shipping_type" defaultChecked={shipping.receiverType === opt.value} className="peer sr-only" />
+                <span className="px-3 py-1.5 rounded-full text-xs font-medium border border-border text-muted-foreground peer-checked:bg-primary peer-checked:text-primary-foreground peer-checked:border-primary transition-colors">
+                  {language === 'th' ? opt.th : opt.en}
+                </span>
               </label>
             ))}
           </div>
