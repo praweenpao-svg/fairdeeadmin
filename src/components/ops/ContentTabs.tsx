@@ -171,7 +171,7 @@ function UploadDocumentsDialog({
   };
 
   const handleUpload = () => {
-    onUpload(selectedFiles.map(f => ({ id: f.id, name: f.name, size: f.size, type: f.type })));
+    onUpload(selectedFiles.map(f => ({ id: f.id, name: f.name, size: f.size, type: f.type, preview: f.preview })));
     setSelectedFiles([]);
     onOpenChange(false);
   };
