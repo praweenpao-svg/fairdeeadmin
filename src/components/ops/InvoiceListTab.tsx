@@ -40,11 +40,11 @@ const mockInvoiceSections: InvoiceSection[] = [
       {
         id: '63881',
         source: 'Customer | Fairdee',
-        amountPayable: '6,500.00 @ 23/01/2569',
+        amountPayable: '6,500 @ 23/01/2569',
         clawbackSubject: 'Voluntary Insurance',
         invoiceDetails: 'Voluntary Insurance',
         paymentStatus: 'Fully Paid',
-        paymentInfo: '6,500.00 @ 23/01/2569 13:50:09',
+        paymentInfo: '6,500 @ 23/01/2569 13:50:09',
         createdAt: '23/01/2569 13:50:09',
         paidAt: '23/01/2569 13:50:09',
         amountPaid: 6500,
@@ -60,7 +60,7 @@ const mockInvoiceSections: InvoiceSection[] = [
       {
         id: '63882',
         source: 'Fairdee | Affiliate',
-        amountPayable: '0.00 @ 26/01/2569',
+        amountPayable: '0 @ 26/01/2569',
         clawbackSubject: 'Affiliate Commission',
         invoiceDetails: 'Affiliate Commission',
         paymentStatus: 'Unpaid',
@@ -74,7 +74,7 @@ const mockInvoiceSections: InvoiceSection[] = [
       {
         id: '63883',
         source: 'Fairdee | 1913',
-        amountPayable: '117.37 @ 12/02/2569',
+        amountPayable: '117 @ 12/02/2569',
         clawbackSubject: 'Affiliate Commission',
         invoiceDetails: 'Referral Bonus',
         paymentStatus: 'Unpaid',
@@ -88,7 +88,7 @@ const mockInvoiceSections: InvoiceSection[] = [
       {
         id: '63884',
         source: 'Fairdee | 1912',
-        amountPayable: '81.79 @ 12/02/2569',
+        amountPayable: '82 @ 12/02/2569',
         clawbackSubject: 'Affiliate Commission',
         invoiceDetails: 'Management Fee',
         paymentStatus: 'Unpaid',
@@ -96,7 +96,7 @@ const mockInvoiceSections: InvoiceSection[] = [
       {
         id: '63885',
         source: 'Fairdee | 1911',
-        amountPayable: '23.47 @ 12/02/2569',
+        amountPayable: '23 @ 12/02/2569',
         clawbackSubject: 'Affiliate Commission',
         invoiceDetails: 'Management Fee',
         paymentStatus: 'Unpaid',
@@ -123,7 +123,7 @@ const mockHistoricalChanges = [
     changedOn: '23/01/2569 13:47',
     changes: [
       { key: 'Invoice Number', oldValue: '-', newValue: 'INV-10167-63881' },
-      { key: 'Amount Payable', oldValue: '0.00', newValue: '6500.00' },
+      { key: 'Amount Payable', oldValue: '0', newValue: '6,500' },
     ],
     reason: 'POST /utils/fairdee-quotation',
   },
@@ -131,8 +131,8 @@ const mockHistoricalChanges = [
     changedBy: 'vijay+jennifer42@qoala.id',
     changedOn: '23/01/2569 13:47',
     changes: [
-      { key: 'Amount', oldValue: '0.00', newValue: '6049.77' },
-      { key: 'Tax', oldValue: '0.00', newValue: '425.23' },
+      { key: 'Amount', oldValue: '0', newValue: '6,050' },
+      { key: 'Tax', oldValue: '0', newValue: '425' },
       { key: 'Duty', oldValue: '0.00', newValue: '25.00' },
     ],
     reason: 'POST /utils/fairdee-quotation',
