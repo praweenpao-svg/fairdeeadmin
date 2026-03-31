@@ -283,7 +283,7 @@ export function PaymentStatusCard({ sale }: SaleOverviewCardProps) {
           defaultValue="payment_verified"
           language={language}
         />
-        <div className="mt-2">
+        <div className="mt-2 space-y-2.5">
           <SummaryRow label={language === 'th' ? 'ยอดที่ต้องชำระ' : 'Amount Payable'} value="6,500.00 Baht" />
           <SummaryRow label={language === 'th' ? 'ยอดที่ชำระแล้ว' : 'Amount Paid'} value="6,500.00 Baht" />
         </div>
