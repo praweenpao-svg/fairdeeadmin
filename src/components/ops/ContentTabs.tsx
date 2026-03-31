@@ -69,7 +69,7 @@ function InvoiceTab({ sale }: { sale: SaleDetail }) {
             <div className="flex justify-between">
               <span className="text-muted-foreground">{language === 'th' ? 'รวมเบี้ยประกัน' : 'Total Premium'}</span>
               <span className="font-semibold">
-                {sale.policies.reduce((s, p) => s + p.premiumAfterTax, 0).toLocaleString()} ฿
+                {sale.policies.reduce((s, p) => s + p.premiumAfterTax, 0).toLocaleString()} Baht
               </span>
             </div>
             <div className="flex justify-between">

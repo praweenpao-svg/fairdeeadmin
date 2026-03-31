@@ -205,7 +205,7 @@ export function SalesDetailPanel({ sale }: SalesDetailPanelProps) {
           <ReadOnlyField label={language === 'th' ? 'ประเภทงาน' : 'Type of Sale'} value={sale.typeOfSale} />
           <ReadOnlyField label={language === 'th' ? 'บ.ประกัน' : 'Insurer Name'} value={sale.policies[0].insurer} />
           <ReadOnlyField label={language === 'th' ? 'ชั้นประกัน' : 'Insurance Class'} value={sale.policies[0].coverage.insuranceClass} />
-          <ReadOnlyField label={language === 'th' ? 'ทุนประกัน' : 'Sum Insured'} value={`${sale.policies[0].sumInsured.toLocaleString()} ฿`} />
+          <ReadOnlyField label={language === 'th' ? 'ทุนประกัน' : 'Sum Insured'} value={`${sale.policies[0].sumInsured.toLocaleString()} Baht`} />
           <ReadOnlyField label={language === 'th' ? 'ประเภทอู่' : 'Garage Type'} value={sale.policies[0].garageType} />
           <ReadOnlyField label={language === 'th' ? 'รหัสรถ' : 'Vehicle Code'} value={vehicle.vehicleCode} />
           <ReadOnlyField label={language === 'th' ? 'ทะเบียนรถ' : 'Vehicle Number'} value={vehicle.licensePlate} />
