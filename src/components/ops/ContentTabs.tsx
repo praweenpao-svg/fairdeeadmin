@@ -978,10 +978,6 @@ export function ContentTabs({ sale }: ContentTabsProps) {
           <ShieldCheck className="w-3.5 h-3.5" />
           {language === 'th' ? 'ตรวจสอบข้อมูล' : 'Verify Information'}
         </TabsTrigger>
-        <TabsTrigger value="details" className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
-          <User className="w-3.5 h-3.5" />
-          {language === 'th' ? 'ข้อมูลลูกค้าและรถ' : 'Customer & Vehicle'}
-        </TabsTrigger>
         <TabsTrigger value="invoice" className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
           <CreditCard className="w-3.5 h-3.5" />
           {language === 'th' ? 'ใบแจ้งหนี้และชำระเงิน' : 'Invoice & Payments'}
