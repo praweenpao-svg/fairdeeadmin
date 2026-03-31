@@ -191,7 +191,7 @@ export function SaleDetailBar({
         {primaryAction && (
           <Button
             size="sm"
-            className={cn('text-xs gap-1.5', hasActiveRework && 'bg-orange-500 hover:bg-orange-600 text-white')}
+            className={cn('text-xs gap-1.5', primaryAction.group === 'G4' && 'bg-orange-500 hover:bg-orange-600 text-white')}
             onClick={handlePrimaryClick}
           >
             <primaryAction.icon className="w-3.5 h-3.5" />
