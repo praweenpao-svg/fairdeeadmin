@@ -556,6 +556,10 @@ export function ContentTabs({ sale }: ContentTabsProps) {
           <Package className="w-3.5 h-3.5" />
           {language === 'th' ? 'เลือกแพ็กเกจ' : 'Package Selection'}
         </TabsTrigger>
+        <TabsTrigger value="link-docs" className="text-xs gap-1.5">
+          <Link2 className="w-3.5 h-3.5" />
+          {language === 'th' ? 'เชื่อมโยงเอกสาร' : 'Link Documents'}
+        </TabsTrigger>
         <TabsTrigger value="details" className="text-xs gap-1.5">
           <User className="w-3.5 h-3.5" />
           {language === 'th' ? 'ข้อมูลลูกค้าและรถ' : 'Customer & Vehicle'}
