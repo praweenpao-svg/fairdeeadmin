@@ -1049,12 +1049,6 @@ export function ContentTabs({ sale }: ContentTabsProps) {
       <TabsContent value="invoice" className="mt-4">
         <InvoiceListTab sale={sale} />
       </TabsContent>
-      <TabsContent value="documents" className="mt-4">
-        <DocumentsTab sale={sale} />
-      </TabsContent>
-      <TabsContent value="benefits" className="mt-4">
-        <PolicyBenefitsTab sale={sale} />
-      </TabsContent>
     </Tabs>
   );
 }
