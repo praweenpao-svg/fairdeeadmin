@@ -44,7 +44,7 @@ const mockInvoiceSections: InvoiceSection[] = [
         clawbackSubject: 'Voluntary Insurance',
         invoiceDetails: 'Voluntary Insurance',
         paymentStatus: 'Fully Paid',
-        paymentInfo: '6,500.00 @ 23/01/2569 13:50:09',
+        paymentInfo: '6,500 @ 23/01/2569 13:50:09',
         createdAt: '23/01/2569 13:50:09',
         paidAt: '23/01/2569 13:50:09',
         amountPaid: 6500,
