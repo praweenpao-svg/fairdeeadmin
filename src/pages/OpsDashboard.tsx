@@ -248,7 +248,7 @@ export default function OpsDashboard() {
 
       {/* Upload Policy Modal (G2) */}
       <UploadPolicyModal
-        sale={mockSaleDetail}
+        sale={sale}
         open={uploadPolicyOpen}
         onOpenChange={setUploadPolicyOpen}
       />
@@ -259,9 +259,9 @@ export default function OpsDashboard() {
         onOpenChange={setHistorySidebarOpen}
         policyKind={historySidebarPolicyKind}
         onPolicyKindChange={setHistorySidebarPolicyKind}
-        availablePolicies={mockSaleDetail.policies.map(p => p.kind)}
+        availablePolicies={sale.policies.map(p => p.kind)}
         policyId="ops-vmi-1"
-        leadNumber={mockSaleDetail.qqId}
+        leadNumber={sale.qqId}
         remarks={opsRemarks}
         reworkHistory={opsReworkHistory}
         reworkConfigs={mockReworkConfigs}
