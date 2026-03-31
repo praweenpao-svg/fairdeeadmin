@@ -113,10 +113,9 @@ const policyStatuses = [
 ];
 
 const paymentStatuses = [
-  { value: 'unpaid', en: 'Unpaid', th: 'ยังไม่ชำระ' },
-  { value: 'pending', en: 'Pending', th: 'รอชำระ' },
-  { value: 'partial', en: 'Partial', th: 'ชำระบางส่วน' },
-  { value: 'paid', en: 'Payment Verified', th: 'ยืนยันการชำระเงินแล้ว' },
+  { value: 'payment_verified', en: 'Payment Verified', th: 'ยืนยันการชำระเงินแล้ว' },
+  { value: 'insurer_notified', en: 'Insurer Notified', th: 'แจ้งบริษัทประกันแล้ว' },
+  { value: 'credit_approved', en: 'Credit Approved', th: 'อนุมัติเครดิตแล้ว' },
 ];
 
 function StatusDropdown({ label, options, defaultValue, language }: {
