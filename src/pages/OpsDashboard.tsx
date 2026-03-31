@@ -80,6 +80,18 @@ export default function OpsDashboard() {
   const [currentStep, setCurrentStep] = useState(3);
   const mode: 'A' | 'B' = currentStep >= 3 ? 'B' : 'A';
 
+  // Live sale state so policy status changes propagate to primary button
+  const [sale, setSale] = useState(() => ({ ...mockSaleDetail, policies: mockSaleDetail.policies.map(p => ({ ...p })) }));
+
+  const handlePolicyStatusChange = (kind: 'vmi' | 'cmi', newStatus: string) => {
+    setSale(prev => ({
+      ...prev,
+      policies: prev.policies.map(p =>
+        p.kind === kind ? { ...p, status: newStatus } : p
+      ),
+    }));
+  };
+
   // Modal / sidebar states
   const [uploadPolicyOpen, setUploadPolicyOpen] = useState(false);
   const [historySidebarOpen, setHistorySidebarOpen] = useState(false);
