@@ -272,11 +272,22 @@ export function PaymentStatusCard({ sale }: SaleOverviewCardProps) {
   return (
     <Card>
       <CardHeader className="pb-2 pt-3 px-5">
-        <CardTitle className="text-sm font-semibold">
-          {language === 'th' ? 'สถานะการชำระเงิน' : 'Payment Status'}
+        <CardTitle className="text-sm font-semibold flex items-center gap-2">
+          <DollarSign className="w-4 h-4" />
+          {language === 'th' ? 'สรุปการชำระเงิน' : 'Payment Summary'}
         </CardTitle>
       </CardHeader>
-      <CardContent className="px-5 pb-4">
+      <CardContent className="px-5 pb-4 space-y-3">
+        <div className="space-y-1.5">
+          <div className="flex justify-between text-xs">
+            <span className="text-muted-foreground">{language === 'th' ? 'ยอดที่ต้องชำระ' : 'Amount Payable'}</span>
+            <span className="font-medium">6,500.00 Baht</span>
+          </div>
+          <div className="flex justify-between text-xs">
+            <span className="text-muted-foreground">{language === 'th' ? 'ยอดที่ชำระแล้ว' : 'Amount Paid'}</span>
+            <span className="font-medium">6,500.00 Baht</span>
+          </div>
+        </div>
         <StatusDropdown
           label={language === 'th' ? 'สถานะ' : 'Status'}
           options={pmtStatuses}
