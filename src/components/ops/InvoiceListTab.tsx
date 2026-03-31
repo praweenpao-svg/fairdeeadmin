@@ -348,7 +348,6 @@ function InvoiceSectionTable({ section }: { section: InvoiceSection }) {
               <div className="px-2 py-2 text-xs">{inv.clawbackSubject}</div>
               <div className="px-2 py-2 text-xs">{inv.invoiceDetails}</div>
               <div className="px-2 py-2">
-                {inv.paymentInfo && <p className="text-[10px]">{inv.paymentInfo}</p>}
                 <PaymentStatusBadge status={inv.paymentStatus} />
               </div>
               <div className="px-2 py-2">
