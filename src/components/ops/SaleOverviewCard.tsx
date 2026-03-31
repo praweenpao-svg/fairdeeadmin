@@ -287,3 +287,196 @@ export function PaymentStatusCard({ sale }: SaleOverviewCardProps) {
     </Card>
   );
 }
+
+// Downloads Section
+const downloadItems = [
+  { en: 'Cover Note', th: 'ใบคุ้มครอง' },
+  { en: 'Invoice', th: 'ใบแจ้งหนี้' },
+  { en: 'Corporate Invoice', th: 'ใบแจ้งหนี้องค์กร' },
+  { en: 'Temporary Receipt', th: 'ใบเสร็จชั่วคราว' },
+];
+
+export function DownloadsCard() {
+  const { language } = useLanguageStore();
+
+  return (
+    <Card>
+      <CardHeader className="pb-2 pt-3 px-5">
+        <CardTitle className="text-sm font-semibold flex items-center gap-2">
+          <Download className="w-4 h-4" />
+          {language === 'th' ? 'ดาวน์โหลด' : 'Downloads'}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="px-5 pb-4">
+        <div className="grid grid-cols-2 gap-2">
+          {downloadItems.map((item, idx) => (
+            <button
+              key={idx}
+              onClick={() => toast.success(language === 'th' ? `กำลังดาวน์โหลด ${item.th}` : `Downloading ${item.en}`)}
+              className="flex items-center gap-2 px-3 py-2.5 rounded-md border border-border hover:bg-accent/50 transition-colors text-left"
+            >
+              <FileText className="w-4 h-4 text-muted-foreground shrink-0" />
+              <span className="text-xs font-medium truncate">{language === 'th' ? item.th : item.en}</span>
+            </button>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// History Section
+const historyItems = [
+  { en: 'Creation By Details', th: 'รายละเอียดผู้สร้าง' },
+  { en: 'Quotation Query Changes', th: 'การเปลี่ยนแปลง Query ใบเสนอราคา' },
+  { en: 'Quotation Changes', th: 'การเปลี่ยนแปลงใบเสนอราคา' },
+  { en: 'Sale Changes', th: 'การเปลี่ยนแปลงการขาย' },
+];
+
+const mockCreationDetails = [
+  { type: 'quotation', id: 'UO6872', recordedBy: 'Jennifer Haines, vijay+Jennifer42@qoala.id', date: '23/01/2569 13:46' },
+  { type: 'sale', id: '', recordedBy: 'Unknown User', date: '23/01/2569 13:50' },
+];
+
+const mockHistoricalChanges = [
+  { changedBy: 'System', changedOn: '23/01/2569 13:50', key: 'Policy Start Date', oldValue: '2026-01-23', newValue: '2025-01-25', reason: 'vouch.mixins.save' },
+  { changedBy: 'vijay+jennifer42@qoala.id', changedOn: '23/01/2569 13:49', key: 'Policy Start Date', oldValue: 'None', newValue: '2026-01-23', reason: 'PATCH /utils/fairdee-quotation/10167' },
+  { changedBy: 'vijay+jennifer42@qoala.id', changedOn: '23/01/2569 13:46', key: 'Is Lead Generated', oldValue: 'False', newValue: 'True', reason: 'POST /utils/fairdee-quotation' },
+  { changedBy: 'vijay+jennifer42@qoala.id', changedOn: '23/01/2569 13:46', key: 'Valid Till Expiry', oldValue: 'None', newValue: '2026-02-22 16:59:59+00.00', reason: 'POST /utils/fairdee-quotation-query' },
+];
+
+function CreationByDetailsDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
+  const { language } = useLanguageStore();
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 text-base">
+            <History className="w-4 h-4" />
+            Created By Details
+          </DialogTitle>
+          <p className="text-xs text-muted-foreground">View timeline of who created or modified components</p>
+        </DialogHeader>
+        <div className="grid grid-cols-2 gap-3 mt-2">
+          {mockCreationDetails.map((item, idx) => (
+            <div key={idx} className="border border-border rounded-lg p-3 space-y-1">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                  {item.type === 'quotation' ? <FileText className="w-4 h-4 text-muted-foreground" /> : <span className="text-xs font-bold text-muted-foreground">$</span>}
+                </div>
+                <div>
+                  <p className="text-xs font-semibold">{item.type === 'quotation' ? `Quotation (${item.id})` : 'Sale'}</p>
+                  <p className="text-[10px] text-muted-foreground">{item.type === 'quotation' ? `Recorded by ${item.recordedBy}` : `Created by ${item.recordedBy}`}</p>
+                </div>
+              </div>
+              <p className="text-[10px] text-muted-foreground flex items-center gap-1">🕐 {item.date}</p>
+            </div>
+          ))}
+        </div>
+        <div className="mt-2 px-3 py-2 bg-primary/5 rounded-md border border-primary/20">
+          <span className="text-xs text-primary font-medium">Total {mockCreationDetails.length} activities</span>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function HistoricalDataDialog({ open, onOpenChange, title }: { open: boolean; onOpenChange: (v: boolean) => void; title: string }) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 text-base">
+            <History className="w-4 h-4" />
+            {title}
+          </DialogTitle>
+        </DialogHeader>
+        <div className="mt-2">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="text-left py-2 px-2 text-muted-foreground font-medium">Changed By</th>
+                <th className="text-left py-2 px-2 text-muted-foreground font-medium">Changed On</th>
+                <th className="text-left py-2 px-2 text-muted-foreground font-medium" colSpan={3}>Changes</th>
+                <th className="text-left py-2 px-2 text-muted-foreground font-medium">Change Reason</th>
+              </tr>
+            </thead>
+            <tbody>
+              {mockHistoricalChanges.map((row, idx) => (
+                <tr key={idx} className="border-b border-border/50">
+                  <td className="py-3 px-2 align-top text-muted-foreground">{row.changedBy}</td>
+                  <td className="py-3 px-2 align-top text-muted-foreground">{row.changedOn}</td>
+                  <td colSpan={3} className="py-3 px-2">
+                    <table className="w-full">
+                      <thead>
+                        <tr>
+                          <th className="text-left text-muted-foreground font-medium pb-1">Key Changed</th>
+                          <th className="text-left text-muted-foreground font-medium pb-1">Old Value</th>
+                          <th className="text-left text-muted-foreground font-medium pb-1">New Value</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td className="py-1">{row.key}</td>
+                          <td className="py-1">
+                            {row.oldValue === 'None' ? <span className="text-muted-foreground">None</span> :
+                              row.oldValue === 'False' ? <span className="px-2 py-0.5 rounded bg-destructive/10 text-destructive text-[10px]">{row.oldValue}</span> :
+                              <span className="px-2 py-0.5 rounded bg-destructive/10 text-destructive text-[10px]">{row.oldValue}</span>}
+                          </td>
+                          <td className="py-1">
+                            <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[10px]">{row.newValue}</span>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </td>
+                  <td className="py-3 px-2 align-top text-muted-foreground text-[10px]">{row.reason}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+export function HistoryCard() {
+  const { language } = useLanguageStore();
+  const [creationOpen, setCreationOpen] = useState(false);
+  const [activeHistoryDialog, setActiveHistoryDialog] = useState<string | null>(null);
+
+  return (
+    <>
+      <Card>
+        <CardHeader className="pb-2 pt-3 px-5">
+          <CardTitle className="text-sm font-semibold flex items-center gap-2">
+            <History className="w-4 h-4" />
+            {language === 'th' ? 'ประวัติ' : 'History'}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="px-5 pb-4">
+          <div className="grid grid-cols-2 gap-2">
+            {historyItems.map((item, idx) => (
+              <button
+                key={idx}
+                onClick={() => idx === 0 ? setCreationOpen(true) : setActiveHistoryDialog(item.en)}
+                className="flex items-center gap-2 px-3 py-2.5 rounded-md border border-border hover:bg-accent/50 transition-colors text-left"
+              >
+                <History className="w-4 h-4 text-muted-foreground shrink-0" />
+                <span className="text-xs font-medium truncate">{language === 'th' ? item.th : item.en}</span>
+              </button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <CreationByDetailsDialog open={creationOpen} onOpenChange={setCreationOpen} />
+      <HistoricalDataDialog
+        open={activeHistoryDialog !== null}
+        onOpenChange={(v) => !v && setActiveHistoryDialog(null)}
+        title={activeHistoryDialog ? `${activeHistoryDialog} Historical Data` : ''}
+      />
+    </>
+  );
+}
