@@ -808,15 +808,15 @@ function PackageSelectionTab({ sale }: { sale: SaleDetail }) {
             <div className="space-y-1 text-xs">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">{language === 'th' ? 'ค่าคอมมิชชั่น' : 'Commission'}</span>
-                <span className="font-semibold text-sidebar-background">2,000 ฿</span>
+                <span className="font-semibold text-sidebar-background">2,000 Baht</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">{language === 'th' ? 'ราคาเบี้ยประกันรวม' : 'Total Premium'}</span>
-                <span className="font-semibold text-sidebar-background">10,000 ฿</span>
+                <span className="font-semibold text-sidebar-background">10,000 Baht</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">{language === 'th' ? 'ทุนประกัน' : 'Sum Insured'}</span>
-                <span className="font-semibold text-sidebar-background">500,000 ฿</span>
+                <span className="font-semibold text-sidebar-background">500,000 Baht</span>
               </div>
             </div>
           </CardContent>
