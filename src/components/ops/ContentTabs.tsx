@@ -292,15 +292,13 @@ function LinkDocumentsTab({ sale }: { sale: SaleDetail }) {
     setUploadDialogOpen(true);
   };
 
-  const handleUploadFiles = (files: { id: string; name: string; size: string; type: string }[]) => {
+  const handleUploadFiles = (files: { id: string; name: string; size: string; type: string; preview?: string }[]) => {
     if (uploadTarget) {
-      // Upload directly to a category
       setCategories(prev => prev.map(cat =>
-        cat.key === uploadTarget ? { ...cat, docs: [...cat.docs, ...files.map(f => ({ id: f.id, name: f.name }))] } : cat
+        cat.key === uploadTarget ? { ...cat, docs: [...cat.docs, ...files.map(f => ({ id: f.id, name: f.name, preview: f.preview, type: f.type }))] } : cat
       ));
     } else {
-      // Upload to unlinked
-      setUnlinkedDocs(prev => [...prev, ...files.map(f => ({ id: f.id, name: f.name, size: f.size }))]);
+      setUnlinkedDocs(prev => [...prev, ...files.map(f => ({ id: f.id, name: f.name, size: f.size, preview: f.preview }))]);
     }
   };
 
