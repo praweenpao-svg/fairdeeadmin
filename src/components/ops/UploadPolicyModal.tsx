@@ -153,7 +153,7 @@ function PolicyForm({
           <Input
             value={form.endDate}
             onChange={e => setForm(f => ({ ...f, endDate: e.target.value }))}
-            className="h-9 text-xs mt-1"
+            className="h-9 text-xs mt-1 bg-white dark:bg-background"
             placeholder="DD/MM/YYYY"
           />
         </div>
