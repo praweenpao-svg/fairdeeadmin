@@ -450,7 +450,7 @@ export function HistoryCard() {
               <button
                 key={idx}
                 onClick={() => idx === 0 ? setCreationOpen(true) : setActiveHistoryDialog(item.en)}
-                className="flex items-center justify-center px-3 py-2.5 rounded-md border border-border hover:bg-accent/50 transition-colors text-center"
+                className="flex items-center justify-center px-3 py-2.5 rounded-md border border-border hover:bg-primary hover:text-primary-foreground hover:border-primary transition-colors text-center"
               >
                 <span className="text-xs font-medium truncate">{language === 'th' ? item.th : item.en}</span>
               </button>
