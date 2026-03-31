@@ -980,7 +980,7 @@ export function ContentTabs({ sale }: ContentTabsProps) {
         </TabsTrigger>
         <TabsTrigger value="invoice" className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
           <CreditCard className="w-3.5 h-3.5" />
-          {language === 'th' ? 'ใบแจ้งหนี้และชำระเงิน' : 'Invoice & Payments'}
+          {language === 'th' ? 'รายการใบแจ้งหนี้' : 'Invoice List'}
         </TabsTrigger>
         <TabsTrigger value="documents" className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
           <FileText className="w-3.5 h-3.5" />
