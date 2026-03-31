@@ -241,7 +241,7 @@ export function PolicyStatusCard({ sale }: SaleOverviewCardProps) {
                 <StatusDropdown
                   label={`${policy.kind.toUpperCase()} ${language === 'th' ? 'สถานะ' : 'Status'}`}
                   options={policyStatuses}
-                  defaultValue="pending_payment"
+                  defaultValue="pending_review"
                   language={language}
                 />
               </div>
@@ -262,11 +262,11 @@ export function PolicyStatusCard({ sale }: SaleOverviewCardProps) {
 export function PaymentStatusCard({ sale }: SaleOverviewCardProps) {
   const { language } = useLanguageStore();
 
-  const paymentStatuses = [
+  const pmtStatuses = [
     { value: 'unpaid', en: 'Unpaid', th: 'ยังไม่ชำระ' },
     { value: 'pending', en: 'Pending', th: 'รอชำระ' },
     { value: 'partial', en: 'Partial', th: 'ชำระบางส่วน' },
-    { value: 'paid', en: 'Payment Verified', th: 'ยืนยันการชำระเงินแล้ว' },
+    { value: 'payment_verified', en: 'Payment Verified', th: 'ยืนยันการชำระเงินแล้ว' },
   ];
 
   return (
@@ -279,8 +279,8 @@ export function PaymentStatusCard({ sale }: SaleOverviewCardProps) {
       <CardContent className="px-5 pb-4">
         <StatusDropdown
           label={language === 'th' ? 'สถานะ' : 'Status'}
-          options={paymentStatuses}
-          defaultValue={sale.paymentStatus || 'unpaid'}
+          options={pmtStatuses}
+          defaultValue="payment_verified"
           language={language}
         />
       </CardContent>
