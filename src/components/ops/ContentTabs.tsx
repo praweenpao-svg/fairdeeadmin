@@ -47,7 +47,7 @@ function InvoiceTab({ sale }: { sale: SaleDetail }) {
             <div className="grid grid-cols-3 gap-4 text-xs">
               <div>
                 <span className="text-muted-foreground block">{language === 'th' ? 'เบี้ยหลังภาษี' : 'Premium After Tax'}</span>
-                <span className="font-semibold">{policy.premiumAfterTax.toLocaleString()} ฿</span>
+                <span className="font-semibold">{policy.premiumAfterTax.toLocaleString()} Baht</span>
               </div>
               <div>
                 <span className="text-muted-foreground block">{language === 'th' ? 'คอมมิชชั่น' : 'Commission'}</span>
