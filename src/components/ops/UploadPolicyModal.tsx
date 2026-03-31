@@ -252,21 +252,23 @@ export function UploadPolicyModal({ sale, open, onOpenChange }: UploadPolicyModa
         </DialogHeader>
 
         {isMultiPolicy ? (
-          <Tabs defaultValue="vmi" className="w-full flex flex-col items-center">
-            <TabsList className="w-auto mx-auto">
-              <TabsTrigger value="vmi" className="text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                VMI
-              </TabsTrigger>
-              {cmiPolicy && (
-                <TabsTrigger value="cmi" className="text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                  CMI
+          <Tabs defaultValue="vmi" className="w-full">
+            <div className="flex justify-center">
+              <TabsList className="w-auto">
+                <TabsTrigger value="vmi" className="text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                  VMI
                 </TabsTrigger>
-              )}
-            </TabsList>
-            <TabsContent value="vmi">
+                {cmiPolicy && (
+                  <TabsTrigger value="cmi" className="text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                    CMI
+                  </TabsTrigger>
+                )}
+              </TabsList>
+            </div>
+            <TabsContent value="vmi" className="w-full">
               {vmiPolicy && <PolicyForm policy={vmiPolicy} showGarageAndClass={true} />}
             </TabsContent>
-            <TabsContent value="cmi">
+            <TabsContent value="cmi" className="w-full">
               {cmiPolicy && <PolicyForm policy={cmiPolicy} showGarageAndClass={false} />}
             </TabsContent>
           </Tabs>
