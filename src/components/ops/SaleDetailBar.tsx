@@ -4,7 +4,7 @@ import mtiLogo from '@/assets/insurer-mti.png';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useLanguageStore } from '@/stores/languageStore';
-import { SaleDetail } from '@/data/mockSaleDetail';
+import { SaleDetail, SalePolicy } from '@/data/mockSaleDetail';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import {
