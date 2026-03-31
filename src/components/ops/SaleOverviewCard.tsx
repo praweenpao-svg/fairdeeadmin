@@ -243,7 +243,7 @@ export function PolicyStatusCard({ sale, onPolicyStatusChange }: SaleOverviewCar
         <div className="space-y-3">
 
           {/* VMI row: status + owner */}
-          {sale.policies.map((policy) => (
+          {sale.policies.filter(p => p.kind === 'vmi').map((policy) => (
             <div key={policy.kind} className="grid grid-cols-3 gap-x-3 items-end">
               <div className="col-span-2">
                 <StatusDropdown
