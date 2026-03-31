@@ -398,12 +398,6 @@ function InvoiceSectionTable({ section }: { section: InvoiceSection }) {
           </React.Fragment>
         ))}
 
-        {/* No payments footer for unpaid sections */}
-        {section.invoices.every(i => i.paymentStatus === 'Unpaid') && (
-          <div className="px-4 py-2 text-xs text-muted-foreground bg-card">
-            No payments for this invoice.
-          </div>
-        )}
       </div>
 
       {/* Dialogs */}

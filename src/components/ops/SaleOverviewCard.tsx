@@ -397,7 +397,9 @@ function HistoricalDataDialog({ open, onOpenChange, title }: { open: boolean; on
               <tr className="border-b border-border">
                 <th className="text-left py-2 px-2 text-muted-foreground font-medium">Changed By</th>
                 <th className="text-left py-2 px-2 text-muted-foreground font-medium">Changed On</th>
-                <th className="text-left py-2 px-2 text-muted-foreground font-medium" colSpan={3}>Changes</th>
+                <th className="text-left py-2 px-2 text-muted-foreground font-medium">Key Changed</th>
+                <th className="text-left py-2 px-2 text-muted-foreground font-medium">Old Value</th>
+                <th className="text-left py-2 px-2 text-muted-foreground font-medium">New Value</th>
                 <th className="text-left py-2 px-2 text-muted-foreground font-medium">Change Reason</th>
               </tr>
             </thead>
@@ -405,30 +407,14 @@ function HistoricalDataDialog({ open, onOpenChange, title }: { open: boolean; on
               {mockHistoricalChanges.map((row, idx) => (
                 <tr key={idx} className="border-b border-border/50">
                   <td className="py-3 px-2 align-top text-muted-foreground">{row.changedBy}</td>
-                  <td className="py-3 px-2 align-top text-muted-foreground">{row.changedOn}</td>
-                  <td colSpan={3} className="py-3 px-2">
-                    <table className="w-full">
-                      <thead>
-                        <tr>
-                          <th className="text-left text-muted-foreground font-medium pb-1">Key Changed</th>
-                          <th className="text-left text-muted-foreground font-medium pb-1">Old Value</th>
-                          <th className="text-left text-muted-foreground font-medium pb-1">New Value</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td className="py-1">{row.key}</td>
-                          <td className="py-1">
-                            {row.oldValue === 'None' ? <span className="text-muted-foreground">None</span> :
-                              row.oldValue === 'False' ? <span className="px-2 py-0.5 rounded bg-destructive/10 text-destructive text-[10px]">{row.oldValue}</span> :
-                              <span className="px-2 py-0.5 rounded bg-destructive/10 text-destructive text-[10px]">{row.oldValue}</span>}
-                          </td>
-                          <td className="py-1">
-                            <span className="px-2 py-0.5 rounded bg-primary/10 text-primary text-[10px]">{row.newValue}</span>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
+                  <td className="py-3 px-2 align-top text-muted-foreground whitespace-nowrap">{row.changedOn}</td>
+                  <td className="py-3 px-2">{row.key}</td>
+                  <td className="py-3 px-2">
+                    {row.oldValue === 'None' ? <span className="text-muted-foreground">None</span> :
+                      <span className="px-2 py-0.5 rounded bg-destructive/10 text-destructive text-[10px]">{row.oldValue}</span>}
+                  </td>
+                  <td className="py-3 px-2">
+                    <span className="px-2 py-0.5 rounded bg-primary/10 text-primary text-[10px]">{row.newValue}</span>
                   </td>
                   <td className="py-3 px-2 align-top text-muted-foreground text-[10px]">{row.reason}</td>
                 </tr>
