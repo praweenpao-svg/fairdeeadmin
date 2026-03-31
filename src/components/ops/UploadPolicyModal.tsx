@@ -252,7 +252,7 @@ export function UploadPolicyModal({ sale, open, onOpenChange }: UploadPolicyModa
         </DialogHeader>
 
         {isMultiPolicy ? (
-          <Tabs defaultValue="vmi" className="w-full">
+          <Tabs defaultValue="vmi" className="w-full flex flex-col items-center">
             <TabsList className="w-auto mx-auto">
               <TabsTrigger value="vmi" className="text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 VMI
