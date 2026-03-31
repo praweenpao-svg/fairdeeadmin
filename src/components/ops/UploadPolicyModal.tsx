@@ -125,7 +125,7 @@ function PolicyForm({
         <Label className="text-xs">{language === 'th' ? 'อัปโหลดไฟล์กรมธรรม์' : 'Upload Policy File'}</Label>
         <Input
           type="file"
-          className="h-9 text-xs mt-1 bg-muted cursor-pointer"
+          className="h-9 text-xs mt-1 bg-muted border border-input cursor-pointer file:text-xs file:font-medium"
           onChange={e => setForm(f => ({ ...f, policyFile: e.target.files?.[0] || null }))}
         />
       </div>
