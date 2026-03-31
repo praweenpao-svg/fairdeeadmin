@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { FileText, Image, CreditCard, User, Package } from 'lucide-react';
+import { FileText, Image, CreditCard, User, Package, Link2, Plus, X, RefreshCw } from 'lucide-react';
 
 interface ContentTabsProps {
   sale: SaleDetail;
@@ -115,6 +115,155 @@ function DocumentsTab({ sale }: { sale: SaleDetail }) {
           </Badge>
         </div>
       ))}
+    </div>
+  );
+}
+
+interface DocCategory {
+  key: string;
+  en: string;
+  th: string;
+  required?: boolean;
+  docs: { id: string; name: string }[];
+}
+
+function LinkDocumentsTab({ sale }: { sale: SaleDetail }) {
+  const { language } = useLanguageStore();
+  const vmiPolicy = sale.policies.find(p => p.kind === 'vmi');
+
+  const [categories, setCategories] = React.useState<DocCategory[]>([
+    { key: 'car_reg', en: 'Car registration', th: 'ทะเบียนรถ', required: true, docs: [] },
+    { key: 'national_id', en: 'National ID', th: 'บัตรประชาชน', required: true, docs: [] },
+    { key: 'old_policy', en: 'Old policy document', th: 'เอกสารกรมธรรม์เดิม', docs: [] },
+    { key: 'manual_quote', en: 'Manual quotation from insurer', th: 'ใบเสนอราคาจากบริษัทประกัน', docs: [] },
+    { key: 'national_id_undertaking', en: 'National ID with undertaking', th: 'บัตรประชาชนพร้อมหนังสือมอบอำนาจ', docs: [] },
+    { key: 'national_id_selfie', en: 'National ID with selfie', th: 'บัตรประชาชนพร้อมเซลฟี่', docs: [] },
+    { key: 'general', en: 'General documents', th: 'เอกสารทั่วไป', docs: [] },
+  ]);
+
+  const [unlinkedDocs] = React.useState<{ id: string; name: string }[]>([]);
+
+  const handleAddDoc = (categoryKey: string) => {
+    // In real implementation, this would open a file picker or link from unlinked docs
+    const newDoc = { id: `doc-${Date.now()}`, name: `Document_${Date.now().toString().slice(-4)}` };
+    setCategories(prev => prev.map(cat =>
+      cat.key === categoryKey ? { ...cat, docs: [...cat.docs, newDoc] } : cat
+    ));
+  };
+
+  const handleRemoveDoc = (categoryKey: string, docId: string) => {
+    setCategories(prev => prev.map(cat =>
+      cat.key === categoryKey ? { ...cat, docs: cat.docs.filter(d => d.id !== docId) } : cat
+    ));
+  };
+
+  const packageName = language === 'th' ? 'ชั้น 1 อีซี่' : 'Easy Type 1';
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+      {/* Left: document categories */}
+      <div className="lg:col-span-3 space-y-4">
+        {/* Package summary bar */}
+        <Card className="border-border">
+          <CardContent className="p-3">
+            <div className="grid grid-cols-2 gap-4 text-xs">
+              <div>
+                <span className="text-muted-foreground">{language === 'th' ? 'ชื่อแพ็กเกจ' : 'Package Name'}: </span>
+                <span className="font-medium">{packageName}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground">{language === 'th' ? 'ทุนประกัน' : 'Sum Insured'}: </span>
+                <span className="font-medium">500,000.00 ฿</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground">{language === 'th' ? 'ประเภทซ่อม' : 'Garage Type'}: </span>
+                <span className="font-medium">
+                  {language === 'th'
+                    ? (vmiPolicy?.garageType === 'Dealership' ? 'ซ่อมห้าง' : 'ซ่อมอู่')
+                    : (vmiPolicy?.garageType === 'Dealership' ? 'Dealership' : 'Approved Garage')}
+                </span>
+              </div>
+              <div>
+                <span className="text-muted-foreground">{language === 'th' ? 'ผ่อนชำระ' : 'Instalment Type'}: </span>
+                <span className="font-medium">{language === 'th' ? '10 งวด' : '10 instalments'}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <h5 className="text-xs font-semibold">
+          {language === 'th' ? `เอกสารที่ต้องเชื่อมโยงสำหรับ ${packageName}` : `Link Documents Required for ${packageName}`}
+        </h5>
+
+        <div className="space-y-2">
+          {categories.map(cat => (
+            <div key={cat.key} className="border border-border rounded-lg p-3 bg-card">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-xs font-medium">
+                    {language === 'th' ? cat.th : cat.en}
+                    {cat.required && <span className="text-destructive ml-0.5">*</span>}
+                  </span>
+                  <p className="text-[10px] text-muted-foreground">{cat.docs.length} {language === 'th' ? 'เอกสาร' : 'Documents'}</p>
+                </div>
+                <button
+                  onClick={() => handleAddDoc(cat.key)}
+                  className="w-7 h-7 rounded-md border border-border flex items-center justify-center hover:bg-accent transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5 text-muted-foreground" />
+                </button>
+              </div>
+              {cat.docs.length > 0 && (
+                <div className="mt-2 space-y-1">
+                  {cat.docs.map(doc => (
+                    <div key={doc.id} className="flex items-center justify-between px-2 py-1 bg-muted/30 rounded text-[10px]">
+                      <span>{doc.name}</span>
+                      <button onClick={() => handleRemoveDoc(cat.key, doc.id)} className="text-muted-foreground hover:text-destructive">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Right: unlinked documents */}
+      <div className="lg:col-span-2">
+        <Card className="border-border sticky top-4">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <h5 className="text-xs font-semibold">{language === 'th' ? 'เอกสารที่ยังไม่ได้เชื่อมโยง' : 'Unlinked Documents'}</h5>
+                <p className="text-[10px] text-muted-foreground">{language === 'th' ? 'ลากรูปไปยังช่องทางซ้ายเพื่อเชื่อมโยง' : 'Drag image into respective box on the left to link it'}</p>
+              </div>
+              <div className="flex items-center gap-1">
+                <button className="w-7 h-7 rounded-md border border-border flex items-center justify-center hover:bg-accent transition-colors">
+                  <RefreshCw className="w-3 h-3 text-muted-foreground" />
+                </button>
+                <button className="px-3 py-1.5 text-[10px] font-medium bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors">
+                  {language === 'th' ? 'เชื่อมโยงอัตโนมัติ' : 'Auto link'}
+                </button>
+              </div>
+            </div>
+
+            {unlinkedDocs.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+                <X className="w-8 h-8 mb-2" />
+                <span className="text-xs">{language === 'th' ? 'ไม่มีเอกสารที่ยังไม่ได้เชื่อมโยง' : 'No unlinked documents'}</span>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {unlinkedDocs.map(doc => (
+                  <div key={doc.id} className="p-2 border border-border rounded text-xs">{doc.name}</div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
@@ -407,6 +556,10 @@ export function ContentTabs({ sale }: ContentTabsProps) {
           <Package className="w-3.5 h-3.5" />
           {language === 'th' ? 'เลือกแพ็กเกจ' : 'Package Selection'}
         </TabsTrigger>
+        <TabsTrigger value="link-docs" className="text-xs gap-1.5">
+          <Link2 className="w-3.5 h-3.5" />
+          {language === 'th' ? 'เชื่อมโยงเอกสาร' : 'Link Documents'}
+        </TabsTrigger>
         <TabsTrigger value="details" className="text-xs gap-1.5">
           <User className="w-3.5 h-3.5" />
           {language === 'th' ? 'ข้อมูลลูกค้าและรถ' : 'Customer & Vehicle'}
@@ -427,6 +580,9 @@ export function ContentTabs({ sale }: ContentTabsProps) {
 
       <TabsContent value="package" className="mt-4">
         <PackageSelectionTab sale={sale} />
+      </TabsContent>
+      <TabsContent value="link-docs" className="mt-4">
+        <LinkDocumentsTab sale={sale} />
       </TabsContent>
       <TabsContent value="details" className="mt-4">
         <PolicyDetailsZone sale={sale} />
