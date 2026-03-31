@@ -120,7 +120,7 @@ function getPrimaryActions(
       return [{ label: language === 'th' ? 'ส่งใบแจ้งหนี้' : 'Send Billing Report', icon: CreditCard, group: 'G1' }];
     case 'pending_review':
       return [
-        { label: 'API', icon: Plug, group: 'G2' },
+        { label: 'API', icon: Send, group: 'G2' },
         { label: language === 'th' ? 'อีเมล' : 'Email', icon: Mail, group: 'G2' },
       ];
     case 'pending_issuance':
