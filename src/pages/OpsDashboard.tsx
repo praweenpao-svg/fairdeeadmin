@@ -208,7 +208,7 @@ export default function OpsDashboard() {
               <AgentDetailsCard sale={mockSaleDetail} />
               <PolicyStatusCard sale={mockSaleDetail} />
               <PaymentStatusCard sale={mockSaleDetail} />
-              <SaleOverviewCard sale={mockSaleDetail} />
+              
               <DownloadsCard />
               <HistoryCard />
             </div>
