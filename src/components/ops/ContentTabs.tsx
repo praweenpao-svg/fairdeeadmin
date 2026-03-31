@@ -909,6 +909,9 @@ export function ContentTabs({ sale }: ContentTabsProps) {
       <TabsContent value="link-docs" className="mt-4">
         <LinkDocumentsTab sale={sale} />
       </TabsContent>
+      <TabsContent value="verify" className="mt-4">
+        <VerifyInformationTab sale={sale} />
+      </TabsContent>
       <TabsContent value="details" className="mt-4">
         <PolicyDetailsZone sale={sale} />
       </TabsContent>
