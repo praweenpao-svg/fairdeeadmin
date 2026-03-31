@@ -366,12 +366,21 @@ function LinkDocumentsTab({ sale }: { sale: SaleDetail }) {
               </button>
             </div>
             {cat.docs.length > 0 && (
-              <div className="mt-2 space-y-1">
+              <div className="mt-2 grid grid-cols-4 gap-2">
                 {cat.docs.map(doc => (
-                  <div key={doc.id} className="flex items-center justify-between px-2 py-1 bg-muted/30 rounded text-[10px]">
-                    <span>{doc.name}</span>
-                    <button onClick={() => handleRemoveDoc(cat.key, doc.id)} className="text-muted-foreground hover:text-destructive">
-                      <X className="w-3 h-3" />
+                  <div key={doc.id} className="relative border border-border rounded-lg overflow-hidden bg-muted/30">
+                    {doc.preview ? (
+                      <img src={doc.preview} alt={doc.name} className="w-full h-16 object-cover" />
+                    ) : (
+                      <div className="w-full h-16 flex items-center justify-center">
+                        <FileText className="w-6 h-6 text-muted-foreground" />
+                      </div>
+                    )}
+                    <div className="px-1.5 py-1">
+                      <p className="text-[9px] font-medium truncate">{doc.name}</p>
+                    </div>
+                    <button onClick={() => handleRemoveDoc(cat.key, doc.id)} className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-background/80 flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground transition-colors">
+                      <X className="w-2.5 h-2.5" />
                     </button>
                   </div>
                 ))}
