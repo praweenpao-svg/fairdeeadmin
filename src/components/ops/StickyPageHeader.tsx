@@ -149,25 +149,13 @@ export function StickyPageHeader({
   const currentStage = 'to_issue'; // Mock: derive from sale state
   const stageLabel = stageLabels[currentStage] || stageLabels.to_issue;
 
-  const primaryAction = getPrimaryAction(vmiPolicy, cmiPolicy, language);
+  const primaryActions = getPrimaryActions(vmiPolicy, cmiPolicy, language);
 
   const handleAction = (actionName: string) => {
     toast.success(actionName, {
       description: language === 'th' ? 'ฟีเจอร์นี้จะเชื่อมต่อกับระบบจริงในอนาคต' : 'This will connect to the real system.',
     });
   };
-
-  const handlePrimaryClick = () => {
-    if (!primaryAction) return;
-    if (primaryAction.group === 'G4') {
-      onOpenHistoryLog?.();
-      return;
-    }
-    if (primaryAction.group === 'G2' && currentStage === 'to_issue') {
-      onOpenUploadPolicy?.();
-      return;
-    }
-    handleAction(primaryAction.label);
   };
 
   return (
