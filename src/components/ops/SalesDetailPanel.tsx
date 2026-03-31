@@ -83,7 +83,7 @@ function PackageCard({ policy, isSelected }: { policy: SaleDetail['policies'][0]
         {policy.sumInsured > 0 && (
           <div className="flex justify-between">
             <span className="text-muted-foreground">{language === 'th' ? 'ทุนประกัน' : 'Sum Insured'}</span>
-            <span className="font-medium">{policy.sumInsured.toLocaleString()} ฿</span>
+            <span className="font-medium">{policy.sumInsured.toLocaleString()} Baht</span>
           </div>
         )}
       </div>
