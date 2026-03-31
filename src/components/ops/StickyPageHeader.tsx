@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { ChevronDown, FileUp, AlertTriangle, XCircle, MessageSquare, Mail, Upload, History, FileText } from 'lucide-react';
+import { ChevronDown, FileUp, AlertTriangle, XCircle, MessageSquare, Mail, Upload, History, FileText, CreditCard } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useLanguageStore } from '@/stores/languageStore';
-import { SaleDetail } from '@/data/mockSaleDetail';
+import { SaleDetail, SalePolicy } from '@/data/mockSaleDetail';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import {
@@ -79,42 +79,52 @@ const policyStatusColorMap: Record<string, string> = {
   rework_required: 'border-orange-500 text-orange-600',
 };
 
-/**
- * Stage → Primary Button mapping per Section 13A v3 US-11 R-57
- */
+const statusProgression: string[] = [
+  'pending_payment', 'pending_review', 'pending_issuance',
+  'policy_issued', 'policy_shipped', 'policy_delivered',
+];
+
+function getLeastProgressedStatus(vmiStatus?: string, cmiStatus?: string): string | null {
+  const activeStatuses = [vmiStatus, cmiStatus].filter(
+    s => s && s !== 'policy_cancelled' && s !== 'rework_required'
+  ) as string[];
+  if (activeStatuses.length === 0) return null;
+  let least = activeStatuses[0];
+  let leastIdx = statusProgression.indexOf(least);
+  if (leastIdx === -1) leastIdx = 999;
+  for (let i = 1; i < activeStatuses.length; i++) {
+    let idx = statusProgression.indexOf(activeStatuses[i]);
+    if (idx === -1) idx = 999;
+    if (idx < leastIdx) { least = activeStatuses[i]; leastIdx = idx; }
+  }
+  return least;
+}
+
 function getPrimaryAction(
-  saleStage: string,
-  hasActiveRework: boolean,
+  vmiPolicy: SalePolicy | undefined,
+  cmiPolicy: SalePolicy | undefined,
   language: string,
 ): { label: string; icon: React.ElementType; group: string } | null {
-  // R-58: Rework override
-  if (hasActiveRework) {
-    return {
-      label: language === 'th' ? 'ประวัติและกิจกรรม' : 'History & Activity Log',
-      icon: History,
-      group: 'G4',
-    };
+  const vmiStatus = vmiPolicy?.status;
+  const cmiStatus = cmiPolicy?.status;
+  if (vmiStatus === 'rework_required' || cmiStatus === 'rework_required') {
+    return { label: language === 'th' ? 'ประวัติและกิจกรรม' : 'History & Activity Log', icon: History, group: 'G4' };
   }
-
-  switch (saleStage) {
+  const vmiCancelled = !vmiPolicy || vmiStatus === 'policy_cancelled';
+  const cmiCancelled = !cmiPolicy || cmiStatus === 'policy_cancelled';
+  if (vmiCancelled && cmiCancelled) return null;
+  const least = getLeastProgressedStatus(vmiStatus, cmiStatus);
+  if (!least) return null;
+  switch (least) {
+    case 'pending_payment':
+      return { label: language === 'th' ? 'แชร์ใบแจ้งหนี้ / ชำระเงิน' : 'Share Invoice / Make Payment', icon: CreditCard, group: 'G1' };
     case 'pending_review':
-    case 'to_report':
-      return {
-        label: language === 'th' ? 'ส่งอีเมลถึง บ.ประกัน' : 'Send Email to Insurer',
-        icon: Mail,
-        group: 'G2',
-      };
+      return { label: language === 'th' ? 'ซื้อกรมธรรม์ / เอกสารรถ' : 'Purchase Policy / Vehicle Documents', icon: FileText, group: 'G2' };
     case 'pending_issuance':
-    case 'to_issue':
-      return {
-        label: language === 'th' ? 'อัปโหลดกรมธรรม์' : 'Upload Policy',
-        icon: FileUp,
-        group: 'G2',
-      };
-    case 'pending_delivery':
-    case 'to_deliver':
-    case 'completed':
-      return null; // No primary — R-57
+    case 'policy_issued':
+    case 'policy_shipped':
+    case 'policy_delivered':
+      return { label: language === 'th' ? 'อัปโหลดกรมธรรม์' : 'Upload Policy', icon: FileUp, group: 'G2' };
     default:
       return null;
   }
@@ -136,7 +146,7 @@ export function StickyPageHeader({
   const currentStage = 'to_issue'; // Mock: derive from sale state
   const stageLabel = stageLabels[currentStage] || stageLabels.to_issue;
 
-  const primaryAction = getPrimaryAction(currentStage, hasActiveRework, language);
+  const primaryAction = getPrimaryAction(vmiPolicy, cmiPolicy, language);
 
   const handleAction = (actionName: string) => {
     toast.success(actionName, {
