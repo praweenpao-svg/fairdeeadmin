@@ -2726,6 +2726,42 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
           }
         }}
       />
+
+      {/* Recheck Price (Claim) Email Modal */}
+      <PreSendEmailModal
+        open={recheckPriceOpen}
+        onOpenChange={setRecheckPriceOpen}
+        title={language === 'th' ? 'ตรวจสอบราคาใหม่ (เคลม)' : 'Recheck Price (Claim)'}
+        leadNumber={emailModalLead?.qqNumber}
+        defaultSubject={
+          language === 'th'
+            ? `ขอตรวจสอบราคาเบี้ยประกันภัยใหม่ - ${emailModalLead?.customerName || ''} (${emailModalLead?.qqNumber || ''})`
+            : `Recheck Insurance Premium Price - ${emailModalLead?.customerName || ''} (${emailModalLead?.qqNumber || ''})`
+        }
+        defaultBody={
+          language === 'th'
+            ? `เรียน ฝ่ายรับประกันภัย,\n\nขอแจ้งตรวจสอบราคาเบี้ยประกันภัยใหม่สำหรับลูกค้า:\n\nชื่อลูกค้า: ${emailModalLead?.customerName || ''}\nเลขที่: ${emailModalLead?.qqNumber || ''}\nทะเบียนรถ: ${emailModalLead?.vehicleNumber || ''}\n\nเนื่องจากมีประวัติเคลม กรุณาตรวจสอบและแจ้งราคาเบี้ยประกันภัยใหม่\n\nขอบคุณครับ/ค่ะ`
+            : `Dear Underwriting Team,\n\nPlease recheck the insurance premium price for the following renewal:\n\nCustomer: ${emailModalLead?.customerName || ''}\nReference: ${emailModalLead?.qqNumber || ''}\nVehicle: ${emailModalLead?.vehicleNumber || ''}\n\nDue to claim history, please review and provide the updated premium.\n\nThank you.`
+        }
+      />
+
+      {/* Request Exception Email Modal */}
+      <PreSendEmailModal
+        open={requestExceptionOpen}
+        onOpenChange={setRequestExceptionOpen}
+        title={language === 'th' ? 'ขอยกเว้นพิเศษ' : 'Request Exception'}
+        leadNumber={emailModalLead?.qqNumber}
+        defaultSubject={
+          language === 'th'
+            ? `ขอยกเว้นพิเศษ - ${emailModalLead?.customerName || ''} (${emailModalLead?.qqNumber || ''})`
+            : `Request Exception - ${emailModalLead?.customerName || ''} (${emailModalLead?.qqNumber || ''})`
+        }
+        defaultBody={
+          language === 'th'
+            ? `เรียน ผู้จัดการ,\n\nขออนุมัติยกเว้นพิเศษสำหรับลูกค้า:\n\nชื่อลูกค้า: ${emailModalLead?.customerName || ''}\nเลขที่: ${emailModalLead?.qqNumber || ''}\nทะเบียนรถ: ${emailModalLead?.vehicleNumber || ''}\n\nเหตุผล:\n[กรุณาระบุเหตุผล]\n\nขอบคุณครับ/ค่ะ`
+            : `Dear Manager,\n\nI would like to request an exception approval for the following renewal:\n\nCustomer: ${emailModalLead?.customerName || ''}\nReference: ${emailModalLead?.qqNumber || ''}\nVehicle: ${emailModalLead?.vehicleNumber || ''}\n\nReason:\n[Please specify the reason]\n\nThank you.`
+        }
+      />
     </>
   );
 }
