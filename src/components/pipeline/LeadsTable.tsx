@@ -41,6 +41,8 @@ import { getPoliciesForStage, getPolicyStage } from './PipelineTabs';
 import { InsurersExpandableRow } from './InsurersExpandableRow';
 import { PolicyRemarksReworkDialog } from './PolicyRemarksReworkDialog';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { PreSendEmailModal } from './PreSendEmailModal';
+import { RefreshCw, AlertTriangle } from 'lucide-react';
 
 interface LeadsTableProps {
   leads: Lead[];
@@ -400,6 +402,9 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [expandedLeads, setExpandedLeads] = useState<Set<string>>(() => new Set());
+  const [recheckPriceOpen, setRecheckPriceOpen] = useState(false);
+  const [requestExceptionOpen, setRequestExceptionOpen] = useState(false);
+  const [emailModalLead, setEmailModalLead] = useState<Lead | null>(null);
 
   // Auto-open remarks dialog when notification navigation target is set
   React.useEffect(() => {
@@ -2180,6 +2185,18 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
                               <History className="w-4 h-4 mr-2" />
                               {language === 'th' ? 'ประวัติการทำงาน' : 'History Log'}
                             </DropdownMenuItem>
+                            {lead.leadType === 'renewals' && (
+                              <>
+                                <DropdownMenuItem onClick={() => { setEmailModalLead(lead); setRecheckPriceOpen(true); }}>
+                                  <RefreshCw className="w-4 h-4 mr-2" />
+                                  {language === 'th' ? 'ตรวจสอบราคาใหม่ (เคลม)' : 'Recheck Price (Claim)'}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => { setEmailModalLead(lead); setRequestExceptionOpen(true); }}>
+                                  <AlertTriangle className="w-4 h-4 mr-2" />
+                                  {language === 'th' ? 'ขอยกเว้นพิเศษ' : 'Request Exception'}
+                                </DropdownMenuItem>
+                              </>
+                            )}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </td>
@@ -2708,6 +2725,42 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
             onLeadUpdate?.(lead.id, { policyRecords: updatedRecords });
           }
         }}
+      />
+
+      {/* Recheck Price (Claim) Email Modal */}
+      <PreSendEmailModal
+        open={recheckPriceOpen}
+        onOpenChange={setRecheckPriceOpen}
+        title={language === 'th' ? 'ตรวจสอบราคาใหม่ (เคลม)' : 'Recheck Price (Claim)'}
+        leadNumber={emailModalLead?.leadNumber}
+        defaultSubject={
+          language === 'th'
+            ? `ขอตรวจสอบราคาเบี้ยประกันภัยใหม่ - ${emailModalLead?.agentName || ''} (${emailModalLead?.leadNumber || ''})`
+            : `Recheck Insurance Premium Price - ${emailModalLead?.agentName || ''} (${emailModalLead?.leadNumber || ''})`
+        }
+        defaultBody={
+          language === 'th'
+            ? `เรียน ฝ่ายรับประกันภัย,\n\nขอแจ้งตรวจสอบราคาเบี้ยประกันภัยใหม่สำหรับลูกค้า:\n\nตัวแทน: ${emailModalLead?.agentName || ''}\nเลขที่: ${emailModalLead?.leadNumber || ''}\nรถ: ${emailModalLead?.vehicleDetails || ''}\n\nเนื่องจากมีประวัติเคลม กรุณาตรวจสอบและแจ้งราคาเบี้ยประกันภัยใหม่\n\nขอบคุณครับ/ค่ะ`
+            : `Dear Underwriting Team,\n\nPlease recheck the insurance premium price for the following renewal:\n\nAgent: ${emailModalLead?.agentName || ''}\nReference: ${emailModalLead?.leadNumber || ''}\nVehicle: ${emailModalLead?.vehicleDetails || ''}\n\nDue to claim history, please review and provide the updated premium.\n\nThank you.`
+        }
+      />
+
+      {/* Request Exception Email Modal */}
+      <PreSendEmailModal
+        open={requestExceptionOpen}
+        onOpenChange={setRequestExceptionOpen}
+        title={language === 'th' ? 'ขอยกเว้นพิเศษ' : 'Request Exception'}
+        leadNumber={emailModalLead?.leadNumber}
+        defaultSubject={
+          language === 'th'
+            ? `ขอยกเว้นพิเศษ - ${emailModalLead?.agentName || ''} (${emailModalLead?.leadNumber || ''})`
+            : `Request Exception - ${emailModalLead?.agentName || ''} (${emailModalLead?.leadNumber || ''})`
+        }
+        defaultBody={
+          language === 'th'
+            ? `เรียน ผู้จัดการ,\n\nขออนุมัติยกเว้นพิเศษสำหรับลูกค้า:\n\nตัวแทน: ${emailModalLead?.agentName || ''}\nเลขที่: ${emailModalLead?.leadNumber || ''}\nรถ: ${emailModalLead?.vehicleDetails || ''}\n\nเหตุผล:\n[กรุณาระบุเหตุผล]\n\nขอบคุณครับ/ค่ะ`
+            : `Dear Manager,\n\nI would like to request an exception approval for the following renewal:\n\nAgent: ${emailModalLead?.agentName || ''}\nReference: ${emailModalLead?.leadNumber || ''}\nVehicle: ${emailModalLead?.vehicleDetails || ''}\n\nReason:\n[Please specify the reason]\n\nThank you.`
+        }
       />
     </>
   );
