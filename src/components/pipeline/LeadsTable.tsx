@@ -402,6 +402,9 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [expandedLeads, setExpandedLeads] = useState<Set<string>>(() => new Set());
+  const [recheckPriceOpen, setRecheckPriceOpen] = useState(false);
+  const [requestExceptionOpen, setRequestExceptionOpen] = useState(false);
+  const [emailModalLead, setEmailModalLead] = useState<Lead | null>(null);
 
   // Auto-open remarks dialog when notification navigation target is set
   React.useEffect(() => {
