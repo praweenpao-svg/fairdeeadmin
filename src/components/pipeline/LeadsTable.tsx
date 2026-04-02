@@ -2185,6 +2185,18 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
                               <History className="w-4 h-4 mr-2" />
                               {language === 'th' ? 'ประวัติการทำงาน' : 'History Log'}
                             </DropdownMenuItem>
+                            {lead.leadType === 'renewals' && (
+                              <>
+                                <DropdownMenuItem onClick={() => { setEmailModalLead(lead); setRecheckPriceOpen(true); }}>
+                                  <RefreshCw className="w-4 h-4 mr-2" />
+                                  {language === 'th' ? 'ตรวจสอบราคาใหม่ (เคลม)' : 'Recheck Price (Claim)'}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => { setEmailModalLead(lead); setRequestExceptionOpen(true); }}>
+                                  <AlertTriangle className="w-4 h-4 mr-2" />
+                                  {language === 'th' ? 'ขอยกเว้นพิเศษ' : 'Request Exception'}
+                                </DropdownMenuItem>
+                              </>
+                            )}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </td>
