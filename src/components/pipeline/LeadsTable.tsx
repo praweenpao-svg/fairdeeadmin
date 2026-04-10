@@ -2212,17 +2212,35 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
                                 </SelectTrigger>
                                 <SelectContent>
                                   {(() => {
-                                    // For renewals, use dynamic allowed statuses based on current status
+                                    // For renewals, show all renewal statuses in dropdown
                                     if (stage === 'to_convert' && lead.leadType === 'renewals') {
+                                      const allRenewalStatuses = [
+                                        'price_pending',
+                                        'request_sent_to_insurer',
+                                        'pricelist_added',
+                                        'revision_pending',
+                                        'recheck_price_claim',
+                                        'special_request_pending',
+                                        'pricelist_verified',
+                                        'quotation_shared_to_agent',
+                                        'renewal_rejected',
+                                        'invalid',
+                                      ];
                                       const currentStatus = lead.saleStatus || 'price_pending';
                                       const allowed = getRenewalAllowedManualStatuses(currentStatus, lead);
-                                      // Always show current status + allowed transitions
-                                      const options = [currentStatus, ...allowed.filter(s => s !== currentStatus)];
-                                      return options.map((statusValue) => (
-                                        <SelectItem key={statusValue} value={statusValue}>
-                                          {getStatusLabel(statusValue, language)}
-                                        </SelectItem>
-                                      ));
+                                      return allRenewalStatuses.map((statusValue) => {
+                                        const isAllowed = statusValue === currentStatus || allowed.includes(statusValue);
+                                        return (
+                                          <SelectItem 
+                                            key={statusValue} 
+                                            value={statusValue}
+                                            disabled={!isAllowed}
+                                            className={!isAllowed ? 'opacity-40' : ''}
+                                          >
+                                            {getStatusLabel(statusValue, language)}
+                                          </SelectItem>
+                                        );
+                                      });
                                     }
                                     // For other lead types, use static options
                                     const options = stage === 'to_convert' && lead.leadType 
