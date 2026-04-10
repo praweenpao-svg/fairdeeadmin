@@ -114,12 +114,50 @@ const statusOptionsByLeadType: Record<string, string[]> = {
   ],
   renewals: [
     'price_pending',
+    'request_sent_to_insurer',
+    'pricelist_added',
     'revision_pending',
+    'recheck_price_claim',
+    'special_request_pending',
+    'pricelist_verified',
+    'quotation_shared_to_agent',
     'renewal_rejected',
-    'price_ready',
-    'revision_required',
+    'invalid',
   ],
 };
+
+// Manual status transition rules for renewals per the spec
+// Returns allowed manual next statuses for a given current renewal status
+function getRenewalAllowedManualStatuses(currentStatus: string, lead?: Lead): string[] {
+  // Track if recheck price or special request has been done (using a flag on the lead)
+  const hasCompletedRecheckOrSpecialRequest = lead ? 
+    (lead as any)._hasCompletedRecheckPrice || (lead as any)._hasCompletedSpecialRequest : false;
+
+  switch (currentStatus) {
+    case 'price_pending':
+      return ['renewal_rejected'];
+    case 'request_sent_to_insurer':
+      return ['renewal_rejected'];
+    case 'pricelist_added':
+      return ['recheck_price_claim', 'renewal_rejected'];
+    case 'revision_pending':
+      return ['pricelist_added', 'renewal_rejected'];
+    case 'recheck_price_claim':
+      return ['pricelist_verified', 'renewal_rejected'];
+    case 'pricelist_verified':
+      return ['renewal_rejected'];
+    case 'quotation_shared_to_agent':
+      return ['renewal_rejected'];
+    case 'renewal_rejected':
+      return []; // No dropdown exits — exits via Request Exception action only
+    case 'special_request_pending':
+      return ['invalid'];
+    case 'invalid':
+      return []; // Terminal
+    default:
+      return ['renewal_rejected'];
+  }
+}
 
 const statusOptionsByStage: Record<PipelineStage, string[]> = {
   all: [
