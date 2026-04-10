@@ -31,8 +31,7 @@ export type SaleStatus =
   | 'special_request_pending'
   | 'pricelist_verified'
   | 'quotation_shared_to_agent'
-  | 'renewal_rejected'
-  | 'price_ready';
+  | 'renewal_rejected';
 
 export type ShippingMethod = 'e_policy' | 'print_by_myself' | 'print_by_fairdee';
 

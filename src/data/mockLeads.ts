@@ -664,7 +664,7 @@ function generateHistoryLog(lead: Partial<Lead>, hasRework: boolean, createdOn: 
   // ===== STAGE 5: Status progression in to_convert stage =====
   // Simulate realistic status changes during conversion
   const conversionStatuses = ['pending', 'docs_missing', 'waiting_for_insurer', 'partially_added', 'completed', 'quotation_shared'];
-  const renewalStatuses = ['price_pending', 'revision_pending', 'price_ready'];
+  const renewalStatuses = ['price_pending', 'request_sent_to_insurer', 'pricelist_added', 'revision_pending', 'recheck_price_claim', 'pricelist_verified'];
   
   const isRenewal = lead.leadType === 'renewals';
   const statusList = isRenewal ? renewalStatuses : conversionStatuses;
@@ -676,7 +676,7 @@ function generateHistoryLog(lead: Partial<Lead>, hasRework: boolean, createdOn: 
       logs.push({
         id: `hl-${lead.id}-status-1`,
         action: 'status_changed',
-        triggeredBy: lead.scAssignee || lead.rfAssignee || 'System',
+        triggeredBy: 'System',
         triggeredAt: getTime(60),
         fromStatus: 'pending',
         toStatus: 'price_pending',
@@ -684,10 +684,10 @@ function generateHistoryLog(lead: Partial<Lead>, hasRework: boolean, createdOn: 
       logs.push({
         id: `hl-${lead.id}-status-2`,
         action: 'status_changed',
-        triggeredBy: lead.scAssignee || 'System',
+        triggeredBy: 'System',
         triggeredAt: getTime(120),
         fromStatus: 'price_pending',
-        toStatus: 'price_ready',
+        toStatus: 'request_sent_to_insurer',
       });
     } else {
       logs.push({
@@ -969,16 +969,18 @@ const generateLeads = (): Lead[] => {
     id++;
   }
 
-  // RENEWAL LEADS (8 dedicated renewal leads covering all statuses)
+  // RENEWAL LEADS (10 dedicated renewal leads covering all statuses)
   const renewalStatusScenarios: Array<{ status: Lead['saleStatus']; label: string }> = [
     { status: 'price_pending', label: 'Price Pending' },
-    { status: 'request_sent_to_insurer', label: 'Request Sent' },
+    { status: 'request_sent_to_insurer', label: 'Request Sent to Insurer' },
     { status: 'pricelist_added', label: 'Pricelist Added' },
     { status: 'revision_pending', label: 'Revision Pending' },
-    { status: 'recheck_price_claim', label: 'Recheck Price' },
+    { status: 'recheck_price_claim', label: 'Recheck Price (Claim)' },
+    { status: 'special_request_pending', label: 'Special Request Pending' },
     { status: 'pricelist_verified', label: 'Pricelist Verified' },
+    { status: 'quotation_shared_to_agent', label: 'Quotation Shared to Agent' },
     { status: 'renewal_rejected', label: 'Renewal Rejected' },
-    { status: 'quotation_shared_to_agent', label: 'Quotation Shared' },
+    { status: 'invalid', label: 'Invalid' },
   ];
 
   for (let i = 0; i < renewalStatusScenarios.length; i++) {
@@ -987,8 +989,6 @@ const generateLeads = (): Lead[] => {
     const createdOn = `${String(20 - i).padStart(2, '0')}-01-2026`;
     const createdOnFull = `${createdOn} 09:00`;
     const vehicle = getRandomVehicle();
-    const rfAssignee = i % 2 === 0 ? 'Pao' : rfStaff[i % rfStaff.length];
-    const scAssignee = i % 2 === 1 ? 'Pao' : scStaff[i % scStaff.length];
 
     const leadData: Partial<Lead> = {
       id: String(id),
@@ -1005,14 +1005,14 @@ const generateLeads = (): Lead[] => {
       vehicleYear: vehicle.year,
       vehicleProvince: vehicle.province,
       rfStatus: 'transferred',
-      scStatus: scAssignee ? 'claimed' : 'pending',
+      scStatus: i >= 4 ? 'claimed' : 'pending',
       saleStatus: scenario.status,
       paymentStatus: 'unpaid',
       policyAttached: false,
       reworkRequired: false,
       createdBy: 'agent',
-      rfAssignee,
-      scAssignee,
+      rfAssignee: rfStaff[i % rfStaff.length],
+      scAssignee: i >= 4 ? scStaff[i % scStaff.length] : undefined,
       ...getRandomEtaStatus(i + 50),
     };
 
@@ -1608,9 +1608,9 @@ export const mockReworkConfigs: ReworkConfig[] = [
 
   // === DEFAULT RENEWAL CONFIGS (5) — pre-seeded per US-25a ===
   { id: 'renew-1', configType: 'renewal', descriptionTh: '', descriptionEn: '', team: '', teamMembers: [], automationEnabled: false, assignment: 'none', stages: ['to_pay', 'to_report', 'to_issue', 'to_deliver', 'completed', 'cancelled'], movesToCancellation: false, partyType: 'internal', policyScope: 'both', statusFilter: 'price_pending', stickyEnabled: true, stickyColumns: ['SC', 'RF'] },
-  { id: 'renew-2', configType: 'renewal', descriptionTh: '', descriptionEn: '', team: '', teamMembers: [], automationEnabled: false, assignment: 'none', stages: ['to_pay', 'to_report', 'to_issue', 'to_deliver', 'completed', 'cancelled'], movesToCancellation: false, partyType: 'internal', policyScope: 'both', statusFilter: 'revision_pending', stickyEnabled: true, stickyColumns: ['SC', 'RF'] },
-  { id: 'renew-3', configType: 'renewal', descriptionTh: '', descriptionEn: '', team: '', teamMembers: [], automationEnabled: false, assignment: 'none', stages: ['to_pay', 'to_report', 'to_issue', 'to_deliver', 'completed', 'cancelled'], movesToCancellation: false, partyType: 'internal', policyScope: 'both', statusFilter: 'price_ready', stickyEnabled: true, stickyColumns: ['SC', 'RF'] },
-  { id: 'renew-4', configType: 'renewal', descriptionTh: '', descriptionEn: '', team: '', teamMembers: [], automationEnabled: false, assignment: 'none', stages: ['to_pay', 'to_report', 'to_issue', 'to_deliver', 'completed', 'cancelled'], movesToCancellation: false, partyType: 'internal', policyScope: 'both', statusFilter: 'revision_required', stickyEnabled: true, stickyColumns: ['SC', 'RF'] },
+  { id: 'renew-2', configType: 'renewal', descriptionTh: '', descriptionEn: '', team: '', teamMembers: [], automationEnabled: false, assignment: 'none', stages: ['to_pay', 'to_report', 'to_issue', 'to_deliver', 'completed', 'cancelled'], movesToCancellation: false, partyType: 'internal', policyScope: 'both', statusFilter: 'request_sent_to_insurer', stickyEnabled: true, stickyColumns: ['SC', 'RF'] },
+  { id: 'renew-3', configType: 'renewal', descriptionTh: '', descriptionEn: '', team: '', teamMembers: [], automationEnabled: false, assignment: 'none', stages: ['to_pay', 'to_report', 'to_issue', 'to_deliver', 'completed', 'cancelled'], movesToCancellation: false, partyType: 'internal', policyScope: 'both', statusFilter: 'pricelist_added', stickyEnabled: true, stickyColumns: ['SC', 'RF'] },
+  { id: 'renew-4', configType: 'renewal', descriptionTh: '', descriptionEn: '', team: '', teamMembers: [], automationEnabled: false, assignment: 'none', stages: ['to_pay', 'to_report', 'to_issue', 'to_deliver', 'completed', 'cancelled'], movesToCancellation: false, partyType: 'internal', policyScope: 'both', statusFilter: 'revision_pending', stickyEnabled: true, stickyColumns: ['SC', 'RF'] },
   { id: 'renew-5', configType: 'renewal', descriptionTh: '', descriptionEn: '', team: '', teamMembers: [], automationEnabled: false, assignment: 'none', stages: ['to_pay', 'to_report', 'to_issue', 'to_deliver', 'completed', 'cancelled'], movesToCancellation: false, partyType: 'internal', policyScope: 'both', statusFilter: 'renewal_rejected', stickyEnabled: false, stickyColumns: [] },
 
   // === DEFAULT POLICY CONFIGS (13) — pre-seeded per US-25a ===

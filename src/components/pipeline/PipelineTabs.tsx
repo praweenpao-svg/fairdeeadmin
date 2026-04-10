@@ -152,17 +152,16 @@ export function getLeadsForStage(leads: Lead[], stage: PipelineStage): Lead[] {
         const isInToConvert = 
           ['new_leads', 'coa', 'renewals'].includes(lead.leadType) &&
           lead.paymentStatus === 'unpaid' &&
-          ['pending', 'docs_missing', 'waiting_for_insurer', 'partially_added', 'completed', 'quotation_shared', 'invalid', 'price_pending', 'revision_pending', 'renewal_rejected', 'price_ready'].includes(lead.saleStatus);
+          ['pending', 'docs_missing', 'waiting_for_insurer', 'partially_added', 'completed', 'quotation_shared', 'invalid', 'price_pending', 'request_sent_to_insurer', 'pricelist_added', 'revision_pending', 'recheck_price_claim', 'special_request_pending', 'pricelist_verified', 'quotation_shared_to_agent', 'renewal_rejected'].includes(lead.saleStatus);
         return !isInToConvert;
       });
     case 'to_convert':
       // To Convert: leads with conversion statuses (unpaid, awaiting conversion)
-      // Includes renewal-specific statuses: price_pending, revision_pending, renewal_rejected, price_ready
       return leads.filter(
         (lead) =>
           ['new_leads', 'coa', 'renewals'].includes(lead.leadType) &&
           lead.paymentStatus === 'unpaid' &&
-          ['pending', 'docs_missing', 'waiting_for_insurer', 'partially_added', 'completed', 'quotation_shared', 'invalid', 'price_pending', 'revision_pending', 'renewal_rejected', 'price_ready'].includes(lead.saleStatus)
+          ['pending', 'docs_missing', 'waiting_for_insurer', 'partially_added', 'completed', 'quotation_shared', 'invalid', 'price_pending', 'request_sent_to_insurer', 'pricelist_added', 'revision_pending', 'recheck_price_claim', 'special_request_pending', 'pricelist_verified', 'quotation_shared_to_agent', 'renewal_rejected'].includes(lead.saleStatus)
       );
     case 'to_pay':
       // To Pay: leads with policy records in pending_payment OR legacy logic

@@ -72,8 +72,7 @@ const statusTranslations: Record<string, { en: string; th: string }> = {
   pricelist_verified: { en: 'Pricelist Verified', th: 'ยืนยันเบี้ยงานต่ออายุแล้ว' },
   quotation_shared_to_agent: { en: 'Quotation Shared to Agent', th: 'ส่งเบี้ยให้ตัวแทนแล้ว' },
   renewal_rejected: { en: 'Renewal Rejected', th: 'บ.ประกันปฎิเสธการต่ออายุ' },
-  price_ready: { en: 'Price Ready', th: 'ได้รับเบี้ยต่ออายุแล้ว' },
-  revision_required: { en: 'Revision Required', th: 'กำลังต่อรองกับบริษัทประกัน' },
+  // Post-lead statuses
   // Post-lead statuses
   pending_payment: { en: 'Pending', th: 'รอดำเนินการ' },
   pending_review: { en: 'Pending Review', th: 'รอตรวจเอกสาร' },
