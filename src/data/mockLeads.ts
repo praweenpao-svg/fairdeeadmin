@@ -969,16 +969,18 @@ const generateLeads = (): Lead[] => {
     id++;
   }
 
-  // RENEWAL LEADS (8 dedicated renewal leads covering all statuses)
+  // RENEWAL LEADS (10 dedicated renewal leads covering all statuses)
   const renewalStatusScenarios: Array<{ status: Lead['saleStatus']; label: string }> = [
     { status: 'price_pending', label: 'Price Pending' },
-    { status: 'request_sent_to_insurer', label: 'Request Sent' },
+    { status: 'request_sent_to_insurer', label: 'Request Sent to Insurer' },
     { status: 'pricelist_added', label: 'Pricelist Added' },
     { status: 'revision_pending', label: 'Revision Pending' },
-    { status: 'recheck_price_claim', label: 'Recheck Price' },
+    { status: 'recheck_price_claim', label: 'Recheck Price (Claim)' },
+    { status: 'special_request_pending', label: 'Special Request Pending' },
     { status: 'pricelist_verified', label: 'Pricelist Verified' },
+    { status: 'quotation_shared_to_agent', label: 'Quotation Shared to Agent' },
     { status: 'renewal_rejected', label: 'Renewal Rejected' },
-    { status: 'quotation_shared_to_agent', label: 'Quotation Shared' },
+    { status: 'invalid', label: 'Invalid' },
   ];
 
   for (let i = 0; i < renewalStatusScenarios.length; i++) {
@@ -987,8 +989,6 @@ const generateLeads = (): Lead[] => {
     const createdOn = `${String(20 - i).padStart(2, '0')}-01-2026`;
     const createdOnFull = `${createdOn} 09:00`;
     const vehicle = getRandomVehicle();
-    const rfAssignee = i % 2 === 0 ? 'Pao' : rfStaff[i % rfStaff.length];
-    const scAssignee = i % 2 === 1 ? 'Pao' : scStaff[i % scStaff.length];
 
     const leadData: Partial<Lead> = {
       id: String(id),
@@ -1005,14 +1005,14 @@ const generateLeads = (): Lead[] => {
       vehicleYear: vehicle.year,
       vehicleProvince: vehicle.province,
       rfStatus: 'transferred',
-      scStatus: scAssignee ? 'claimed' : 'pending',
+      scStatus: i >= 4 ? 'claimed' : 'pending',
       saleStatus: scenario.status,
       paymentStatus: 'unpaid',
       policyAttached: false,
       reworkRequired: false,
       createdBy: 'agent',
-      rfAssignee,
-      scAssignee,
+      rfAssignee: rfStaff[i % rfStaff.length],
+      scAssignee: i >= 4 ? scStaff[i % scStaff.length] : undefined,
       ...getRandomEtaStatus(i + 50),
     };
 
