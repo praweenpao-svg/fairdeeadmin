@@ -233,6 +233,7 @@ const Index = () => {
               myTeamOnly={myTeamOnly}
               onMyCasesChange={setMyCasesOnly}
               onMyTeamChange={setMyTeamOnly}
+              activeSubTab={leadSubTab}
             />
           ) : (
             <>

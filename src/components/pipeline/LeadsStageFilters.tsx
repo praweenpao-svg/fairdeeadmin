@@ -49,6 +49,21 @@ const leadStatusOptions: { id: string; en: string; th: string }[] = [
   { id: 'invalid', en: 'Invalid', th: 'ปฎิเสธโดย Admin' },
 ];
 
+// Renewal status options for renewals sub-tab
+const renewalStatusOptions: { id: string; en: string; th: string }[] = [
+  { id: 'all', en: 'All', th: 'ทั้งหมด' },
+  { id: 'price_pending', en: 'Price Pending', th: 'รอเพิ่มเบี้ยงานต่ออายุ' },
+  { id: 'request_sent_to_insurer', en: 'Request Sent to Insurer', th: 'ส่งคำขอไปยังบ.ประกันแล้ว' },
+  { id: 'pricelist_added', en: 'Pricelist Added', th: 'เพิ่มเบี้ยงานต่ออายุแล้ว' },
+  { id: 'revision_pending', en: 'Revision Pending', th: 'รอยืนยันเบี้ยงานต่ออายุ' },
+  { id: 'recheck_price_claim', en: 'Recheck Price (Claim)', th: 'รอยืนยันประวัติการเคลม' },
+  { id: 'special_request_pending', en: 'Special Request Pending', th: 'รอยืนยันผลการขออนุโลม' },
+  { id: 'pricelist_verified', en: 'Pricelist Verified', th: 'ยืนยันเบี้ยงานต่ออายุแล้ว' },
+  { id: 'quotation_shared_to_agent', en: 'Quotation Shared to Agent', th: 'ส่งเบี้ยให้ตัวแทนแล้ว' },
+  { id: 'renewal_rejected', en: 'Renewal Rejected', th: 'บ.ประกันปฎิเสธการต่ออายุ' },
+  { id: 'invalid', en: 'Invalid', th: 'ยกเลิก' },
+];
+
 const createdByOptions: { id: string; en: string; th: string }[] = [
   { id: 'all', en: 'All', th: 'ทั้งหมด' },
   { id: 'agent', en: 'Agent', th: 'Agent' },
@@ -110,6 +125,7 @@ interface LeadsStageFiltersProps {
   myTeamOnly: boolean;
   onMyCasesChange: (value: boolean) => void;
   onMyTeamChange: (value: boolean) => void;
+  activeSubTab?: 'new_leads' | 'renewals';
 }
 
 // Searchable select component for agents and staff
@@ -370,6 +386,7 @@ export function LeadsStageFilters({
   myTeamOnly,
   onMyCasesChange,
   onMyTeamChange,
+  activeSubTab = 'new_leads',
 }: LeadsStageFiltersProps) {
   const { language } = useLanguageStore();
   const [open, setOpen] = React.useState(false);
@@ -377,6 +394,7 @@ export function LeadsStageFilters({
 
   const rfStaff = mockStaffMembers.filter(s => s.team === 'AST RF').map(s => ({ id: s.id, name: s.name }));
   const scStaff = mockStaffMembers.filter(s => s.team === 'AST SC').map(s => ({ id: s.id, name: s.name }));
+  const activeStatusOptions = activeSubTab === 'renewals' ? renewalStatusOptions : leadStatusOptions;
 
   // Sync owner filter with myCasesOnly and myTeamOnly props
   React.useEffect(() => {
@@ -475,7 +493,7 @@ export function LeadsStageFilters({
       chips.push({
         key: 'leadStatuses',
         label: language === 'th' ? 'สถานะงาน' : 'Lead Status',
-        values: formatMultiSelectValues(filters.leadStatuses, leadStatusOptions),
+        values: formatMultiSelectValues(filters.leadStatuses, activeStatusOptions),
         count: filters.leadStatuses.length,
         onClear: () => onFiltersChange({ ...filters, leadStatuses: ['all'] }),
       });
@@ -615,7 +633,7 @@ export function LeadsStageFilters({
           <div className="space-y-2">
             <Label className="text-sm font-medium">{language === 'th' ? 'สถานะงาน' : 'Lead Status'}</Label>
             <MultiSelectDropdown
-              options={leadStatusOptions}
+              options={activeStatusOptions}
               selectedValues={localFilters.leadStatuses}
               onChange={(id, checked) => handleMultiSelectChange('leadStatuses', id, checked)}
               maxVisibleItems={2}
