@@ -664,7 +664,7 @@ function generateHistoryLog(lead: Partial<Lead>, hasRework: boolean, createdOn: 
   // ===== STAGE 5: Status progression in to_convert stage =====
   // Simulate realistic status changes during conversion
   const conversionStatuses = ['pending', 'docs_missing', 'waiting_for_insurer', 'partially_added', 'completed', 'quotation_shared'];
-  const renewalStatuses = ['price_pending', 'revision_pending', 'price_ready'];
+  const renewalStatuses = ['price_pending', 'request_sent_to_insurer', 'pricelist_added', 'revision_pending', 'recheck_price_claim', 'pricelist_verified'];
   
   const isRenewal = lead.leadType === 'renewals';
   const statusList = isRenewal ? renewalStatuses : conversionStatuses;
@@ -676,7 +676,7 @@ function generateHistoryLog(lead: Partial<Lead>, hasRework: boolean, createdOn: 
       logs.push({
         id: `hl-${lead.id}-status-1`,
         action: 'status_changed',
-        triggeredBy: lead.scAssignee || lead.rfAssignee || 'System',
+        triggeredBy: 'System',
         triggeredAt: getTime(60),
         fromStatus: 'pending',
         toStatus: 'price_pending',
@@ -684,10 +684,10 @@ function generateHistoryLog(lead: Partial<Lead>, hasRework: boolean, createdOn: 
       logs.push({
         id: `hl-${lead.id}-status-2`,
         action: 'status_changed',
-        triggeredBy: lead.scAssignee || 'System',
+        triggeredBy: 'System',
         triggeredAt: getTime(120),
         fromStatus: 'price_pending',
-        toStatus: 'price_ready',
+        toStatus: 'request_sent_to_insurer',
       });
     } else {
       logs.push({
