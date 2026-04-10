@@ -1088,34 +1088,40 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
 
     // Renewal-specific validations
     if (lead.leadType === 'renewals') {
+      const currentStatus = lead.saleStatus || 'price_pending';
+      const allowed = getRenewalAllowedManualStatuses(currentStatus, lead);
       const hasCompletedRecheck = (lead as any)._hasCompletedRecheckPrice === true;
       const hasCompletedSpecialRequest = (lead as any)._hasCompletedSpecialRequest === true;
       const hasCompletedEither = hasCompletedRecheck || hasCompletedSpecialRequest;
 
-      // R-19a: Block manual set to Pricelist Added if Recheck/Special Request already done
-      if (newStatus === 'pricelist_added' && hasCompletedEither) {
-        toast.error(
-          language === 'th'
-            ? 'ไม่สามารถย้อนกลับไปยัง "เพิ่มเบี้ยงานต่ออายุแล้ว" ได้เนื่องจากผ่านขั้นตอน "รอยืนยันประวัติการเคลม" แล้ว สามารถตั้งค่าเป็น "ยืนยันเบี้ยงานต่ออายุแล้ว" แทนได้'
-            : 'This lead has already been through Recheck Price (Claim). You cannot revert to Pricelist Added — you can set it to Pricelist Verified instead.',
-          { duration: 5000 }
-        );
+      // Block if not in allowed manual transitions (and not same status)
+      if (newStatus !== currentStatus && !allowed.includes(newStatus)) {
+        // R-19a: specific message for pricelist_added block
+        if (newStatus === 'pricelist_added' && hasCompletedEither) {
+          toast.error(
+            language === 'th'
+              ? 'ไม่สามารถย้อนกลับไปยัง "เพิ่มเบี้ยงานต่ออายุแล้ว" ได้เนื่องจากผ่านขั้นตอน "รอยืนยันประวัติการเคลม" แล้ว สามารถตั้งค่าเป็น "ยืนยันเบี้ยงานต่ออายุแล้ว" แทนได้'
+              : 'This lead has already been through Recheck Price (Claim). You cannot revert to Pricelist Added — you can set it to Pricelist Verified instead.',
+            { duration: 5000 }
+          );
+        } else if (newStatus === 'pricelist_verified' && !hasCompletedEither) {
+          // R-19c: specific message for pricelist_verified block
+          toast.error(
+            language === 'th'
+              ? 'ไม่สามารถตั้งค่าเป็น "ยืนยันเบี้ยงานต่ออายุแล้ว" ได้ กรุณาดำเนินการ "รอยืนยันประวัติการเคลม" ก่อน'
+              : 'You cannot manually set this lead to Pricelist Verified — Recheck Price (Claim) must be completed first.',
+            { duration: 5000 }
+          );
+        } else {
+          toast.error(
+            language === 'th'
+              ? 'ไม่สามารถเปลี่ยนสถานะนี้ได้'
+              : 'This status transition is not allowed.',
+            { duration: 3000 }
+          );
+        }
         return;
       }
-
-      // R-19c: Block manual set to Pricelist Verified unless Recheck/Special Request already done
-      if (newStatus === 'pricelist_verified' && !hasCompletedEither) {
-        toast.error(
-          language === 'th'
-            ? 'ไม่สามารถตั้งค่าเป็น "ยืนยันเบี้ยงานต่ออายุแล้ว" ได้ กรุณาดำเนินการ "รอยืนยันประวัติการเคลม" ก่อน'
-            : 'You cannot manually set this lead to Pricelist Verified — Recheck Price (Claim) must be completed first.',
-          { duration: 5000 }
-        );
-        return;
-      }
-
-      // R-24: Setting Recheck Price (Claim) via dropdown → no email sent
-      // Just proceed with status change
     }
 
     const timestamp = new Date().toLocaleString('en-US', {
