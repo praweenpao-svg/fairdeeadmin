@@ -969,6 +969,61 @@ const generateLeads = (): Lead[] => {
     id++;
   }
 
+  // RENEWAL LEADS (8 dedicated renewal leads covering all statuses)
+  const renewalStatusScenarios: Array<{ status: Lead['saleStatus']; label: string }> = [
+    { status: 'price_pending', label: 'Price Pending' },
+    { status: 'request_sent_to_insurer', label: 'Request Sent' },
+    { status: 'pricelist_added', label: 'Pricelist Added' },
+    { status: 'revision_pending', label: 'Revision Pending' },
+    { status: 'recheck_price_claim', label: 'Recheck Price' },
+    { status: 'pricelist_verified', label: 'Pricelist Verified' },
+    { status: 'renewal_rejected', label: 'Renewal Rejected' },
+    { status: 'quotation_shared_to_agent', label: 'Quotation Shared' },
+  ];
+
+  for (let i = 0; i < renewalStatusScenarios.length; i++) {
+    const scenario = renewalStatusScenarios[i];
+    const agent = agents[i % agents.length];
+    const createdOn = `${String(20 - i).padStart(2, '0')}-01-2026`;
+    const createdOnFull = `${createdOn} 09:00`;
+    const vehicle = getRandomVehicle();
+    const rfAssignee = i % 2 === 0 ? 'Pao' : rfStaff[i % rfStaff.length];
+    const scAssignee = i % 2 === 1 ? 'Pao' : scStaff[i % scStaff.length];
+
+    const leadData: Partial<Lead> = {
+      id: String(id),
+      leadNumber: `#${200020 + i}`,
+      leadType: 'renewals',
+      paymentType: i % 2 === 0 ? 'full' : 'installment',
+      agentId: agent.id,
+      agentName: agent.name,
+      createdOn: createdOnFull,
+      updatedOn: generateUpdatedOn(createdOn, i % 8),
+      vehicleDetails: vehiclePlates[i % vehiclePlates.length],
+      vehicleBrand: vehicle.brand,
+      vehicleSubBrand: vehicle.subBrand,
+      vehicleYear: vehicle.year,
+      vehicleProvince: vehicle.province,
+      rfStatus: 'transferred',
+      scStatus: scAssignee ? 'claimed' : 'pending',
+      saleStatus: scenario.status,
+      paymentStatus: 'unpaid',
+      policyAttached: false,
+      reworkRequired: false,
+      createdBy: 'agent',
+      rfAssignee,
+      scAssignee,
+      ...getRandomEtaStatus(i + 50),
+    };
+
+    leads.push({
+      ...leadData,
+      historyLog: generateHistoryLog(leadData, false, createdOnFull),
+      reworkHistory: [],
+    } as Lead);
+    id++;
+  }
+
   // TO PAY (6 leads) - with policyType and policyRecords
   // VMI and CMI always move together at To Pay stage (payment is one-go for both)
   const toPayScenarios: Array<{ policyType: PolicyType; vmiStatus: PolicyStatus; cmiStatus?: PolicyStatus }> = [
