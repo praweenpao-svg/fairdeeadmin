@@ -908,7 +908,7 @@ const generateLeads = (): Lead[] => {
   // TO CONVERT (8 leads) - unconverted leads with unpaid + conversion statuses
   const newLeadsStatuses = ['pending', 'docs_missing', 'waiting_for_insurer', 'quotation_shared'];
   const coaStatuses = ['pending', 'waiting_for_insurer', 'quotation_shared'];
-  const renewalStatuses = ['price_pending', 'price_ready'];
+  const renewalStatuses = ['price_pending', 'request_sent_to_insurer', 'pricelist_added', 'revision_pending', 'recheck_price_claim', 'pricelist_verified', 'renewal_rejected', 'quotation_shared_to_agent'];
 
   for (let i = 0; i < 8; i++) {
     const agent = agents[i % agents.length];

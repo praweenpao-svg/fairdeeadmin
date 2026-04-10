@@ -61,11 +61,17 @@ const statusTranslations: Record<string, { en: string; th: string }> = {
   partially_added: { en: 'Partially Added', th: 'มีเบี้ยบางส่วนแล้ว' },
   completed: { en: 'Completed', th: 'เสร็จแล้ว' },
   quotation_shared: { en: 'Quotation Shared', th: 'ส่งเบี้ยให้ตัวแทนแล้ว' },
-  invalid: { en: 'Invalid', th: 'ปฎิเสธโดย Admin' },
-  // Pre-lead statuses (renewals only)
-  price_pending: { en: 'Price Pending', th: 'ยังไม่ทราบเบี้ยต่ออายุ' },
-  revision_pending: { en: 'Revision Pending', th: 'กำลังต่อรองกับบริษัทประกัน' },
-  renewal_rejected: { en: 'Renewal Rejected', th: 'ปฎิเสธการต่ออายุ' },
+  invalid: { en: 'Invalid', th: 'ยกเลิก' },
+  // Renewal-specific statuses
+  price_pending: { en: 'Price Pending', th: 'รอเพิ่มเบี้ยงานต่ออายุ' },
+  request_sent_to_insurer: { en: 'Request Sent to Insurer', th: 'ส่งคำขอไปยังบ.ประกันแล้ว' },
+  pricelist_added: { en: 'Pricelist Added', th: 'เพิ่มเบี้ยงานต่ออายุแล้ว' },
+  revision_pending: { en: 'Revision Pending', th: 'รอยืนยันเบี้ยงานต่ออายุ' },
+  recheck_price_claim: { en: 'Recheck Price (Claim)', th: 'รอยืนยันประวัติการเคลม' },
+  special_request_pending: { en: 'Special Request Pending', th: 'รอยืนยันผลการขออนุโลม' },
+  pricelist_verified: { en: 'Pricelist Verified', th: 'ยืนยันเบี้ยงานต่ออายุแล้ว' },
+  quotation_shared_to_agent: { en: 'Quotation Shared to Agent', th: 'ส่งเบี้ยให้ตัวแทนแล้ว' },
+  renewal_rejected: { en: 'Renewal Rejected', th: 'บ.ประกันปฎิเสธการต่ออายุ' },
   price_ready: { en: 'Price Ready', th: 'ได้รับเบี้ยต่ออายุแล้ว' },
   revision_required: { en: 'Revision Required', th: 'กำลังต่อรองกับบริษัทประกัน' },
   // Post-lead statuses
@@ -108,12 +114,50 @@ const statusOptionsByLeadType: Record<string, string[]> = {
   ],
   renewals: [
     'price_pending',
+    'request_sent_to_insurer',
+    'pricelist_added',
     'revision_pending',
+    'recheck_price_claim',
+    'special_request_pending',
+    'pricelist_verified',
+    'quotation_shared_to_agent',
     'renewal_rejected',
-    'price_ready',
-    'revision_required',
+    'invalid',
   ],
 };
+
+// Manual status transition rules for renewals per the spec
+// Returns allowed manual next statuses for a given current renewal status
+function getRenewalAllowedManualStatuses(currentStatus: string, lead?: Lead): string[] {
+  // Track if recheck price or special request has been done (using a flag on the lead)
+  const hasCompletedRecheckOrSpecialRequest = lead ? 
+    (lead as any)._hasCompletedRecheckPrice || (lead as any)._hasCompletedSpecialRequest : false;
+
+  switch (currentStatus) {
+    case 'price_pending':
+      return ['renewal_rejected'];
+    case 'request_sent_to_insurer':
+      return ['renewal_rejected'];
+    case 'pricelist_added':
+      return ['recheck_price_claim', 'renewal_rejected'];
+    case 'revision_pending':
+      return ['pricelist_added', 'renewal_rejected'];
+    case 'recheck_price_claim':
+      return ['pricelist_verified', 'renewal_rejected'];
+    case 'pricelist_verified':
+      return ['renewal_rejected'];
+    case 'quotation_shared_to_agent':
+      return ['renewal_rejected'];
+    case 'renewal_rejected':
+      return []; // No dropdown exits — exits via Request Exception action only
+    case 'special_request_pending':
+      return ['invalid'];
+    case 'invalid':
+      return []; // Terminal
+    default:
+      return ['renewal_rejected'];
+  }
+}
 
 const statusOptionsByStage: Record<PipelineStage, string[]> = {
   all: [
@@ -1041,54 +1085,84 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
         setRemarksDialogOpen(true);
       }
       return;
-    } else {
-      const timestamp = new Date().toLocaleString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
+    }
 
-      // Create history log entry for status change
-      const historyLogEntry: HistoryLogEntry = {
-        id: crypto.randomUUID(),
-        action: 'status_changed',
-        triggeredBy: CURRENT_USER,
-        triggeredAt: timestamp,
-        fromStatus: lead.saleStatus,
-        toStatus: newStatus,
-      };
+    // Renewal-specific validations
+    if (lead.leadType === 'renewals') {
+      const hasCompletedRecheck = (lead as any)._hasCompletedRecheckPrice === true;
+      const hasCompletedSpecialRequest = (lead as any)._hasCompletedSpecialRequest === true;
+      const hasCompletedEither = hasCompletedRecheck || hasCompletedSpecialRequest;
 
-      // When status changes to pending_review at To Report, assign DE
-      const updates: Partial<Lead> = {
-        saleStatus: newStatus as Lead['saleStatus'],
-        reworkRequired: false,
-        reworkReasonId: undefined,
-        assignedTo: undefined,
-        historyLog: [...(lead.historyLog || []), historyLogEntry],
-      };
-
-      // Auto-assign DE when entering pending_review at To Report stage
-      if (stage === 'to_report' && newStatus === 'pending_review' && !lead.deAssignee) {
-        const newDE = getNextDERoundRobin();
-        updates.deAssignee = newDE;
-        // Add assignee change to history
-        if (newDE) {
-          updates.historyLog = [...(updates.historyLog || []), {
-            id: crypto.randomUUID(),
-            action: 'assignee_changed' as const,
-            triggeredBy: 'System (Round Robin)',
-            triggeredAt: timestamp,
-            assigneeType: 'de' as const,
-            fromAssignee: undefined,
-            toAssignee: newDE,
-          }];
-        }
+      // R-19a: Block manual set to Pricelist Added if Recheck/Special Request already done
+      if (newStatus === 'pricelist_added' && hasCompletedEither) {
+        toast.error(
+          language === 'th'
+            ? 'ไม่สามารถย้อนกลับไปยัง "เพิ่มเบี้ยงานต่ออายุแล้ว" ได้เนื่องจากผ่านขั้นตอน "รอยืนยันประวัติการเคลม" แล้ว สามารถตั้งค่าเป็น "ยืนยันเบี้ยงานต่ออายุแล้ว" แทนได้'
+            : 'This lead has already been through Recheck Price (Claim). You cannot revert to Pricelist Added — you can set it to Pricelist Verified instead.',
+          { duration: 5000 }
+        );
+        return;
       }
 
-      onLeadUpdate?.(lead.id, updates);
+      // R-19c: Block manual set to Pricelist Verified unless Recheck/Special Request already done
+      if (newStatus === 'pricelist_verified' && !hasCompletedEither) {
+        toast.error(
+          language === 'th'
+            ? 'ไม่สามารถตั้งค่าเป็น "ยืนยันเบี้ยงานต่ออายุแล้ว" ได้ กรุณาดำเนินการ "รอยืนยันประวัติการเคลม" ก่อน'
+            : 'You cannot manually set this lead to Pricelist Verified — Recheck Price (Claim) must be completed first.',
+          { duration: 5000 }
+        );
+        return;
+      }
+
+      // R-24: Setting Recheck Price (Claim) via dropdown → no email sent
+      // Just proceed with status change
     }
+
+    const timestamp = new Date().toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+    // Create history log entry for status change
+    const historyLogEntry: HistoryLogEntry = {
+      id: crypto.randomUUID(),
+      action: 'status_changed',
+      triggeredBy: CURRENT_USER,
+      triggeredAt: timestamp,
+      fromStatus: lead.saleStatus,
+      toStatus: newStatus,
+    };
+
+    const updates: Partial<Lead> = {
+      saleStatus: newStatus as Lead['saleStatus'],
+      reworkRequired: false,
+      reworkReasonId: undefined,
+      assignedTo: undefined,
+      historyLog: [...(lead.historyLog || []), historyLogEntry],
+    };
+
+    // Auto-assign DE when entering pending_review at To Report stage
+    if (stage === 'to_report' && newStatus === 'pending_review' && !lead.deAssignee) {
+      const newDE = getNextDERoundRobin();
+      updates.deAssignee = newDE;
+      if (newDE) {
+        updates.historyLog = [...(updates.historyLog || []), {
+          id: crypto.randomUUID(),
+          action: 'assignee_changed' as const,
+          triggeredBy: 'System (Round Robin)',
+          triggeredAt: timestamp,
+          assigneeType: 'de' as const,
+          fromAssignee: undefined,
+          toAssignee: newDE,
+        }];
+      }
+    }
+
+    onLeadUpdate?.(lead.id, updates);
   };
 
   const handleReworkConfirm = (reasonId: string, details: string, attachments: ReworkAttachment[], autoResolveDate?: string) => {
@@ -2132,20 +2206,35 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
                                 onValueChange={(value) => handleStatusChange(lead, value)}
                               >
                                 <SelectTrigger 
-                                  className="w-[200px] h-8 text-xs"
+                                  className="w-[220px] h-8 text-xs"
                                   style={getStatusStyles(lead.saleStatus || defaultStatusByStage[stage], leadStatusColors)}
                                 >
                                   <SelectValue placeholder={language === 'th' ? 'เลือกสถานะ' : 'Select status'} />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  {(stage === 'to_convert' && lead.leadType 
-                                    ? statusOptionsByLeadType[lead.leadType] || statusOptionsByStage[stage]
-                                    : statusOptionsByStage[stage]
-                                  ).map((statusValue) => (
-                                    <SelectItem key={statusValue} value={statusValue}>
-                                      {getStatusLabel(statusValue, language)}
-                                    </SelectItem>
-                                  ))}
+                                  {(() => {
+                                    // For renewals, use dynamic allowed statuses based on current status
+                                    if (stage === 'to_convert' && lead.leadType === 'renewals') {
+                                      const currentStatus = lead.saleStatus || 'price_pending';
+                                      const allowed = getRenewalAllowedManualStatuses(currentStatus, lead);
+                                      // Always show current status + allowed transitions
+                                      const options = [currentStatus, ...allowed.filter(s => s !== currentStatus)];
+                                      return options.map((statusValue) => (
+                                        <SelectItem key={statusValue} value={statusValue}>
+                                          {getStatusLabel(statusValue, language)}
+                                        </SelectItem>
+                                      ));
+                                    }
+                                    // For other lead types, use static options
+                                    const options = stage === 'to_convert' && lead.leadType 
+                                      ? statusOptionsByLeadType[lead.leadType] || statusOptionsByStage[stage]
+                                      : statusOptionsByStage[stage];
+                                    return options.map((statusValue) => (
+                                      <SelectItem key={statusValue} value={statusValue}>
+                                        {getStatusLabel(statusValue, language)}
+                                      </SelectItem>
+                                    ));
+                                  })()}
                                 </SelectContent>
                               </Select>
                             )}
@@ -2185,17 +2274,19 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
                               <History className="w-4 h-4 mr-2" />
                               {language === 'th' ? 'ประวัติการทำงาน' : 'History Log'}
                             </DropdownMenuItem>
-                            {lead.leadType === 'renewals' && (
-                              <>
-                                <DropdownMenuItem onClick={() => { setEmailModalLead(lead); setRecheckPriceOpen(true); }}>
-                                  <RefreshCw className="w-4 h-4 mr-2" />
-                                  {language === 'th' ? 'ตรวจสอบราคาใหม่ (เคลม)' : 'Recheck Price (Claim)'}
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => { setEmailModalLead(lead); setRequestExceptionOpen(true); }}>
-                                  <AlertTriangle className="w-4 h-4 mr-2" />
-                                  {language === 'th' ? 'ขอยกเว้นพิเศษ' : 'Request Exception'}
-                                </DropdownMenuItem>
-                              </>
+                            {/* R-21: Recheck Price visible at pricelist_added or pricelist_verified */}
+                            {lead.leadType === 'renewals' && (lead.saleStatus === 'pricelist_added' || lead.saleStatus === 'pricelist_verified') && (
+                              <DropdownMenuItem onClick={() => { setEmailModalLead(lead); setRecheckPriceOpen(true); }}>
+                                <RefreshCw className="w-4 h-4 mr-2" />
+                                {language === 'th' ? 'ตรวจสอบราคาใหม่ (เคลม)' : 'Recheck Price (Claim)'}
+                              </DropdownMenuItem>
+                            )}
+                            {/* R-26: Request Exception visible at renewal_rejected */}
+                            {lead.leadType === 'renewals' && lead.saleStatus === 'renewal_rejected' && (
+                              <DropdownMenuItem onClick={() => { setEmailModalLead(lead); setRequestExceptionOpen(true); }}>
+                                <AlertTriangle className="w-4 h-4 mr-2" />
+                                {language === 'th' ? 'ขออนุโลม' : 'Request Exception'}
+                              </DropdownMenuItem>
                             )}
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -2743,24 +2834,56 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
             ? `เรียน ฝ่ายรับประกันภัย,\n\nขอแจ้งตรวจสอบราคาเบี้ยประกันภัยใหม่สำหรับลูกค้า:\n\nตัวแทน: ${emailModalLead?.agentName || ''}\nเลขที่: ${emailModalLead?.leadNumber || ''}\nรถ: ${emailModalLead?.vehicleDetails || ''}\n\nเนื่องจากมีประวัติเคลม กรุณาตรวจสอบและแจ้งราคาเบี้ยประกันภัยใหม่\n\nขอบคุณครับ/ค่ะ`
             : `Dear Underwriting Team,\n\nPlease recheck the insurance premium price for the following renewal:\n\nAgent: ${emailModalLead?.agentName || ''}\nReference: ${emailModalLead?.leadNumber || ''}\nVehicle: ${emailModalLead?.vehicleDetails || ''}\n\nDue to claim history, please review and provide the updated premium.\n\nThank you.`
         }
+        onSend={() => {
+          if (!emailModalLead) return;
+          // R-23: From Pricelist Added → Recheck Price (Claim). From Pricelist Verified → stay Pricelist Verified
+          const newStatus = emailModalLead.saleStatus === 'pricelist_added' ? 'recheck_price_claim' : emailModalLead.saleStatus;
+          const timestamp = new Date().toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+          const updates: Partial<Lead> = {
+            saleStatus: newStatus as Lead['saleStatus'],
+            historyLog: [...(emailModalLead.historyLog || []), {
+              id: crypto.randomUUID(),
+              action: 'status_changed' as const,
+              triggeredBy: CURRENT_USER,
+              triggeredAt: timestamp,
+              fromStatus: emailModalLead.saleStatus,
+              toStatus: newStatus,
+              comment: 'Recheck Price (Claim) email sent',
+            }],
+          };
+          // Mark that recheck price has been completed
+          (updates as any)._hasCompletedRecheckPrice = true;
+          onLeadUpdate?.(emailModalLead.id, updates);
+        }}
       />
 
       {/* Request Exception Email Modal */}
       <PreSendEmailModal
         open={requestExceptionOpen}
         onOpenChange={setRequestExceptionOpen}
-        title={language === 'th' ? 'ขอยกเว้นพิเศษ' : 'Request Exception'}
+        title={language === 'th' ? 'ขออนุโลม' : 'Request Exception'}
         leadNumber={emailModalLead?.leadNumber}
-        defaultSubject={
-          language === 'th'
-            ? `ขอยกเว้นพิเศษ - ${emailModalLead?.agentName || ''} (${emailModalLead?.leadNumber || ''})`
-            : `Request Exception - ${emailModalLead?.agentName || ''} (${emailModalLead?.leadNumber || ''})`
-        }
-        defaultBody={
-          language === 'th'
-            ? `เรียน ผู้จัดการ,\n\nขออนุมัติยกเว้นพิเศษสำหรับลูกค้า:\n\nตัวแทน: ${emailModalLead?.agentName || ''}\nเลขที่: ${emailModalLead?.leadNumber || ''}\nรถ: ${emailModalLead?.vehicleDetails || ''}\n\nเหตุผล:\n[กรุณาระบุเหตุผล]\n\nขอบคุณครับ/ค่ะ`
-            : `Dear Manager,\n\nI would like to request an exception approval for the following renewal:\n\nAgent: ${emailModalLead?.agentName || ''}\nReference: ${emailModalLead?.leadNumber || ''}\nVehicle: ${emailModalLead?.vehicleDetails || ''}\n\nReason:\n[Please specify the reason]\n\nThank you.`
-        }
+        defaultSubject=""
+        defaultBody=""
+        onSend={() => {
+          if (!emailModalLead) return;
+          // R-27/R-28: renewal_rejected → special_request_pending
+          const timestamp = new Date().toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+          const updates: Partial<Lead> = {
+            saleStatus: 'special_request_pending' as Lead['saleStatus'],
+            historyLog: [...(emailModalLead.historyLog || []), {
+              id: crypto.randomUUID(),
+              action: 'status_changed' as const,
+              triggeredBy: CURRENT_USER,
+              triggeredAt: timestamp,
+              fromStatus: emailModalLead.saleStatus,
+              toStatus: 'special_request_pending',
+              comment: 'Request Exception email sent',
+            }],
+          };
+          (updates as any)._hasCompletedSpecialRequest = true;
+          onLeadUpdate?.(emailModalLead.id, updates);
+        }}
       />
     </>
   );
