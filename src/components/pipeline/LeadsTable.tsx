@@ -2297,6 +2297,37 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
                               <History className="w-4 h-4 mr-2" />
                               {language === 'th' ? 'ประวัติการทำงาน' : 'History Log'}
                             </DropdownMenuItem>
+                            {/* Upload Pricelist: visible at price_pending, request_sent_to_insurer, revision_pending, recheck_price_claim, special_request_pending */}
+                            {lead.leadType === 'renewals' && ['price_pending', 'request_sent_to_insurer', 'revision_pending', 'recheck_price_claim', 'special_request_pending'].includes(lead.saleStatus) && (
+                              <DropdownMenuItem onClick={() => {
+                                if (!lead) return;
+                                const hasCompletedRecheck = (lead as any)._hasCompletedRecheckPrice === true;
+                                const hasCompletedSpecialRequest = (lead as any)._hasCompletedSpecialRequest === true;
+                                const hasCompletedEither = hasCompletedRecheck || hasCompletedSpecialRequest;
+                                // R-12/R-28: If recheck/special request done → Pricelist Verified, else → Pricelist Added
+                                // R-20: Returning from Revision Pending → Pricelist Added
+                                const newStatus = (hasCompletedEither || lead.saleStatus === 'recheck_price_claim' || lead.saleStatus === 'special_request_pending')
+                                  ? 'pricelist_verified' 
+                                  : 'pricelist_added';
+                                const timestamp = new Date().toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                                onLeadUpdate?.(lead.id, {
+                                  saleStatus: newStatus as Lead['saleStatus'],
+                                  historyLog: [...(lead.historyLog || []), {
+                                    id: crypto.randomUUID(),
+                                    action: 'status_changed' as const,
+                                    triggeredBy: CURRENT_USER,
+                                    triggeredAt: timestamp,
+                                    fromStatus: lead.saleStatus,
+                                    toStatus: newStatus,
+                                    comment: 'Pricelist uploaded',
+                                  }],
+                                });
+                                toast.success(language === 'th' ? 'อัปโหลดรายการราคาเรียบร้อย' : 'Pricelist uploaded successfully');
+                              }}>
+                                <Upload className="w-4 h-4 mr-2" />
+                                {language === 'th' ? 'อัปโหลดรายการราคา' : 'Upload Pricelist'}
+                              </DropdownMenuItem>
+                            )}
                             {/* R-21: Recheck Price visible at pricelist_added or pricelist_verified */}
                             {lead.leadType === 'renewals' && (lead.saleStatus === 'pricelist_added' || lead.saleStatus === 'pricelist_verified') && (
                               <DropdownMenuItem onClick={() => { setEmailModalLead(lead); setRecheckPriceOpen(true); }}>
@@ -2309,6 +2340,29 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
                               <DropdownMenuItem onClick={() => { setEmailModalLead(lead); setRequestExceptionOpen(true); }}>
                                 <AlertTriangle className="w-4 h-4 mr-2" />
                                 {language === 'th' ? 'ขออนุโลม' : 'Request Exception'}
+                              </DropdownMenuItem>
+                            )}
+                            {/* R-30: Share Quotation / Go to Quotes visible at pricelist_added, recheck_price_claim, pricelist_verified */}
+                            {lead.leadType === 'renewals' && ['pricelist_added', 'recheck_price_claim', 'pricelist_verified'].includes(lead.saleStatus) && (
+                              <DropdownMenuItem onClick={() => {
+                                if (!lead) return;
+                                const timestamp = new Date().toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                                onLeadUpdate?.(lead.id, {
+                                  saleStatus: 'quotation_shared_to_agent' as Lead['saleStatus'],
+                                  historyLog: [...(lead.historyLog || []), {
+                                    id: crypto.randomUUID(),
+                                    action: 'status_changed' as const,
+                                    triggeredBy: CURRENT_USER,
+                                    triggeredAt: timestamp,
+                                    fromStatus: lead.saleStatus,
+                                    toStatus: 'quotation_shared_to_agent',
+                                    comment: 'Quotation shared to agent',
+                                  }],
+                                });
+                                toast.success(language === 'th' ? 'ส่งเบี้ยให้ตัวแทนเรียบร้อย' : 'Quotation shared to agent');
+                              }}>
+                                <Share2 className="w-4 h-4 mr-2" />
+                                {language === 'th' ? 'ส่งเบี้ยให้ตัวแทน (Go to Quotes)' : 'Share Quotation (Go to Quotes)'}
                               </DropdownMenuItem>
                             )}
                           </DropdownMenuContent>
