@@ -42,7 +42,7 @@ import { InsurersExpandableRow } from './InsurersExpandableRow';
 import { PolicyRemarksReworkDialog } from './PolicyRemarksReworkDialog';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { PreSendEmailModal } from './PreSendEmailModal';
-import { RefreshCw, AlertTriangle } from 'lucide-react';
+import { RefreshCw, AlertTriangle, Upload, Share2 } from 'lucide-react';
 
 interface LeadsTableProps {
   leads: Lead[];
