@@ -24,7 +24,13 @@ export type SaleStatus =
   | 'policy_cancelled'
   // Renewal-specific statuses
   | 'price_pending'
+  | 'request_sent_to_insurer'
+  | 'pricelist_added'
   | 'revision_pending'
+  | 'recheck_price_claim'
+  | 'special_request_pending'
+  | 'pricelist_verified'
+  | 'quotation_shared_to_agent'
   | 'renewal_rejected'
   | 'price_ready';
 

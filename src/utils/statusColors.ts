@@ -18,7 +18,13 @@ export const leadStatusColors: Record<string, StatusColorConfig> = {
   invalid: { text: '#DC2626', bg: 'rgba(220, 38, 38, 0.08)' }, // Red
   // Renewal statuses
   price_pending: { text: '#2563EB', bg: 'rgba(37, 99, 235, 0.08)' }, // Blue
+  request_sent_to_insurer: { text: '#2563EB', bg: 'rgba(37, 99, 235, 0.08)' }, // Blue
+  pricelist_added: { text: '#16A34A', bg: 'rgba(22, 163, 74, 0.08)' }, // Green
   revision_pending: { text: '#CA8A04', bg: 'rgba(202, 138, 4, 0.08)' }, // Yellow
+  recheck_price_claim: { text: '#F97316', bg: 'rgba(249, 115, 22, 0.12)' }, // Orange
+  special_request_pending: { text: '#CA8A04', bg: 'rgba(202, 138, 4, 0.08)' }, // Yellow
+  pricelist_verified: { text: '#16A34A', bg: 'rgba(22, 163, 74, 0.08)' }, // Green
+  quotation_shared_to_agent: { text: '#16A34A', bg: 'rgba(22, 163, 74, 0.08)' }, // Green
   renewal_rejected: { text: '#DC2626', bg: 'rgba(220, 38, 38, 0.08)' }, // Red
   price_ready: { text: '#16A34A', bg: 'rgba(22, 163, 74, 0.08)' }, // Green
   revision_required: { text: '#CA8A04', bg: 'rgba(202, 138, 4, 0.08)' }, // Yellow
