@@ -5,15 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { X, Paperclip, ChevronDown, ChevronUp, FileText } from 'lucide-react';
+import { X, Paperclip, FileText } from 'lucide-react';
 import { toast } from 'sonner';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 
 interface Attachment {
   id: string;
@@ -48,8 +41,6 @@ interface PreSendEmailModalProps {
   onSend?: () => void;
   /** Pre-attach a renewal notice PDF */
   includeRenewalNotice?: boolean;
-  /** Hide the sender (From) row by default */
-  hideSenderByDefault?: boolean;
 }
 
 export function PreSendEmailModal({
@@ -61,14 +52,11 @@ export function PreSendEmailModal({
   leadNumber,
   onSend,
   includeRenewalNotice = false,
-  hideSenderByDefault = false,
 }: PreSendEmailModalProps) {
   const { language } = useLanguageStore();
   const [subject, setSubject] = useState(defaultSubject);
   const [body, setBody] = useState(defaultBody);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
-  const [senderEmail, setSenderEmail] = useState(SENDER_EMAILS[2].value);
-  const [showSender, setShowSender] = useState(!hideSenderByDefault);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Reset when modal opens
@@ -76,8 +64,6 @@ export function PreSendEmailModal({
     if (open) {
       setSubject(defaultSubject);
       setBody(defaultBody);
-      setSenderEmail(SENDER_EMAILS[2].value);
-      setShowSender(!hideSenderByDefault);
       // Set default attachments
       if (includeRenewalNotice) {
         setAttachments([{ ...RENEWAL_NOTICE_ATTACHMENT }]);
@@ -85,7 +71,7 @@ export function PreSendEmailModal({
         setAttachments([]);
       }
     }
-  }, [open, defaultSubject, defaultBody, includeRenewalNotice, hideSenderByDefault]);
+  }, [open, defaultSubject, defaultBody, includeRenewalNotice]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -128,36 +114,6 @@ export function PreSendEmailModal({
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Sender - collapsible */}
-          <div className="space-y-1.5">
-            <button
-              type="button"
-              onClick={() => setShowSender(prev => !prev)}
-              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {showSender ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-              {language === 'th' ? 'ส่งจาก' : 'From'}
-              {!showSender && (
-                <span className="ml-1 text-[10px] text-muted-foreground/70">
-                  ({SENDER_EMAILS.find(s => s.value === senderEmail)?.label || 'FM AST'})
-                </span>
-              )}
-            </button>
-            {showSender && (
-              <Select value={senderEmail} onValueChange={setSenderEmail}>
-                <SelectTrigger className="h-9 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {SENDER_EMAILS.map(sender => (
-                    <SelectItem key={sender.value} value={sender.value} className="text-xs">
-                      {sender.label} — {sender.value}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          </div>
 
           {/* Subject */}
           <div className="space-y-1.5">
@@ -196,11 +152,6 @@ export function PreSendEmailModal({
                       )}
                       <span className="text-[11px] font-medium">{att.name}</span>
                       <span className="text-[10px] text-muted-foreground">({att.size})</span>
-                      {att.isDefault && (
-                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-accent text-accent-foreground">
-                          {language === 'th' ? 'แนบอัตโนมัติ' : 'Auto-attached'}
-                        </span>
-                      )}
                     </div>
                     <button
                       onClick={() => handleRemoveAttachment(att.id)}
