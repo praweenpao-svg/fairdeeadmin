@@ -2274,17 +2274,19 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
                               <History className="w-4 h-4 mr-2" />
                               {language === 'th' ? 'ประวัติการทำงาน' : 'History Log'}
                             </DropdownMenuItem>
-                            {lead.leadType === 'renewals' && (
-                              <>
-                                <DropdownMenuItem onClick={() => { setEmailModalLead(lead); setRecheckPriceOpen(true); }}>
-                                  <RefreshCw className="w-4 h-4 mr-2" />
-                                  {language === 'th' ? 'ตรวจสอบราคาใหม่ (เคลม)' : 'Recheck Price (Claim)'}
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => { setEmailModalLead(lead); setRequestExceptionOpen(true); }}>
-                                  <AlertTriangle className="w-4 h-4 mr-2" />
-                                  {language === 'th' ? 'ขอยกเว้นพิเศษ' : 'Request Exception'}
-                                </DropdownMenuItem>
-                              </>
+                            {/* R-21: Recheck Price visible at pricelist_added or pricelist_verified */}
+                            {lead.leadType === 'renewals' && (lead.saleStatus === 'pricelist_added' || lead.saleStatus === 'pricelist_verified') && (
+                              <DropdownMenuItem onClick={() => { setEmailModalLead(lead); setRecheckPriceOpen(true); }}>
+                                <RefreshCw className="w-4 h-4 mr-2" />
+                                {language === 'th' ? 'ตรวจสอบราคาใหม่ (เคลม)' : 'Recheck Price (Claim)'}
+                              </DropdownMenuItem>
+                            )}
+                            {/* R-26: Request Exception visible at renewal_rejected */}
+                            {lead.leadType === 'renewals' && lead.saleStatus === 'renewal_rejected' && (
+                              <DropdownMenuItem onClick={() => { setEmailModalLead(lead); setRequestExceptionOpen(true); }}>
+                                <AlertTriangle className="w-4 h-4 mr-2" />
+                                {language === 'th' ? 'ขออนุโลม' : 'Request Exception'}
+                              </DropdownMenuItem>
                             )}
                           </DropdownMenuContent>
                         </DropdownMenu>
