@@ -2834,24 +2834,56 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
             ? `เรียน ฝ่ายรับประกันภัย,\n\nขอแจ้งตรวจสอบราคาเบี้ยประกันภัยใหม่สำหรับลูกค้า:\n\nตัวแทน: ${emailModalLead?.agentName || ''}\nเลขที่: ${emailModalLead?.leadNumber || ''}\nรถ: ${emailModalLead?.vehicleDetails || ''}\n\nเนื่องจากมีประวัติเคลม กรุณาตรวจสอบและแจ้งราคาเบี้ยประกันภัยใหม่\n\nขอบคุณครับ/ค่ะ`
             : `Dear Underwriting Team,\n\nPlease recheck the insurance premium price for the following renewal:\n\nAgent: ${emailModalLead?.agentName || ''}\nReference: ${emailModalLead?.leadNumber || ''}\nVehicle: ${emailModalLead?.vehicleDetails || ''}\n\nDue to claim history, please review and provide the updated premium.\n\nThank you.`
         }
+        onSend={() => {
+          if (!emailModalLead) return;
+          // R-23: From Pricelist Added → Recheck Price (Claim). From Pricelist Verified → stay Pricelist Verified
+          const newStatus = emailModalLead.saleStatus === 'pricelist_added' ? 'recheck_price_claim' : emailModalLead.saleStatus;
+          const timestamp = new Date().toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+          const updates: Partial<Lead> = {
+            saleStatus: newStatus as Lead['saleStatus'],
+            historyLog: [...(emailModalLead.historyLog || []), {
+              id: crypto.randomUUID(),
+              action: 'status_changed' as const,
+              triggeredBy: CURRENT_USER,
+              triggeredAt: timestamp,
+              fromStatus: emailModalLead.saleStatus,
+              toStatus: newStatus,
+              comment: 'Recheck Price (Claim) email sent',
+            }],
+          };
+          // Mark that recheck price has been completed
+          (updates as any)._hasCompletedRecheckPrice = true;
+          onLeadUpdate?.(emailModalLead.id, updates);
+        }}
       />
 
       {/* Request Exception Email Modal */}
       <PreSendEmailModal
         open={requestExceptionOpen}
         onOpenChange={setRequestExceptionOpen}
-        title={language === 'th' ? 'ขอยกเว้นพิเศษ' : 'Request Exception'}
+        title={language === 'th' ? 'ขออนุโลม' : 'Request Exception'}
         leadNumber={emailModalLead?.leadNumber}
-        defaultSubject={
-          language === 'th'
-            ? `ขอยกเว้นพิเศษ - ${emailModalLead?.agentName || ''} (${emailModalLead?.leadNumber || ''})`
-            : `Request Exception - ${emailModalLead?.agentName || ''} (${emailModalLead?.leadNumber || ''})`
-        }
-        defaultBody={
-          language === 'th'
-            ? `เรียน ผู้จัดการ,\n\nขออนุมัติยกเว้นพิเศษสำหรับลูกค้า:\n\nตัวแทน: ${emailModalLead?.agentName || ''}\nเลขที่: ${emailModalLead?.leadNumber || ''}\nรถ: ${emailModalLead?.vehicleDetails || ''}\n\nเหตุผล:\n[กรุณาระบุเหตุผล]\n\nขอบคุณครับ/ค่ะ`
-            : `Dear Manager,\n\nI would like to request an exception approval for the following renewal:\n\nAgent: ${emailModalLead?.agentName || ''}\nReference: ${emailModalLead?.leadNumber || ''}\nVehicle: ${emailModalLead?.vehicleDetails || ''}\n\nReason:\n[Please specify the reason]\n\nThank you.`
-        }
+        defaultSubject=""
+        defaultBody=""
+        onSend={() => {
+          if (!emailModalLead) return;
+          // R-27/R-28: renewal_rejected → special_request_pending
+          const timestamp = new Date().toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+          const updates: Partial<Lead> = {
+            saleStatus: 'special_request_pending' as Lead['saleStatus'],
+            historyLog: [...(emailModalLead.historyLog || []), {
+              id: crypto.randomUUID(),
+              action: 'status_changed' as const,
+              triggeredBy: CURRENT_USER,
+              triggeredAt: timestamp,
+              fromStatus: emailModalLead.saleStatus,
+              toStatus: 'special_request_pending',
+              comment: 'Request Exception email sent',
+            }],
+          };
+          (updates as any)._hasCompletedSpecialRequest = true;
+          onLeadUpdate?.(emailModalLead.id, updates);
+        }}
       />
     </>
   );

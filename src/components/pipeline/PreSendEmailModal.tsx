@@ -7,12 +7,28 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { X, Paperclip } from 'lucide-react';
 import { toast } from 'sonner';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface Attachment {
   id: string;
   name: string;
   size: string;
 }
+
+// Team quotation email list
+const SENDER_EMAILS = [
+  { label: 'FM AST+', value: 'mlm_astplus_quotation@fairdee.co.th' },
+  { label: 'FM KAM', value: 'mlm_kam_quotation@fairdee.co.th' },
+  { label: 'FM AST', value: 'mlm_rfsc_quotation@fairdee.co.th' },
+  { label: 'FD', value: 'fd_quotation@fairdee.co.th' },
+  { label: 'IG/AO', value: 'aoig_quotation@fairdee.co.th' },
+];
 
 interface PreSendEmailModalProps {
   open: boolean;
@@ -21,6 +37,7 @@ interface PreSendEmailModalProps {
   defaultSubject: string;
   defaultBody: string;
   leadNumber?: string;
+  onSend?: () => void;
 }
 
 export function PreSendEmailModal({
@@ -30,11 +47,13 @@ export function PreSendEmailModal({
   defaultSubject,
   defaultBody,
   leadNumber,
+  onSend,
 }: PreSendEmailModalProps) {
   const { language } = useLanguageStore();
   const [subject, setSubject] = useState(defaultSubject);
   const [body, setBody] = useState(defaultBody);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [senderEmail, setSenderEmail] = useState(SENDER_EMAILS[2].value); // Default FM AST
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Reset when modal opens
@@ -43,6 +62,7 @@ export function PreSendEmailModal({
       setSubject(defaultSubject);
       setBody(defaultBody);
       setAttachments([]);
+      setSenderEmail(SENDER_EMAILS[2].value);
     }
   }, [open, defaultSubject, defaultBody]);
 
@@ -63,6 +83,7 @@ export function PreSendEmailModal({
 
   const handleSend = () => {
     onOpenChange(false);
+    onSend?.();
     toast.success(
       language === 'th' ? 'ส่งอีเมลเรียบร้อยแล้ว' : 'Email sent successfully',
       {
@@ -86,6 +107,23 @@ export function PreSendEmailModal({
         </DialogHeader>
 
         <div className="space-y-4">
+          {/* Sender */}
+          <div className="space-y-1.5">
+            <Label className="text-xs">{language === 'th' ? 'ส่งจาก' : 'From'}</Label>
+            <Select value={senderEmail} onValueChange={setSenderEmail}>
+              <SelectTrigger className="h-9 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {SENDER_EMAILS.map(sender => (
+                  <SelectItem key={sender.value} value={sender.value} className="text-xs">
+                    {sender.label} — {sender.value}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           {/* Subject */}
           <div className="space-y-1.5">
             <Label className="text-xs">{language === 'th' ? 'หัวข้ออีเมล' : 'Email Subject'}</Label>
@@ -154,7 +192,7 @@ export function PreSendEmailModal({
           <Button variant="outline" size="sm" className="text-xs" onClick={() => onOpenChange(false)}>
             {language === 'th' ? 'ยกเลิก' : 'Cancel'}
           </Button>
-          <Button size="sm" className="text-xs" onClick={handleSend} disabled={!subject.trim() || !body.trim()}>
+          <Button size="sm" className="text-xs" onClick={handleSend} disabled={!subject.trim()}>
             {language === 'th' ? 'ส่งอีเมล' : 'Send Email'}
           </Button>
         </div>
