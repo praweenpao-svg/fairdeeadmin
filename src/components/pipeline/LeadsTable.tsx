@@ -1085,54 +1085,84 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
         setRemarksDialogOpen(true);
       }
       return;
-    } else {
-      const timestamp = new Date().toLocaleString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
+    }
 
-      // Create history log entry for status change
-      const historyLogEntry: HistoryLogEntry = {
-        id: crypto.randomUUID(),
-        action: 'status_changed',
-        triggeredBy: CURRENT_USER,
-        triggeredAt: timestamp,
-        fromStatus: lead.saleStatus,
-        toStatus: newStatus,
-      };
+    // Renewal-specific validations
+    if (lead.leadType === 'renewals') {
+      const hasCompletedRecheck = (lead as any)._hasCompletedRecheckPrice === true;
+      const hasCompletedSpecialRequest = (lead as any)._hasCompletedSpecialRequest === true;
+      const hasCompletedEither = hasCompletedRecheck || hasCompletedSpecialRequest;
 
-      // When status changes to pending_review at To Report, assign DE
-      const updates: Partial<Lead> = {
-        saleStatus: newStatus as Lead['saleStatus'],
-        reworkRequired: false,
-        reworkReasonId: undefined,
-        assignedTo: undefined,
-        historyLog: [...(lead.historyLog || []), historyLogEntry],
-      };
-
-      // Auto-assign DE when entering pending_review at To Report stage
-      if (stage === 'to_report' && newStatus === 'pending_review' && !lead.deAssignee) {
-        const newDE = getNextDERoundRobin();
-        updates.deAssignee = newDE;
-        // Add assignee change to history
-        if (newDE) {
-          updates.historyLog = [...(updates.historyLog || []), {
-            id: crypto.randomUUID(),
-            action: 'assignee_changed' as const,
-            triggeredBy: 'System (Round Robin)',
-            triggeredAt: timestamp,
-            assigneeType: 'de' as const,
-            fromAssignee: undefined,
-            toAssignee: newDE,
-          }];
-        }
+      // R-19a: Block manual set to Pricelist Added if Recheck/Special Request already done
+      if (newStatus === 'pricelist_added' && hasCompletedEither) {
+        toast.error(
+          language === 'th'
+            ? 'ไม่สามารถย้อนกลับไปยัง "เพิ่มเบี้ยงานต่ออายุแล้ว" ได้เนื่องจากผ่านขั้นตอน "รอยืนยันประวัติการเคลม" แล้ว สามารถตั้งค่าเป็น "ยืนยันเบี้ยงานต่ออายุแล้ว" แทนได้'
+            : 'This lead has already been through Recheck Price (Claim). You cannot revert to Pricelist Added — you can set it to Pricelist Verified instead.',
+          { duration: 5000 }
+        );
+        return;
       }
 
-      onLeadUpdate?.(lead.id, updates);
+      // R-19c: Block manual set to Pricelist Verified unless Recheck/Special Request already done
+      if (newStatus === 'pricelist_verified' && !hasCompletedEither) {
+        toast.error(
+          language === 'th'
+            ? 'ไม่สามารถตั้งค่าเป็น "ยืนยันเบี้ยงานต่ออายุแล้ว" ได้ กรุณาดำเนินการ "รอยืนยันประวัติการเคลม" ก่อน'
+            : 'You cannot manually set this lead to Pricelist Verified — Recheck Price (Claim) must be completed first.',
+          { duration: 5000 }
+        );
+        return;
+      }
+
+      // R-24: Setting Recheck Price (Claim) via dropdown → no email sent
+      // Just proceed with status change
     }
+
+    const timestamp = new Date().toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+    // Create history log entry for status change
+    const historyLogEntry: HistoryLogEntry = {
+      id: crypto.randomUUID(),
+      action: 'status_changed',
+      triggeredBy: CURRENT_USER,
+      triggeredAt: timestamp,
+      fromStatus: lead.saleStatus,
+      toStatus: newStatus,
+    };
+
+    const updates: Partial<Lead> = {
+      saleStatus: newStatus as Lead['saleStatus'],
+      reworkRequired: false,
+      reworkReasonId: undefined,
+      assignedTo: undefined,
+      historyLog: [...(lead.historyLog || []), historyLogEntry],
+    };
+
+    // Auto-assign DE when entering pending_review at To Report stage
+    if (stage === 'to_report' && newStatus === 'pending_review' && !lead.deAssignee) {
+      const newDE = getNextDERoundRobin();
+      updates.deAssignee = newDE;
+      if (newDE) {
+        updates.historyLog = [...(updates.historyLog || []), {
+          id: crypto.randomUUID(),
+          action: 'assignee_changed' as const,
+          triggeredBy: 'System (Round Robin)',
+          triggeredAt: timestamp,
+          assigneeType: 'de' as const,
+          fromAssignee: undefined,
+          toAssignee: newDE,
+        }];
+      }
+    }
+
+    onLeadUpdate?.(lead.id, updates);
   };
 
   const handleReworkConfirm = (reasonId: string, details: string, attachments: ReworkAttachment[], autoResolveDate?: string) => {
