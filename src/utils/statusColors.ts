@@ -26,7 +26,6 @@ export const leadStatusColors: Record<string, StatusColorConfig> = {
   pricelist_verified: { text: '#16A34A', bg: 'rgba(22, 163, 74, 0.08)' }, // Green
   quotation_shared_to_agent: { text: '#16A34A', bg: 'rgba(22, 163, 74, 0.08)' }, // Green
   renewal_rejected: { text: '#DC2626', bg: 'rgba(220, 38, 38, 0.08)' }, // Red
-  special_request_pending: { text: '#CA8A04', bg: 'rgba(202, 138, 4, 0.08)' }, // Yellow
   invalid: { text: '#DC2626', bg: 'rgba(220, 38, 38, 0.08)' }, // Red
 };
 
