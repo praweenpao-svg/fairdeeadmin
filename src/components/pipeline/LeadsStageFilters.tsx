@@ -493,7 +493,7 @@ export function LeadsStageFilters({
       chips.push({
         key: 'leadStatuses',
         label: language === 'th' ? 'สถานะงาน' : 'Lead Status',
-        values: formatMultiSelectValues(filters.leadStatuses, leadStatusOptions),
+        values: formatMultiSelectValues(filters.leadStatuses, activeStatusOptions),
         count: filters.leadStatuses.length,
         onClear: () => onFiltersChange({ ...filters, leadStatuses: ['all'] }),
       });
@@ -633,7 +633,7 @@ export function LeadsStageFilters({
           <div className="space-y-2">
             <Label className="text-sm font-medium">{language === 'th' ? 'สถานะงาน' : 'Lead Status'}</Label>
             <MultiSelectDropdown
-              options={leadStatusOptions}
+              options={activeStatusOptions}
               selectedValues={localFilters.leadStatuses}
               onChange={(id, checked) => handleMultiSelectChange('leadStatuses', id, checked)}
               maxVisibleItems={2}
