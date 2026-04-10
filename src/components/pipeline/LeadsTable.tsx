@@ -2902,7 +2902,6 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
         title={language === 'th' ? 'ตรวจสอบราคาใหม่ (เคลม)' : 'Recheck Price (Claim)'}
         leadNumber={emailModalLead?.leadNumber}
         includeRenewalNotice
-        hideSenderByDefault
         defaultSubject={
           language === 'th'
             ? `ขอตรวจสอบราคาเบี้ยประกันภัยใหม่ - ${emailModalLead?.agentName || ''} (${emailModalLead?.leadNumber || ''})`
@@ -2943,7 +2942,7 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
         title={language === 'th' ? 'ขออนุโลม' : 'Request Exception'}
         leadNumber={emailModalLead?.leadNumber}
         includeRenewalNotice
-        hideSenderByDefault
+        
         defaultSubject=""
         defaultBody=""
         onSend={() => {
