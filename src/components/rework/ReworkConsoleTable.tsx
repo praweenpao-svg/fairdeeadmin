@@ -129,10 +129,15 @@ const leadStatusOptions: { value: string; label: string }[] = [
 
 const renewalStatusOptions: { value: string; label: string }[] = [
   { value: 'price_pending', label: 'Price Pending' },
+  { value: 'request_sent_to_insurer', label: 'Request Sent to Insurer' },
+  { value: 'pricelist_added', label: 'Pricelist Added' },
   { value: 'revision_pending', label: 'Revision Pending' },
-  { value: 'price_ready', label: 'Price Ready' },
-  { value: 'revision_required', label: 'Revision Required' },
+  { value: 'recheck_price_claim', label: 'Recheck Price (Claim)' },
+  { value: 'special_request_pending', label: 'Special Request Pending' },
+  { value: 'pricelist_verified', label: 'Pricelist Verified' },
+  { value: 'quotation_shared_to_agent', label: 'Quotation Shared to Agent' },
   { value: 'renewal_rejected', label: 'Renewal Rejected' },
+  { value: 'invalid', label: 'Invalid' },
 ];
 
 function getStatusOptionsForType(configType?: ReworkConfigType) {
