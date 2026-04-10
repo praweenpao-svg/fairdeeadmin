@@ -2206,20 +2206,35 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
                                 onValueChange={(value) => handleStatusChange(lead, value)}
                               >
                                 <SelectTrigger 
-                                  className="w-[200px] h-8 text-xs"
+                                  className="w-[220px] h-8 text-xs"
                                   style={getStatusStyles(lead.saleStatus || defaultStatusByStage[stage], leadStatusColors)}
                                 >
                                   <SelectValue placeholder={language === 'th' ? 'เลือกสถานะ' : 'Select status'} />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  {(stage === 'to_convert' && lead.leadType 
-                                    ? statusOptionsByLeadType[lead.leadType] || statusOptionsByStage[stage]
-                                    : statusOptionsByStage[stage]
-                                  ).map((statusValue) => (
-                                    <SelectItem key={statusValue} value={statusValue}>
-                                      {getStatusLabel(statusValue, language)}
-                                    </SelectItem>
-                                  ))}
+                                  {(() => {
+                                    // For renewals, use dynamic allowed statuses based on current status
+                                    if (stage === 'to_convert' && lead.leadType === 'renewals') {
+                                      const currentStatus = lead.saleStatus || 'price_pending';
+                                      const allowed = getRenewalAllowedManualStatuses(currentStatus, lead);
+                                      // Always show current status + allowed transitions
+                                      const options = [currentStatus, ...allowed.filter(s => s !== currentStatus)];
+                                      return options.map((statusValue) => (
+                                        <SelectItem key={statusValue} value={statusValue}>
+                                          {getStatusLabel(statusValue, language)}
+                                        </SelectItem>
+                                      ));
+                                    }
+                                    // For other lead types, use static options
+                                    const options = stage === 'to_convert' && lead.leadType 
+                                      ? statusOptionsByLeadType[lead.leadType] || statusOptionsByStage[stage]
+                                      : statusOptionsByStage[stage];
+                                    return options.map((statusValue) => (
+                                      <SelectItem key={statusValue} value={statusValue}>
+                                        {getStatusLabel(statusValue, language)}
+                                      </SelectItem>
+                                    ));
+                                  })()}
                                 </SelectContent>
                               </Select>
                             )}
