@@ -394,6 +394,7 @@ export function LeadsStageFilters({
 
   const rfStaff = mockStaffMembers.filter(s => s.team === 'AST RF').map(s => ({ id: s.id, name: s.name }));
   const scStaff = mockStaffMembers.filter(s => s.team === 'AST SC').map(s => ({ id: s.id, name: s.name }));
+  const activeStatusOptions = activeSubTab === 'renewals' ? renewalStatusOptions : leadStatusOptions;
 
   // Sync owner filter with myCasesOnly and myTeamOnly props
   React.useEffect(() => {
