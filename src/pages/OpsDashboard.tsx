@@ -4,7 +4,7 @@ import { useLanguageStore } from '@/stores/languageStore';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { MentionNotificationBell } from '@/components/notifications/MentionNotificationBell';
 import { mockSaleDetail } from '@/data/mockSaleDetail';
-import { SaleOverviewCard, PolicyStatusCard, AgentDetailsCard, PaymentStatusCard, DownloadsCard, HistoryCard } from '@/components/ops/SaleOverviewCard';
+import { SaleOverviewCard, PolicyStatusCard, AgentDetailsCard, PaymentStatusCard, KycCard, DownloadsCard, HistoryCard } from '@/components/ops/SaleOverviewCard';
 import { ContentTabs } from '@/components/ops/ContentTabs';
 import { SaleDetailBar } from '@/components/ops/SaleDetailBar';
 import { UploadPolicyModal } from '@/components/ops/UploadPolicyModal';
@@ -220,7 +220,7 @@ export default function OpsDashboard() {
               <AgentDetailsCard sale={sale} />
               <PolicyStatusCard sale={sale} onPolicyStatusChange={handlePolicyStatusChange} />
               <PaymentStatusCard sale={sale} />
-              
+              <KycCard sale={sale} />
               <DownloadsCard />
               <HistoryCard />
             </div>
