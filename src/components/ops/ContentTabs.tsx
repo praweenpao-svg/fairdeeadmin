@@ -1044,10 +1044,7 @@ export function ContentTabs({ sale }: ContentTabsProps) {
       </TabsList>
 
       <TabsContent value="package-docs" className="mt-4 space-y-6">
-        <PackageSelectionTab sale={sale} />
-        <div className="border-t border-border pt-6">
-          <LinkDocumentsTab sale={sale} />
-        </div>
+        <LinkDocumentsTab sale={sale} />
         <NextButton tabKey="package-docs" />
       </TabsContent>
       <TabsContent value="verify" className="mt-4">
