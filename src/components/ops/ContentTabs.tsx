@@ -967,7 +967,7 @@ export function ContentTabs({ sale }: ContentTabsProps) {
   const [activeTab, setActiveTab] = React.useState('package');
   const [completedSteps, setCompletedSteps] = React.useState<Set<string>>(new Set());
 
-  const tabOrder = ['package', 'link-docs', 'verify'];
+  const tabOrder = ['package-docs', 'verify'];
 
   const handleNext = (currentTab: string) => {
     // Mock validation: for demo, always pass
