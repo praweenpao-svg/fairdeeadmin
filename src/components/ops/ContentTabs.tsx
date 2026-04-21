@@ -964,7 +964,7 @@ function PackageSelectionTab({ sale }: { sale: SaleDetail }) {
 
 export function ContentTabs({ sale }: ContentTabsProps) {
   const { language } = useLanguageStore();
-  const [activeTab, setActiveTab] = React.useState('package');
+  const [activeTab, setActiveTab] = React.useState('package-docs');
   const [completedSteps, setCompletedSteps] = React.useState<Set<string>>(new Set());
 
   const tabOrder = ['package-docs', 'verify'];
