@@ -1029,13 +1029,9 @@ export function ContentTabs({ sale }: ContentTabsProps) {
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
       <TabsList className="w-full justify-start bg-card border border-border rounded-lg p-1">
-        <TabsTrigger value="package" className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
+        <TabsTrigger value="package-docs" className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
           <Package className="w-3.5 h-3.5" />
-          {tabLabel('package', 'เลือกแพ็กเกจ', 'Package Selection')}
-        </TabsTrigger>
-        <TabsTrigger value="link-docs" className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
-          <Link2 className="w-3.5 h-3.5" />
-          {tabLabel('link-docs', 'เชื่อมโยงเอกสาร', 'Link Documents')}
+          {tabLabel('package-docs', 'เลือกแพ็กเกจ & เชื่อมโยงเอกสาร', 'Package Selection & Link Documents')}
         </TabsTrigger>
         <TabsTrigger value="verify" className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
           <ShieldCheck className="w-3.5 h-3.5" />
@@ -1047,16 +1043,16 @@ export function ContentTabs({ sale }: ContentTabsProps) {
         </TabsTrigger>
       </TabsList>
 
-      <TabsContent value="package" className="mt-4">
-        <PackageSelectionTab sale={sale} />
-        <NextButton tabKey="package" />
-      </TabsContent>
-      <TabsContent value="link-docs" className="mt-4">
-        <LinkDocumentsTab sale={sale} />
-        <NextButton tabKey="link-docs" />
+      <TabsContent value="package-docs" className="mt-4">
+        <div className="flex items-center justify-center min-h-[400px] text-sm text-muted-foreground">
+          To refer to OPS Dashboard
+        </div>
+        <NextButton tabKey="package-docs" />
       </TabsContent>
       <TabsContent value="verify" className="mt-4">
-        <VerifyInformationTab sale={sale} />
+        <div className="flex items-center justify-center min-h-[400px] text-sm text-muted-foreground">
+          To refer to OPS Dashboard
+        </div>
         <NextButton tabKey="verify" />
       </TabsContent>
       <TabsContent value="invoice" className="mt-4">
