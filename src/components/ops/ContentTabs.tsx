@@ -482,7 +482,7 @@ function VerifyInformationTab({ sale }: { sale: SaleDetail }) {
   const customer = sale.customer;
   const vehicle = sale.vehicle;
   const shipping = sale.shipping;
-  const [zoom, setZoom] = React.useState<Record<string, number>>({ national_id: 100, car_reg: 100, payment: 50 });
+  const [zoom, setZoom] = React.useState<Record<string, number>>({ national_id: 100, car_reg: 100, payment: 100 });
 
   const handleZoom = (key: string, delta: number) => {
     setZoom(prev => ({ ...prev, [key]: Math.max(25, Math.min(400, (prev[key] || 100) + delta)) }));
@@ -585,10 +585,10 @@ function VerifyInformationTab({ sale }: { sale: SaleDetail }) {
                   src={samplePaymentProof}
                   alt="Payment Proof"
                   className="max-w-full max-h-full object-contain transition-transform"
-                  style={{ transform: `scale(${(zoom.payment || 50) / 100})` }}
+                  style={{ transform: `scale(${(zoom.payment || 100) / 100})` }}
                 />
               </div>
-              <ImageZoomControls zoom={zoom.payment || 50} onZoom={(d) => handleZoom('payment', d)} />
+              <ImageZoomControls zoom={zoom.payment || 100} onZoom={(d) => handleZoom('payment', d)} />
             </div>
             <div className="col-span-2 p-4">
               <h5 className="text-sm font-semibold text-primary mb-3">{language === 'th' ? 'ข้อมูลการชำระเงิน' : 'Payment Information'}</h5>
