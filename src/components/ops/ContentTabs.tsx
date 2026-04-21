@@ -1044,6 +1044,7 @@ export function ContentTabs({ sale }: ContentTabsProps) {
       </TabsList>
 
       <TabsContent value="package-docs" className="mt-4 space-y-6">
+        <PackageBoxOnly />
         <LinkDocumentsTab sale={sale} />
         <NextButton tabKey="package-docs" />
       </TabsContent>
