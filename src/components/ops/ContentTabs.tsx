@@ -777,6 +777,40 @@ const DOWNPAYMENT_INSTALLMENT_OPTIONS = [
   { value: '10', label: '10 (6%)', th: '10 งวด (6%) รับรายได้หลังงวดที่ 2', en: '10 installments (6%) income after 2nd installment' },
 ];
 
+function PackageBoxOnly() {
+  const { language } = useLanguageStore();
+  return (
+    <div className="space-y-2">
+      <SectionLabel>{language === 'th' ? 'แพ็กเกจที่เลือก' : 'Select a package'}</SectionLabel>
+      <Card className="border-border">
+        <CardContent className="p-4">
+          <div className="flex items-start justify-between mb-3">
+            <div>
+              <p className="text-sm font-semibold">{language === 'th' ? 'ชั้น 1 อีซี่' : 'Easy Type 1'}</p>
+              <p className="text-xs text-muted-foreground">{language === 'th' ? 'เมืองไทยประกันภัย' : 'Muang Thai Insurance'}</p>
+            </div>
+            <img src={mtiLogo} alt="MTI" className="w-8 h-8 rounded object-cover" />
+          </div>
+          <div className="space-y-1 text-xs">
+            <div className="flex items-center justify-between py-1">
+              <span className="text-muted-foreground">{language === 'th' ? 'ค่าคอมมิชชั่น' : 'Commission'}</span>
+              <span className="font-semibold text-sidebar-background">850 Baht</span>
+            </div>
+            <div className="flex items-center justify-between py-1">
+              <span className="text-muted-foreground">{language === 'th' ? 'ราคาเบี้ยประกันรวม' : 'Total Premium'}</span>
+              <span className="font-semibold text-sidebar-background">6,500 Baht</span>
+            </div>
+            <div className="flex items-center justify-between py-1">
+              <span className="text-muted-foreground">{language === 'th' ? 'ทุนประกัน' : 'Sum Insured'}</span>
+              <span className="font-semibold text-sidebar-background">100,000 Baht</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 function PackageSelectionTab({ sale }: { sale: SaleDetail }) {
   const { language } = useLanguageStore();
   const vmiPolicy = sale.policies.find(p => p.kind === 'vmi');
@@ -1044,6 +1078,7 @@ export function ContentTabs({ sale }: ContentTabsProps) {
       </TabsList>
 
       <TabsContent value="package-docs" className="mt-4 space-y-6">
+        <PackageBoxOnly />
         <LinkDocumentsTab sale={sale} />
         <NextButton tabKey="package-docs" />
       </TabsContent>
