@@ -302,6 +302,38 @@ export function PaymentStatusCard({ sale }: SaleOverviewCardProps) {
   );
 }
 
+// KYC Section — only shown for instalment sales
+const kycStatuses = [
+  { value: 'pending_kyc', en: 'Pending KYC', th: 'รอ KYC' },
+  { value: 'kyc_in_review', en: 'KYC In Review', th: 'กำลังตรวจสอบ KYC' },
+  { value: 'kyc_approved', en: 'KYC Approved', th: 'อนุมัติ KYC แล้ว' },
+  { value: 'kyc_rejected', en: 'KYC Rejected', th: 'KYC ถูกปฏิเสธ' },
+];
+
+export function KycCard({ sale }: SaleOverviewCardProps) {
+  const { language } = useLanguageStore();
+  const isInstalment = /install?ment|ผ่อน/i.test(sale.paymentMethod || '');
+  if (!isInstalment) return null;
+
+  return (
+    <Card>
+      <CardHeader className="pb-2 pt-3 px-5">
+        <CardTitle className="text-sm font-semibold">
+          {language === 'th' ? 'KYC' : 'KYC'}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="px-5 pb-4">
+        <StatusDropdown
+          label={language === 'th' ? 'สถานะ' : 'Status'}
+          options={kycStatuses}
+          defaultValue="pending_kyc"
+          language={language}
+        />
+      </CardContent>
+    </Card>
+  );
+}
+
 // Downloads Section
 const downloadItems = [
   { en: 'Cover Note', th: 'ใบคุ้มครอง' },
