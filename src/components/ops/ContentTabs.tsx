@@ -1043,16 +1043,15 @@ export function ContentTabs({ sale }: ContentTabsProps) {
         </TabsTrigger>
       </TabsList>
 
-      <TabsContent value="package-docs" className="mt-4">
-        <div className="flex items-center justify-center min-h-[400px] text-sm text-muted-foreground">
-          To refer to OPS Dashboard
+      <TabsContent value="package-docs" className="mt-4 space-y-6">
+        <PackageSelectionTab sale={sale} />
+        <div className="border-t border-border pt-6">
+          <LinkDocumentsTab sale={sale} />
         </div>
         <NextButton tabKey="package-docs" />
       </TabsContent>
       <TabsContent value="verify" className="mt-4">
-        <div className="flex items-center justify-center min-h-[400px] text-sm text-muted-foreground">
-          To refer to OPS Dashboard
-        </div>
+        <VerifyInformationTab sale={sale} />
         <NextButton tabKey="verify" />
       </TabsContent>
       <TabsContent value="invoice" className="mt-4">
