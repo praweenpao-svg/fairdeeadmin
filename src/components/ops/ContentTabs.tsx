@@ -1065,15 +1065,15 @@ export function ContentTabs({ sale }: ContentTabsProps) {
       <TabsList className="w-full justify-start bg-card border border-border rounded-lg p-1">
         <TabsTrigger value="package-docs" className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
           <Package className="w-3.5 h-3.5" />
-          {tabLabel('package-docs', 'ขั้นตอนที่ 1: เลือกแพ็กเกจ & เชื่อมโยงเอกสาร', 'Step 1: Package Selection & Link Documents')}
+          {tabLabel('package-docs', 'ขั้นตอนที่ 1', 'Step 1')}
         </TabsTrigger>
         <TabsTrigger value="verify" className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
           <ShieldCheck className="w-3.5 h-3.5" />
-          {tabLabel('verify', 'ขั้นตอนที่ 2: ตรวจสอบข้อมูล', 'Step 2: Verify Information')}
+          {tabLabel('verify', 'ขั้นตอนที่ 2', 'Step 2')}
         </TabsTrigger>
         <TabsTrigger value="invoice" className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
           <CreditCard className="w-3.5 h-3.5" />
-          {language === 'th' ? 'ขั้นตอนที่ 3: รายการใบแจ้งหนี้' : 'Step 3: Invoice List'}
+          {language === 'th' ? 'ขั้นตอนที่ 3' : 'Step 3'}
         </TabsTrigger>
       </TabsList>
 
