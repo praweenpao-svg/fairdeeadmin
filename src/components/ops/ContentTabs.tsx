@@ -991,11 +991,42 @@ function PackageSelectionTab({ sale }: { sale: SaleDetail }) {
             onChange={setAddCmi}
           />
 
+          {/* VMI Coverage Start Date — auto-calc end date = start + 1 year */}
+          <div className="space-y-2">
+            <SectionLabel>
+              {language === 'th' ? 'วันเริ่มความคุ้มครอง (VMI)' : 'Coverage Start Date (VMI)'}
+              <span className="text-destructive ml-0.5">*</span>
+            </SectionLabel>
+            <Input
+              type="date"
+              className="text-xs h-9 bg-card"
+              value={vmiStartDate}
+              onChange={(e) => setVmiStartDate(e.target.value)}
+            />
+            {vmiEndDate && (
+              <p className="text-[10px] text-muted-foreground">
+                {language === 'th' ? 'วันสิ้นสุด (อัตโนมัติ): ' : 'End Date (auto): '}
+                <span className="font-medium text-foreground">{formatThaiDate(vmiEndDate)}</span>
+              </p>
+            )}
+          </div>
+
           {/* CMI Start Date - only when CMI = yes */}
           {addCmi === 'yes' && (
             <div className="space-y-2">
               <SectionLabel>{language === 'th' ? 'วันเริ่มต้น พ.ร.บ.' : 'Compulsory Start Date'}</SectionLabel>
-              <Input type="date" className="text-xs h-9 bg-card" />
+              <Input
+                type="date"
+                className="text-xs h-9 bg-card"
+                value={cmiStartDate}
+                onChange={(e) => setCmiStartDate(e.target.value)}
+              />
+              {cmiEndDate && (
+                <p className="text-[10px] text-muted-foreground">
+                  {language === 'th' ? 'วันสิ้นสุด (อัตโนมัติ): ' : 'End Date (auto): '}
+                  <span className="font-medium text-foreground">{formatThaiDate(cmiEndDate)}</span>
+                </p>
+              )}
             </div>
           )}
 
