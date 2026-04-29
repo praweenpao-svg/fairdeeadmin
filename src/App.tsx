@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import Index from "./pages/Index";
 import StaffTiming from "./pages/StaffTiming";
 import ReworkConsole from "./pages/ReworkConsole";
+import ReworkReasons from "./pages/ReworkReasons";
 import OpsDashboard from "./pages/OpsDashboard";
 import NotFound from "./pages/NotFound";
 
@@ -33,6 +34,7 @@ function AppLayout() {
           <Route path="/" element={<Index />} />
           <Route path="/staff-timing" element={<StaffTiming />} />
           <Route path="/rework-console" element={<ReworkConsole />} />
+          <Route path="/rework-reasons" element={<ReworkReasons />} />
           <Route path="/ops-dashboard" element={<OpsDashboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

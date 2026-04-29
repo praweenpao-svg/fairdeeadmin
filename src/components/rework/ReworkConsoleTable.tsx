@@ -7,6 +7,7 @@ import {
   IssuanceMethod, DeliveryMethodType, StickyColumnType,
 } from '@/types/pipeline';
 import { useTeamsStore } from '@/stores/teamsStore';
+import { useReworkReasonsStore } from '@/stores/reworkReasonsStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { TablePagination } from '@/components/ui/table-pagination';
@@ -186,6 +187,7 @@ const defaultFormData: FormData = {
 
 export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTableProps) {
   const { teams, teamEntries, getTeamsByStickyColumn } = useTeamsStore();
+  const { reasons: reworkReasons, getReason } = useReworkReasonsStore();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingConfig, setEditingConfig] = useState<ReworkConfig | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
@@ -197,7 +199,16 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
   const openDialog = (config?: ReworkConfig) => {
     if (config) {
       setEditingConfig(config);
-      setFormData({ ...config });
+      let resolvedReasonId = config.reasonId;
+      // Back-match legacy rework configs by EN description if reasonId missing
+      if (!resolvedReasonId && config.configType === 'rework') {
+        const match = reworkReasons.find(r =>
+          r.descriptionEn.trim().toLowerCase() === (config.descriptionEn || '').trim().toLowerCase()
+          && r.descriptionTh.trim().toLowerCase() === (config.descriptionTh || '').trim().toLowerCase()
+        );
+        resolvedReasonId = match?.id;
+      }
+      setFormData({ ...config, reasonId: resolvedReasonId });
     } else {
       setEditingConfig(null);
       setFormData({ ...defaultFormData });
@@ -226,16 +237,12 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
 
     // Validation
     if (isRework) {
-      if (!formData.descriptionTh?.trim()) {
-        toast({ title: 'Validation Error', description: 'Description (TH) is required.', variant: 'destructive' });
+      if (!formData.reasonId) {
+        toast({ title: 'Validation Error', description: 'Please select a Rework Reason.', variant: 'destructive' });
         return;
       }
-      if (!formData.descriptionEn?.trim()) {
-        toast({ title: 'Validation Error', description: 'Description (EN) is required.', variant: 'destructive' });
-        return;
-      }
-      if (!(formData.stages || []).length) {
-        toast({ title: 'Validation Error', description: 'At least one stage is required.', variant: 'destructive' });
+      if (!getReason(formData.reasonId)) {
+        toast({ title: 'Validation Error', description: 'Selected Rework Reason no longer exists.', variant: 'destructive' });
         return;
       }
     }
@@ -301,45 +308,62 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
       return;
     }
 
-    // Automation validation
-    if (isRework && formData.automationEnabled) {
-      if (formData.automationType === 'auto_reassign') {
-        if (!formData.automationDays || formData.automationDays <= 0) {
-          toast({ title: 'Validation Error', description: 'Threshold must be a positive whole number.', variant: 'destructive' });
-          return;
-        }
-      }
-    }
+    // Note: Automation lives on the Rework Reason entity now (no validation here).
 
     const teamValue = formData.assignment === 'round_robin' ? (formData.team || '') : '';
-    const stages = isMinimal ? allPostLeadStages : (formData.stages || []);
-    const partyType = isMinimal ? 'internal' as ReworkPartyType : (formData.partyType || 'internal');
-    const policyScope = isMinimal ? 'both' as PolicyScopeType : (formData.policyScope || 'both');
-    const automationEnabled = isMinimal ? false : (formData.automationEnabled || false);
-    const automationType = isMinimal ? undefined : (automationEnabled ? (formData.automationType || 'auto_reassign') : undefined);
+
+    // For rework configs, mirror reason fields onto the assignment config
+    // so existing consumers reading descriptionEn/Th, partyType, stages,
+    // automation, etc. continue to work without changes.
+    const reason = isRework ? getReason(formData.reasonId) : undefined;
+    const stages = isRework
+      ? (reason?.stages || allPostLeadStages)
+      : isMinimal ? allPostLeadStages : (formData.stages || []);
+    const partyType: ReworkPartyType = isRework
+      ? (reason?.partyType || 'internal')
+      : isMinimal ? 'internal' : (formData.partyType || 'internal');
+    const policyScope: PolicyScopeType = isRework
+      ? (reason?.policyScope || 'both')
+      : isMinimal ? 'both' : (formData.policyScope || 'both');
+    const automationEnabled = isRework
+      ? (reason?.automationEnabled || false)
+      : isMinimal ? false : (formData.automationEnabled || false);
+    const automationType = isRework
+      ? reason?.automationType
+      : isMinimal ? undefined : (automationEnabled ? (formData.automationType || 'auto_reassign') : undefined);
+    const automationDays = isRework ? reason?.automationDays : (isMinimal ? undefined : formData.automationDays);
+    const targetReasonValue = isRework
+      ? reason?.targetReasonId
+      : isMinimal ? undefined : (automationType === 'auto_resolve' ? undefined : formData.targetReason);
+    const descriptionEn = isRework ? (reason?.descriptionEn || '') : isMinimal ? '' : (formData.descriptionEn || '');
+    const descriptionTh = isRework ? (reason?.descriptionTh || '') : isMinimal ? '' : (formData.descriptionTh || '');
     const movesToCancellation = (isRework || isEndorsement) ? (formData.movesToCancellation || false) : false;
 
     if (editingConfig) {
       onUpdate(reworkConfigs.map(c =>
         c.id === editingConfig.id ? {
-          ...c, ...formData, team: teamValue, stages, partyType, policyScope,
-          automationEnabled, automationType, movesToCancellation,
+          ...c, ...formData,
+          team: teamValue, stages, partyType, policyScope,
+          descriptionEn, descriptionTh,
+          automationEnabled, automationType, automationDays, targetReason: targetReasonValue,
+          movesToCancellation,
           stickyEnabled: formData.stickyEnabled || false,
           stickyColumns: formData.stickyEnabled ? (formData.stickyColumns || []) : [],
+          reasonId: isRework ? formData.reasonId : undefined,
         } : c
       ));
     } else {
       const newConfig: ReworkConfig = {
         id: String(Date.now()),
         configType: ct,
-        descriptionTh: isMinimal ? '' : (formData.descriptionTh || ''),
-        descriptionEn: isMinimal ? '' : (formData.descriptionEn || ''),
+        descriptionTh,
+        descriptionEn,
         team: teamValue,
         teamMembers: [],
         automationEnabled,
         automationType,
-        automationDays: isMinimal ? undefined : formData.automationDays,
-        targetReason: isMinimal ? undefined : (automationType === 'auto_resolve' ? undefined : formData.targetReason),
+        automationDays,
+        targetReason: targetReasonValue,
         assignment: formData.assignment || 'none',
         stages,
         movesToCancellation,
@@ -352,6 +376,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
         deliveryMethod: ct === 'policy' && statusesWithDeliveryMethod.includes(formData.statusFilter || '') ? formData.deliveryMethod : undefined,
         stickyEnabled: formData.stickyEnabled || false,
         stickyColumns: formData.stickyEnabled ? (formData.stickyColumns || []) : [],
+        reasonId: isRework ? formData.reasonId : undefined,
       };
       onUpdate([...reworkConfigs, newConfig]);
     }
@@ -613,46 +638,55 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                 </div>
               )}
 
-              {/* TH/EN Description - Rework only */}
-              {isReworkOnly && (
-                <>
-                  <div className="grid gap-2">
-                    <Label>Description (TH)</Label>
-                    <Input className="bg-card" value={formData.descriptionTh} onChange={(e) => setFormData({ ...formData, descriptionTh: e.target.value })} placeholder="Enter Thai description" />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label>Description (EN)</Label>
-                    <Input className="bg-card" value={formData.descriptionEn} onChange={(e) => setFormData({ ...formData, descriptionEn: e.target.value })} placeholder="Enter English description" />
-                  </div>
-                </>
-              )}
-
-              {/* Party Type - Rework only */}
+              {/* Rework Reason selector — replaces TH/EN/Party/Scope which now live on the reason */}
               {isReworkOnly && (
                 <div className="grid gap-2">
-                  <Label>Party Type</Label>
-                  <Select value={formData.partyType || 'internal'} onValueChange={(v) => setFormData({ ...formData, partyType: v as ReworkPartyType })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                  <Label>Rework Reason</Label>
+                  <Select
+                    value={formData.reasonId || '__none__'}
+                    onValueChange={(v) => setFormData({ ...formData, reasonId: v === '__none__' ? undefined : v })}
+                  >
+                    <SelectTrigger><SelectValue placeholder="Select rework reason" /></SelectTrigger>
                     <SelectContent>
-                      {partyTypeOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+                      <SelectItem value="__none__">Select rework reason</SelectItem>
+                      {reworkReasons.map(r => (
+                        <SelectItem key={r.id} value={r.id}>
+                          {r.descriptionEn} <span className="text-muted-foreground">· {r.key}</span>
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
-                  <p className="text-xs text-muted-foreground">
-                    {partyTypeOptions.find(o => o.value === formData.partyType)?.desc}
-                  </p>
-                </div>
-              )}
-
-              {/* Policy Scope - Rework only */}
-              {isReworkOnly && (
-                <div className="grid gap-2">
-                  <Label>Policy Scope</Label>
-                  <Select value={formData.policyScope || 'both'} onValueChange={(v) => setFormData({ ...formData, policyScope: v as PolicyScopeType })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {policyScopeOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
+                  {(() => {
+                    const r = getReason(formData.reasonId);
+                    if (!r) {
+                      return (
+                        <p className="text-xs text-muted-foreground">
+                          Reasons are managed on the <span className="font-medium">Rework Reasons</span> page (description, party, scope, stages, automation).
+                        </p>
+                      );
+                    }
+                    return (
+                      <div className="rounded-md border border-border bg-muted/30 p-3 space-y-1 text-xs">
+                        <div className="text-muted-foreground">{r.descriptionTh}</div>
+                        <div className="flex flex-wrap gap-2 pt-1">
+                          <span className="px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{r.partyType === 'external' ? 'External' : 'Internal'}</span>
+                          <span className={`px-1.5 py-0.5 rounded ${
+                            r.policyScope === 'vmi' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                            : r.policyScope === 'cmi' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
+                            : 'bg-muted text-muted-foreground'
+                          }`}>{r.policyScope === 'vmi' ? 'VMI' : r.policyScope === 'cmi' ? 'CMI' : 'Both'}</span>
+                          {r.automationEnabled && (
+                            <span className="px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                              Automation: {r.automationType === 'auto_resolve' ? 'Resolve' : `Reassign · ${r.automationDays || '—'}d`}
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-muted-foreground">
+                          Stages: {(r.stages || []).map(s => stageOptions.find(o => o.value === s)?.label || s).join(', ') || '—'}
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
 
@@ -746,20 +780,8 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                 </div>
               )}
 
-              {/* Stages - Rework only */}
-              {isReworkOnly && (
-                <div className="grid gap-2">
-                  <Label>Stages</Label>
-                  <div className="border rounded-md p-3 space-y-2">
-                    {stageOptions.map(stage => (
-                      <div key={stage.value} className="flex items-center space-x-2 cursor-pointer hover:bg-muted p-2 rounded" onClick={() => handleFormStageToggle(stage.value)}>
-                        <Checkbox checked={(formData.stages || []).includes(stage.value)} onCheckedChange={() => handleFormStageToggle(stage.value)} />
-                        <span className="text-sm">{stage.label}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+              {/* Stages, Automation moved to Rework Reasons page */}
+
 
               {/* Moves to Cancellation - Rework & Endorsement only */}
               {showMovesToCancellation && (
@@ -774,71 +796,8 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                 </div>
               )}
 
-              {/* Automation - Rework only */}
-              {isReworkOnly && (
-                <div className="border-t pt-4 mt-2">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="space-y-0.5">
-                      <Label>Enable Automation</Label>
-                      <p className="text-xs text-muted-foreground">Automatically act on stale rework items</p>
-                    </div>
-                    <Switch
-                      checked={formData.automationEnabled || false}
-                      onCheckedChange={(v) => setFormData({ ...formData, automationEnabled: v, automationType: v ? (formData.automationType || 'auto_reassign') : undefined })}
-                    />
-                  </div>
-                  {formData.automationEnabled && (
-                    <div className="grid gap-4">
-                      <div className="grid gap-2">
-                        <Label>Automation Type</Label>
-                        <Select
-                          value={formData.automationType || 'auto_reassign'}
-                          onValueChange={(v) => setFormData({ ...formData, automationType: v as AutomationType, targetReason: v === 'auto_resolve' ? undefined : formData.targetReason })}
-                        >
-                          <SelectTrigger><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="auto_reassign">Auto-Reassign</SelectItem>
-                            <SelectItem value="auto_resolve">Auto-Resolve</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <p className="text-xs text-muted-foreground">
-                          {formData.automationType === 'auto_resolve'
-                            ? 'Auto-resolves on a future date selected per entry'
-                            : 'Reassigns to a target reason after threshold days'}
-                        </p>
-                      </div>
-                      {(formData.automationType || 'auto_reassign') === 'auto_reassign' && (
-                        <>
-                          <div className="grid gap-2">
-                            <Label>Threshold (Days)</Label>
-                            <Input
-                              type="number" min={1}
-                              value={formData.automationDays || ''}
-                              onChange={(e) => setFormData({ ...formData, automationDays: e.target.value ? parseInt(e.target.value) : undefined })}
-                              placeholder="Enter number of days"
-                            />
-                          </div>
-                          <div className="grid gap-2">
-                            <Label>Target Status</Label>
-                            <Select
-                              value={formData.targetReason || '__none__'}
-                              onValueChange={(v) => setFormData({ ...formData, targetReason: v === '__none__' ? undefined : v })}
-                            >
-                              <SelectTrigger><SelectValue placeholder="Select target" /></SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="__none__">Select target reason</SelectItem>
-                                {uniqueConfigs.filter(c => c.id !== editingConfig?.id && c.configType === 'rework').map(c => (
-                                  <SelectItem key={c.id} value={c.id}>{c.descriptionEn}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
+              {/* Automation moved to Rework Reasons page */}
+
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>

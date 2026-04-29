@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   Check,
   ChevronUp,
+  ListTodo,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguageStore } from '@/stores/languageStore';
@@ -34,6 +35,11 @@ const navItems = [
     to: '/staff-timing', 
     icon: Clock, 
     label: { en: 'Staff Timing', th: 'เวลาทำงานพนักงาน' }
+  },
+  { 
+    to: '/rework-reasons', 
+    icon: ListTodo, 
+    label: { en: 'Rework Reasons', th: 'เหตุผล Rework' }
   },
   { 
     to: '/rework-console', 
