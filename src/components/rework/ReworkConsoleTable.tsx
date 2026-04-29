@@ -780,20 +780,8 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                 </div>
               )}
 
-              {/* Stages - Rework only */}
-              {isReworkOnly && (
-                <div className="grid gap-2">
-                  <Label>Stages</Label>
-                  <div className="border rounded-md p-3 space-y-2">
-                    {stageOptions.map(stage => (
-                      <div key={stage.value} className="flex items-center space-x-2 cursor-pointer hover:bg-muted p-2 rounded" onClick={() => handleFormStageToggle(stage.value)}>
-                        <Checkbox checked={(formData.stages || []).includes(stage.value)} onCheckedChange={() => handleFormStageToggle(stage.value)} />
-                        <span className="text-sm">{stage.label}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+              {/* Stages, Automation moved to Rework Reasons page */}
+
 
               {/* Moves to Cancellation - Rework & Endorsement only */}
               {showMovesToCancellation && (
