@@ -866,34 +866,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                         </span>
                       ) : '—'}
                     </td>
-                    {/* AUTOMATION */}
-                    <td className="px-4 py-3 text-sm text-center">
-                      {isRw && config.automationEnabled ? (
-                        <span className="px-2 py-0.5 rounded text-xs font-medium bg-muted text-muted-foreground">
-                          {config.automationType === 'auto_resolve' ? 'Resolve' : 'Reassign'}
-                        </span>
-                      ) : '—'}
-                    </td>
-                    {/* THRESHOLD */}
-                    <td className="px-4 py-3 text-sm text-center">
-                      {isRw && config.automationEnabled && config.automationType === 'auto_reassign' && config.automationDays
-                        ? `${config.automationDays} days` : '—'}
-                    </td>
-                    {/* TARGET STATUS */}
-                    <td className="px-4 py-3 text-sm">
-                      {(() => {
-                        if (!isRw || !config.automationEnabled) return '—';
-                        if (config.automationType === 'auto_resolve') return <span className="text-xs text-muted-foreground italic">Auto-resolve & re-run waterfall</span>;
-                        const target = config.targetReason ? uniqueConfigs.find(c => c.id === config.targetReason) : null;
-                        if (!target) return '—';
-                        return (
-                          <div className="space-y-0.5">
-                            <div className="font-medium text-foreground">{target.descriptionEn}</div>
-                            <div className="text-xs text-muted-foreground">{target.descriptionTh}</div>
-                          </div>
-                        );
-                      })()}
-                    </td>
+                    {/* AUTOMATION, THRESHOLD, TARGET STATUS moved to Rework Reasons page */}
                     {/* ACTIONS */}
                     <td className="px-4 py-3">
                       {config.hardCoded ? (
