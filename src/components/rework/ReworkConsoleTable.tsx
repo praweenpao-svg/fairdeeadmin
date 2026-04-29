@@ -821,13 +821,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                 <th className="data-table-header px-4 py-3 text-left">Assignment Logic</th>
                 <th className="data-table-header px-4 py-3 text-left">Teams</th>
                 <th className="data-table-header px-4 py-3 text-center">Method</th>
-                <th className="data-table-header px-4 py-3 text-left">Stages</th>
-                <th className="data-table-header px-4 py-3 text-center">Party</th>
-                <th className="data-table-header px-4 py-3 text-center">VMI/CMI</th>
                 <th className="data-table-header px-4 py-3 text-center">Cancellation</th>
-                <th className="data-table-header px-4 py-3 text-center">Automation</th>
-                <th className="data-table-header px-4 py-3 text-center">Threshold</th>
-                <th className="data-table-header px-4 py-3 text-left">Target Status</th>
                 <th className="data-table-header px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
@@ -863,34 +857,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                         </span>
                       ) : '—'}
                     </td>
-                    {/* STAGES */}
-                    <td className="px-4 py-3 text-sm">
-                      {config.configType === 'endorsement' ? '—' : !isRw ? '—' : getStageLabels(config.stages || [])}
-                    </td>
-                    {/* PARTY */}
-                    <td className="px-4 py-3 text-sm text-center">
-                      {isRw ? (
-                        <span className="px-2 py-0.5 rounded text-xs font-medium bg-muted text-muted-foreground">
-                          {config.partyType === 'external' ? 'External' : 'Internal'}
-                        </span>
-                      ) : config.configType === 'endorsement' ? (
-                        <span className="px-2 py-0.5 rounded text-xs font-medium bg-muted text-muted-foreground">Internal</span>
-                      ) : '—'}
-                    </td>
-                    {/* VMI/CMI */}
-                    <td className="px-4 py-3 text-sm text-center">
-                      {isRw ? (
-                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                          config.policyScope === 'vmi' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                          : config.policyScope === 'cmi' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
-                          : 'bg-muted text-muted-foreground'
-                        }`}>
-                          {config.policyScope === 'vmi' ? 'VMI' : config.policyScope === 'cmi' ? 'CMI' : 'Both'}
-                        </span>
-                      ) : config.configType === 'endorsement' ? (
-                        <span className="px-2 py-0.5 rounded text-xs font-medium bg-muted text-muted-foreground">Both</span>
-                      ) : '—'}
-                    </td>
+                    {/* STAGES, PARTY, VMI/CMI moved to Rework Reasons page */}
                     {/* CANCELLATION */}
                     <td className="px-4 py-3 text-sm text-center">
                       {(isRw || config.configType === 'endorsement') ? (
@@ -899,34 +866,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                         </span>
                       ) : '—'}
                     </td>
-                    {/* AUTOMATION */}
-                    <td className="px-4 py-3 text-sm text-center">
-                      {isRw && config.automationEnabled ? (
-                        <span className="px-2 py-0.5 rounded text-xs font-medium bg-muted text-muted-foreground">
-                          {config.automationType === 'auto_resolve' ? 'Resolve' : 'Reassign'}
-                        </span>
-                      ) : '—'}
-                    </td>
-                    {/* THRESHOLD */}
-                    <td className="px-4 py-3 text-sm text-center">
-                      {isRw && config.automationEnabled && config.automationType === 'auto_reassign' && config.automationDays
-                        ? `${config.automationDays} days` : '—'}
-                    </td>
-                    {/* TARGET STATUS */}
-                    <td className="px-4 py-3 text-sm">
-                      {(() => {
-                        if (!isRw || !config.automationEnabled) return '—';
-                        if (config.automationType === 'auto_resolve') return <span className="text-xs text-muted-foreground italic">Auto-resolve & re-run waterfall</span>;
-                        const target = config.targetReason ? uniqueConfigs.find(c => c.id === config.targetReason) : null;
-                        if (!target) return '—';
-                        return (
-                          <div className="space-y-0.5">
-                            <div className="font-medium text-foreground">{target.descriptionEn}</div>
-                            <div className="text-xs text-muted-foreground">{target.descriptionTh}</div>
-                          </div>
-                        );
-                      })()}
-                    </td>
+                    {/* AUTOMATION, THRESHOLD, TARGET STATUS moved to Rework Reasons page */}
                     {/* ACTIONS */}
                     <td className="px-4 py-3">
                       {config.hardCoded ? (

@@ -261,7 +261,6 @@ export default function ReworkReasons() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-border">
-                <th className="data-table-header px-4 py-3 text-left">Key</th>
                 <th className="data-table-header px-4 py-3 text-left min-w-[260px]">Description</th>
                 <th className="data-table-header px-4 py-3 text-center">Party</th>
                 <th className="data-table-header px-4 py-3 text-center">VMI/CMI</th>
@@ -273,7 +272,6 @@ export default function ReworkReasons() {
             <tbody>
               {paginated.map(r => (
                 <tr key={r.id} className="data-table-row">
-                  <td className="px-4 py-3 text-sm font-mono text-foreground">{r.key}</td>
                   <td className="px-4 py-3 text-sm">
                     <div className="space-y-0.5">
                       <div className="font-medium text-foreground">{r.descriptionEn}</div>
@@ -317,7 +315,7 @@ export default function ReworkReasons() {
                 </tr>
               ))}
               {paginated.length === 0 && (
-                <tr><td colSpan={7} className="px-4 py-8 text-center text-sm text-muted-foreground">No rework reasons yet.</td></tr>
+                <tr><td colSpan={6} className="px-4 py-8 text-center text-sm text-muted-foreground">No rework reasons yet.</td></tr>
               )}
             </tbody>
           </table>
