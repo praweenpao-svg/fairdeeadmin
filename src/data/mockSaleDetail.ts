@@ -278,4 +278,12 @@ export const mockSaleDetail: SaleDetail = {
   hasCompulsoryInsurance: true,
   forCommercialVehicle: false,
   createdAt: '20/03/2026',
+  // Sale-level matrix drivers
+  saleType: 'New',
+  insuranceClass: 'Type3+',
+  paymentType: 'Non-Instalment',
+  carType: 'Normally',
+  paymentMethodValue: 'qr_code_full',
+  driverLicenseCount: 0,
+  carInspectionMethod: '',
 };
