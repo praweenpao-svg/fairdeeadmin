@@ -245,10 +245,20 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
         toast({ title: 'Validation Error', description: 'Selected Rework Reason no longer exists.', variant: 'destructive' });
         return;
       }
-      // 1:1 — block duplicate assignment config for the same Rework Reason
-      const dup = reworkConfigs.some(c =>
-        c.configType === 'rework' && c.reasonId === formData.reasonId && c.id !== editingConfig?.id
-      );
+      // 1:1 — block duplicate assignment config for the same Rework Reason.
+      // Legacy/migrated configs may not have reasonId yet, so back-match by description.
+      const selectedReason = getReason(formData.reasonId);
+      const dup = reworkConfigs.some(c => {
+        if (c.id === editingConfig?.id) return false;
+        if (c.configType !== 'rework') return false;
+        if (c.reasonId && c.reasonId === formData.reasonId) return true;
+        if (!c.reasonId && selectedReason) {
+          const enMatch = (c.descriptionEn || '').trim().toLowerCase() === selectedReason.descriptionEn.trim().toLowerCase();
+          const thMatch = (c.descriptionTh || '').trim().toLowerCase() === selectedReason.descriptionTh.trim().toLowerCase();
+          if (enMatch && thMatch) return true;
+        }
+        return false;
+      });
       if (dup) {
         toast({ title: 'Already exists', description: 'An assignment config for this Rework Reason already exists.', variant: 'destructive' });
         return;
