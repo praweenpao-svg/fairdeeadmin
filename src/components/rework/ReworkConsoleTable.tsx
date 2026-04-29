@@ -638,46 +638,55 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                 </div>
               )}
 
-              {/* TH/EN Description - Rework only */}
-              {isReworkOnly && (
-                <>
-                  <div className="grid gap-2">
-                    <Label>Description (TH)</Label>
-                    <Input className="bg-card" value={formData.descriptionTh} onChange={(e) => setFormData({ ...formData, descriptionTh: e.target.value })} placeholder="Enter Thai description" />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label>Description (EN)</Label>
-                    <Input className="bg-card" value={formData.descriptionEn} onChange={(e) => setFormData({ ...formData, descriptionEn: e.target.value })} placeholder="Enter English description" />
-                  </div>
-                </>
-              )}
-
-              {/* Party Type - Rework only */}
+              {/* Rework Reason selector — replaces TH/EN/Party/Scope which now live on the reason */}
               {isReworkOnly && (
                 <div className="grid gap-2">
-                  <Label>Party Type</Label>
-                  <Select value={formData.partyType || 'internal'} onValueChange={(v) => setFormData({ ...formData, partyType: v as ReworkPartyType })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                  <Label>Rework Reason</Label>
+                  <Select
+                    value={formData.reasonId || '__none__'}
+                    onValueChange={(v) => setFormData({ ...formData, reasonId: v === '__none__' ? undefined : v })}
+                  >
+                    <SelectTrigger><SelectValue placeholder="Select rework reason" /></SelectTrigger>
                     <SelectContent>
-                      {partyTypeOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+                      <SelectItem value="__none__">Select rework reason</SelectItem>
+                      {reworkReasons.map(r => (
+                        <SelectItem key={r.id} value={r.id}>
+                          {r.descriptionEn} <span className="text-muted-foreground">· {r.key}</span>
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
-                  <p className="text-xs text-muted-foreground">
-                    {partyTypeOptions.find(o => o.value === formData.partyType)?.desc}
-                  </p>
-                </div>
-              )}
-
-              {/* Policy Scope - Rework only */}
-              {isReworkOnly && (
-                <div className="grid gap-2">
-                  <Label>Policy Scope</Label>
-                  <Select value={formData.policyScope || 'both'} onValueChange={(v) => setFormData({ ...formData, policyScope: v as PolicyScopeType })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {policyScopeOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
+                  {(() => {
+                    const r = getReason(formData.reasonId);
+                    if (!r) {
+                      return (
+                        <p className="text-xs text-muted-foreground">
+                          Reasons are managed on the <span className="font-medium">Rework Reasons</span> page (description, party, scope, stages, automation).
+                        </p>
+                      );
+                    }
+                    return (
+                      <div className="rounded-md border border-border bg-muted/30 p-3 space-y-1 text-xs">
+                        <div className="text-muted-foreground">{r.descriptionTh}</div>
+                        <div className="flex flex-wrap gap-2 pt-1">
+                          <span className="px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{r.partyType === 'external' ? 'External' : 'Internal'}</span>
+                          <span className={`px-1.5 py-0.5 rounded ${
+                            r.policyScope === 'vmi' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                            : r.policyScope === 'cmi' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
+                            : 'bg-muted text-muted-foreground'
+                          }`}>{r.policyScope === 'vmi' ? 'VMI' : r.policyScope === 'cmi' ? 'CMI' : 'Both'}</span>
+                          {r.automationEnabled && (
+                            <span className="px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                              Automation: {r.automationType === 'auto_resolve' ? 'Resolve' : `Reassign · ${r.automationDays || '—'}d`}
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-muted-foreground">
+                          Stages: {(r.stages || []).map(s => stageOptions.find(o => o.value === s)?.label || s).join(', ') || '—'}
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
 
