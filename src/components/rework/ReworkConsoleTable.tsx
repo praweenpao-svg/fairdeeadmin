@@ -857,34 +857,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                         </span>
                       ) : '—'}
                     </td>
-                    {/* STAGES */}
-                    <td className="px-4 py-3 text-sm">
-                      {config.configType === 'endorsement' ? '—' : !isRw ? '—' : getStageLabels(config.stages || [])}
-                    </td>
-                    {/* PARTY */}
-                    <td className="px-4 py-3 text-sm text-center">
-                      {isRw ? (
-                        <span className="px-2 py-0.5 rounded text-xs font-medium bg-muted text-muted-foreground">
-                          {config.partyType === 'external' ? 'External' : 'Internal'}
-                        </span>
-                      ) : config.configType === 'endorsement' ? (
-                        <span className="px-2 py-0.5 rounded text-xs font-medium bg-muted text-muted-foreground">Internal</span>
-                      ) : '—'}
-                    </td>
-                    {/* VMI/CMI */}
-                    <td className="px-4 py-3 text-sm text-center">
-                      {isRw ? (
-                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                          config.policyScope === 'vmi' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                          : config.policyScope === 'cmi' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
-                          : 'bg-muted text-muted-foreground'
-                        }`}>
-                          {config.policyScope === 'vmi' ? 'VMI' : config.policyScope === 'cmi' ? 'CMI' : 'Both'}
-                        </span>
-                      ) : config.configType === 'endorsement' ? (
-                        <span className="px-2 py-0.5 rounded text-xs font-medium bg-muted text-muted-foreground">Both</span>
-                      ) : '—'}
-                    </td>
+                    {/* STAGES, PARTY, VMI/CMI moved to Rework Reasons page */}
                     {/* CANCELLATION */}
                     <td className="px-4 py-3 text-sm text-center">
                       {(isRw || config.configType === 'endorsement') ? (
