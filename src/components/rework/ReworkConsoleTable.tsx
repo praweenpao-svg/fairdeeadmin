@@ -666,14 +666,11 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                         <SelectItem value="__none__">Select rework reason</SelectItem>
                         {availableReasons.map(r => (
                           <SelectItem key={r.id} value={r.id}>
-                            {r.descriptionEn} <span className="text-muted-foreground">· {r.key}</span>
+                            {r.descriptionEn}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                    <p className="text-xs text-muted-foreground">
-                      One assignment config per Rework Reason. Manage reason attributes on the <span className="font-medium">Rework Reasons</span> page.
-                    </p>
                   </div>
                 );
               })()}
