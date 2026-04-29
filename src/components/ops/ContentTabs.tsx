@@ -270,25 +270,45 @@ function UploadDocumentsDialog({
 function LinkDocumentsTab({ sale }: { sale: SaleDetail }) {
   const { language } = useLanguageStore();
 
-  const [categories, setCategories] = React.useState<DocCategory[]>([
-    { key: 'car_reg', en: 'Car registration', th: 'ทะเบียนรถ', required: true, docs: [] },
-    { key: 'national_id', en: 'National ID', th: 'บัตรประชาชน', required: true, docs: [] },
-    { key: 'old_policy', en: 'Old policy document', th: 'เอกสารกรมธรรม์เดิม', docs: [] },
-    { key: 'manual_quote', en: 'Manual quotation from insurer', th: 'ใบเสนอราคาจากบริษัทประกัน', docs: [] },
-    { key: 'payment_proof', en: 'Payment proof to fairdee', th: 'หลักฐานการชำระเงินให้แฟร์ดี', docs: [] },
-    { key: 'national_id_undertaking', en: 'National ID with undertaking', th: 'บัตรประชาชนพร้อมหนังสือมอบอำนาจ', docs: [] },
-    { key: 'national_id_selfie', en: 'National ID with selfie', th: 'บัตรประชาชนพร้อมเซลฟี่', docs: [] },
-    { key: 'general', en: 'General documents', th: 'เอกสารทั่วไป', docs: [] },
-  ]);
+  // Derive matrix params from sale (sale-level, VMI-led; CMI inherits)
+  const saleType = sale.saleType ?? 'New';
+  const insuranceClass = sale.insuranceClass ?? 'Type3+';
+  const paymentType = sale.paymentType ?? 'Non-Instalment';
+  const carType = sale.carType ?? 'Normally';
+  const paymentMethod = sale.paymentMethodValue ?? '';
+  const customerType = sale.customer.customerType;
+  const driverLicenseCount = sale.driverLicenseCount ?? 0;
+  const carInspectionMethod = sale.carInspectionMethod ?? '';
 
+  const docGroups = React.useMemo(
+    () => getRequiredDocuments(
+      saleType, insuranceClass, paymentType, carType,
+      customerType, paymentMethod, driverLicenseCount, carInspectionMethod
+    ),
+    [saleType, insuranceClass, paymentType, carType, customerType, paymentMethod, driverLicenseCount, carInspectionMethod]
+  );
+
+  // Field-level upload state: fieldId -> docs
+  const [fieldDocs, setFieldDocs] = React.useState<Record<string, DocFile[]>>({});
   const [unlinkedDocs, setUnlinkedDocs] = React.useState<{ id: string; name: string; size?: string; preview?: string }[]>([]);
 
-  // Upload dialog state
+  // Upload dialog
   const [uploadDialogOpen, setUploadDialogOpen] = React.useState(false);
-  const [uploadTarget, setUploadTarget] = React.useState<string | null>(null); // category key or null for unlinked
+  const [uploadTarget, setUploadTarget] = React.useState<string | null>(null);
 
-  const handleOpenUploadForCategory = (categoryKey: string) => {
-    setUploadTarget(categoryKey);
+  const fieldLabel = (fieldId: string) => {
+    const def = DOCUMENT_FIELDS[fieldId];
+    if (!def) return fieldId;
+    // Dynamic name override for payment_proof
+    if (fieldId === 'payment_proof') {
+      const dyn = getPaymentProofName(paymentMethod);
+      return language === 'th' ? dyn.th : dyn.en;
+    }
+    return language === 'th' ? def.th : def.en;
+  };
+
+  const handleOpenUploadForField = (fieldId: string) => {
+    setUploadTarget(fieldId);
     setUploadDialogOpen(true);
   };
 
@@ -299,98 +319,140 @@ function LinkDocumentsTab({ sale }: { sale: SaleDetail }) {
 
   const handleUploadFiles = (files: { id: string; name: string; size: string; type: string; preview?: string }[]) => {
     if (uploadTarget) {
-      setCategories(prev => prev.map(cat =>
-        cat.key === uploadTarget ? { ...cat, docs: [...cat.docs, ...files.map(f => ({ id: f.id, name: f.name, preview: f.preview, type: f.type }))] } : cat
-      ));
+      setFieldDocs(prev => ({
+        ...prev,
+        [uploadTarget]: [...(prev[uploadTarget] || []), ...files.map(f => ({ id: f.id, name: f.name, preview: f.preview, type: f.type }))],
+      }));
     } else {
       setUnlinkedDocs(prev => [...prev, ...files.map(f => ({ id: f.id, name: f.name, size: f.size, preview: f.preview }))]);
     }
   };
 
-  const handleRemoveDoc = (categoryKey: string, docId: string) => {
-    setCategories(prev => prev.map(cat =>
-      cat.key === categoryKey ? { ...cat, docs: cat.docs.filter(d => d.id !== docId) } : cat
-    ));
+  const handleRemoveDoc = (fieldId: string, docId: string) => {
+    setFieldDocs(prev => ({
+      ...prev,
+      [fieldId]: (prev[fieldId] || []).filter(d => d.id !== docId),
+    }));
   };
 
   const handleRemoveUnlinked = (docId: string) => {
     setUnlinkedDocs(prev => prev.filter(d => d.id !== docId));
   };
 
-  // Drag & drop from unlinked to category
   const handleDragStart = (e: React.DragEvent, docId: string) => {
     e.dataTransfer.setData('text/plain', docId);
   };
 
-  const handleDrop = (e: React.DragEvent, categoryKey: string) => {
+  const handleDrop = (e: React.DragEvent, fieldId: string) => {
     e.preventDefault();
     const docId = e.dataTransfer.getData('text/plain');
     const doc = unlinkedDocs.find(d => d.id === docId);
     if (doc) {
-      setCategories(prev => prev.map(cat =>
-        cat.key === categoryKey ? { ...cat, docs: [...cat.docs, { id: doc.id, name: doc.name, preview: doc.preview }] } : cat
-      ));
+      setFieldDocs(prev => ({
+        ...prev,
+        [fieldId]: [...(prev[fieldId] || []), { id: doc.id, name: doc.name, preview: doc.preview }],
+      }));
       setUnlinkedDocs(prev => prev.filter(d => d.id !== docId));
     }
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-  };
+  const handleDragOver = (e: React.DragEvent) => e.preventDefault();
 
-  const uploadCategoryLabel = uploadTarget
-    ? (language === 'th'
-      ? categories.find(c => c.key === uploadTarget)?.th || ''
-      : categories.find(c => c.key === uploadTarget)?.en || '')
-    : '';
+  const uploadFieldLabel = uploadTarget ? fieldLabel(uploadTarget) : '';
+
+  // Group fields by section letter (A–G)
+  const groupedDocs = React.useMemo(() => {
+    const groups = new Map<string, DocumentGroup[]>();
+    docGroups.forEach(d => {
+      const def = DOCUMENT_FIELDS[d.fieldId];
+      if (!def?.group) return;
+      if (!groups.has(def.group)) groups.set(def.group, []);
+      groups.get(def.group)!.push(d);
+    });
+    // Order according to GROUP_ORDER, only include groups present
+    return GROUP_ORDER
+      .filter(g => groups.has(g))
+      .map(g => ({ group: g, items: groups.get(g)! }));
+  }, [docGroups]);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-      {/* Left: document categories */}
-      <div className="lg:col-span-3 space-y-2">
-        {categories.map(cat => (
-          <div
-            key={cat.key}
-            className="border border-border rounded-lg p-3 bg-card"
-            onDrop={(e) => handleDrop(e, cat.key)}
-            onDragOver={handleDragOver}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <span className="text-xs font-medium">
-                  {language === 'th' ? cat.th : cat.en}
-                  {cat.required && <span className="text-destructive ml-0.5">*</span>}
-                </span>
-                <p className="text-[10px] text-muted-foreground">{cat.docs.length} {language === 'th' ? 'เอกสาร' : 'Documents'}</p>
-              </div>
-              <button
-                onClick={() => handleOpenUploadForCategory(cat.key)}
-                className="w-7 h-7 rounded-md border border-border flex items-center justify-center hover:bg-accent transition-colors"
-              >
-                <Plus className="w-3.5 h-3.5 text-muted-foreground" />
-              </button>
-            </div>
-            {cat.docs.length > 0 && (
-              <div className="mt-2 grid grid-cols-4 gap-2">
-                {cat.docs.map(doc => (
-                  <div key={doc.id} className="relative border border-border rounded-lg overflow-hidden bg-muted/30">
-                    {doc.preview ? (
-                      <img src={doc.preview} alt={doc.name} className="w-full h-16 object-cover" />
-                    ) : (
-                      <div className="w-full h-16 flex items-center justify-center">
-                        <FileText className="w-6 h-6 text-muted-foreground" />
+      {/* Left: field-driven categories grouped by section */}
+      <div className="lg:col-span-3 space-y-4">
+        {groupedDocs.map(({ group, items }) => (
+          <div key={group} className="space-y-2">
+            <h6 className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground px-1">
+              {group}
+            </h6>
+            <div className="space-y-2">
+              {items.map(item => {
+                const docs = fieldDocs[item.fieldId] || [];
+                const labelText = fieldLabel(item.fieldId);
+                const def = DOCUMENT_FIELDS[item.fieldId];
+                return (
+                  <div
+                    key={item.fieldId}
+                    className="border border-border rounded-lg p-3 bg-card"
+                    onDrop={(e) => handleDrop(e, item.fieldId)}
+                    onDragOver={handleDragOver}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-xs font-medium">
+                            {labelText}
+                            {item.required && <span className="text-destructive ml-0.5">*</span>}
+                          </span>
+                          <Badge
+                            variant="outline"
+                            className={`text-[9px] px-1.5 py-0 h-4 ${CATEGORY_BADGE_CLASS[item.category]}`}
+                          >
+                            {language === 'th' ? CATEGORY_LABELS[item.category].th : CATEGORY_LABELS[item.category].en}
+                          </Badge>
+                          {def?.isOcr && (
+                            <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 border-primary/40 text-primary">
+                              OCR
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">
+                          {docs.length} {language === 'th' ? 'เอกสาร' : 'Documents'}
+                          {item.requiredCount ? ` / ${item.requiredCount} ${language === 'th' ? 'จำเป็น' : 'required'}` : ''}
+                          {item.conditionNote && <span className="ml-1.5 italic">· {item.conditionNote}</span>}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => handleOpenUploadForField(item.fieldId)}
+                        className="w-7 h-7 rounded-md border border-border flex items-center justify-center hover:bg-accent transition-colors shrink-0"
+                      >
+                        <Plus className="w-3.5 h-3.5 text-muted-foreground" />
+                      </button>
+                    </div>
+                    {docs.length > 0 && (
+                      <div className="mt-2 grid grid-cols-4 gap-2">
+                        {docs.map(doc => (
+                          <div key={doc.id} className="relative border border-border rounded-lg overflow-hidden bg-muted/30">
+                            {doc.preview ? (
+                              <img src={doc.preview} alt={doc.name} className="w-full h-16 object-cover" />
+                            ) : (
+                              <div className="w-full h-16 flex items-center justify-center">
+                                <FileText className="w-6 h-6 text-muted-foreground" />
+                              </div>
+                            )}
+                            <div className="px-1.5 py-1">
+                              <p className="text-[9px] font-medium truncate">{doc.name}</p>
+                            </div>
+                            <button onClick={() => handleRemoveDoc(item.fieldId, doc.id)} className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-background/80 flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground transition-colors">
+                              <X className="w-2.5 h-2.5" />
+                            </button>
+                          </div>
+                        ))}
                       </div>
                     )}
-                    <div className="px-1.5 py-1">
-                      <p className="text-[9px] font-medium truncate">{doc.name}</p>
-                    </div>
-                    <button onClick={() => handleRemoveDoc(cat.key, doc.id)} className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-background/80 flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground transition-colors">
-                      <X className="w-2.5 h-2.5" />
-                    </button>
                   </div>
-                ))}
-              </div>
-            )}
+                );
+              })}
+            </div>
           </div>
         ))}
       </div>
@@ -470,7 +532,7 @@ function LinkDocumentsTab({ sale }: { sale: SaleDetail }) {
       <UploadDocumentsDialog
         open={uploadDialogOpen}
         onOpenChange={setUploadDialogOpen}
-        categoryLabel={uploadCategoryLabel}
+        categoryLabel={uploadFieldLabel}
         onUpload={handleUploadFiles}
       />
     </div>
