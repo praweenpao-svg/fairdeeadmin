@@ -245,6 +245,14 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
         toast({ title: 'Validation Error', description: 'Selected Rework Reason no longer exists.', variant: 'destructive' });
         return;
       }
+      // 1:1 — block duplicate assignment config for the same Rework Reason
+      const dup = reworkConfigs.some(c =>
+        c.configType === 'rework' && c.reasonId === formData.reasonId && c.id !== editingConfig?.id
+      );
+      if (dup) {
+        toast({ title: 'Already exists', description: 'An assignment config for this Rework Reason already exists.', variant: 'destructive' });
+        return;
+      }
     }
 
     if (isEndorsement) {
