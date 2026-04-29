@@ -5,6 +5,15 @@ import samplePaymentProof from '@/assets/sample-payment-proof.png';
 import mtiLogo from '@/assets/insurer-mti.png';
 import { useLanguageStore } from '@/stores/languageStore';
 import { SaleDetail } from '@/data/mockSaleDetail';
+import {
+  getRequiredDocuments,
+  DOCUMENT_FIELDS,
+  getPaymentProofName,
+  CATEGORY_LABELS,
+  CATEGORY_BADGE_CLASS,
+  GROUP_ORDER,
+  type DocumentGroup,
+} from '@/data/documentRequirements';
 import { CoveragePanel } from './CoveragePanel';
 import { PolicyDetailsZone } from './PolicyDetailsZone';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
