@@ -891,10 +891,37 @@ function PackageSelectionTab({ sale }: { sale: SaleDetail }) {
   const [customerType, setCustomerType] = React.useState<string>('');
   const [commercialVehicle, setCommercialVehicle] = React.useState('');
   const [kycMode, setKycMode] = React.useState('');
+  // Coverage dates (yyyy-MM-dd for <input type="date">)
+  const toIsoDate = (ddmmyyyy?: string) => {
+    if (!ddmmyyyy) return '';
+    const [d, m, y] = ddmmyyyy.split('/');
+    if (!d || !m || !y) return '';
+    return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+  };
+  const formatThaiDate = (iso: string) => {
+    if (!iso) return '';
+    const [y, m, d] = iso.split('-');
+    return `${d}/${m}/${y}`;
+  };
+  const addOneYear = (iso: string) => {
+    if (!iso) return '';
+    const dt = new Date(iso + 'T00:00:00');
+    if (isNaN(dt.getTime())) return '';
+    dt.setFullYear(dt.getFullYear() + 1);
+    const y = dt.getFullYear();
+    const mo = String(dt.getMonth() + 1).padStart(2, '0');
+    const da = String(dt.getDate()).padStart(2, '0');
+    return `${y}-${mo}-${da}`;
+  };
+  const [vmiStartDate, setVmiStartDate] = React.useState<string>(toIsoDate(vmiPolicy?.policyStartDate));
+  const [cmiStartDate, setCmiStartDate] = React.useState<string>('');
+  const vmiEndDate = addOneYear(vmiStartDate);
+  const cmiEndDate = addOneYear(cmiStartDate);
 
   const isInstallment = paymentMethod === 'bank_account_installment' || paymentMethod === 'qr_code_installment' || paymentMethod === 'credit_card_installment';
   const showKyc = paymentMethod === 'bank_account_installment' || paymentMethod === 'qr_code_installment';
   const installmentOptions = installmentPlan === 'downpayment' ? DOWNPAYMENT_INSTALLMENT_OPTIONS : EQUAL_INSTALLMENT_OPTIONS;
+
 
   return (
     <div className="space-y-6">
