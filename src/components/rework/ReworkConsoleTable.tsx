@@ -796,71 +796,8 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                 </div>
               )}
 
-              {/* Automation - Rework only */}
-              {isReworkOnly && (
-                <div className="border-t pt-4 mt-2">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="space-y-0.5">
-                      <Label>Enable Automation</Label>
-                      <p className="text-xs text-muted-foreground">Automatically act on stale rework items</p>
-                    </div>
-                    <Switch
-                      checked={formData.automationEnabled || false}
-                      onCheckedChange={(v) => setFormData({ ...formData, automationEnabled: v, automationType: v ? (formData.automationType || 'auto_reassign') : undefined })}
-                    />
-                  </div>
-                  {formData.automationEnabled && (
-                    <div className="grid gap-4">
-                      <div className="grid gap-2">
-                        <Label>Automation Type</Label>
-                        <Select
-                          value={formData.automationType || 'auto_reassign'}
-                          onValueChange={(v) => setFormData({ ...formData, automationType: v as AutomationType, targetReason: v === 'auto_resolve' ? undefined : formData.targetReason })}
-                        >
-                          <SelectTrigger><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="auto_reassign">Auto-Reassign</SelectItem>
-                            <SelectItem value="auto_resolve">Auto-Resolve</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <p className="text-xs text-muted-foreground">
-                          {formData.automationType === 'auto_resolve'
-                            ? 'Auto-resolves on a future date selected per entry'
-                            : 'Reassigns to a target reason after threshold days'}
-                        </p>
-                      </div>
-                      {(formData.automationType || 'auto_reassign') === 'auto_reassign' && (
-                        <>
-                          <div className="grid gap-2">
-                            <Label>Threshold (Days)</Label>
-                            <Input
-                              type="number" min={1}
-                              value={formData.automationDays || ''}
-                              onChange={(e) => setFormData({ ...formData, automationDays: e.target.value ? parseInt(e.target.value) : undefined })}
-                              placeholder="Enter number of days"
-                            />
-                          </div>
-                          <div className="grid gap-2">
-                            <Label>Target Status</Label>
-                            <Select
-                              value={formData.targetReason || '__none__'}
-                              onValueChange={(v) => setFormData({ ...formData, targetReason: v === '__none__' ? undefined : v })}
-                            >
-                              <SelectTrigger><SelectValue placeholder="Select target" /></SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="__none__">Select target reason</SelectItem>
-                                {uniqueConfigs.filter(c => c.id !== editingConfig?.id && c.configType === 'rework').map(c => (
-                                  <SelectItem key={c.id} value={c.id}>{c.descriptionEn}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
+              {/* Automation moved to Rework Reasons page */}
+
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
