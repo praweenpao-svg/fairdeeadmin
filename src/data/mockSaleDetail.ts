@@ -107,6 +107,13 @@ export interface SaleAgent {
   commissionDetail: string;
 }
 
+// Sale-level matrix drivers — single source of truth for document requirements.
+// VMI is always present; CMI piggybacks (no per-policy doc divergence).
+export type SaleTypeKey = 'New' | 'Renewable' | 'COA';
+export type InsuranceClassKey = 'Type1' | 'Type2' | 'Type2+' | 'Type3' | 'Type3+';
+export type PaymentTypeKey = 'Non-Instalment' | 'Instalment';
+export type CarTypeKey = 'Normally' | 'EV' | 'Special';
+
 export interface SaleDetail {
   id: string;
   qqId: string;
@@ -125,7 +132,16 @@ export interface SaleDetail {
   hasCompulsoryInsurance: boolean;
   forCommercialVehicle: boolean;
   createdAt: string;
+  // Sale-level matrix drivers (drive doc requirements; VMI-led, CMI inherits)
+  saleType?: SaleTypeKey;
+  insuranceClass?: InsuranceClassKey;
+  paymentType?: PaymentTypeKey;
+  carType?: CarTypeKey;
+  paymentMethodValue?: string; // e.g. 'insurer_cc', 'credit_card_full'
+  driverLicenseCount?: number;
+  carInspectionMethod?: 'upload_photos' | 'inspection_appointment' | '';
 }
+
 
 export const mockSaleDetail: SaleDetail = {
   id: 'sale-001',
