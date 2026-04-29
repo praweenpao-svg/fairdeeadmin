@@ -245,6 +245,14 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
         toast({ title: 'Validation Error', description: 'Selected Rework Reason no longer exists.', variant: 'destructive' });
         return;
       }
+      // 1:1 — block duplicate assignment config for the same Rework Reason
+      const dup = reworkConfigs.some(c =>
+        c.configType === 'rework' && c.reasonId === formData.reasonId && c.id !== editingConfig?.id
+      );
+      if (dup) {
+        toast({ title: 'Already exists', description: 'An assignment config for this Rework Reason already exists.', variant: 'destructive' });
+        return;
+      }
     }
 
     if (isEndorsement) {
@@ -638,57 +646,37 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                 </div>
               )}
 
-              {/* Rework Reason selector — replaces TH/EN/Party/Scope which now live on the reason */}
-              {isReworkOnly && (
-                <div className="grid gap-2">
-                  <Label>Rework Reason</Label>
-                  <Select
-                    value={formData.reasonId || '__none__'}
-                    onValueChange={(v) => setFormData({ ...formData, reasonId: v === '__none__' ? undefined : v })}
-                  >
-                    <SelectTrigger><SelectValue placeholder="Select rework reason" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="__none__">Select rework reason</SelectItem>
-                      {reworkReasons.map(r => (
-                        <SelectItem key={r.id} value={r.id}>
-                          {r.descriptionEn} <span className="text-muted-foreground">· {r.key}</span>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {(() => {
-                    const r = getReason(formData.reasonId);
-                    if (!r) {
-                      return (
-                        <p className="text-xs text-muted-foreground">
-                          Reasons are managed on the <span className="font-medium">Rework Reasons</span> page (description, party, scope, stages, automation).
-                        </p>
-                      );
-                    }
-                    return (
-                      <div className="rounded-md border border-border bg-muted/30 p-3 space-y-1 text-xs">
-                        <div className="text-muted-foreground">{r.descriptionTh}</div>
-                        <div className="flex flex-wrap gap-2 pt-1">
-                          <span className="px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{r.partyType === 'external' ? 'External' : 'Internal'}</span>
-                          <span className={`px-1.5 py-0.5 rounded ${
-                            r.policyScope === 'vmi' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                            : r.policyScope === 'cmi' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
-                            : 'bg-muted text-muted-foreground'
-                          }`}>{r.policyScope === 'vmi' ? 'VMI' : r.policyScope === 'cmi' ? 'CMI' : 'Both'}</span>
-                          {r.automationEnabled && (
-                            <span className="px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
-                              Automation: {r.automationType === 'auto_resolve' ? 'Resolve' : `Reassign · ${r.automationDays || '—'}d`}
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-muted-foreground">
-                          Stages: {(r.stages || []).map(s => stageOptions.find(o => o.value === s)?.label || s).join(', ') || '—'}
-                        </div>
-                      </div>
-                    );
-                  })()}
-                </div>
-              )}
+              {/* Rework Reason selector — reason attributes are managed on the Rework Reasons page */}
+              {isReworkOnly && (() => {
+                const usedReasonIds = new Set(
+                  reworkConfigs
+                    .filter(c => c.configType === 'rework' && c.id !== editingConfig?.id && c.reasonId)
+                    .map(c => c.reasonId as string)
+                );
+                const availableReasons = reworkReasons.filter(r => !usedReasonIds.has(r.id));
+                return (
+                  <div className="grid gap-2">
+                    <Label>Rework Reason</Label>
+                    <Select
+                      value={formData.reasonId || '__none__'}
+                      onValueChange={(v) => setFormData({ ...formData, reasonId: v === '__none__' ? undefined : v })}
+                    >
+                      <SelectTrigger><SelectValue placeholder="Select rework reason" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">Select rework reason</SelectItem>
+                        {availableReasons.map(r => (
+                          <SelectItem key={r.id} value={r.id}>
+                            {r.descriptionEn} <span className="text-muted-foreground">· {r.key}</span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">
+                      One assignment config per Rework Reason. Manage reason attributes on the <span className="font-medium">Rework Reasons</span> page.
+                    </p>
+                  </div>
+                );
+              })()}
 
               {/* Sticky Check */}
               {formData.configType && (
