@@ -199,7 +199,16 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
   const openDialog = (config?: ReworkConfig) => {
     if (config) {
       setEditingConfig(config);
-      setFormData({ ...config });
+      let resolvedReasonId = config.reasonId;
+      // Back-match legacy rework configs by EN description if reasonId missing
+      if (!resolvedReasonId && config.configType === 'rework') {
+        const match = reworkReasons.find(r =>
+          r.descriptionEn.trim().toLowerCase() === (config.descriptionEn || '').trim().toLowerCase()
+          && r.descriptionTh.trim().toLowerCase() === (config.descriptionTh || '').trim().toLowerCase()
+        );
+        resolvedReasonId = match?.id;
+      }
+      setFormData({ ...config, reasonId: resolvedReasonId });
     } else {
       setEditingConfig(null);
       setFormData({ ...defaultFormData });
