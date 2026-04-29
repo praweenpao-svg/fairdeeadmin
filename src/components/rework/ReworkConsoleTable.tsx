@@ -228,16 +228,12 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
 
     // Validation
     if (isRework) {
-      if (!formData.descriptionTh?.trim()) {
-        toast({ title: 'Validation Error', description: 'Description (TH) is required.', variant: 'destructive' });
+      if (!formData.reasonId) {
+        toast({ title: 'Validation Error', description: 'Please select a Rework Reason.', variant: 'destructive' });
         return;
       }
-      if (!formData.descriptionEn?.trim()) {
-        toast({ title: 'Validation Error', description: 'Description (EN) is required.', variant: 'destructive' });
-        return;
-      }
-      if (!(formData.stages || []).length) {
-        toast({ title: 'Validation Error', description: 'At least one stage is required.', variant: 'destructive' });
+      if (!getReason(formData.reasonId)) {
+        toast({ title: 'Validation Error', description: 'Selected Rework Reason no longer exists.', variant: 'destructive' });
         return;
       }
     }
