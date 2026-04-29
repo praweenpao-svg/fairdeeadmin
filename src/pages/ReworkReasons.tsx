@@ -272,7 +272,6 @@ export default function ReworkReasons() {
             <tbody>
               {paginated.map(r => (
                 <tr key={r.id} className="data-table-row">
-                  <td className="px-4 py-3 text-sm font-mono text-foreground">{r.key}</td>
                   <td className="px-4 py-3 text-sm">
                     <div className="space-y-0.5">
                       <div className="font-medium text-foreground">{r.descriptionEn}</div>
