@@ -299,45 +299,62 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
       return;
     }
 
-    // Automation validation
-    if (isRework && formData.automationEnabled) {
-      if (formData.automationType === 'auto_reassign') {
-        if (!formData.automationDays || formData.automationDays <= 0) {
-          toast({ title: 'Validation Error', description: 'Threshold must be a positive whole number.', variant: 'destructive' });
-          return;
-        }
-      }
-    }
+    // Note: Automation lives on the Rework Reason entity now (no validation here).
 
     const teamValue = formData.assignment === 'round_robin' ? (formData.team || '') : '';
-    const stages = isMinimal ? allPostLeadStages : (formData.stages || []);
-    const partyType = isMinimal ? 'internal' as ReworkPartyType : (formData.partyType || 'internal');
-    const policyScope = isMinimal ? 'both' as PolicyScopeType : (formData.policyScope || 'both');
-    const automationEnabled = isMinimal ? false : (formData.automationEnabled || false);
-    const automationType = isMinimal ? undefined : (automationEnabled ? (formData.automationType || 'auto_reassign') : undefined);
+
+    // For rework configs, mirror reason fields onto the assignment config
+    // so existing consumers reading descriptionEn/Th, partyType, stages,
+    // automation, etc. continue to work without changes.
+    const reason = isRework ? getReason(formData.reasonId) : undefined;
+    const stages = isRework
+      ? (reason?.stages || allPostLeadStages)
+      : isMinimal ? allPostLeadStages : (formData.stages || []);
+    const partyType: ReworkPartyType = isRework
+      ? (reason?.partyType || 'internal')
+      : isMinimal ? 'internal' : (formData.partyType || 'internal');
+    const policyScope: PolicyScopeType = isRework
+      ? (reason?.policyScope || 'both')
+      : isMinimal ? 'both' : (formData.policyScope || 'both');
+    const automationEnabled = isRework
+      ? (reason?.automationEnabled || false)
+      : isMinimal ? false : (formData.automationEnabled || false);
+    const automationType = isRework
+      ? reason?.automationType
+      : isMinimal ? undefined : (automationEnabled ? (formData.automationType || 'auto_reassign') : undefined);
+    const automationDays = isRework ? reason?.automationDays : (isMinimal ? undefined : formData.automationDays);
+    const targetReasonValue = isRework
+      ? reason?.targetReasonId
+      : isMinimal ? undefined : (automationType === 'auto_resolve' ? undefined : formData.targetReason);
+    const descriptionEn = isRework ? (reason?.descriptionEn || '') : isMinimal ? '' : (formData.descriptionEn || '');
+    const descriptionTh = isRework ? (reason?.descriptionTh || '') : isMinimal ? '' : (formData.descriptionTh || '');
     const movesToCancellation = (isRework || isEndorsement) ? (formData.movesToCancellation || false) : false;
 
     if (editingConfig) {
       onUpdate(reworkConfigs.map(c =>
         c.id === editingConfig.id ? {
-          ...c, ...formData, team: teamValue, stages, partyType, policyScope,
-          automationEnabled, automationType, movesToCancellation,
+          ...c, ...formData,
+          team: teamValue, stages, partyType, policyScope,
+          descriptionEn, descriptionTh,
+          automationEnabled, automationType, automationDays, targetReason: targetReasonValue,
+          movesToCancellation,
           stickyEnabled: formData.stickyEnabled || false,
           stickyColumns: formData.stickyEnabled ? (formData.stickyColumns || []) : [],
+          reasonId: isRework ? formData.reasonId : undefined,
         } : c
       ));
     } else {
       const newConfig: ReworkConfig = {
         id: String(Date.now()),
         configType: ct,
-        descriptionTh: isMinimal ? '' : (formData.descriptionTh || ''),
-        descriptionEn: isMinimal ? '' : (formData.descriptionEn || ''),
+        descriptionTh,
+        descriptionEn,
         team: teamValue,
         teamMembers: [],
         automationEnabled,
         automationType,
-        automationDays: isMinimal ? undefined : formData.automationDays,
-        targetReason: isMinimal ? undefined : (automationType === 'auto_resolve' ? undefined : formData.targetReason),
+        automationDays,
+        targetReason: targetReasonValue,
         assignment: formData.assignment || 'none',
         stages,
         movesToCancellation,
@@ -350,6 +367,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
         deliveryMethod: ct === 'policy' && statusesWithDeliveryMethod.includes(formData.statusFilter || '') ? formData.deliveryMethod : undefined,
         stickyEnabled: formData.stickyEnabled || false,
         stickyColumns: formData.stickyEnabled ? (formData.stickyColumns || []) : [],
+        reasonId: isRework ? formData.reasonId : undefined,
       };
       onUpdate([...reworkConfigs, newConfig]);
     }
