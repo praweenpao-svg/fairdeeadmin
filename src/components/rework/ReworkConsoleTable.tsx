@@ -647,33 +647,25 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
               )}
 
               {/* Rework Reason selector — reason attributes are managed on the Rework Reasons page */}
-              {isReworkOnly && (() => {
-                const usedReasonIds = new Set(
-                  reworkConfigs
-                    .filter(c => c.configType === 'rework' && c.id !== editingConfig?.id && c.reasonId)
-                    .map(c => c.reasonId as string)
-                );
-                const availableReasons = reworkReasons.filter(r => !usedReasonIds.has(r.id));
-                return (
-                  <div className="grid gap-2">
-                    <Label>Rework Reason</Label>
-                    <Select
-                      value={formData.reasonId || '__none__'}
-                      onValueChange={(v) => setFormData({ ...formData, reasonId: v === '__none__' ? undefined : v })}
-                    >
-                      <SelectTrigger><SelectValue placeholder="Select rework reason" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="__none__">Select rework reason</SelectItem>
-                        {availableReasons.map(r => (
-                          <SelectItem key={r.id} value={r.id}>
-                            {r.descriptionEn}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                );
-              })()}
+              {isReworkOnly && (
+                <div className="grid gap-2">
+                  <Label>Rework Reason</Label>
+                  <Select
+                    value={formData.reasonId || '__none__'}
+                    onValueChange={(v) => setFormData({ ...formData, reasonId: v === '__none__' ? undefined : v })}
+                  >
+                    <SelectTrigger><SelectValue placeholder="Select rework reason" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">Select rework reason</SelectItem>
+                      {reworkReasons.map(r => (
+                        <SelectItem key={r.id} value={r.id}>
+                          {r.descriptionEn}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
               {/* Sticky Check */}
               {formData.configType && (
