@@ -315,7 +315,7 @@ export default function ReworkReasons() {
                 </tr>
               ))}
               {paginated.length === 0 && (
-                <tr><td colSpan={7} className="px-4 py-8 text-center text-sm text-muted-foreground">No rework reasons yet.</td></tr>
+                <tr><td colSpan={6} className="px-4 py-8 text-center text-sm text-muted-foreground">No rework reasons yet.</td></tr>
               )}
             </tbody>
           </table>
