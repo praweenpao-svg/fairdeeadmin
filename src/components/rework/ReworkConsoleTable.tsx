@@ -187,6 +187,7 @@ const defaultFormData: FormData = {
 
 export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTableProps) {
   const { teams, teamEntries, getTeamsByStickyColumn } = useTeamsStore();
+  const { reasons: reworkReasons, getReason } = useReworkReasonsStore();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingConfig, setEditingConfig] = useState<ReworkConfig | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
