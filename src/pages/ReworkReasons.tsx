@@ -261,7 +261,6 @@ export default function ReworkReasons() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-border">
-                <th className="data-table-header px-4 py-3 text-left">Key</th>
                 <th className="data-table-header px-4 py-3 text-left min-w-[260px]">Description</th>
                 <th className="data-table-header px-4 py-3 text-center">Party</th>
                 <th className="data-table-header px-4 py-3 text-center">VMI/CMI</th>
