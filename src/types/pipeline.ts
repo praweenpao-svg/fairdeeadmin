@@ -345,6 +345,27 @@ export interface ReworkConfig {
   stickyColumns?: StickyColumnType[];
   // Hard-coded rows (e.g., Print by FairDee) — not editable/deletable
   hardCoded?: boolean;
+  // Link to a ReworkReason entity (rework configType only). Reason fields
+  // (descriptions, party, scope, stages, automation) are mirrored from the
+  // referenced reason at save time so existing consumers keep working.
+  reasonId?: string;
+}
+
+// Standalone Rework Reason entity. Reasons are managed independently from
+// assignment configuration so multiple assignment rows can reference the
+// same reason and reasons can evolve without duplicating assignment logic.
+export interface ReworkReason {
+  id: string;
+  key: string; // unique slug, auto-derived from descriptionEn (e.g., 'docs_missing')
+  descriptionTh: string;
+  descriptionEn: string;
+  partyType: ReworkPartyType;
+  policyScope: PolicyScopeType;
+  stages: PipelineStage[];
+  automationEnabled: boolean;
+  automationType?: AutomationType;
+  automationDays?: number;
+  targetReasonId?: string; // Auto-Reassign target reason
 }
 
 export interface PipelineTab {
