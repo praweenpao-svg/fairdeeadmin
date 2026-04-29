@@ -821,13 +821,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                 <th className="data-table-header px-4 py-3 text-left">Assignment Logic</th>
                 <th className="data-table-header px-4 py-3 text-left">Teams</th>
                 <th className="data-table-header px-4 py-3 text-center">Method</th>
-                <th className="data-table-header px-4 py-3 text-left">Stages</th>
-                <th className="data-table-header px-4 py-3 text-center">Party</th>
-                <th className="data-table-header px-4 py-3 text-center">VMI/CMI</th>
                 <th className="data-table-header px-4 py-3 text-center">Cancellation</th>
-                <th className="data-table-header px-4 py-3 text-center">Automation</th>
-                <th className="data-table-header px-4 py-3 text-center">Threshold</th>
-                <th className="data-table-header px-4 py-3 text-left">Target Status</th>
                 <th className="data-table-header px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
