@@ -7,6 +7,7 @@ import {
   IssuanceMethod, DeliveryMethodType, StickyColumnType,
 } from '@/types/pipeline';
 import { useTeamsStore } from '@/stores/teamsStore';
+import { useReworkReasonsStore } from '@/stores/reworkReasonsStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { TablePagination } from '@/components/ui/table-pagination';
