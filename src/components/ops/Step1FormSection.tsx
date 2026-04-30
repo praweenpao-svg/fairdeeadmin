@@ -332,6 +332,7 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
             onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ''))}
             maxLength={10}
             placeholder="0812345678"
+            className="h-9 text-sm"
           />
         </FormRow>
 
@@ -343,7 +344,7 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
                   role="textbox"
                   aria-readonly="true"
                   tabIndex={0}
-                  className="w-full flex items-center justify-between gap-2 border border-input rounded-md px-3 py-2.5 text-sm bg-muted/40 text-foreground cursor-not-allowed"
+                  className="w-full h-9 flex items-center justify-between gap-2 border border-input rounded-md px-3 text-sm bg-muted/40 text-foreground cursor-not-allowed"
                 >
                   <span className="truncate">{vehicleCodeLabel}</span>
                   <Lock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
