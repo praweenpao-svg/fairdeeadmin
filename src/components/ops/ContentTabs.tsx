@@ -548,15 +548,188 @@ function LinkDocumentsTab({ sale }: { sale: SaleDetail }) {
   );
 }
 
-function VerifyInformationTab({ sale }: { sale: SaleDetail }) {
+type OcrStatus = 'pending' | 'processing' | 'done';
+type OcrKey = 'national_id' | 'car_reg' | 'payment';
+type AddressSource = 'national_id' | 'agent' | 'car_reg' | 'manual';
+
+interface ShippingFormState {
+  receiverType: 'policy_holder' | 'agent' | 'e_policy' | 'new_address';
+  addressSource: AddressSource;
+  receiverName: string;
+  addressLine: string;
+  province: string;
+  district: string;
+  subDistrict: string;
+  postalCode: string;
+  phoneNumber: string;
+}
+
+interface VerifyTabProps {
+  sale: SaleDetail;
+  onReadinessChange?: (ready: boolean, blockers: string[]) => void;
+}
+
+function VerifyInformationTab({ sale, onReadinessChange }: VerifyTabProps) {
   const { language } = useLanguageStore();
   const customer = sale.customer;
   const vehicle = sale.vehicle;
   const shipping = sale.shipping;
+  const agent = sale.agent;
+
   const [zoom, setZoom] = React.useState<Record<string, number>>({ national_id: 100, car_reg: 100, payment: 100 });
+  // OCR sim status per source
+  const [ocrStatus, setOcrStatus] = React.useState<Record<OcrKey, OcrStatus>>({
+    national_id: 'pending',
+    car_reg: 'pending',
+    payment: 'pending',
+  });
+
+  // Insurance / shipping editable state (drives address propagation + gating)
+  const [policyStartDate, setPolicyStartDate] = React.useState('');
+  const [insurancePhone, setInsurancePhone] = React.useState(customer.phoneNumber || '');
+
+  // Sources available for shipping address propagation. Built from sale data.
+  const addressSources = React.useMemo(() => ({
+    national_id: {
+      addressLine: customer.addressLine,
+      province: customer.province,
+      district: customer.district,
+      subDistrict: customer.subDistrict,
+      postalCode: customer.postalCode,
+    },
+    agent: agent?.address || {
+      addressLine: '', province: '', district: '', subDistrict: '', postalCode: '',
+    },
+    car_reg: {
+      // Mock: car-reg address derived from vehicle.registrationProvince
+      addressLine: '', province: vehicle.registrationProvince || '', district: '', subDistrict: '', postalCode: '',
+    },
+  }), [customer, agent, vehicle]);
+
+  const initialShipping: ShippingFormState = {
+    receiverType: shipping.receiverType,
+    addressSource: shipping.receiverType === 'agent' ? 'agent' : shipping.receiverType === 'policy_holder' ? 'national_id' : 'manual',
+    receiverName: shipping.receiverName,
+    addressLine: shipping.addressLine,
+    province: shipping.province,
+    district: shipping.district,
+    subDistrict: shipping.subDistrict,
+    postalCode: shipping.postalCode,
+    phoneNumber: shipping.phoneNumber,
+  };
+  const [shippingForm, setShippingForm] = React.useState<ShippingFormState>(initialShipping);
 
   const handleZoom = (key: string, delta: number) => {
     setZoom(prev => ({ ...prev, [key]: Math.max(25, Math.min(400, (prev[key] || 100) + delta)) }));
+  };
+
+  const runOcr = (key: OcrKey) => {
+    setOcrStatus(prev => ({ ...prev, [key]: 'processing' }));
+    setTimeout(() => {
+      setOcrStatus(prev => ({ ...prev, [key]: 'done' }));
+      const labels: Record<OcrKey, string> = {
+        national_id: language === 'th' ? 'บัตรประชาชน' : 'National ID',
+        car_reg: language === 'th' ? 'เล่มทะเบียนรถ' : 'Car Registration',
+        payment: language === 'th' ? 'หลักฐานการชำระเงิน' : 'Payment Proof',
+      };
+      toast.success(
+        language === 'th'
+          ? `OCR ${labels[key]} สำเร็จ — ฟิลด์ถูกอัปเดตจากเอกสาร`
+          : `OCR completed for ${labels[key]} — fields populated from document`
+      );
+    }, 1200);
+  };
+
+  // Apply receiver type → set address source and pre-fill on change
+  const handleReceiverTypeChange = (rt: ShippingFormState['receiverType']) => {
+    let source: AddressSource = 'manual';
+    if (rt === 'policy_holder') source = 'national_id';
+    else if (rt === 'agent') source = 'agent';
+    else if (rt === 'new_address') source = 'manual';
+    // e_policy stays manual (no physical address required)
+
+    if (source !== 'manual') {
+      const src = addressSources[source];
+      setShippingForm(prev => ({
+        ...prev,
+        receiverType: rt,
+        addressSource: source,
+        receiverName: rt === 'policy_holder'
+          ? `${customer.title} ${customer.firstName} ${customer.lastName}`.trim()
+          : rt === 'agent'
+          ? agent?.name || prev.receiverName
+          : prev.receiverName,
+        addressLine: src.addressLine,
+        province: src.province,
+        district: src.district,
+        subDistrict: src.subDistrict,
+        postalCode: src.postalCode,
+        phoneNumber: rt === 'agent' ? (agent?.phone || prev.phoneNumber) : prev.phoneNumber,
+      }));
+    } else {
+      setShippingForm(prev => ({ ...prev, receiverType: rt, addressSource: 'manual' }));
+    }
+  };
+
+  // Manually pick a source (within the radios) and re-pull
+  const repullFromSource = (source: AddressSource) => {
+    if (source === 'manual') return;
+    const src = addressSources[source];
+    setShippingForm(prev => ({
+      ...prev,
+      addressSource: source,
+      addressLine: src.addressLine,
+      province: src.province,
+      district: src.district,
+      subDistrict: src.subDistrict,
+      postalCode: src.postalCode,
+    }));
+    toast.info(
+      language === 'th'
+        ? 'ที่อยู่จัดส่งถูกอัปเดตจากแหล่งข้อมูลที่เลือก'
+        : 'Shipping address re-pulled from selected source'
+    );
+  };
+
+  // Compute readiness for "Send to Agent"
+  React.useEffect(() => {
+    const blockers: string[] = [];
+    if (ocrStatus.national_id !== 'done') blockers.push(language === 'th' ? 'OCR บัตรประชาชนยังไม่เสร็จ' : 'National ID OCR not run');
+    if (!insurancePhone.trim()) blockers.push(language === 'th' ? 'กรุณาระบุเบอร์โทรศัพท์' : 'Phone number required');
+    if (!policyStartDate) blockers.push(language === 'th' ? 'กรุณาระบุวันเริ่มต้นกรมธรรม์' : 'Policy start date required');
+    if (shippingForm.receiverType !== 'e_policy') {
+      if (!shippingForm.addressLine.trim()) blockers.push(language === 'th' ? 'กรุณาระบุที่อยู่จัดส่ง' : 'Shipping address required');
+      if (!shippingForm.phoneNumber.trim()) blockers.push(language === 'th' ? 'กรุณาระบุเบอร์โทรผู้รับ' : 'Receiver phone required');
+    }
+    onReadinessChange?.(blockers.length === 0, blockers);
+  }, [ocrStatus, insurancePhone, policyStartDate, shippingForm, language, onReadinessChange]);
+
+  const ocrPill = (status: OcrStatus) => {
+    const map: Record<OcrStatus, { label: string; cls: string }> = {
+      pending: { label: language === 'th' ? 'รอดำเนินการ OCR' : 'OCR pending', cls: 'bg-muted text-muted-foreground border-border' },
+      processing: { label: language === 'th' ? 'กำลังประมวลผล...' : 'Processing…', cls: 'bg-amber-500/15 text-amber-700 border-amber-500/30' },
+      done: { label: language === 'th' ? 'OCR เสร็จสิ้น' : 'OCR complete', cls: 'bg-emerald-500/15 text-emerald-700 border-emerald-500/30' },
+    };
+    const it = map[status];
+    return <Badge variant="outline" className={cn('text-[10px] h-5 px-1.5', it.cls)}>{it.label}</Badge>;
+  };
+
+  const ocrButton = (key: OcrKey) => {
+    const status = ocrStatus[key];
+    return (
+      <Button
+        size="sm"
+        variant="outline"
+        className="h-7 text-[11px] gap-1"
+        disabled={status === 'processing'}
+        onClick={() => runOcr(key)}
+      >
+        <RefreshCw className={cn('w-3 h-3', status === 'processing' && 'animate-spin')} />
+        {status === 'done'
+          ? (language === 'th' ? 'รันใหม่' : 'Re-run OCR')
+          : (language === 'th' ? 'รัน OCR' : 'Run OCR')}
+      </Button>
+    );
   };
 
   return (
@@ -564,11 +737,14 @@ function VerifyInformationTab({ sale }: { sale: SaleDetail }) {
       {/* Section 1: National ID */}
       <Card className="border-border">
         <CardContent className="p-0">
-          <div className="px-4 py-2 border-b border-border">
+          <div className="px-4 py-2 border-b border-border flex items-center justify-between">
             <span className="text-sm font-semibold">National ID</span>
+            <div className="flex items-center gap-2">
+              {ocrPill(ocrStatus.national_id)}
+              {ocrButton('national_id')}
+            </div>
           </div>
           <div className="grid grid-cols-3">
-            {/* Left: Image viewer (1/3) */}
             <div className="col-span-1 border-r border-border p-3 flex flex-col">
               <div className="flex-1 bg-muted/20 rounded-lg overflow-hidden flex items-center justify-center min-h-[240px]">
                 <img
@@ -580,7 +756,6 @@ function VerifyInformationTab({ sale }: { sale: SaleDetail }) {
               </div>
               <ImageZoomControls zoom={zoom.national_id || 100} onZoom={(d) => handleZoom('national_id', d)} />
             </div>
-            {/* Right: Form fields (2/3) with 2-column grid */}
             <div className="col-span-2 p-4">
               <h5 className="text-sm font-semibold text-primary mb-3">{language === 'th' ? 'ข้อมูลลูกค้า' : 'Customer Details'}</h5>
               <div className="grid grid-cols-2 gap-x-4 gap-y-3">
@@ -610,8 +785,12 @@ function VerifyInformationTab({ sale }: { sale: SaleDetail }) {
       {/* Section 2: Car Registration */}
       <Card className="border-border">
         <CardContent className="p-0">
-          <div className="px-4 py-2 border-b border-border">
+          <div className="px-4 py-2 border-b border-border flex items-center justify-between">
             <span className="text-sm font-semibold">Car Registration</span>
+            <div className="flex items-center gap-2">
+              {ocrPill(ocrStatus.car_reg)}
+              {ocrButton('car_reg')}
+            </div>
           </div>
           <div className="grid grid-cols-3">
             <div className="col-span-1 border-r border-border p-3 flex flex-col">
@@ -646,8 +825,12 @@ function VerifyInformationTab({ sale }: { sale: SaleDetail }) {
       {/* Section 3: Payment Proof */}
       <Card className="border-border">
         <CardContent className="p-0">
-          <div className="px-4 py-2 border-b border-border">
+          <div className="px-4 py-2 border-b border-border flex items-center justify-between">
             <span className="text-sm font-semibold">{language === 'th' ? 'หลักฐานการชำระเงิน' : 'Payment proof to FairDee'}</span>
+            <div className="flex items-center gap-2">
+              {ocrPill(ocrStatus.payment)}
+              {ocrButton('payment')}
+            </div>
           </div>
           <div className="grid grid-cols-3">
             <div className="col-span-1 border-r border-border p-3 flex flex-col">
@@ -679,8 +862,21 @@ function VerifyInformationTab({ sale }: { sale: SaleDetail }) {
           <h5 className="text-sm font-semibold mb-4">{language === 'th' ? 'ข้อมูลประกันภัย' : 'Customer Information'}</h5>
           <h6 className="text-xs font-semibold text-primary mb-3">{language === 'th' ? 'ข้อมูลประกันภัย' : 'Insurance Information'}</h6>
           <div className="grid grid-cols-2 gap-4">
-            <VerifyField label={language === 'th' ? 'วันเริ่มต้นกรมธรรม์' : 'Policy Start Date (AD)*'} value="" source="" isDate />
-            <VerifyField label={language === 'th' ? 'เบอร์โทรศัพท์' : 'Phone Number*'} value={customer.phoneNumber} source="" />
+            <VerifyField
+              label={language === 'th' ? 'วันเริ่มต้นกรมธรรม์ *' : 'Policy Start Date (AD) *'}
+              value={policyStartDate}
+              onChange={setPolicyStartDate}
+              source=""
+              isDate
+              required
+            />
+            <VerifyField
+              label={language === 'th' ? 'เบอร์โทรศัพท์ *' : 'Phone Number *'}
+              value={insurancePhone}
+              onChange={setInsurancePhone}
+              source=""
+              required
+            />
           </div>
         </CardContent>
       </Card>
@@ -688,31 +884,104 @@ function VerifyInformationTab({ sale }: { sale: SaleDetail }) {
       {/* Shipping Address */}
       <Card className="border-border">
         <CardContent className="p-4">
-          <h5 className="text-sm font-semibold mb-4">{language === 'th' ? 'ที่อยู่จัดส่ง' : 'Shipping Address'}</h5>
+          <div className="flex items-center justify-between mb-4">
+            <h5 className="text-sm font-semibold">{language === 'th' ? 'ที่อยู่จัดส่ง' : 'Shipping Address'}</h5>
+            {shippingForm.addressSource !== 'manual' && shippingForm.receiverType !== 'e_policy' && (
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 text-[11px] gap-1 text-primary"
+                onClick={() => repullFromSource(shippingForm.addressSource)}
+              >
+                <RefreshCw className="w-3 h-3" />
+                {language === 'th' ? 'ดึงข้อมูลใหม่จากแหล่งที่เลือก' : 'Re-pull from source'}
+              </Button>
+            )}
+          </div>
           <div className="flex items-center gap-2 mb-4">
             {[
-              { value: 'policy_holder', en: 'Policy Holder', th: 'ผู้เอาประกันภัย' },
-              { value: 'agent', en: 'Agent', th: 'ตัวแทน' },
-              { value: 'e_policy', en: 'E-Policy', th: 'E-Policy' },
-              { value: 'new_address', en: 'Add new address', th: 'เพิ่มที่อยู่ใหม่' },
+              { value: 'policy_holder' as const, en: 'Policy Holder', th: 'ผู้เอาประกันภัย' },
+              { value: 'agent' as const, en: 'Agent', th: 'ตัวแทน' },
+              { value: 'e_policy' as const, en: 'E-Policy', th: 'E-Policy' },
+              { value: 'new_address' as const, en: 'Add new address', th: 'เพิ่มที่อยู่ใหม่' },
             ].map(opt => (
               <label key={opt.value} className="flex items-center gap-0 cursor-pointer">
-                <input type="radio" name="shipping_type" defaultChecked={shipping.receiverType === opt.value} className="peer sr-only" />
+                <input
+                  type="radio"
+                  name="shipping_type"
+                  checked={shippingForm.receiverType === opt.value}
+                  onChange={() => handleReceiverTypeChange(opt.value)}
+                  className="peer sr-only"
+                />
                 <span className="px-3 py-1.5 rounded-full text-xs font-medium border border-border text-muted-foreground peer-checked:bg-primary peer-checked:text-primary-foreground peer-checked:border-primary transition-colors">
                   {language === 'th' ? opt.th : opt.en}
                 </span>
               </label>
             ))}
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <VerifyField label={language === 'th' ? 'ชื่อผู้รับกรมธรรม์' : 'Policy Receiver Name*'} value={shipping.receiverName} source="National Id Saved" />
-            <VerifyField label={language === 'th' ? 'ที่อยู่' : 'Address Line*'} value={shipping.addressLine} source="National Id Saved" />
-            <VerifyField label={language === 'th' ? 'จังหวัด' : 'Province*'} value={shipping.province} source="National Id Saved" />
-            <VerifyField label={language === 'th' ? 'เขต/อำเภอ' : 'District*'} value={shipping.district} source="National Id Saved" />
-            <VerifyField label={language === 'th' ? 'แขวง/ตำบล' : 'Sub District*'} value={shipping.subDistrict} source="National Id Saved" />
-            <VerifyField label={language === 'th' ? 'รหัสไปรษณีย์' : 'Postal Code*'} value={shipping.postalCode} source="National Id Saved" />
-            <VerifyField label={language === 'th' ? 'เบอร์โทรศัพท์' : 'Phone Number*'} value={shipping.phoneNumber} source="National Id Saved" />
-          </div>
+
+          {shippingForm.addressSource !== 'manual' && (
+            <div className="mb-3 text-[11px] text-muted-foreground flex items-center gap-1.5">
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-muted">
+                ⓘ {language === 'th' ? 'แหล่งที่อยู่' : 'Address source'}: {
+                  shippingForm.addressSource === 'national_id' ? (language === 'th' ? 'บัตรประชาชน' : 'National ID')
+                  : shippingForm.addressSource === 'agent' ? (language === 'th' ? 'ตัวแทน' : 'Agent')
+                  : (language === 'th' ? 'เล่มทะเบียนรถ' : 'Car Registration')
+                }
+              </span>
+            </div>
+          )}
+
+          {shippingForm.receiverType !== 'e_policy' && (
+            <div className="grid grid-cols-2 gap-4">
+              <VerifyField
+                label={language === 'th' ? 'ชื่อผู้รับกรมธรรม์ *' : 'Policy Receiver Name *'}
+                value={shippingForm.receiverName}
+                onChange={(v) => setShippingForm(p => ({ ...p, receiverName: v, addressSource: 'manual' }))}
+                required
+              />
+              <VerifyField
+                label={language === 'th' ? 'ที่อยู่ *' : 'Address Line *'}
+                value={shippingForm.addressLine}
+                onChange={(v) => setShippingForm(p => ({ ...p, addressLine: v, addressSource: 'manual' }))}
+                required
+              />
+              <VerifyField
+                label={language === 'th' ? 'จังหวัด *' : 'Province *'}
+                value={shippingForm.province}
+                onChange={(v) => setShippingForm(p => ({ ...p, province: v, addressSource: 'manual' }))}
+                required
+              />
+              <VerifyField
+                label={language === 'th' ? 'เขต/อำเภอ *' : 'District *'}
+                value={shippingForm.district}
+                onChange={(v) => setShippingForm(p => ({ ...p, district: v, addressSource: 'manual' }))}
+              />
+              <VerifyField
+                label={language === 'th' ? 'แขวง/ตำบล *' : 'Sub District *'}
+                value={shippingForm.subDistrict}
+                onChange={(v) => setShippingForm(p => ({ ...p, subDistrict: v, addressSource: 'manual' }))}
+              />
+              <VerifyField
+                label={language === 'th' ? 'รหัสไปรษณีย์ *' : 'Postal Code *'}
+                value={shippingForm.postalCode}
+                onChange={(v) => setShippingForm(p => ({ ...p, postalCode: v, addressSource: 'manual' }))}
+              />
+              <VerifyField
+                label={language === 'th' ? 'เบอร์โทรศัพท์ *' : 'Phone Number *'}
+                value={shippingForm.phoneNumber}
+                onChange={(v) => setShippingForm(p => ({ ...p, phoneNumber: v }))}
+                required
+              />
+            </div>
+          )}
+          {shippingForm.receiverType === 'e_policy' && (
+            <div className="text-xs text-muted-foreground bg-muted/40 border border-dashed border-border rounded-md p-3">
+              {language === 'th'
+                ? 'กรมธรรม์จะถูกจัดส่งทางอีเมลแบบอิเล็กทรอนิกส์ — ไม่จำเป็นต้องระบุที่อยู่จัดส่ง'
+                : 'Policy will be delivered electronically via email — no shipping address required.'}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
@@ -730,7 +999,19 @@ function ImageZoomControls({ zoom, onZoom }: { zoom: number; onZoom: (delta: num
   );
 }
 
-function VerifyField({ label, value, source, isDate, isSelect, options }: { label: string; value: string; source?: string; isDate?: boolean; isSelect?: boolean; options?: string[] }) {
+interface VerifyFieldProps {
+  label: string;
+  value: string;
+  source?: string;
+  isDate?: boolean;
+  isSelect?: boolean;
+  options?: string[];
+  required?: boolean;
+  onChange?: (value: string) => void;
+}
+
+function VerifyField({ label, value, source, isDate, isSelect, options, required, onChange }: VerifyFieldProps) {
+  const isEmpty = required && !value?.trim();
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between">
@@ -738,10 +1019,15 @@ function VerifyField({ label, value, source, isDate, isSelect, options }: { labe
         {source && <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">ⓘ {source}</span>}
       </div>
       {isDate ? (
-        <Input type="datetime-local" defaultValue={value} className="text-xs h-9 bg-card" />
+        <Input
+          type="datetime-local"
+          value={value}
+          onChange={(e) => onChange?.(e.target.value)}
+          className={cn('text-xs h-9 bg-card', isEmpty && 'border-destructive')}
+        />
       ) : isSelect && options ? (
-        <Select defaultValue={value}>
-          <SelectTrigger className="text-xs h-9 bg-card">
+        <Select value={value} onValueChange={(v) => onChange?.(v)}>
+          <SelectTrigger className={cn('text-xs h-9 bg-card', isEmpty && 'border-destructive')}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -749,7 +1035,12 @@ function VerifyField({ label, value, source, isDate, isSelect, options }: { labe
           </SelectContent>
         </Select>
       ) : (
-        <Input defaultValue={value} className="text-xs h-9 bg-card" placeholder={label} />
+        <Input
+          value={value}
+          onChange={(e) => onChange?.(e.target.value)}
+          className={cn('text-xs h-9 bg-card', isEmpty && 'border-destructive')}
+          placeholder={label}
+        />
       )}
     </div>
   );
