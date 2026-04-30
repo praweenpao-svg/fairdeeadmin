@@ -4,11 +4,19 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { ReworkConfig } from '@/types/pipeline';
+import { ReworkPartyType } from '@/types/pipeline';
 import { useLanguageStore } from '@/stores/languageStore';
 
+// Minimal shape required to render — works for both ReworkConfig and ReworkReason.
+export interface SearchableReasonOption {
+  id: string;
+  descriptionEn: string;
+  descriptionTh: string;
+  partyType: ReworkPartyType;
+}
+
 interface SearchableReasonSelectProps {
-  configs: ReworkConfig[];
+  configs: SearchableReasonOption[];
   value: string;
   onValueChange: (value: string) => void;
   placeholder?: string;
