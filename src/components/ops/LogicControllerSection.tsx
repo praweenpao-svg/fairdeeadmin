@@ -211,7 +211,9 @@ export function LogicControllerSection({ value, onChange, onReset }: Props) {
             </Field>
             <Field label={t('จำนวนผู้ขับขี่ระบุชื่อ', 'Named Drivers')}>
               <Select value={String(value.driverLicenseCount)} onValueChange={(v) => set('driverLicenseCount', Number(v))}>
-                <SelectTrigger className="h-7 text-[11px] font-sans"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-7 text-[11px] font-sans">
+                  <SelectValue>{String(value.driverLicenseCount)}</SelectValue>
+                </SelectTrigger>
                 <SelectContent>
                   {[0, 1, 2, 3, 4, 5].map(n => <SelectItem key={n} value={String(n)} className="text-[11px] font-sans">{n}</SelectItem>)}
                 </SelectContent>
