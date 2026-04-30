@@ -38,6 +38,7 @@ export function MentionNotificationBell() {
   const {
     notifications, assignments, markAsRead, markAllAsRead,
     unreadOnlyFilter, setUnreadOnlyFilter,
+    markAssignmentAsRead, markAllAssignmentsAsRead,
   } = useMentionNotificationsStore();
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'mentioned' | 'assigned'>('mentioned');
@@ -65,9 +66,15 @@ export function MentionNotificationBell() {
   // Assigned to me: active only
   const myAssignments = assignments
     .filter((a) => a.assigneeUserId === currentUser.name && a.isActive)
-    .sort((a, b) => new Date(b.assignedAt).getTime() - new Date(a.assignedAt).getTime());
+    .sort((a, b) => {
+      const ar = a.read ?? false, br = b.read ?? false;
+      if (ar !== br) return ar ? 1 : -1;
+      return new Date(b.assignedAt).getTime() - new Date(a.assignedAt).getTime();
+    });
 
-  const hasUnreadMentions = myMentions.some((n) => !n.read);
+  const unreadMentionCount = myMentions.filter((n) => !n.read).length;
+  const unreadAssignmentCount = myAssignments.filter((a) => !a.read).length;
+  const hasUnread = unreadMentionCount > 0 || unreadAssignmentCount > 0;
 
   const setNavTarget = useNotificationNavigationStore(s => s.setTarget);
 
@@ -87,6 +94,7 @@ export function MentionNotificationBell() {
   };
 
   const handleAssignmentClick = (assignment: AssignmentNotification) => {
+    markAssignmentAsRead(assignment.id);
     setOpen(false);
     if (assignment.leadId && assignment.policyId && assignment.targetStage) {
       setNavTarget({
