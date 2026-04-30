@@ -63,6 +63,8 @@ interface MentionNotificationsState {
   setUnreadOnlyFilter: (on: boolean) => void;
   addAssignment: (assignment: Omit<AssignmentNotification, 'id'>) => void;
   removeAssignment: (quotationId: string, policyType: 'vmi' | 'cmi') => void;
+  markAssignmentAsRead: (id: string) => void;
+  markAllAssignmentsAsRead: () => void;
 }
 
 // Seed demo mention notifications using real lead/policy IDs from mockLeads
