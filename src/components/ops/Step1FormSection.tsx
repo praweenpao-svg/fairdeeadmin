@@ -71,16 +71,16 @@ function MondayTag({ type }: { type: string }) {
   );
 }
 
-function FormRow({ label, required, monday, children, hint }: { label: string; required?: boolean; monday?: string; children: React.ReactNode; hint?: string }) {
+function FormRow({ label, required, monday, children, hint, span = 1 }: { label: string; required?: boolean; monday?: string; children: React.ReactNode; hint?: string; span?: 1 | 2 }) {
   return (
-    <div className="space-y-2">
-      <Label className="text-sm font-semibold text-foreground flex items-center flex-wrap">
+    <div className={cn('space-y-1.5 min-w-0', span === 2 && 'md:col-span-2')}>
+      <Label className="text-xs font-semibold text-foreground flex items-center flex-wrap leading-tight min-h-[18px]">
         {label}
         {required && <span className="text-destructive ml-0.5">*</span>}
         {monday && <MondayTag type={monday} />}
       </Label>
       {children}
-      {hint && <p className="text-[11px] text-muted-foreground">{hint}</p>}
+      {hint && <p className="text-[10.5px] text-muted-foreground leading-snug">{hint}</p>}
     </div>
   );
 }
@@ -88,15 +88,17 @@ function FormRow({ label, required, monday, children, hint }: { label: string; r
 function SectionCard({ title, subtitle, badge, children }: { title: string; subtitle?: string; badge?: React.ReactNode; children: React.ReactNode }) {
   return (
     <Card className="border-border">
-      <CardContent className="p-6 space-y-5">
+      <CardContent className="p-5 space-y-4">
         <div className="flex items-start justify-between gap-3 pb-3 border-b border-border">
           <div>
-            <h3 className="text-base font-bold">{title}</h3>
-            {subtitle && <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>}
+            <h3 className="text-sm font-bold">{title}</h3>
+            {subtitle && <p className="text-[11px] text-muted-foreground mt-0.5">{subtitle}</p>}
           </div>
           {badge}
         </div>
-        {children}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-4">
+          {children}
+        </div>
       </CardContent>
     </Card>
   );
