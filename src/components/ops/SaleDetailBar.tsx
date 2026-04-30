@@ -158,11 +158,17 @@ export function SaleDetailBar({
   onOpenUploadDoc,
 }: SaleDetailBarProps) {
   const { language } = useLanguageStore();
+  const { logic } = useOpsLogic();
   const vmiPolicy = sale.policies.find(p => p.kind === 'vmi');
   const cmiPolicy = sale.policies.find(p => p.kind === 'cmi');
   const currentStage = 'to_issue';
   const stageLabel = stageLabels[currentStage] || stageLabels.to_issue;
   const primaryActions = getPrimaryActions(vmiPolicy, undefined, language);
+
+  // Derive display values from Logic Controller (single source of truth for prototype)
+  const classDisplay = (logic.insuranceClass || '').replace(/^Type/, '').trim() || (vmiPolicy?.coverage.insuranceClass ?? '—');
+  const garageEn = vmiPolicy?.garageType === 'Dealership' ? 'Dealership' : 'Approved Garage';
+  const garageTh = vmiPolicy?.garageType === 'Dealership' ? 'ซ่อมห้าง' : 'ซ่อมอู่';
 
   const handleAction = (actionName: string) => {
     toast.success(actionName, {
