@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
-import { useMentionNotificationsStore, MentionNotification, AssignmentNotification } from '@/stores/mentionNotificationsStore';
+import { useMentionNotificationsStore, MentionNotification, AssignmentNotification, getMentionSourceType } from '@/stores/mentionNotificationsStore';
 import { useLanguageStore } from '@/stores/languageStore';
 import { useCurrentUserStore } from '@/stores/currentUserStore';
 import { useNotificationNavigationStore } from '@/stores/notificationNavigationStore';
