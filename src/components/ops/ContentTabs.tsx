@@ -27,6 +27,7 @@ import { FileText, Image, CreditCard, User, Package, Link2, Plus, X, RefreshCw, 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 interface ContentTabsProps {
   sale: SaleDetail;
