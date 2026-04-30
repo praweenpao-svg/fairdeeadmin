@@ -398,9 +398,7 @@ function LinkDocumentsTab({ sale }: { sale: SaleDetail }) {
         onReset={() => setLogic(seedFromSale())}
       />
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-    </div>
-    </div>
-      <div className="lg:col-span-3 space-y-4">
+        <div className="lg:col-span-3 space-y-4">
         {groupedDocs.map(({ group, items }) => (
           <div key={group} className="space-y-2">
             <h6 className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground px-1">
