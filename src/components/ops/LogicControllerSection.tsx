@@ -94,8 +94,8 @@ export function LogicControllerSection({ value, onChange, onReset }: Props) {
   };
 
   return (
-    <Card className="border-primary/30">
-      <CardContent className="p-4 space-y-3">
+    <Card className="border-primary/30 font-sans">
+      <CardContent className="p-4 space-y-3 font-sans">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="border-primary text-primary text-[10px] uppercase tracking-wide">
