@@ -392,7 +392,7 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
           >
             <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="0">{t('ไม่จำเป็น', 'Not required')}</SelectItem>
+              <SelectItem value="0">0 — {t('ไม่จำเป็น', 'Not required')}</SelectItem>
               {[1, 2, 3, 4, 5].map(n => (
                 <SelectItem key={n} value={String(n)}>{n} {t('ใบ', n === 1 ? 'license' : 'licenses')}</SelectItem>
               ))}
