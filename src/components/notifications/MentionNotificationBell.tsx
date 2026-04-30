@@ -222,7 +222,7 @@ export function MentionNotificationBell() {
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
                             <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-mono">
                               {notification.quotationId}
                             </Badge>
@@ -238,6 +238,21 @@ export function MentionNotificationBell() {
                                 {notification.policyType.toUpperCase()}
                               </Badge>
                             )}
+                            {(() => {
+                              const src = getMentionSourceType(notification);
+                              const label =
+                                language === 'th'
+                                  ? src === 'remark' ? 'หมายเหตุ' : src === 'reply' ? 'ตอบกลับ' : 'สลักหลัง'
+                                  : src === 'remark' ? 'Remark' : src === 'reply' ? 'Reply' : 'Endorsement';
+                              return (
+                                <Badge
+                                  variant="outline"
+                                  className="text-[10px] h-5 px-1.5 bg-muted/60 text-muted-foreground border-border"
+                                >
+                                  {label}
+                                </Badge>
+                              );
+                            })()}
                           </div>
                           <p className={cn(
                             "text-sm line-clamp-2",
