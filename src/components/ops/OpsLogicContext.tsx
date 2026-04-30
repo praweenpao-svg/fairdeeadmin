@@ -2,6 +2,11 @@ import React from 'react';
 import type { LogicControllerState } from './LogicControllerSection';
 import type { SaleDetail } from '@/data/mockSaleDetail';
 
+export type ShippingFormat = 'fairdee' | 'self' | 'epolicy' | '';
+export type KycMode = 'manual' | 'auto' | '';
+export type InstallmentPlan = 'equal' | 'downpayment' | '';
+export type AddOnType = 'none' | 'alloy' | 'bodykit' | 'headlight' | 'taillight';
+
 interface OpsLogicContextValue {
   logic: LogicControllerState;
   setLogic: React.Dispatch<React.SetStateAction<LogicControllerState>>;
@@ -23,6 +28,21 @@ interface OpsLogicContextValue {
   setShippingAddressSource: (v: string) => void;
   policyAddressSource: string;
   setPolicyAddressSource: (v: string) => void;
+  // New fields ported from sibling Step 1
+  addOns: AddOnType;
+  setAddOns: (v: AddOnType) => void;
+  kycMode: KycMode;
+  setKycMode: (v: KycMode) => void;
+  installmentPlan: InstallmentPlan;
+  setInstallmentPlan: (v: InstallmentPlan) => void;
+  installmentCount: string;
+  setInstallmentCount: (v: string) => void;
+  voluntaryShippingFormat: ShippingFormat;
+  setVoluntaryShippingFormat: (v: ShippingFormat) => void;
+  compulsoryShippingFormat: ShippingFormat;
+  setCompulsoryShippingFormat: (v: ShippingFormat) => void;
+  inspectionAppointmentDate: string;
+  setInspectionAppointmentDate: (v: string) => void;
 }
 
 const OpsLogicContext = React.createContext<OpsLogicContextValue | null>(null);
@@ -67,6 +87,15 @@ export function OpsLogicProvider({ sale, children }: { sale: SaleDetail; childre
   const [shippingAddressSource, setShippingAddressSource] = React.useState('national_id');
   const [policyAddressSource, setPolicyAddressSource] = React.useState('nid');
 
+  // Newly ported state
+  const [addOns, setAddOns] = React.useState<AddOnType>('none');
+  const [kycMode, setKycMode] = React.useState<KycMode>('');
+  const [installmentPlan, setInstallmentPlan] = React.useState<InstallmentPlan>('');
+  const [installmentCount, setInstallmentCount] = React.useState<string>('');
+  const [voluntaryShippingFormat, setVoluntaryShippingFormat] = React.useState<ShippingFormat>('');
+  const [compulsoryShippingFormat, setCompulsoryShippingFormat] = React.useState<ShippingFormat>('');
+  const [inspectionAppointmentDate, setInspectionAppointmentDate] = React.useState<string>('');
+
   // Auto-extend end-dates when start changes (only if end was the prior auto-default or empty)
   const prevAutoEnd = React.useRef(addOneYear(initialStart));
   const setCoverageStartDateWithEnd = (v: string) => {
@@ -106,6 +135,20 @@ export function OpsLogicProvider({ sale, children }: { sale: SaleDetail; childre
     setShippingAddressSource,
     policyAddressSource,
     setPolicyAddressSource,
+    addOns,
+    setAddOns,
+    kycMode,
+    setKycMode,
+    installmentPlan,
+    setInstallmentPlan,
+    installmentCount,
+    setInstallmentCount,
+    voluntaryShippingFormat,
+    setVoluntaryShippingFormat,
+    compulsoryShippingFormat,
+    setCompulsoryShippingFormat,
+    inspectionAppointmentDate,
+    setInspectionAppointmentDate,
   };
 
   return <OpsLogicContext.Provider value={value}>{children}</OpsLogicContext.Provider>;
