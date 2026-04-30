@@ -1523,7 +1523,7 @@ export function ContentTabs({ sale }: ContentTabsProps) {
         <NextButton tabKey="package-docs" />
       </TabsContent>
       <TabsContent value="verify" className="mt-4">
-        <VerifyInformationTab sale={sale} />
+        <VerifyInformationTab sale={sale} onReadinessChange={handleVerifyReadiness} />
         <NextButton tabKey="verify" />
       </TabsContent>
       <TabsContent value="invoice" className="mt-4">
