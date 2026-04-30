@@ -7,6 +7,7 @@ import { useLanguageStore } from '@/stores/languageStore';
 import { SaleDetail, SalePolicy } from '@/data/mockSaleDetail';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { useOpsLogic } from './OpsLogicContext';
 import {
   DropdownMenu,
   DropdownMenuContent,
