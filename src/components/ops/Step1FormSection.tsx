@@ -495,7 +495,7 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
 
       {/* ════════ Card 2: Payment ════════ */}
       <SectionCard title={t('การชำระเงิน', 'Payment')}>
-        <FormRow label={t('วิธีการชำระเงิน', 'Payment Method')} required monday="dropdown">
+        <FormRow span={isInstallment ? 2 : 1} label={t('วิธีการชำระเงิน', 'Payment Method')} required monday="dropdown">
           <Select
             value={logic.paymentMethodValue}
             onValueChange={(v) => {
