@@ -448,6 +448,7 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
 
         {showInspection && (
           <FormRow
+            span={2}
             label={t('วิธีตรวจสภาพรถ', 'Car Inspection Method')}
             hint={t('สำหรับประกันชั้น 1 เท่านั้น', 'Required for Type 1 only')}
           >
