@@ -27,6 +27,7 @@ import { Switch } from '@/components/ui/switch';
 import {
   Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { SearchableReasonSelect } from '@/components/pipeline/SearchableReasonSelect';
 
 interface ReworkConsoleTableProps {
   reworkConfigs: ReworkConfig[];
