@@ -391,8 +391,15 @@ function LinkDocumentsTab({ sale }: { sale: SaleDetail }) {
   }, [docGroups]);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-      {/* Left: field-driven categories grouped by section */}
+    <div className="space-y-4">
+      <LogicControllerSection
+        value={logic}
+        onChange={setLogic}
+        onReset={() => setLogic(seedFromSale())}
+      />
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+    </div>
+    </div>
       <div className="lg:col-span-3 space-y-4">
         {groupedDocs.map(({ group, items }) => (
           <div key={group} className="space-y-2">
