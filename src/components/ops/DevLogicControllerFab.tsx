@@ -44,7 +44,7 @@ export function DevLogicControllerFab() {
       </Button>
 
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto">
+        <SheetContent side="right" className="w-full sm:max-w-none sm:w-[920px] overflow-y-auto">
           <SheetHeader className="mb-3">
             <SheetTitle className="flex items-center gap-2 text-sm">
               <Wrench className="h-4 w-4 text-primary" />
