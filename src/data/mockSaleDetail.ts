@@ -93,6 +93,14 @@ export interface SaleAssignment {
   delivery?: string;
 }
 
+export interface SaleAddress {
+  addressLine: string;
+  province: string;
+  district: string;
+  subDistrict: string;
+  postalCode: string;
+}
+
 export interface SaleAgent {
   name: string;
   nameTh: string;
@@ -105,6 +113,8 @@ export interface SaleAgent {
   originalSumInsured: string;
   bestPremium: boolean;
   commissionDetail: string;
+  /** Agent's mailing address — used by 'Agent' shipping option to pre-fill. */
+  address?: SaleAddress;
 }
 
 // Sale-level matrix drivers — single source of truth for document requirements.
