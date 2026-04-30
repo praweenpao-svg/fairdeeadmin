@@ -15,6 +15,7 @@ import {
   type DocumentGroup,
 } from '@/data/documentRequirements';
 import { CoveragePanel } from './CoveragePanel';
+import { LogicControllerSection } from './LogicControllerSection';
 import { PolicyDetailsZone } from './PolicyDetailsZone';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { InvoiceListTab } from './InvoiceListTab';
