@@ -15,7 +15,8 @@ import {
   type DocumentGroup,
 } from '@/data/documentRequirements';
 import { CoveragePanel } from './CoveragePanel';
-import { LogicControllerSection } from './LogicControllerSection';
+import { Step1FormSection } from './Step1FormSection';
+import { useOpsLogic } from './OpsLogicContext';
 import { PolicyDetailsZone } from './PolicyDetailsZone';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { InvoiceListTab } from './InvoiceListTab';
@@ -281,19 +282,8 @@ function UploadDocumentsDialog({
 function LinkDocumentsTab({ sale }: { sale: SaleDetail }) {
   const { language } = useLanguageStore();
 
-  // Seed Logic Controller state from sale (sale-level, VMI-led; CMI inherits)
-  const seedFromSale = React.useCallback((): import('./LogicControllerSection').LogicControllerState => ({
-    saleType: sale.saleType ?? 'New',
-    insuranceClass: sale.insuranceClass ?? 'Type3+',
-    paymentType: sale.paymentType ?? 'Non-Instalment',
-    carType: sale.carType ?? 'Normally',
-    customerType: sale.customer.customerType,
-    paymentMethodValue: sale.paymentMethodValue ?? '',
-    driverLicenseCount: sale.driverLicenseCount ?? 0,
-    carInspectionMethod: sale.carInspectionMethod ?? '',
-  }), [sale]);
-
-  const [logic, setLogic] = React.useState(seedFromSale);
+  // Pull live logic state from context (driven by Step1FormSection + dev FAB).
+  const { logic } = useOpsLogic();
   const { saleType, insuranceClass, paymentType, carType, customerType, paymentMethodValue: paymentMethod, driverLicenseCount, carInspectionMethod } = logic;
 
   const docGroups = React.useMemo(
