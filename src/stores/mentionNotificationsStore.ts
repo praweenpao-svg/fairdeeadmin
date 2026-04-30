@@ -236,6 +236,14 @@ export const useMentionNotificationsStore = create<MentionNotificationsState>((s
       (a) => !(a.quotationId === quotationId && a.policyType === policyType)
     ),
   })),
+  markAssignmentAsRead: (id) => set((state) => ({
+    assignments: state.assignments.map((a) =>
+      a.id === id ? { ...a, read: true } : a
+    ),
+  })),
+  markAllAssignmentsAsRead: () => set((state) => ({
+    assignments: state.assignments.map((a) => ({ ...a, read: true })),
+  })),
 }));
 
 // Helper to extract mentions from comment text
