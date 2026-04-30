@@ -127,7 +127,7 @@ export function MentionNotificationBell() {
       <PopoverTrigger asChild>
         <Button variant="ghost" size="sm" className="relative h-9 w-9 p-0">
           <Bell className="h-5 w-5" />
-          {hasUnreadMentions && (
+          {hasUnread && (
             <span className="absolute top-1 right-1.5 h-2 w-2 rounded-full bg-destructive" />
           )}
         </Button>
@@ -147,6 +147,11 @@ export function MentionNotificationBell() {
             >
               <AtSign className="w-3.5 h-3.5" />
               {language === 'th' ? 'ถูกกล่าวถึง' : 'Mentioned'}
+              {unreadMentionCount > 0 && (
+                <span className="ml-0.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-semibold">
+                  {unreadMentionCount > 99 ? '99+' : unreadMentionCount}
+                </span>
+              )}
             </button>
             <button
               onClick={() => setActiveTab('assigned')}
@@ -159,6 +164,11 @@ export function MentionNotificationBell() {
             >
               <ClipboardList className="w-3.5 h-3.5" />
               {language === 'th' ? 'มอบหมายให้ฉัน' : 'Assigned to me'}
+              {unreadAssignmentCount > 0 && (
+                <span className="ml-0.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-semibold">
+                  {unreadAssignmentCount > 99 ? '99+' : unreadAssignmentCount}
+                </span>
+              )}
             </button>
           </div>
         </div>
