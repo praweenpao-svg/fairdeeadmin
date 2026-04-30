@@ -101,7 +101,7 @@ export function LogicControllerSection({ value, onChange, onReset }: Props) {
             <Badge variant="outline" className="border-primary text-primary text-[10px] uppercase tracking-wide">
               {t('Logic Controller', 'Logic Controller')}
             </Badge>
-            <span className="text-xs text-muted-foreground">
+            <span className="text-[11px] text-muted-foreground font-sans">
               {t('กำหนดเงื่อนไขเพื่อขับเคลื่อนรายการเอกสาร', 'Drives required document list')}
             </span>
           </div>
