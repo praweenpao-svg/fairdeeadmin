@@ -1449,28 +1449,47 @@ export function ContentTabs({ sale }: ContentTabsProps) {
   };
 
   const [sendToAgentOpen, setSendToAgentOpen] = React.useState(false);
+  // Verify-tab readiness — driven by VerifyInformationTab's onReadinessChange
+  const [verifyReady, setVerifyReady] = React.useState(false);
+  const [verifyBlockers, setVerifyBlockers] = React.useState<string[]>([]);
+  const handleVerifyReadiness = React.useCallback((ready: boolean, blockers: string[]) => {
+    setVerifyReady(ready);
+    setVerifyBlockers(blockers);
+  }, []);
 
   const NextButton = ({ tabKey }: { tabKey: string }) => {
     const done = completedSteps.has(tabKey);
-    return (
-      <div className="flex justify-end mt-4 pt-3 border-t border-border">
-        <Button
-          size="sm"
-          className="text-xs"
-          disabled={done}
-          onClick={() => {
-            if (tabKey === 'verify') {
-              setSendToAgentOpen(true);
-            } else {
-              handleNext(tabKey);
-            }
-          }}
-        >
-          {done
-            ? (language === 'th' ? 'เสร็จสิ้น' : 'Completed')
-            : (language === 'th' ? 'ถัดไป' : 'Next')
+    const isVerify = tabKey === 'verify';
+    const blocked = isVerify && !verifyReady;
+    const button = (
+      <Button
+        size="sm"
+        className="text-xs"
+        disabled={done || blocked}
+        onClick={() => {
+          if (isVerify) {
+            setSendToAgentOpen(true);
+          } else {
+            handleNext(tabKey);
           }
-        </Button>
+        }}
+      >
+        {done
+          ? (language === 'th' ? 'เสร็จสิ้น' : 'Completed')
+          : isVerify
+          ? (language === 'th' ? 'ส่งให้ตัวแทน' : 'Send to Agent')
+          : (language === 'th' ? 'ถัดไป' : 'Next')}
+      </Button>
+    );
+    return (
+      <div className="flex items-center justify-end gap-3 mt-4 pt-3 border-t border-border">
+        {isVerify && blocked && verifyBlockers.length > 0 && (
+          <span className="text-[11px] text-destructive">
+            {language === 'th' ? 'ติดเงื่อนไข' : 'Blocked'}: {verifyBlockers.slice(0, 2).join(' • ')}
+            {verifyBlockers.length > 2 && ` (+${verifyBlockers.length - 2})`}
+          </span>
+        )}
+        {button}
       </div>
     );
   };
