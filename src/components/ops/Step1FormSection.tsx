@@ -113,7 +113,7 @@ function DatePickerField({ value, onChange, placeholder, lang }: { value: string
         <Button
           type="button"
           variant="outline"
-          className={cn('w-full justify-between font-normal h-10', !value && 'text-muted-foreground')}
+          className={cn('w-full justify-between font-normal h-9 text-sm', !value && 'text-muted-foreground')}
         >
           <span>{dateValue ? format(dateValue, 'dd MMM yyyy', { locale }) : (placeholder || (lang === 'th' ? 'เลือกวันที่' : 'Pick a date'))}</span>
           <CalendarIcon className="h-4 w-4 opacity-50" />
@@ -135,7 +135,7 @@ function DatePickerField({ value, onChange, placeholder, lang }: { value: string
 interface PillOption { value: string; label: string }
 function PillToggle({ options, value, onChange }: { options: PillOption[]; value: string; onChange: (v: string) => void }) {
   return (
-    <div className="inline-flex border border-input rounded-md overflow-hidden">
+    <div className="inline-flex border border-input rounded-md overflow-hidden h-9 w-full">
       {options.map(opt => {
         const selected = value === opt.value;
         return (
@@ -144,8 +144,8 @@ function PillToggle({ options, value, onChange }: { options: PillOption[]; value
             type="button"
             onClick={() => onChange(opt.value)}
             className={cn(
-              'px-6 py-2 text-sm transition-colors border-r border-input last:border-r-0',
-              selected ? 'bg-primary text-primary-foreground font-medium' : 'bg-background text-foreground hover:bg-muted'
+              'flex-1 px-3 text-xs transition-colors border-r border-input last:border-r-0 flex items-center justify-center gap-1',
+              selected ? 'bg-primary text-primary-foreground font-semibold' : 'bg-background text-foreground hover:bg-muted'
             )}
           >
             {opt.label} {selected && '✓'}
