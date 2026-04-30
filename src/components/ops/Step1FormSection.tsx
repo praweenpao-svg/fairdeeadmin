@@ -71,16 +71,16 @@ function MondayTag({ type }: { type: string }) {
   );
 }
 
-function FormRow({ label, required, monday, children, hint }: { label: string; required?: boolean; monday?: string; children: React.ReactNode; hint?: string }) {
+function FormRow({ label, required, monday, children, hint, span = 1 }: { label: string; required?: boolean; monday?: string; children: React.ReactNode; hint?: string; span?: 1 | 2 }) {
   return (
-    <div className="space-y-2">
-      <Label className="text-sm font-semibold text-foreground flex items-center flex-wrap">
+    <div className={cn('space-y-1.5 min-w-0', span === 2 && 'md:col-span-2')}>
+      <Label className="text-xs font-semibold text-foreground flex items-center flex-wrap leading-tight min-h-[18px]">
         {label}
         {required && <span className="text-destructive ml-0.5">*</span>}
         {monday && <MondayTag type={monday} />}
       </Label>
       {children}
-      {hint && <p className="text-[11px] text-muted-foreground">{hint}</p>}
+      {hint && <p className="text-[10.5px] text-muted-foreground leading-snug">{hint}</p>}
     </div>
   );
 }
@@ -88,15 +88,17 @@ function FormRow({ label, required, monday, children, hint }: { label: string; r
 function SectionCard({ title, subtitle, badge, children }: { title: string; subtitle?: string; badge?: React.ReactNode; children: React.ReactNode }) {
   return (
     <Card className="border-border">
-      <CardContent className="p-6 space-y-5">
+      <CardContent className="p-5 space-y-4">
         <div className="flex items-start justify-between gap-3 pb-3 border-b border-border">
           <div>
-            <h3 className="text-base font-bold">{title}</h3>
-            {subtitle && <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>}
+            <h3 className="text-sm font-bold">{title}</h3>
+            {subtitle && <p className="text-[11px] text-muted-foreground mt-0.5">{subtitle}</p>}
           </div>
           {badge}
         </div>
-        {children}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-4">
+          {children}
+        </div>
       </CardContent>
     </Card>
   );
@@ -111,7 +113,7 @@ function DatePickerField({ value, onChange, placeholder, lang }: { value: string
         <Button
           type="button"
           variant="outline"
-          className={cn('w-full justify-between font-normal h-10', !value && 'text-muted-foreground')}
+          className={cn('w-full justify-between font-normal h-9 text-sm', !value && 'text-muted-foreground')}
         >
           <span>{dateValue ? format(dateValue, 'dd MMM yyyy', { locale }) : (placeholder || (lang === 'th' ? 'เลือกวันที่' : 'Pick a date'))}</span>
           <CalendarIcon className="h-4 w-4 opacity-50" />
@@ -133,7 +135,7 @@ function DatePickerField({ value, onChange, placeholder, lang }: { value: string
 interface PillOption { value: string; label: string }
 function PillToggle({ options, value, onChange }: { options: PillOption[]; value: string; onChange: (v: string) => void }) {
   return (
-    <div className="inline-flex border border-input rounded-md overflow-hidden">
+    <div className="inline-flex border border-input rounded-md overflow-hidden h-9 w-full">
       {options.map(opt => {
         const selected = value === opt.value;
         return (
@@ -142,8 +144,8 @@ function PillToggle({ options, value, onChange }: { options: PillOption[]; value
             type="button"
             onClick={() => onChange(opt.value)}
             className={cn(
-              'px-6 py-2 text-sm transition-colors border-r border-input last:border-r-0',
-              selected ? 'bg-primary text-primary-foreground font-medium' : 'bg-background text-foreground hover:bg-muted'
+              'flex-1 px-3 text-xs transition-colors border-r border-input last:border-r-0 flex items-center justify-center gap-1',
+              selected ? 'bg-primary text-primary-foreground font-semibold' : 'bg-background text-foreground hover:bg-muted'
             )}
           >
             {opt.label} {selected && '✓'}
@@ -330,6 +332,7 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
             onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ''))}
             maxLength={10}
             placeholder="0812345678"
+            className="h-9 text-sm"
           />
         </FormRow>
 
@@ -341,7 +344,7 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
                   role="textbox"
                   aria-readonly="true"
                   tabIndex={0}
-                  className="w-full flex items-center justify-between gap-2 border border-input rounded-md px-3 py-2.5 text-sm bg-muted/40 text-foreground cursor-not-allowed"
+                  className="w-full h-9 flex items-center justify-between gap-2 border border-input rounded-md px-3 text-sm bg-muted/40 text-foreground cursor-not-allowed"
                 >
                   <span className="truncate">{vehicleCodeLabel}</span>
                   <Lock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
@@ -382,12 +385,12 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
           />
         </FormRow>
 
-        <FormRow label={t('ต้องการระบุผู้ขับขี่หรือไม่?', 'Driver License Required?')}>
+        <FormRow label={t('ต้องการระบุผู้ขับขี่หรือไม่?', 'Driver License Required?')} span={logic.driverLicenseCount > 0 ? 2 : 1}>
           <Select
             value={String(logic.driverLicenseCount)}
             onValueChange={(v) => setLogicField('driverLicenseCount', Number(v))}
           >
-            <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="0">{t('ไม่จำเป็น', 'Not required')}</SelectItem>
               {[1, 2, 3, 4, 5].map(n => (
@@ -434,7 +437,7 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
 
         <FormRow label={t('ความคุ้มครองเพิ่มเติม', 'Additional Coverage')} monday="dropdown">
           <Select value={addOns} onValueChange={(v) => setAddOns(v as typeof addOns)}>
-            <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
             <SelectContent>
               {ADDONS.map(o => (
                 <SelectItem key={o.value} value={o.value}>{lang === 'th' ? o.th : o.en}</SelectItem>
@@ -445,6 +448,7 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
 
         {showInspection && (
           <FormRow
+            span={2}
             label={t('วิธีตรวจสภาพรถ', 'Car Inspection Method')}
             hint={t('สำหรับประกันชั้น 1 เท่านั้น', 'Required for Type 1 only')}
           >
@@ -491,7 +495,7 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
 
       {/* ════════ Card 2: Payment ════════ */}
       <SectionCard title={t('การชำระเงิน', 'Payment')}>
-        <FormRow label={t('วิธีการชำระเงิน', 'Payment Method')} required monday="dropdown">
+        <FormRow span={isInstallment ? 2 : 1} label={t('วิธีการชำระเงิน', 'Payment Method')} required monday="dropdown">
           <Select
             value={logic.paymentMethodValue}
             onValueChange={(v) => {
@@ -508,7 +512,7 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
               }
             }}
           >
-            <SelectTrigger className="h-10"><SelectValue placeholder={t('เลือก...', 'Select...')} /></SelectTrigger>
+            <SelectTrigger className="h-9 text-sm"><SelectValue placeholder={t('เลือก...', 'Select...')} /></SelectTrigger>
             <SelectContent>
               {PAYMENT_METHODS.map(o => (
                 <SelectItem key={o.value} value={o.value}>{lang === 'th' ? o.th : o.en}</SelectItem>
@@ -554,7 +558,7 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
             </FormRow>
             <FormRow label={t('จำนวนงวดผ่อน', 'Number of Instalments')}>
               <Select value={installmentCount} onValueChange={setInstallmentCount}>
-                <SelectTrigger className="h-10">
+                <SelectTrigger className="h-9 text-sm">
                   <SelectValue placeholder={t('เลือกจำนวนงวด...', 'Select instalments...')} />
                 </SelectTrigger>
                 <SelectContent>
@@ -570,33 +574,35 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
 
       {/* ════════ Card 3: Policy Address ════════ */}
       <SectionCard title={t('ที่อยู่ในกรมธรรม์', 'Policy Address')}>
-        <div className="flex flex-wrap gap-2">
-          {POLICY_ADDRESS_SOURCES.map(src => (
-            <ChipPill
-              key={src.value}
-              active={policyAddressSource === src.value}
-              onClick={() => setPolicyAddressSource(src.value)}
-            >
-              {lang === 'th' ? src.th : src.en}
-            </ChipPill>
-          ))}
+        <div className="md:col-span-2 space-y-3">
+          <div className="flex flex-wrap gap-2">
+            {POLICY_ADDRESS_SOURCES.map(src => (
+              <ChipPill
+                key={src.value}
+                active={policyAddressSource === src.value}
+                onClick={() => setPolicyAddressSource(src.value)}
+              >
+                {lang === 'th' ? src.th : src.en}
+              </ChipPill>
+            ))}
+          </div>
+          {policyAddressSource && (
+            <InfoBanner>
+              {lang === 'th' ? (
+                <>คุณเลือกแหล่งที่อยู่: <strong>{POLICY_ADDRESS_SOURCES.find(s => s.value === policyAddressSource)?.th}</strong>. กรุณาแนบเอกสารที่เกี่ยวข้องในส่วน <strong>"แนบเอกสาร"</strong> ด้านล่าง — ระบบจะอ่านข้อมูลและให้คุณตรวจสอบในขั้นตอนที่ 2</>
+              ) : (
+                <>You selected source: <strong>{POLICY_ADDRESS_SOURCES.find(s => s.value === policyAddressSource)?.en}</strong>. Please attach the related document in the <strong>"Link Documents"</strong> section below — the system will OCR and let you verify in Step 2.</>
+              )}
+            </InfoBanner>
+          )}
         </div>
-        {policyAddressSource && (
-          <InfoBanner>
-            {lang === 'th' ? (
-              <>คุณเลือกแหล่งที่อยู่: <strong>{POLICY_ADDRESS_SOURCES.find(s => s.value === policyAddressSource)?.th}</strong>. กรุณาแนบเอกสารที่เกี่ยวข้องในส่วน <strong>"แนบเอกสาร"</strong> ด้านล่าง — ระบบจะอ่านข้อมูลและให้คุณตรวจสอบในขั้นตอนที่ 2</>
-            ) : (
-              <>You selected source: <strong>{POLICY_ADDRESS_SOURCES.find(s => s.value === policyAddressSource)?.en}</strong>. Please attach the related document in the <strong>"Link Documents"</strong> section below — the system will OCR and let you verify in Step 2.</>
-            )}
-          </InfoBanner>
-        )}
       </SectionCard>
 
       {/* ════════ Card 4: Shipping ════════ */}
       <SectionCard title={t('การจัดส่งกรมธรรม์', 'Shipping')}>
         <FormRow label={t('รูปแบบกรมธรรม์ภาคสมัครใจ', 'Voluntary Shipping Format')} hint="ⓘ Chat Saved">
           <Select value={voluntaryShippingFormat} onValueChange={(v) => setVoluntaryShippingFormat(v as ShippingFormat)}>
-            <SelectTrigger className="h-10">
+            <SelectTrigger className="h-9 text-sm">
               <SelectValue placeholder={t('เลือกรูปแบบ...', 'Select format...')} />
             </SelectTrigger>
             <SelectContent>
@@ -610,7 +616,7 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
         {addCompulsory && (
           <FormRow label={t('รูปแบบกรมธรรม์ พ.ร.บ.', 'Compulsory Shipping Format')} hint="ⓘ Chat Saved">
             <Select value={compulsoryShippingFormat} onValueChange={(v) => setCompulsoryShippingFormat(v as ShippingFormat)}>
-              <SelectTrigger className="h-10">
+              <SelectTrigger className="h-9 text-sm">
                 <SelectValue placeholder={t('เลือกรูปแบบ...', 'Select format...')} />
               </SelectTrigger>
               <SelectContent>
@@ -623,7 +629,7 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
         )}
 
         {needsShippingAddress && (
-          <div className="mt-3 p-4 bg-muted/40 border border-border rounded-md space-y-3">
+          <div className="md:col-span-2 mt-1 p-4 bg-muted/40 border border-border rounded-md space-y-3">
             <div className="text-sm font-bold flex items-center">
               {t('ที่อยู่จัดส่ง', 'Shipping Address')}
               <MondayTag type="dropdown" />
