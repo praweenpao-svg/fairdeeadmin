@@ -132,14 +132,14 @@ export function LogicControllerSection({ value, onChange, onReset }: Props) {
                   if (s) applyScenario(s);
                 }}
               >
-                <SelectTrigger className="h-8 text-xs flex-1 min-w-[260px] max-w-md [&>span]:line-clamp-1 [&>span]:truncate">
+                <SelectTrigger className="h-7 text-[11px] font-sans flex-1 min-w-[260px] max-w-md [&>span]:line-clamp-1 [&>span]:truncate">
                   <SelectValue placeholder={t('เลือกสถานการณ์...', 'Select a scenario...')}>
                     {selected ? (language === 'th' ? selected.labelTh : selected.labelEn) : undefined}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent className="max-h-[360px]">
                   {TEST_SCENARIOS.map(s => (
-                    <SelectItem key={s.id} value={s.id} className="text-xs">
+                    <SelectItem key={s.id} value={s.id} className="text-[11px] font-sans">
                       <div className="flex flex-col gap-0.5 py-0.5">
                         <span className="font-medium">{language === 'th' ? s.labelTh : s.labelEn}</span>
                         <span className="text-[10px] text-muted-foreground">
@@ -163,57 +163,57 @@ export function LogicControllerSection({ value, onChange, onReset }: Props) {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2 border-t border-border">
             <Field label={t('ประเภทงาน', 'Sale Type')}>
               <Select value={value.saleType} onValueChange={(v) => set('saleType', v as SaleType)}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-7 text-[11px] font-sans"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {SALE_TYPES.map(o => <SelectItem key={o.value} value={o.value} className="text-xs">{language === 'th' ? o.th : o.en}</SelectItem>)}
+                  {SALE_TYPES.map(o => <SelectItem key={o.value} value={o.value} className="text-[11px] font-sans">{language === 'th' ? o.th : o.en}</SelectItem>)}
                 </SelectContent>
               </Select>
             </Field>
             <Field label={t('ชั้นประกัน', 'Insurance Class')}>
               <Select value={value.insuranceClass} onValueChange={(v) => set('insuranceClass', v as InsuranceClass)}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-7 text-[11px] font-sans"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {CLASSES.map(c => <SelectItem key={c} value={c} className="text-xs">{c}</SelectItem>)}
+                  {CLASSES.map(c => <SelectItem key={c} value={c} className="text-[11px] font-sans">{c}</SelectItem>)}
                 </SelectContent>
               </Select>
             </Field>
             <Field label={t('ประเภทการชำระ', 'Payment Type')}>
               <Select value={value.paymentType} onValueChange={(v) => set('paymentType', v as PaymentType)}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-7 text-[11px] font-sans"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {PAYMENT_TYPES.map(o => <SelectItem key={o.value} value={o.value} className="text-xs">{language === 'th' ? o.th : o.en}</SelectItem>)}
+                  {PAYMENT_TYPES.map(o => <SelectItem key={o.value} value={o.value} className="text-[11px] font-sans">{language === 'th' ? o.th : o.en}</SelectItem>)}
                 </SelectContent>
               </Select>
             </Field>
             <Field label={t('ประเภทรถ', 'Car Type')}>
               <Select value={value.carType} onValueChange={(v) => set('carType', v as CarType)}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-7 text-[11px] font-sans"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {CAR_TYPES.map(o => <SelectItem key={o.value} value={o.value} className="text-xs">{language === 'th' ? o.th : o.en}</SelectItem>)}
+                  {CAR_TYPES.map(o => <SelectItem key={o.value} value={o.value} className="text-[11px] font-sans">{language === 'th' ? o.th : o.en}</SelectItem>)}
                 </SelectContent>
               </Select>
             </Field>
             <Field label={t('ประเภทลูกค้า', 'Customer Type')}>
               <Select value={value.customerType} onValueChange={(v) => set('customerType', v as 'individual' | 'corporation')}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-7 text-[11px] font-sans"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {CUSTOMER_TYPES.map(o => <SelectItem key={o.value} value={o.value} className="text-xs">{language === 'th' ? o.th : o.en}</SelectItem>)}
+                  {CUSTOMER_TYPES.map(o => <SelectItem key={o.value} value={o.value} className="text-[11px] font-sans">{language === 'th' ? o.th : o.en}</SelectItem>)}
                 </SelectContent>
               </Select>
             </Field>
             <Field label={t('วิธีชำระ', 'Payment Method')}>
               <Select value={value.paymentMethodValue} onValueChange={(v) => set('paymentMethodValue', v)}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-7 text-[11px] font-sans"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {PAYMENT_METHODS.map(o => <SelectItem key={o.value} value={o.value} className="text-xs">{language === 'th' ? o.th : o.en}</SelectItem>)}
+                  {PAYMENT_METHODS.map(o => <SelectItem key={o.value} value={o.value} className="text-[11px] font-sans">{language === 'th' ? o.th : o.en}</SelectItem>)}
                 </SelectContent>
               </Select>
             </Field>
             <Field label={t('จำนวนผู้ขับขี่ระบุชื่อ', 'Named Drivers')}>
               <Select value={String(value.driverLicenseCount)} onValueChange={(v) => set('driverLicenseCount', Number(v))}>
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-7 text-[11px] font-sans"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {[0, 1, 2, 3, 4, 5].map(n => <SelectItem key={n} value={String(n)} className="text-xs">{n}</SelectItem>)}
+                  {[0, 1, 2, 3, 4, 5].map(n => <SelectItem key={n} value={String(n)} className="text-[11px] font-sans">{n}</SelectItem>)}
                 </SelectContent>
               </Select>
             </Field>
@@ -223,10 +223,10 @@ export function LogicControllerSection({ value, onChange, onReset }: Props) {
                 onValueChange={(v) => set('carInspectionMethod', (v === '__none__' ? '' : v) as LogicControllerState['carInspectionMethod'])}
                 disabled={value.insuranceClass !== 'Type1'}
               >
-                <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-7 text-[11px] font-sans"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {INSPECTION_METHODS.map(o => (
-                    <SelectItem key={o.value || '__none__'} value={o.value || '__none__'} className="text-xs">
+                    <SelectItem key={o.value || '__none__'} value={o.value || '__none__'} className="text-[11px] font-sans">
                       {language === 'th' ? o.th : o.en}
                     </SelectItem>
                   ))}
