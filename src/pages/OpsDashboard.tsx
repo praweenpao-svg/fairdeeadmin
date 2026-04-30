@@ -280,6 +280,10 @@ export default function OpsDashboard() {
         onReworkReassign={handleReworkReassign}
         onAddRework={handleAddRework}
       />
+
+      {/* Dev-only Logic Controller (prototype tool) */}
+      <DevLogicControllerFab />
     </div>
+    </OpsLogicProvider>
   );
 }
