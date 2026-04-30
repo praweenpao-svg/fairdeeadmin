@@ -15,6 +15,7 @@ import {
   type DocumentGroup,
 } from '@/data/documentRequirements';
 import { CoveragePanel } from './CoveragePanel';
+import { LogicControllerSection } from './LogicControllerSection';
 import { PolicyDetailsZone } from './PolicyDetailsZone';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { InvoiceListTab } from './InvoiceListTab';
@@ -280,15 +281,20 @@ function UploadDocumentsDialog({
 function LinkDocumentsTab({ sale }: { sale: SaleDetail }) {
   const { language } = useLanguageStore();
 
-  // Derive matrix params from sale (sale-level, VMI-led; CMI inherits)
-  const saleType = sale.saleType ?? 'New';
-  const insuranceClass = sale.insuranceClass ?? 'Type3+';
-  const paymentType = sale.paymentType ?? 'Non-Instalment';
-  const carType = sale.carType ?? 'Normally';
-  const paymentMethod = sale.paymentMethodValue ?? '';
-  const customerType = sale.customer.customerType;
-  const driverLicenseCount = sale.driverLicenseCount ?? 0;
-  const carInspectionMethod = sale.carInspectionMethod ?? '';
+  // Seed Logic Controller state from sale (sale-level, VMI-led; CMI inherits)
+  const seedFromSale = React.useCallback((): import('./LogicControllerSection').LogicControllerState => ({
+    saleType: sale.saleType ?? 'New',
+    insuranceClass: sale.insuranceClass ?? 'Type3+',
+    paymentType: sale.paymentType ?? 'Non-Instalment',
+    carType: sale.carType ?? 'Normally',
+    customerType: sale.customer.customerType,
+    paymentMethodValue: sale.paymentMethodValue ?? '',
+    driverLicenseCount: sale.driverLicenseCount ?? 0,
+    carInspectionMethod: sale.carInspectionMethod ?? '',
+  }), [sale]);
+
+  const [logic, setLogic] = React.useState(seedFromSale);
+  const { saleType, insuranceClass, paymentType, carType, customerType, paymentMethodValue: paymentMethod, driverLicenseCount, carInspectionMethod } = logic;
 
   const docGroups = React.useMemo(
     () => getRequiredDocuments(
@@ -386,9 +392,14 @@ function LinkDocumentsTab({ sale }: { sale: SaleDetail }) {
   }, [docGroups]);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-      {/* Left: field-driven categories grouped by section */}
-      <div className="lg:col-span-3 space-y-4">
+    <div className="space-y-4">
+      <LogicControllerSection
+        value={logic}
+        onChange={setLogic}
+        onReset={() => setLogic(seedFromSale())}
+      />
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <div className="lg:col-span-3 space-y-4">
         {groupedDocs.map(({ group, items }) => (
           <div key={group} className="space-y-2">
             <h6 className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground px-1">
@@ -536,6 +547,7 @@ function LinkDocumentsTab({ sale }: { sale: SaleDetail }) {
             )}
           </CardContent>
         </Card>
+        </div>
       </div>
 
       {/* Upload Dialog */}

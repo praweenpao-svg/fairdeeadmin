@@ -55,10 +55,7 @@ export const DOCUMENT_FIELDS: Record<string, AttachmentFieldDef> = {
   },
 
   // C. Payment Documents
-  identity_document_signed_dup: {
-    // placeholder so order keeps groups distinct; not used
-    th: '', en: '', isOcr: false, group: '', fieldType: 'SEPARATE',
-  },
+  // Note: installment_consent_form is DEPRECATED — never required in any scenario.
   credit_card_authorization: {
     th: 'หนังสือขอให้หักบัตรเครดิต', en: 'Credit Card Debit Authorization Form',
     isOcr: false, group: 'C. Payment Documents', fieldType: 'SEPARATE',
