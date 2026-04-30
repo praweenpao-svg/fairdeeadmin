@@ -7,6 +7,7 @@ import { useLanguageStore } from '@/stores/languageStore';
 import { SaleDetail, SalePolicy } from '@/data/mockSaleDetail';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { useOpsLogic } from './OpsLogicContext';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -157,11 +158,17 @@ export function SaleDetailBar({
   onOpenUploadDoc,
 }: SaleDetailBarProps) {
   const { language } = useLanguageStore();
+  const { logic } = useOpsLogic();
   const vmiPolicy = sale.policies.find(p => p.kind === 'vmi');
   const cmiPolicy = sale.policies.find(p => p.kind === 'cmi');
   const currentStage = 'to_issue';
   const stageLabel = stageLabels[currentStage] || stageLabels.to_issue;
   const primaryActions = getPrimaryActions(vmiPolicy, undefined, language);
+
+  // Derive display values from Logic Controller (single source of truth for prototype)
+  const classDisplay = (logic.insuranceClass || '').replace(/^Type/, '').trim() || (vmiPolicy?.coverage.insuranceClass ?? '—');
+  const garageEn = vmiPolicy?.garageType === 'Dealership' ? 'Dealership' : 'Approved Garage';
+  const garageTh = vmiPolicy?.garageType === 'Dealership' ? 'ซ่อมห้าง' : 'ซ่อมอู่';
 
   const handleAction = (actionName: string) => {
     toast.success(actionName, {
@@ -188,7 +195,7 @@ export function SaleDetailBar({
           </span>
           <p className="text-sm font-bold leading-tight">{sale.qqId}</p>
           <span className="text-xs text-primary">
-            {language === 'th' ? 'เมืองไทยประกันภัย' : 'Muang Thai Insurance'} · {language === 'th' ? `ชั้น ${vmiPolicy?.coverage.insuranceClass || '—'}` : `Type ${vmiPolicy?.coverage.insuranceClass || '—'}`} · {language === 'th' ? (vmiPolicy?.garageType === 'Dealership' ? 'ซ่อมห้าง' : 'ซ่อมอู่') : (vmiPolicy?.garageType === 'Dealership' ? 'Dealership' : 'Approved Garage')}
+            {language === 'th' ? 'เมืองไทยประกันภัย' : 'Muang Thai Insurance'} · {language === 'th' ? `ชั้น ${classDisplay}` : `Type ${classDisplay}`} · {language === 'th' ? garageTh : garageEn}
           </span>
         </div>
 
