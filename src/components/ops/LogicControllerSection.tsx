@@ -122,29 +122,36 @@ export function LogicControllerSection({ value, onChange, onReset }: Props) {
           <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
             {t('สถานการณ์ทดสอบ', 'Test Scenarios')}
           </span>
-          <Select
-            value={activeScenario ?? ''}
-            onValueChange={(id) => {
-              const s = TEST_SCENARIOS.find(x => x.id === id);
-              if (s) applyScenario(s);
-            }}
-          >
-            <SelectTrigger className="h-7 text-xs flex-1 min-w-[260px] max-w-md">
-              <SelectValue placeholder={t('เลือกสถานการณ์...', 'Select a scenario...')} />
-            </SelectTrigger>
-            <SelectContent className="max-h-[360px]">
-              {TEST_SCENARIOS.map(s => (
-                <SelectItem key={s.id} value={s.id} className="text-xs">
-                  <div className="flex flex-col gap-0.5 py-0.5">
-                    <span className="font-medium">{language === 'th' ? s.labelTh : s.labelEn}</span>
-                    <span className="text-[10px] text-muted-foreground">
-                      {language === 'th' ? s.descTh : s.descEn}
-                    </span>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {(() => {
+            const selected = TEST_SCENARIOS.find(x => x.id === activeScenario);
+            return (
+              <Select
+                value={activeScenario ?? ''}
+                onValueChange={(id) => {
+                  const s = TEST_SCENARIOS.find(x => x.id === id);
+                  if (s) applyScenario(s);
+                }}
+              >
+                <SelectTrigger className="h-8 text-xs flex-1 min-w-[260px] max-w-md [&>span]:line-clamp-1 [&>span]:truncate">
+                  <SelectValue placeholder={t('เลือกสถานการณ์...', 'Select a scenario...')}>
+                    {selected ? (language === 'th' ? selected.labelTh : selected.labelEn) : undefined}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent className="max-h-[360px]">
+                  {TEST_SCENARIOS.map(s => (
+                    <SelectItem key={s.id} value={s.id} className="text-xs">
+                      <div className="flex flex-col gap-0.5 py-0.5">
+                        <span className="font-medium">{language === 'th' ? s.labelTh : s.labelEn}</span>
+                        <span className="text-[10px] text-muted-foreground">
+                          {language === 'th' ? s.descTh : s.descEn}
+                        </span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            );
+          })()}
           {activeScenario && (
             <Badge variant="secondary" className="text-[10px]">
               {t('โหลดแล้ว', 'Loaded')}
