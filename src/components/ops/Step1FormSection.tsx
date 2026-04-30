@@ -629,7 +629,7 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
         )}
 
         {needsShippingAddress && (
-          <div className="mt-3 p-4 bg-muted/40 border border-border rounded-md space-y-3">
+          <div className="md:col-span-2 mt-1 p-4 bg-muted/40 border border-border rounded-md space-y-3">
             <div className="text-sm font-bold flex items-center">
               {t('ที่อยู่จัดส่ง', 'Shipping Address')}
               <MondayTag type="dropdown" />
