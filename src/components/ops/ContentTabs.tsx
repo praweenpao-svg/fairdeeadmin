@@ -15,7 +15,8 @@ import {
   type DocumentGroup,
 } from '@/data/documentRequirements';
 import { CoveragePanel } from './CoveragePanel';
-import { LogicControllerSection } from './LogicControllerSection';
+import { Step1FormSection } from './Step1FormSection';
+import { useOpsLogic } from './OpsLogicContext';
 import { PolicyDetailsZone } from './PolicyDetailsZone';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { InvoiceListTab } from './InvoiceListTab';
@@ -281,19 +282,8 @@ function UploadDocumentsDialog({
 function LinkDocumentsTab({ sale }: { sale: SaleDetail }) {
   const { language } = useLanguageStore();
 
-  // Seed Logic Controller state from sale (sale-level, VMI-led; CMI inherits)
-  const seedFromSale = React.useCallback((): import('./LogicControllerSection').LogicControllerState => ({
-    saleType: sale.saleType ?? 'New',
-    insuranceClass: sale.insuranceClass ?? 'Type3+',
-    paymentType: sale.paymentType ?? 'Non-Instalment',
-    carType: sale.carType ?? 'Normally',
-    customerType: sale.customer.customerType,
-    paymentMethodValue: sale.paymentMethodValue ?? '',
-    driverLicenseCount: sale.driverLicenseCount ?? 0,
-    carInspectionMethod: sale.carInspectionMethod ?? '',
-  }), [sale]);
-
-  const [logic, setLogic] = React.useState(seedFromSale);
+  // Pull live logic state from context (driven by Step1FormSection + dev FAB).
+  const { logic } = useOpsLogic();
   const { saleType, insuranceClass, paymentType, carType, customerType, paymentMethodValue: paymentMethod, driverLicenseCount, carInspectionMethod } = logic;
 
   const docGroups = React.useMemo(
@@ -392,14 +382,13 @@ function LinkDocumentsTab({ sale }: { sale: SaleDetail }) {
   }, [docGroups]);
 
   return (
-    <div className="space-y-4">
-      <LogicControllerSection
-        value={logic}
-        onChange={setLogic}
-        onReset={() => setLogic(seedFromSale())}
-      />
+    <div className="space-y-6">
+      <Step1FormSection sale={sale} />
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         <div className="lg:col-span-3 space-y-4">
+          <h4 className="text-sm font-bold pb-2 border-b border-border">
+            {language === 'th' ? 'แนบเอกสาร' : 'Link Documents'}
+          </h4>
         {groupedDocs.map(({ group, items }) => (
           <div key={group} className="space-y-2">
             <h6 className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground px-1">

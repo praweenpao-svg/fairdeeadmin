@@ -8,6 +8,8 @@ import { SaleOverviewCard, PolicyStatusCard, AgentDetailsCard, PaymentStatusCard
 import { ContentTabs } from '@/components/ops/ContentTabs';
 import { SaleDetailBar } from '@/components/ops/SaleDetailBar';
 import { UploadPolicyModal } from '@/components/ops/UploadPolicyModal';
+import { OpsLogicProvider } from '@/components/ops/OpsLogicContext';
+import { DevLogicControllerFab } from '@/components/ops/DevLogicControllerFab';
 import { PolicyRemarksReworkDialog } from '@/components/pipeline/PolicyRemarksReworkDialog';
 import { cn } from '@/lib/utils';
 import { Check } from 'lucide-react';
@@ -184,6 +186,7 @@ export default function OpsDashboard() {
   };
 
   return (
+    <OpsLogicProvider sale={sale}>
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header — identical to motor policy */}
       <header className="sticky top-0 z-30 bg-card border-b border-border">
@@ -277,6 +280,10 @@ export default function OpsDashboard() {
         onReworkReassign={handleReworkReassign}
         onAddRework={handleAddRework}
       />
+
+      {/* Dev-only Logic Controller (prototype tool) */}
+      <DevLogicControllerFab />
     </div>
+    </OpsLogicProvider>
   );
 }
