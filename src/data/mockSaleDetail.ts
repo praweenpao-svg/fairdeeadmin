@@ -282,6 +282,13 @@ export const mockSaleDetail: SaleDetail = {
     originalSumInsured: '-',
     bestPremium: false,
     commissionDetail: 'จ่ายเบี้ยแบบหักค่าคอม',
+    address: {
+      addressLine: '88/12 ซอยสุขุมวิท 24',
+      province: 'กรุงเทพมหานคร',
+      district: 'คลองเตย',
+      subDistrict: 'คลองตัน',
+      postalCode: '10110',
+    },
   },
   opsStep1Complete: true,
   opsStep2Complete: false,
