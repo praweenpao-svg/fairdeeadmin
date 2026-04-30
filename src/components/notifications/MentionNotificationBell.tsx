@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
-import { useMentionNotificationsStore, MentionNotification, AssignmentNotification } from '@/stores/mentionNotificationsStore';
+import { useMentionNotificationsStore, MentionNotification, AssignmentNotification, getMentionSourceType } from '@/stores/mentionNotificationsStore';
 import { useLanguageStore } from '@/stores/languageStore';
 import { useCurrentUserStore } from '@/stores/currentUserStore';
 import { useNotificationNavigationStore } from '@/stores/notificationNavigationStore';
@@ -38,6 +38,7 @@ export function MentionNotificationBell() {
   const {
     notifications, assignments, markAsRead, markAllAsRead,
     unreadOnlyFilter, setUnreadOnlyFilter,
+    markAssignmentAsRead, markAllAssignmentsAsRead,
   } = useMentionNotificationsStore();
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'mentioned' | 'assigned'>('mentioned');
@@ -65,9 +66,15 @@ export function MentionNotificationBell() {
   // Assigned to me: active only
   const myAssignments = assignments
     .filter((a) => a.assigneeUserId === currentUser.name && a.isActive)
-    .sort((a, b) => new Date(b.assignedAt).getTime() - new Date(a.assignedAt).getTime());
+    .sort((a, b) => {
+      const ar = a.read ?? false, br = b.read ?? false;
+      if (ar !== br) return ar ? 1 : -1;
+      return new Date(b.assignedAt).getTime() - new Date(a.assignedAt).getTime();
+    });
 
-  const hasUnreadMentions = myMentions.some((n) => !n.read);
+  const unreadMentionCount = myMentions.filter((n) => !n.read).length;
+  const unreadAssignmentCount = myAssignments.filter((a) => !a.read).length;
+  const hasUnread = unreadMentionCount > 0 || unreadAssignmentCount > 0;
 
   const setNavTarget = useNotificationNavigationStore(s => s.setTarget);
 
@@ -87,6 +94,7 @@ export function MentionNotificationBell() {
   };
 
   const handleAssignmentClick = (assignment: AssignmentNotification) => {
+    markAssignmentAsRead(assignment.id);
     setOpen(false);
     if (assignment.leadId && assignment.policyId && assignment.targetStage) {
       setNavTarget({
@@ -119,7 +127,7 @@ export function MentionNotificationBell() {
       <PopoverTrigger asChild>
         <Button variant="ghost" size="sm" className="relative h-9 w-9 p-0">
           <Bell className="h-5 w-5" />
-          {hasUnreadMentions && (
+          {hasUnread && (
             <span className="absolute top-1 right-1.5 h-2 w-2 rounded-full bg-destructive" />
           )}
         </Button>
@@ -139,6 +147,11 @@ export function MentionNotificationBell() {
             >
               <AtSign className="w-3.5 h-3.5" />
               {language === 'th' ? 'ถูกกล่าวถึง' : 'Mentioned'}
+              {unreadMentionCount > 0 && (
+                <span className="ml-0.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-semibold">
+                  {unreadMentionCount > 99 ? '99+' : unreadMentionCount}
+                </span>
+              )}
             </button>
             <button
               onClick={() => setActiveTab('assigned')}
@@ -151,6 +164,11 @@ export function MentionNotificationBell() {
             >
               <ClipboardList className="w-3.5 h-3.5" />
               {language === 'th' ? 'มอบหมายให้ฉัน' : 'Assigned to me'}
+              {unreadAssignmentCount > 0 && (
+                <span className="ml-0.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-semibold">
+                  {unreadAssignmentCount > 99 ? '99+' : unreadAssignmentCount}
+                </span>
+              )}
             </button>
           </div>
         </div>
@@ -204,7 +222,7 @@ export function MentionNotificationBell() {
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
                             <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-mono">
                               {notification.quotationId}
                             </Badge>
@@ -220,6 +238,21 @@ export function MentionNotificationBell() {
                                 {notification.policyType.toUpperCase()}
                               </Badge>
                             )}
+                            {(() => {
+                              const src = getMentionSourceType(notification);
+                              const label =
+                                language === 'th'
+                                  ? src === 'remark' ? 'หมายเหตุ' : src === 'reply' ? 'ตอบกลับ' : 'สลักหลัง'
+                                  : src === 'remark' ? 'Remark' : src === 'reply' ? 'Reply' : 'Endorsement';
+                              return (
+                                <Badge
+                                  variant="outline"
+                                  className="text-[10px] h-5 px-1.5 bg-muted/60 text-muted-foreground border-border"
+                                >
+                                  {label}
+                                </Badge>
+                              );
+                            })()}
                           </div>
                           <p className={cn(
                             "text-sm line-clamp-2",
@@ -247,50 +280,85 @@ export function MentionNotificationBell() {
 
         {/* Assigned to me Tab */}
         {activeTab === 'assigned' && (
-          <ScrollArea className="h-[390px]">
-            {myAssignments.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-[200px] text-muted-foreground text-sm">
-                <ClipboardList className="w-8 h-8 mb-2 opacity-30" />
-                {language === 'th' ? 'ไม่มีงานที่มอบหมาย' : 'No active assignments'}
-              </div>
-            ) : (
-              <div className="divide-y divide-border">
-                {myAssignments.map((assignment) => (
-                  <button
-                    key={assignment.id}
-                    onClick={() => handleAssignmentClick(assignment)}
-                    className="w-full px-4 py-3 hover:bg-muted/50 transition-colors text-left"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-mono">
-                            {assignment.quotationId}
-                          </Badge>
-                          <Badge
-                            className={cn(
-                              "text-[10px] h-5 px-1.5",
-                              assignment.policyType === 'vmi'
-                                ? "bg-blue-500/20 text-blue-600 border-blue-500/30"
-                                : "bg-purple-500/20 text-purple-600 border-purple-500/30"
-                            )}
-                          >
-                            {assignment.policyType.toUpperCase()}
-                          </Badge>
-                          <Badge className="text-[10px] h-5 px-1.5 bg-muted text-muted-foreground">
-                            {assignment.saleStage}
-                          </Badge>
-                        </div>
-                        <div className="text-xs text-muted-foreground mt-1">
-                          {language === 'th' ? 'มอบหมายเมื่อ' : 'Assigned'}: {getFullDateTime(assignment.assignedAt)}
-                        </div>
-                      </div>
-                    </div>
-                  </button>
-                ))}
+          <>
+            {myAssignments.length > 0 && unreadAssignmentCount > 0 && (
+              <div className="flex items-center justify-end px-4 py-2 border-b border-border">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs h-7"
+                  onClick={() => markAllAssignmentsAsRead()}
+                >
+                  {language === 'th' ? 'อ่านทั้งหมด' : 'Mark all read'}
+                </Button>
               </div>
             )}
-          </ScrollArea>
+            <ScrollArea className={cn(myAssignments.length > 0 && unreadAssignmentCount > 0 ? 'h-[348px]' : 'h-[390px]')}>
+              {myAssignments.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-[200px] text-muted-foreground text-sm">
+                  <ClipboardList className="w-8 h-8 mb-2 opacity-30" />
+                  {language === 'th' ? 'ไม่มีงานที่มอบหมาย' : 'No active assignments'}
+                </div>
+              ) : (
+                <div className="divide-y divide-border">
+                  {myAssignments.map((assignment) => {
+                    const isUnread = !assignment.read;
+                    const trigger = assignment.triggeredBy || 'System';
+                    const isSystem = trigger === 'System';
+                    return (
+                      <button
+                        key={assignment.id}
+                        onClick={() => handleAssignmentClick(assignment)}
+                        className={cn(
+                          'w-full px-4 py-3 hover:bg-muted/50 transition-colors text-left',
+                          isUnread && 'bg-primary/5'
+                        )}
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1 flex-wrap">
+                              <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-mono">
+                                {assignment.quotationId}
+                              </Badge>
+                              <Badge
+                                className={cn(
+                                  "text-[10px] h-5 px-1.5",
+                                  assignment.policyType === 'vmi'
+                                    ? "bg-blue-500/20 text-blue-600 border-blue-500/30"
+                                    : "bg-purple-500/20 text-purple-600 border-purple-500/30"
+                                )}
+                              >
+                                {assignment.policyType.toUpperCase()}
+                              </Badge>
+                              <Badge className="text-[10px] h-5 px-1.5 bg-muted text-muted-foreground">
+                                {assignment.saleStage}
+                              </Badge>
+                              {assignment.status && (
+                                <Badge variant="outline" className="text-[10px] h-5 px-1.5">
+                                  {assignment.status}
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                              <span>{language === 'th' ? 'โดย' : 'By'}</span>
+                              <span className={cn('font-medium', isSystem ? 'text-muted-foreground' : 'text-foreground')}>
+                                {trigger}
+                              </span>
+                              <span>•</span>
+                              <span>{getFullDateTime(assignment.assignedAt)}</span>
+                            </div>
+                          </div>
+                          {isUnread && (
+                            <span className="h-2 w-2 rounded-full bg-primary flex-shrink-0 mt-2" />
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </ScrollArea>
+          </>
         )}
       </PopoverContent>
     </Popover>

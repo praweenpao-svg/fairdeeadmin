@@ -1,6 +1,10 @@
 import { create } from 'zustand';
 import { PipelineStage } from '@/types/pipeline';
 
+// Source of a mention — used to render a chip so users can tell if it
+// came from a remark thread, a reply on a thread, or an endorsement note.
+export type MentionSourceType = 'remark' | 'reply' | 'endorsement';
+
 export interface MentionNotification {
   id: string;
   recipientUserId: string;
@@ -8,6 +12,8 @@ export interface MentionNotification {
   policyType?: 'vmi' | 'cmi';
   reworkRecordId?: string | null;
   commentId?: string | null;
+  /** Optional explicit source. If absent, derived from reworkRecordId/commentId. */
+  sourceType?: MentionSourceType;
   mentionTextPreview: string;
   mentionedBy: string;
   mentionedByUserId: string;
@@ -26,11 +32,25 @@ export interface AssignmentNotification {
   policyType: 'vmi' | 'cmi';
   assignedAt: string;
   saleStage: string;
+  /** Latest status of the policy when assigned (e.g. 'Pending', 'Submitted'). */
+  status?: string;
+  /** Who triggered the assignment — a user name, or 'System' for automatic routing. */
+  triggeredBy?: string;
   isActive: boolean;
+  /** Whether the assignee has acknowledged this notification yet. */
+  read?: boolean;
   // Deep-link data
   leadId?: string;
   policyId?: string;
   targetStage?: PipelineStage;
+}
+
+/** Derive source-type chip label from notification fields. */
+export function getMentionSourceType(n: MentionNotification): MentionSourceType {
+  if (n.sourceType) return n.sourceType;
+  if (n.reworkRecordId) return 'remark';
+  if (n.commentId) return 'reply';
+  return 'remark';
 }
 
 interface MentionNotificationsState {
@@ -43,6 +63,8 @@ interface MentionNotificationsState {
   setUnreadOnlyFilter: (on: boolean) => void;
   addAssignment: (assignment: Omit<AssignmentNotification, 'id'>) => void;
   removeAssignment: (quotationId: string, policyType: 'vmi' | 'cmi') => void;
+  markAssignmentAsRead: (id: string) => void;
+  markAllAssignmentsAsRead: () => void;
 }
 
 // Seed demo mention notifications using real lead/policy IDs from mockLeads
@@ -127,7 +149,10 @@ const seedAssignments: AssignmentNotification[] = [
     policyType: 'vmi',
     assignedAt: new Date(now.getTime() - 1 * 86400000).toISOString(),
     saleStage: 'To Report',
+    status: 'Pending',
+    triggeredBy: 'System',
     isActive: true,
+    read: false,
     leadId: '19',
     policyId: 'pol-19-vmi',
     targetStage: 'to_report' as const,
@@ -139,7 +164,10 @@ const seedAssignments: AssignmentNotification[] = [
     policyType: 'cmi',
     assignedAt: new Date(now.getTime() - 1 * 86400000).toISOString(),
     saleStage: 'To Report',
+    status: 'Pending',
+    triggeredBy: 'System',
     isActive: true,
+    read: false,
     leadId: '19',
     policyId: 'pol-19-cmi',
     targetStage: 'to_report' as const,
@@ -151,7 +179,10 @@ const seedAssignments: AssignmentNotification[] = [
     policyType: 'vmi',
     assignedAt: new Date(now.getTime() - 4 * 86400000).toISOString(),
     saleStage: 'To Issue',
+    status: 'Submitted',
+    triggeredBy: 'Ricky',
     isActive: true,
+    read: true,
     leadId: '22',
     policyId: 'pol-22-vmi',
     targetStage: 'to_issue' as const,
@@ -204,6 +235,14 @@ export const useMentionNotificationsStore = create<MentionNotificationsState>((s
     assignments: state.assignments.filter(
       (a) => !(a.quotationId === quotationId && a.policyType === policyType)
     ),
+  })),
+  markAssignmentAsRead: (id) => set((state) => ({
+    assignments: state.assignments.map((a) =>
+      a.id === id ? { ...a, read: true } : a
+    ),
+  })),
+  markAllAssignmentsAsRead: () => set((state) => ({
+    assignments: state.assignments.map((a) => ({ ...a, read: true })),
   })),
 }));
 
