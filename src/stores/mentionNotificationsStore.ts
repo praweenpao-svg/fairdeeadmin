@@ -1,6 +1,10 @@
 import { create } from 'zustand';
 import { PipelineStage } from '@/types/pipeline';
 
+// Source of a mention — used to render a chip so users can tell if it
+// came from a remark thread, a reply on a thread, or an endorsement note.
+export type MentionSourceType = 'remark' | 'reply' | 'endorsement';
+
 export interface MentionNotification {
   id: string;
   recipientUserId: string;
@@ -8,6 +12,8 @@ export interface MentionNotification {
   policyType?: 'vmi' | 'cmi';
   reworkRecordId?: string | null;
   commentId?: string | null;
+  /** Optional explicit source. If absent, derived from reworkRecordId/commentId. */
+  sourceType?: MentionSourceType;
   mentionTextPreview: string;
   mentionedBy: string;
   mentionedByUserId: string;
@@ -26,11 +32,25 @@ export interface AssignmentNotification {
   policyType: 'vmi' | 'cmi';
   assignedAt: string;
   saleStage: string;
+  /** Latest status of the policy when assigned (e.g. 'Pending', 'Submitted'). */
+  status?: string;
+  /** Who triggered the assignment — a user name, or 'System' for automatic routing. */
+  triggeredBy?: string;
   isActive: boolean;
+  /** Whether the assignee has acknowledged this notification yet. */
+  read?: boolean;
   // Deep-link data
   leadId?: string;
   policyId?: string;
   targetStage?: PipelineStage;
+}
+
+/** Derive source-type chip label from notification fields. */
+export function getMentionSourceType(n: MentionNotification): MentionSourceType {
+  if (n.sourceType) return n.sourceType;
+  if (n.reworkRecordId) return 'remark';
+  if (n.commentId) return 'reply';
+  return 'remark';
 }
 
 interface MentionNotificationsState {
