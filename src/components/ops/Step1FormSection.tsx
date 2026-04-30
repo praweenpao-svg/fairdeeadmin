@@ -390,7 +390,7 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
             value={String(logic.driverLicenseCount)}
             onValueChange={(v) => setLogicField('driverLicenseCount', Number(v))}
           >
-            <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="0">{t('ไม่จำเป็น', 'Not required')}</SelectItem>
               {[1, 2, 3, 4, 5].map(n => (
@@ -437,7 +437,7 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
 
         <FormRow label={t('ความคุ้มครองเพิ่มเติม', 'Additional Coverage')} monday="dropdown">
           <Select value={addOns} onValueChange={(v) => setAddOns(v as typeof addOns)}>
-            <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
             <SelectContent>
               {ADDONS.map(o => (
                 <SelectItem key={o.value} value={o.value}>{lang === 'th' ? o.th : o.en}</SelectItem>
@@ -511,7 +511,7 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
               }
             }}
           >
-            <SelectTrigger className="h-10"><SelectValue placeholder={t('เลือก...', 'Select...')} /></SelectTrigger>
+            <SelectTrigger className="h-9 text-sm"><SelectValue placeholder={t('เลือก...', 'Select...')} /></SelectTrigger>
             <SelectContent>
               {PAYMENT_METHODS.map(o => (
                 <SelectItem key={o.value} value={o.value}>{lang === 'th' ? o.th : o.en}</SelectItem>
@@ -557,7 +557,7 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
             </FormRow>
             <FormRow label={t('จำนวนงวดผ่อน', 'Number of Instalments')}>
               <Select value={installmentCount} onValueChange={setInstallmentCount}>
-                <SelectTrigger className="h-10">
+                <SelectTrigger className="h-9 text-sm">
                   <SelectValue placeholder={t('เลือกจำนวนงวด...', 'Select instalments...')} />
                 </SelectTrigger>
                 <SelectContent>
@@ -599,7 +599,7 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
       <SectionCard title={t('การจัดส่งกรมธรรม์', 'Shipping')}>
         <FormRow label={t('รูปแบบกรมธรรม์ภาคสมัครใจ', 'Voluntary Shipping Format')} hint="ⓘ Chat Saved">
           <Select value={voluntaryShippingFormat} onValueChange={(v) => setVoluntaryShippingFormat(v as ShippingFormat)}>
-            <SelectTrigger className="h-10">
+            <SelectTrigger className="h-9 text-sm">
               <SelectValue placeholder={t('เลือกรูปแบบ...', 'Select format...')} />
             </SelectTrigger>
             <SelectContent>
@@ -613,7 +613,7 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
         {addCompulsory && (
           <FormRow label={t('รูปแบบกรมธรรม์ พ.ร.บ.', 'Compulsory Shipping Format')} hint="ⓘ Chat Saved">
             <Select value={compulsoryShippingFormat} onValueChange={(v) => setCompulsoryShippingFormat(v as ShippingFormat)}>
-              <SelectTrigger className="h-10">
+              <SelectTrigger className="h-9 text-sm">
                 <SelectValue placeholder={t('เลือกรูปแบบ...', 'Select format...')} />
               </SelectTrigger>
               <SelectContent>
