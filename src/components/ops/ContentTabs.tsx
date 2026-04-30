@@ -280,15 +280,20 @@ function UploadDocumentsDialog({
 function LinkDocumentsTab({ sale }: { sale: SaleDetail }) {
   const { language } = useLanguageStore();
 
-  // Derive matrix params from sale (sale-level, VMI-led; CMI inherits)
-  const saleType = sale.saleType ?? 'New';
-  const insuranceClass = sale.insuranceClass ?? 'Type3+';
-  const paymentType = sale.paymentType ?? 'Non-Instalment';
-  const carType = sale.carType ?? 'Normally';
-  const paymentMethod = sale.paymentMethodValue ?? '';
-  const customerType = sale.customer.customerType;
-  const driverLicenseCount = sale.driverLicenseCount ?? 0;
-  const carInspectionMethod = sale.carInspectionMethod ?? '';
+  // Seed Logic Controller state from sale (sale-level, VMI-led; CMI inherits)
+  const seedFromSale = React.useCallback((): import('./LogicControllerSection').LogicControllerState => ({
+    saleType: sale.saleType ?? 'New',
+    insuranceClass: sale.insuranceClass ?? 'Type3+',
+    paymentType: sale.paymentType ?? 'Non-Instalment',
+    carType: sale.carType ?? 'Normally',
+    customerType: sale.customer.customerType,
+    paymentMethodValue: sale.paymentMethodValue ?? '',
+    driverLicenseCount: sale.driverLicenseCount ?? 0,
+    carInspectionMethod: sale.carInspectionMethod ?? '',
+  }), [sale]);
+
+  const [logic, setLogic] = React.useState(seedFromSale);
+  const { saleType, insuranceClass, paymentType, carType, customerType, paymentMethodValue: paymentMethod, driverLicenseCount, carInspectionMethod } = logic;
 
   const docGroups = React.useMemo(
     () => getRequiredDocuments(
