@@ -385,7 +385,7 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
           />
         </FormRow>
 
-        <FormRow label={t('ต้องการระบุผู้ขับขี่หรือไม่?', 'Driver License Required?')}>
+        <FormRow label={t('ต้องการระบุผู้ขับขี่หรือไม่?', 'Driver License Required?')} span={logic.driverLicenseCount > 0 ? 2 : 1}>
           <Select
             value={String(logic.driverLicenseCount)}
             onValueChange={(v) => setLogicField('driverLicenseCount', Number(v))}
