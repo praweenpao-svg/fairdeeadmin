@@ -27,6 +27,7 @@ import { Switch } from '@/components/ui/switch';
 import {
   Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { SearchableReasonSelect } from '@/components/pipeline/SearchableReasonSelect';
 
 interface ReworkConsoleTableProps {
   reworkConfigs: ReworkConfig[];
@@ -656,24 +657,17 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                 </div>
               )}
 
-              {/* Rework Reason selector — reason attributes are managed on the Rework Reasons page */}
+              {/* Rework Reason selector — searchable since the list grows over time */}
               {isReworkOnly && (
                 <div className="grid gap-2">
                   <Label>Rework Reason</Label>
-                  <Select
-                    value={formData.reasonId || '__none__'}
-                    onValueChange={(v) => setFormData({ ...formData, reasonId: v === '__none__' ? undefined : v })}
-                  >
-                    <SelectTrigger><SelectValue placeholder="Select rework reason" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="__none__">Select rework reason</SelectItem>
-                      {reworkReasons.map(r => (
-                        <SelectItem key={r.id} value={r.id}>
-                          {r.descriptionEn}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <SearchableReasonSelect
+                    configs={reworkReasons}
+                    value={formData.reasonId || ''}
+                    onValueChange={(v) => setFormData({ ...formData, reasonId: v || undefined })}
+                    placeholder="Select rework reason"
+                    triggerClassName="h-10 text-sm"
+                  />
                 </div>
               )}
 
