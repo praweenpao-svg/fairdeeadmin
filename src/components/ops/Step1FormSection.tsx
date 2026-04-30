@@ -1,7 +1,8 @@
 import React from 'react';
 import { format } from 'date-fns';
 import { th as thLocale } from 'date-fns/locale';
-import { CalendarIcon, Lock, Info } from 'lucide-react';
+import { CalendarIcon, Lock, Info, Camera, ClipboardCheck, X, Copy } from 'lucide-react';
+import { toast } from 'sonner';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -14,7 +15,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { cn } from '@/lib/utils';
 import { useLanguageStore } from '@/stores/languageStore';
 import type { SaleDetail } from '@/data/mockSaleDetail';
-import { useOpsLogic } from './OpsLogicContext';
+import { useOpsLogic, type ShippingFormat } from './OpsLogicContext';
 
 const VEHICLE_CODES: Record<string, { th: string; en: string }> = {
   'E11': { th: 'รถยนต์ไฟฟ้า-ส่วนบุคคล', en: 'Electric Vehicle - Personal' },
@@ -34,6 +35,14 @@ const PAYMENT_METHODS = [
   { value: 'insurer_transfer', th: 'โอนเงินผ่านบริษัทประกัน', en: 'Transfer via Insurer' },
 ];
 
+const ADDONS = [
+  { value: 'none', th: 'ไม่มี', en: 'None' },
+  { value: 'alloy', th: 'ล้อแม็กซ์', en: 'Alloy Wheels' },
+  { value: 'bodykit', th: 'บอดี้คิท', en: 'Body Kit' },
+  { value: 'headlight', th: 'ไฟหน้า', en: 'Headlights' },
+  { value: 'taillight', th: 'ไฟท้าย', en: 'Taillights' },
+];
+
 const POLICY_ADDRESS_SOURCES = [
   { value: 'nid', th: 'บัตรประชาชน', en: 'NID (ID Card)' },
   { value: 'passport', th: 'หนังสือเดินทาง', en: 'Passport' },
@@ -42,9 +51,15 @@ const POLICY_ADDRESS_SOURCES = [
 
 const SHIPPING_ADDRESS_SOURCES = [
   { value: 'national_id', th: 'ผู้เอาประกันภัย', en: 'Insured (from NID)' },
-  { value: 'agent', th: 'ตัวแทน', en: 'Agent' },
+  { value: 'agent', th: 'ตัวแทน', en: 'Agent (FairDee)' },
   { value: 'car_reg', th: 'ทะเบียนรถ', en: 'Car Registration' },
   { value: 'new', th: 'เพิ่มที่อยู่ใหม่', en: 'Add New Address' },
+];
+
+const SHIPPING_FORMATS: { value: Exclude<ShippingFormat, ''>; th: string; en: string }[] = [
+  { value: 'fairdee', th: 'พิมพ์โดย FairDee', en: 'Print by FairDee' },
+  { value: 'self', th: 'พิมพ์เอง', en: 'Print Self' },
+  { value: 'epolicy', th: 'e-Policy', en: 'e-Policy' },
 ];
 
 function MondayTag({ type }: { type: string }) {
@@ -67,6 +82,23 @@ function FormRow({ label, required, monday, children, hint }: { label: string; r
       {children}
       {hint && <p className="text-[11px] text-muted-foreground">{hint}</p>}
     </div>
+  );
+}
+
+function SectionCard({ title, subtitle, badge, children }: { title: string; subtitle?: string; badge?: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <Card className="border-border">
+      <CardContent className="p-6 space-y-5">
+        <div className="flex items-start justify-between gap-3 pb-3 border-b border-border">
+          <div>
+            <h3 className="text-base font-bold">{title}</h3>
+            {subtitle && <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>}
+          </div>
+          {badge}
+        </div>
+        {children}
+      </CardContent>
+    </Card>
   );
 }
 
@@ -102,7 +134,7 @@ interface PillOption { value: string; label: string }
 function PillToggle({ options, value, onChange }: { options: PillOption[]; value: string; onChange: (v: string) => void }) {
   return (
     <div className="inline-flex border border-input rounded-md overflow-hidden">
-      {options.map((opt, i) => {
+      {options.map(opt => {
         const selected = value === opt.value;
         return (
           <button
@@ -122,8 +154,105 @@ function PillToggle({ options, value, onChange }: { options: PillOption[]; value
   );
 }
 
+/** Pill-style chip used for source selectors (policy/shipping address). */
+function ChipPill({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        'px-4 py-1.5 rounded-full text-xs font-medium border transition-colors',
+        active
+          ? 'bg-primary text-primary-foreground border-primary'
+          : 'bg-background text-foreground border-input hover:bg-muted'
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+function InfoBanner({ children, tone = 'info' }: { children: React.ReactNode; tone?: 'info' | 'warn' }) {
+  const cls =
+    tone === 'warn'
+      ? 'bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-950/40 dark:border-amber-900 dark:text-amber-200'
+      : 'bg-blue-50 border-blue-200 text-blue-800 dark:bg-blue-950/40 dark:border-blue-900 dark:text-blue-200';
+  return (
+    <div className={cn('flex items-start gap-2 px-3 py-2 border rounded-md text-[11px] leading-relaxed', cls)}>
+      <Info className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+      <div>{children}</div>
+    </div>
+  );
+}
+
+/** 3-card inspection picker (Type 1 only). */
+function InspectionPicker({
+  value,
+  onChange,
+  locked,
+  lang,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  locked: boolean;
+  lang: string;
+}) {
+  const t = (th: string, en: string) => (lang === 'th' ? th : en);
+  const opts = [
+    {
+      value: 'not_required',
+      icon: <X className="h-4 w-4" />,
+      label: t('ไม่จำเป็น', 'Not Required'),
+      desc: t('ไม่ต้องตรวจสภาพรถ', 'No inspection needed'),
+    },
+    {
+      value: 'upload_photos',
+      icon: <Camera className="h-4 w-4" />,
+      label: t('อัปโหลดรูป', 'Upload Photos'),
+      desc: t('อัปโหลดภาพถ่ายรถ 8 มุม', 'Upload 8-angle car photos'),
+    },
+    {
+      value: 'inspection_appointment',
+      icon: <ClipboardCheck className="h-4 w-4" />,
+      label: t('นัดตรวจ', 'Appointment'),
+      desc: t('นัดหมายเข้าตรวจสภาพ', 'Schedule an inspection visit'),
+    },
+  ];
+  const current = value || 'not_required';
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+      {opts.map(opt => {
+        const isLocked = locked && opt.value !== 'upload_photos';
+        const active = current === opt.value;
+        return (
+          <button
+            key={opt.value}
+            type="button"
+            disabled={isLocked}
+            onClick={() => !isLocked && onChange(opt.value === 'not_required' ? '' : opt.value)}
+            title={isLocked ? t('การต่ออายุใช้วิธีเดียวกับปีก่อน', 'Renewal uses last year\'s method') : undefined}
+            className={cn(
+              'text-left p-3 rounded-lg border transition-colors',
+              active ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-input bg-background hover:bg-muted',
+              isLocked && 'opacity-50 cursor-not-allowed',
+            )}
+          >
+            <div className="flex items-center gap-2 mb-1">
+              <span className={cn(active ? 'text-primary' : 'text-muted-foreground')}>{opt.icon}</span>
+              <span className={cn('text-xs font-semibold', active ? 'text-primary' : 'text-foreground')}>{opt.label}</span>
+              {locked && opt.value === 'upload_photos' && <Lock className="h-3 w-3 text-primary" />}
+            </div>
+            <div className="text-[11px] text-muted-foreground">{opt.desc}</div>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 export function Step1FormSection({ sale }: { sale: SaleDetail }) {
   const { language } = useLanguageStore();
+  const lang = language;
   const t = (th: string, en: string) => (language === 'th' ? th : en);
   const {
     logic, setLogic,
@@ -135,6 +264,13 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
     compulsoryEndDate, setCompulsoryEndDate,
     shippingAddressSource, setShippingAddressSource,
     policyAddressSource, setPolicyAddressSource,
+    addOns, setAddOns,
+    kycMode, setKycMode,
+    installmentPlan, setInstallmentPlan,
+    installmentCount, setInstallmentCount,
+    voluntaryShippingFormat, setVoluntaryShippingFormat,
+    compulsoryShippingFormat, setCompulsoryShippingFormat,
+    inspectionAppointmentDate, setInspectionAppointmentDate,
   } = useOpsLogic();
 
   const vehicleCode = sale.vehicle.vehicleCode.split(' ')[0] || '110';
@@ -143,36 +279,46 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
 
   const isInstallment = logic.paymentType === 'Instalment';
   const showInspection = logic.insuranceClass === 'Type1';
+  const isRenewalInspectionLocked = logic.saleType === 'Renewable' && showInspection;
+
+  // KYC visible for instalment via bank/QR (sibling rule)
+  const showKyc = isInstallment && (
+    logic.paymentMethodValue === 'bank_account_installment' ||
+    logic.paymentMethodValue === 'qr_code_installment'
+  );
+
+  const installmentCountOptions =
+    installmentPlan === 'downpayment'
+      ? ['6', '8', '10']
+      : ['3', '4', '5', '6', '8', '10'];
 
   const setLogicField = <K extends keyof typeof logic>(key: K, v: (typeof logic)[K]) => {
     setLogic(prev => ({ ...prev, [key]: v }));
   };
 
-  return (
-    <Card className="border-border">
-      <CardContent className="p-6 space-y-5">
-        <div className="flex items-center justify-between pb-3 border-b border-border">
-          <div>
-            <h3 className="text-base font-bold">{t('ข้อมูลพื้นฐาน', 'Basic Information')}</h3>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {t('ระบบจะใช้ข้อมูลนี้กำหนดเอกสารที่ต้องแนบ', 'These fields drive the required document list below.')}
-            </p>
-          </div>
-          <Badge variant="outline" className="text-[10px]">
-            {t('ขั้นตอนที่ 1: เชื่อมโยงเอกสาร', 'Step 1: Link Documents')}
-          </Badge>
-        </div>
+  const needsShippingAddress = !!shippingAddressSource;
 
-        {/* Voluntary dates */}
+  return (
+    <div className="space-y-4">
+      {/* ════════ Card 1: Basic Information ════════ */}
+      <SectionCard
+        title={t('ข้อมูลพื้นฐาน', 'Basic Information')}
+        subtitle={t('ข้อมูลกรมธรรม์, ลูกค้า, รถ และตัวเลือกที่ขับเคลื่อนรายการเอกสาร', 'Policy, customer, vehicle and choices that drive the required document list.')}
+        badge={
+          <Badge variant="outline" className="text-[10px]">
+            {t('ขั้นตอนที่ 1', 'Step 1')}
+          </Badge>
+        }
+      >
         <FormRow label={t('วันเริ่มความคุ้มครอง', 'Voluntary Start Date')} required monday="date picker">
-          <DatePickerField value={coverageStartDate} onChange={setCoverageStartDate} lang={language} />
+          <DatePickerField value={coverageStartDate} onChange={setCoverageStartDate} lang={lang} />
         </FormRow>
 
         <FormRow
           label={t('วันสิ้นสุดความคุ้มครอง', 'Voluntary End Date')}
           hint={t('ค่าเริ่มต้น: 1 ปีหลังจากวันเริ่มต้น (แก้ไขได้)', 'Defaults to 1 year after start date (editable)')}
         >
-          <DatePickerField value={coverageEndDate} onChange={setCoverageEndDate} lang={language} />
+          <DatePickerField value={coverageEndDate} onChange={setCoverageEndDate} lang={lang} />
         </FormRow>
 
         <FormRow label={t('เบอร์โทรศัพท์ลูกค้า', 'Customer Phone Number')} required monday="text">
@@ -226,7 +372,6 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
           <PillToggle
             value={logic.carType === 'Special' ? 'yes' : (sale.forCommercialVehicle ? 'yes' : 'no')}
             onChange={(v) => {
-              // Toggle reflects intent; doesn't override carType but flips Vehicle Code semantics.
               if (v === 'yes' && logic.carType === 'Normally') setLogicField('carType', 'Special');
               if (v === 'no' && logic.carType === 'Special') setLogicField('carType', 'Normally');
             }}
@@ -251,11 +396,13 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
             </SelectContent>
           </Select>
           {logic.driverLicenseCount > 0 && (
-            <div className="mt-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded text-[11px] text-blue-800 font-medium dark:bg-blue-950/40 dark:border-blue-900 dark:text-blue-200">
-              {t(
-                `ต้องแนบใบอนุญาตขับขี่ ${logic.driverLicenseCount} ใบ ในส่วนแนบเอกสาร`,
-                `${logic.driverLicenseCount} driver license(s) required in the attachment section below.`
-              )}
+            <div className="mt-2">
+              <InfoBanner>
+                {t(
+                  `ต้องแนบใบอนุญาตขับขี่ ${logic.driverLicenseCount} ใบ ในส่วนแนบเอกสาร`,
+                  `${logic.driverLicenseCount} driver license(s) required in the attachment section below.`
+                )}
+              </InfoBanner>
             </div>
           )}
         </FormRow>
@@ -274,17 +421,76 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
         {addCompulsory && (
           <>
             <FormRow label={t('วันเริ่มต้น พ.ร.บ.', 'Compulsory Start Date')} monday="date picker">
-              <DatePickerField value={compulsoryStartDate} onChange={setCompulsoryStartDate} lang={language} />
+              <DatePickerField value={compulsoryStartDate} onChange={setCompulsoryStartDate} lang={lang} />
             </FormRow>
             <FormRow
               label={t('วันสิ้นสุด พ.ร.บ.', 'Compulsory End Date')}
               hint={t('ค่าเริ่มต้น: 1 ปีหลังจากวันเริ่มต้น (แก้ไขได้)', 'Defaults to 1 year after start date (editable)')}
             >
-              <DatePickerField value={compulsoryEndDate} onChange={setCompulsoryEndDate} lang={language} />
+              <DatePickerField value={compulsoryEndDate} onChange={setCompulsoryEndDate} lang={lang} />
             </FormRow>
           </>
         )}
 
+        <FormRow label={t('ความคุ้มครองเพิ่มเติม', 'Additional Coverage')} monday="dropdown">
+          <Select value={addOns} onValueChange={(v) => setAddOns(v as typeof addOns)}>
+            <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {ADDONS.map(o => (
+                <SelectItem key={o.value} value={o.value}>{lang === 'th' ? o.th : o.en}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FormRow>
+
+        {showInspection && (
+          <FormRow
+            label={t('วิธีตรวจสภาพรถ', 'Car Inspection Method')}
+            hint={t('สำหรับประกันชั้น 1 เท่านั้น', 'Required for Type 1 only')}
+          >
+            <InspectionPicker
+              value={logic.carInspectionMethod}
+              onChange={(v) => {
+                setLogicField('carInspectionMethod', v as typeof logic.carInspectionMethod);
+                if (v !== 'inspection_appointment') setInspectionAppointmentDate('');
+              }}
+              locked={isRenewalInspectionLocked}
+              lang={lang}
+            />
+            {isRenewalInspectionLocked && (
+              <div className="mt-2">
+                <InfoBanner tone="warn">
+                  {t(
+                    'งานต่ออายุ: วิธีตรวจสภาพรถจะใช้แบบเดียวกับปีก่อน (อัปโหลดภาพถ่าย 8 มุม) และเอกสารถูกแนบไว้ให้แล้ว',
+                    "Renewal: car inspection method follows last year's selection (Upload 8-angle photos) and documents are pre-attached.",
+                  )}
+                </InfoBanner>
+              </div>
+            )}
+            {logic.carInspectionMethod === 'upload_photos' && !isRenewalInspectionLocked && (
+              <div className="mt-2">
+                <InfoBanner>
+                  📸 {t(
+                    'ต้องอัปโหลดภาพถ่ายรถอย่างน้อย 8 มุม ในส่วนแนบเอกสาร',
+                    'You must upload at least 8 car inspection photos in the attachment section.',
+                  )}
+                </InfoBanner>
+              </div>
+            )}
+            {logic.carInspectionMethod === 'inspection_appointment' && (
+              <div className="mt-3 space-y-2">
+                <Label className="text-xs font-medium text-muted-foreground">
+                  {t('วันนัดตรวจสภาพรถ', 'Inspection Appointment Date')}
+                </Label>
+                <DatePickerField value={inspectionAppointmentDate} onChange={setInspectionAppointmentDate} lang={lang} />
+              </div>
+            )}
+          </FormRow>
+        )}
+      </SectionCard>
+
+      {/* ════════ Card 2: Payment ════════ */}
+      <SectionCard title={t('การชำระเงิน', 'Payment')}>
         <FormRow label={t('วิธีการชำระเงิน', 'Payment Method')} required monday="dropdown">
           <Select
             value={logic.paymentMethodValue}
@@ -295,58 +501,181 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
                 paymentMethodValue: v,
                 paymentType: isInst ? 'Instalment' : 'Non-Instalment',
               }));
+              if (!isInst) {
+                setInstallmentPlan('');
+                setInstallmentCount('');
+                setKycMode('');
+              }
             }}
           >
             <SelectTrigger className="h-10"><SelectValue placeholder={t('เลือก...', 'Select...')} /></SelectTrigger>
             <SelectContent>
               {PAYMENT_METHODS.map(o => (
-                <SelectItem key={o.value} value={o.value}>{language === 'th' ? o.th : o.en}</SelectItem>
+                <SelectItem key={o.value} value={o.value}>{lang === 'th' ? o.th : o.en}</SelectItem>
               ))}
             </SelectContent>
           </Select>
           {isInstallment && (
-            <div className="mt-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded text-[11px] text-amber-800 font-medium dark:bg-amber-950/40 dark:border-amber-900 dark:text-amber-200">
-              {t('ผ่อนชำระ — ระบบจะขอเอกสารเพิ่มเติมในส่วนแนบเอกสาร', 'Instalment selected — additional documents will be required below.')}
+            <div className="mt-2">
+              <InfoBanner tone="warn">
+                {t('ผ่อนชำระ — ระบบจะขอเอกสารเพิ่มเติมในส่วนแนบเอกสาร', 'Instalment selected — additional documents will be required below.')}
+              </InfoBanner>
             </div>
           )}
         </FormRow>
 
-        {showInspection && (
-          <FormRow label={t('วิธีตรวจสภาพรถ', 'Car Inspection Method')} hint={t('สำหรับประกันชั้น 1 เท่านั้น', 'Required for Type 1 only')}>
+        {showKyc && (
+          <FormRow label={t('ข้อมูล KYC', 'KYC Information')}>
             <PillToggle
-              value={logic.carInspectionMethod || 'none'}
-              onChange={(v) => setLogicField('carInspectionMethod', (v === 'none' ? '' : v) as typeof logic.carInspectionMethod)}
+              value={kycMode || 'manual'}
+              onChange={(v) => setKycMode(v as typeof kycMode)}
               options={[
-                { value: 'upload_photos', label: t('อัปโหลดรูป', 'Upload Photos') },
-                { value: 'inspection_appointment', label: t('นัดตรวจ', 'Appointment') },
-                { value: 'none', label: t('ไม่ตรวจ', 'None') },
+                { value: 'manual', label: t('Manual KYC', 'Manual KYC') },
+                { value: 'auto', label: t('Auto KYC', 'Auto KYC') },
               ]}
             />
           </FormRow>
         )}
 
-        <FormRow label={t('ที่อยู่ในกรมธรรม์ (มาจาก)', 'Policy Address Source')} monday="dropdown">
-          <Select value={policyAddressSource} onValueChange={setPolicyAddressSource}>
-            <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
+        {isInstallment && (
+          <>
+            <FormRow label={t('แผนการผ่อนชำระ', 'Instalment Plan')}>
+              <PillToggle
+                value={installmentPlan || 'equal'}
+                onChange={(v) => {
+                  setInstallmentPlan(v as typeof installmentPlan);
+                  setInstallmentCount('');
+                }}
+                options={[
+                  { value: 'equal', label: t('ผ่อนเท่ากัน', 'Equal Instalment') },
+                  { value: 'downpayment', label: t('ดาวน์ 25%', '25% Downpayment') },
+                ]}
+              />
+            </FormRow>
+            <FormRow label={t('จำนวนงวดผ่อน', 'Number of Instalments')}>
+              <Select value={installmentCount} onValueChange={setInstallmentCount}>
+                <SelectTrigger className="h-10">
+                  <SelectValue placeholder={t('เลือกจำนวนงวด...', 'Select instalments...')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {installmentCountOptions.map(n => (
+                    <SelectItem key={n} value={n}>{n} {t('งวด', 'instalments')}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FormRow>
+          </>
+        )}
+      </SectionCard>
+
+      {/* ════════ Card 3: Policy Address ════════ */}
+      <SectionCard title={t('ที่อยู่ในกรมธรรม์', 'Policy Address')}>
+        <div className="flex flex-wrap gap-2">
+          {POLICY_ADDRESS_SOURCES.map(src => (
+            <ChipPill
+              key={src.value}
+              active={policyAddressSource === src.value}
+              onClick={() => setPolicyAddressSource(src.value)}
+            >
+              {lang === 'th' ? src.th : src.en}
+            </ChipPill>
+          ))}
+        </div>
+        {policyAddressSource && (
+          <InfoBanner>
+            {lang === 'th' ? (
+              <>คุณเลือกแหล่งที่อยู่: <strong>{POLICY_ADDRESS_SOURCES.find(s => s.value === policyAddressSource)?.th}</strong>. กรุณาแนบเอกสารที่เกี่ยวข้องในส่วน <strong>"แนบเอกสาร"</strong> ด้านล่าง — ระบบจะอ่านข้อมูลและให้คุณตรวจสอบในขั้นตอนที่ 2</>
+            ) : (
+              <>You selected source: <strong>{POLICY_ADDRESS_SOURCES.find(s => s.value === policyAddressSource)?.en}</strong>. Please attach the related document in the <strong>"Link Documents"</strong> section below — the system will OCR and let you verify in Step 2.</>
+            )}
+          </InfoBanner>
+        )}
+      </SectionCard>
+
+      {/* ════════ Card 4: Shipping ════════ */}
+      <SectionCard title={t('การจัดส่งกรมธรรม์', 'Shipping')}>
+        <FormRow label={t('รูปแบบกรมธรรม์ภาคสมัครใจ', 'Voluntary Shipping Format')} hint="ⓘ Chat Saved">
+          <Select value={voluntaryShippingFormat} onValueChange={(v) => setVoluntaryShippingFormat(v as ShippingFormat)}>
+            <SelectTrigger className="h-10">
+              <SelectValue placeholder={t('เลือกรูปแบบ...', 'Select format...')} />
+            </SelectTrigger>
             <SelectContent>
-              {POLICY_ADDRESS_SOURCES.map(o => (
-                <SelectItem key={o.value} value={o.value}>{language === 'th' ? o.th : o.en}</SelectItem>
+              {SHIPPING_FORMATS.map(o => (
+                <SelectItem key={o.value} value={o.value}>{lang === 'th' ? o.th : o.en}</SelectItem>
               ))}
             </SelectContent>
           </Select>
         </FormRow>
 
-        <FormRow label={t('ที่อยู่จัดส่งกรมธรรม์', 'Policy Shipping Address')} monday="dropdown">
-          <Select value={shippingAddressSource} onValueChange={setShippingAddressSource}>
-            <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {SHIPPING_ADDRESS_SOURCES.map(o => (
-                <SelectItem key={o.value} value={o.value}>{language === 'th' ? o.th : o.en}</SelectItem>
+        {addCompulsory && (
+          <FormRow label={t('รูปแบบกรมธรรม์ พ.ร.บ.', 'Compulsory Shipping Format')} hint="ⓘ Chat Saved">
+            <Select value={compulsoryShippingFormat} onValueChange={(v) => setCompulsoryShippingFormat(v as ShippingFormat)}>
+              <SelectTrigger className="h-10">
+                <SelectValue placeholder={t('เลือกรูปแบบ...', 'Select format...')} />
+              </SelectTrigger>
+              <SelectContent>
+                {SHIPPING_FORMATS.map(o => (
+                  <SelectItem key={o.value} value={o.value}>{lang === 'th' ? o.th : o.en}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FormRow>
+        )}
+
+        {needsShippingAddress && (
+          <div className="mt-3 p-4 bg-muted/40 border border-border rounded-md space-y-3">
+            <div className="text-sm font-bold flex items-center">
+              {t('ที่อยู่จัดส่ง', 'Shipping Address')}
+              <MondayTag type="dropdown" />
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {SHIPPING_ADDRESS_SOURCES.map(src => (
+                <ChipPill
+                  key={src.value}
+                  active={shippingAddressSource === src.value}
+                  onClick={() => setShippingAddressSource(src.value)}
+                >
+                  {lang === 'th' ? src.th : src.en}
+                </ChipPill>
               ))}
-            </SelectContent>
-          </Select>
-        </FormRow>
-      </CardContent>
-    </Card>
+            </div>
+
+            {shippingAddressSource === 'new' && (
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs text-muted-foreground">{t('คัดลอกจาก:', 'Copy from:')}</span>
+                {[
+                  { copyFrom: 'insured', label: t('ผู้เอาประกันภัย', 'Insured') },
+                  { copyFrom: 'car_reg', label: t('ทะเบียนรถ', 'Car Reg.') },
+                ].map(opt => (
+                  <Button
+                    key={opt.copyFrom}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-7 px-2 text-xs gap-1"
+                    onClick={() => toast.info(t('จะคัดลอกที่อยู่ในขั้นตอนที่ 2', 'Address will be copied in Step 2.'))}
+                  >
+                    <Copy className="h-3 w-3" /> {opt.label}
+                  </Button>
+                ))}
+              </div>
+            )}
+
+            {shippingAddressSource && (
+              <InfoBanner>
+                {shippingAddressSource === 'national_id'
+                  ? t('ที่อยู่จัดส่งจะใช้ข้อมูลเดียวกับที่อยู่บนกรมธรรม์ คุณสามารถตรวจสอบและแก้ไขได้ในขั้นตอนที่ 2', 'Shipping address will mirror the Policy Address. You can review and edit it in Step 2.')
+                  : shippingAddressSource === 'agent'
+                    ? t('ใช้ที่อยู่ตัวแทน (FairDee). ตรวจสอบรายละเอียดในขั้นตอนที่ 2', 'Using FairDee agent address. Review details in Step 2.')
+                    : shippingAddressSource === 'car_reg'
+                      ? t('กรุณาแนบทะเบียนรถในส่วน "แนบเอกสาร" ด้านล่าง — ระบบจะอ่านที่อยู่และให้คุณตรวจสอบในขั้นตอนที่ 2', 'Please attach the Car Registration in "Link Documents" below — OCR will populate the shipping fields for review in Step 2.')
+                      : t('กรอกที่อยู่จัดส่งใหม่ในขั้นตอนที่ 2', 'Enter the new shipping address in Step 2.')}
+              </InfoBanner>
+            )}
+          </div>
+        )}
+      </SectionCard>
+    </div>
   );
 }
