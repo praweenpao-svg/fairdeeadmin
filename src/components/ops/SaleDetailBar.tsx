@@ -194,9 +194,6 @@ export function SaleDetailBar({
             {language === 'th' ? 'เลขใบเสนอราคา' : 'Quotation Number'}
           </span>
           <p className="text-sm font-bold leading-tight">{sale.qqId}</p>
-          <span className="text-xs text-primary">
-            {language === 'th' ? 'เมืองไทยประกันภัย' : 'Muang Thai Insurance'} · {language === 'th' ? `ชั้น ${classDisplay}` : `Type ${classDisplay}`} · {language === 'th' ? garageTh : garageEn}
-          </span>
         </div>
 
         <div className="flex-1" />
