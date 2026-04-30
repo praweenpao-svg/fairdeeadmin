@@ -280,50 +280,85 @@ export function MentionNotificationBell() {
 
         {/* Assigned to me Tab */}
         {activeTab === 'assigned' && (
-          <ScrollArea className="h-[390px]">
-            {myAssignments.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-[200px] text-muted-foreground text-sm">
-                <ClipboardList className="w-8 h-8 mb-2 opacity-30" />
-                {language === 'th' ? 'ไม่มีงานที่มอบหมาย' : 'No active assignments'}
-              </div>
-            ) : (
-              <div className="divide-y divide-border">
-                {myAssignments.map((assignment) => (
-                  <button
-                    key={assignment.id}
-                    onClick={() => handleAssignmentClick(assignment)}
-                    className="w-full px-4 py-3 hover:bg-muted/50 transition-colors text-left"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-mono">
-                            {assignment.quotationId}
-                          </Badge>
-                          <Badge
-                            className={cn(
-                              "text-[10px] h-5 px-1.5",
-                              assignment.policyType === 'vmi'
-                                ? "bg-blue-500/20 text-blue-600 border-blue-500/30"
-                                : "bg-purple-500/20 text-purple-600 border-purple-500/30"
-                            )}
-                          >
-                            {assignment.policyType.toUpperCase()}
-                          </Badge>
-                          <Badge className="text-[10px] h-5 px-1.5 bg-muted text-muted-foreground">
-                            {assignment.saleStage}
-                          </Badge>
-                        </div>
-                        <div className="text-xs text-muted-foreground mt-1">
-                          {language === 'th' ? 'มอบหมายเมื่อ' : 'Assigned'}: {getFullDateTime(assignment.assignedAt)}
-                        </div>
-                      </div>
-                    </div>
-                  </button>
-                ))}
+          <>
+            {myAssignments.length > 0 && unreadAssignmentCount > 0 && (
+              <div className="flex items-center justify-end px-4 py-2 border-b border-border">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs h-7"
+                  onClick={() => markAllAssignmentsAsRead()}
+                >
+                  {language === 'th' ? 'อ่านทั้งหมด' : 'Mark all read'}
+                </Button>
               </div>
             )}
-          </ScrollArea>
+            <ScrollArea className={cn(myAssignments.length > 0 && unreadAssignmentCount > 0 ? 'h-[348px]' : 'h-[390px]')}>
+              {myAssignments.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-[200px] text-muted-foreground text-sm">
+                  <ClipboardList className="w-8 h-8 mb-2 opacity-30" />
+                  {language === 'th' ? 'ไม่มีงานที่มอบหมาย' : 'No active assignments'}
+                </div>
+              ) : (
+                <div className="divide-y divide-border">
+                  {myAssignments.map((assignment) => {
+                    const isUnread = !assignment.read;
+                    const trigger = assignment.triggeredBy || 'System';
+                    const isSystem = trigger === 'System';
+                    return (
+                      <button
+                        key={assignment.id}
+                        onClick={() => handleAssignmentClick(assignment)}
+                        className={cn(
+                          'w-full px-4 py-3 hover:bg-muted/50 transition-colors text-left',
+                          isUnread && 'bg-primary/5'
+                        )}
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1 flex-wrap">
+                              <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-mono">
+                                {assignment.quotationId}
+                              </Badge>
+                              <Badge
+                                className={cn(
+                                  "text-[10px] h-5 px-1.5",
+                                  assignment.policyType === 'vmi'
+                                    ? "bg-blue-500/20 text-blue-600 border-blue-500/30"
+                                    : "bg-purple-500/20 text-purple-600 border-purple-500/30"
+                                )}
+                              >
+                                {assignment.policyType.toUpperCase()}
+                              </Badge>
+                              <Badge className="text-[10px] h-5 px-1.5 bg-muted text-muted-foreground">
+                                {assignment.saleStage}
+                              </Badge>
+                              {assignment.status && (
+                                <Badge variant="outline" className="text-[10px] h-5 px-1.5">
+                                  {assignment.status}
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                              <span>{language === 'th' ? 'โดย' : 'By'}</span>
+                              <span className={cn('font-medium', isSystem ? 'text-muted-foreground' : 'text-foreground')}>
+                                {trigger}
+                              </span>
+                              <span>•</span>
+                              <span>{getFullDateTime(assignment.assignedAt)}</span>
+                            </div>
+                          </div>
+                          {isUnread && (
+                            <span className="h-2 w-2 rounded-full bg-primary flex-shrink-0 mt-2" />
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </ScrollArea>
+          </>
         )}
       </PopoverContent>
     </Popover>
