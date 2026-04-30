@@ -546,6 +546,7 @@ function LinkDocumentsTab({ sale }: { sale: SaleDetail }) {
             )}
           </CardContent>
         </Card>
+        </div>
       </div>
 
       {/* Upload Dialog */}
