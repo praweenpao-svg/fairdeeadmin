@@ -47,7 +47,7 @@ export function SearchableReasonSelect({
     }
   }, [open]);
 
-  const getLabel = (config: ReworkConfig) =>
+  const getLabel = (config: SearchableReasonOption) =>
     language === 'th' ? config.descriptionTh : config.descriptionEn;
 
   const selectedConfig = configs.find(c => c.id === value);
