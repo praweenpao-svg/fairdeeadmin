@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, FileUp, XCircle, Mail, Upload, History, CreditCard, FileText, Send, UserCheck } from 'lucide-react';
+import { ChevronDown, FileUp, XCircle, Mail, Upload, History, CreditCard, FileText, Send, UserCheck, Percent, Tag, FilePen, FilePlus, ClipboardList, Wallet, ClipboardCheck, Download, Receipt, FileDown } from 'lucide-react';
 import insurerLogo from '@/assets/insurer-generic.png';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -338,6 +338,42 @@ export function SaleDetailBar({
             <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">
               G8 · {language === 'th' ? 'เอกสารและสื่อสาร' : 'Docs & Comms'}
             </DropdownMenuLabel>
+            <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Commission')}>
+              <Percent className="w-3.5 h-3.5" />
+              {language === 'th' ? 'ค่าคอมมิชชั่น' : 'Commission'}
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Discounts')}>
+              <Tag className="w-3.5 h-3.5" />
+              {language === 'th' ? 'ส่วนลด' : 'Discounts'}
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Revise Premium')}>
+              <FilePen className="w-3.5 h-3.5" />
+              {language === 'th' ? 'แก้ไขเบี้ย' : 'Revise Premium'}
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Manual Invoice')}>
+              <FilePlus className="w-3.5 h-3.5" />
+              {language === 'th' ? 'ออกใบแจ้งหนี้เอง' : 'Manual Invoice'}
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Reconcile Payment')}>
+              <Wallet className="w-3.5 h-3.5" />
+              {language === 'th' ? 'กระทบยอดชำระ' : 'Reconcile Payment'}
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Self Inspection')}>
+              <ClipboardCheck className="w-3.5 h-3.5" />
+              {language === 'th' ? 'ตรวจสภาพรถด้วยตนเอง' : 'Self Inspection'}
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-xs gap-2" onClick={() => { if (onOpenEndorsement) onOpenEndorsement(); else handleAction('Endorsement'); }}>
+              <FileText className="w-3.5 h-3.5" />
+              {language === 'th' ? 'สลักหลังกรมธรรม์' : 'Endorsement'}
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Rework Log')}>
+              <ClipboardList className="w-3.5 h-3.5" />
+              {language === 'th' ? 'บันทึกการแก้ไข' : 'Rework Log'}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">
+              G8 · {language === 'th' ? 'เอกสารและสื่อสาร' : 'Docs & Comms'}
+            </DropdownMenuLabel>
             <DropdownMenuItem className="text-xs gap-2" onClick={() => { if (onOpenUploadDoc) onOpenUploadDoc(); else handleAction('Upload Document'); }}>
               <Upload className="w-3.5 h-3.5" />
               {language === 'th' ? 'อัปโหลดเอกสาร' : 'Upload Document'}
@@ -345,20 +381,55 @@ export function SaleDetailBar({
             <DropdownMenuSub>
               <DropdownMenuSubTrigger className="text-xs gap-2">
                 <Mail className="w-3.5 h-3.5" />
-                {language === 'th' ? 'ส่งอีเมล' : 'Send Email'}
+                {language === 'th' ? 'ส่งอีเมลถึงตัวแทน' : 'Email to Affiliate'}
               </DropdownMenuSubTrigger>
               <DropdownMenuSubContent className="bg-popover z-50">
-                <DropdownMenuItem className="text-xs" onClick={() => handleAction('Send: Docs Rejection')}>
-                  {language === 'th' ? 'แจ้งเอกสารไม่ถูกต้อง' : 'Docs Rejection'}
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-xs" onClick={() => handleAction('Send: Docs Approved + Invoice')}>
+                <DropdownMenuItem className="text-xs" onClick={() => handleAction('Affiliate: Docs Approved with Invoice')}>
                   {language === 'th' ? 'เอกสารถูกต้อง + ใบแจ้งหนี้' : 'Docs Approved with Invoice'}
                 </DropdownMenuItem>
-                <DropdownMenuItem className="text-xs" onClick={() => handleAction('Send: Vehicle Docs to Affiliate')}>
-                  {language === 'th' ? 'ส่งเอกสารรถให้ตัวแทน' : 'Vehicle Docs to Affiliate'}
+                <DropdownMenuItem className="text-xs" onClick={() => handleAction('Affiliate: Vehicle Documents')}>
+                  {language === 'th' ? 'เอกสารรถ' : 'Vehicle Documents'}
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-xs" onClick={() => handleAction('Affiliate: Docs Rejection')}>
+                  {language === 'th' ? 'แจ้งเอกสารไม่ถูกต้อง' : 'Docs Rejection'}
                 </DropdownMenuItem>
               </DropdownMenuSubContent>
             </DropdownMenuSub>
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger className="text-xs gap-2">
+                <Mail className="w-3.5 h-3.5" />
+                {language === 'th' ? 'ส่งอีเมลถึง บ.ประกัน' : 'Email to Insurer'}
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent className="bg-popover z-50">
+                <DropdownMenuItem className="text-xs" onClick={() => handleAction('Insurer: Vehicle Documents')}>
+                  {language === 'th' ? 'เอกสารรถ' : 'Vehicle Documents'}
+                </DropdownMenuItem>
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">
+              G9 · {language === 'th' ? 'ดาวน์โหลด' : 'Downloads'}
+            </DropdownMenuLabel>
+            <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Download: Cover Note')}>
+              <FileDown className="w-3.5 h-3.5" />
+              {language === 'th' ? 'หนังสือคุ้มครอง' : 'Cover Note'}
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Download: Invoice')}>
+              <Receipt className="w-3.5 h-3.5" />
+              {language === 'th' ? 'ใบแจ้งหนี้' : 'Invoice'}
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Download: Corporate Invoice')}>
+              <Receipt className="w-3.5 h-3.5" />
+              {language === 'th' ? 'ใบแจ้งหนี้นิติบุคคล' : 'Corporate Invoice'}
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Download: Temporary Receipt')}>
+              <Receipt className="w-3.5 h-3.5" />
+              {language === 'th' ? 'ใบเสร็จชั่วคราว' : 'Temporary Receipt'}
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Download: Fetch Policy')}>
+              <Download className="w-3.5 h-3.5" />
+              {language === 'th' ? 'ดึงกรมธรรม์' : 'Fetch Policy'}
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
