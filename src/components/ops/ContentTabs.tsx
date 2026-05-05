@@ -1322,7 +1322,7 @@ const DOWNPAYMENT_INSTALLMENT_OPTIONS = [
   { value: '10', label: '10 (6%)', th: '10 งวด (6%) รับรายได้หลังงวดที่ 2', en: '10 installments (6%) income after 2nd installment' },
 ];
 
-function PackageBoxOnly() {
+function PackageBoxOnly({ sale }: { sale: SaleDetail }) {
   const { language } = useLanguageStore();
   const { logic } = useOpsLogic();
   const classMap: Record<string, { th: string; en: string }> = {
@@ -1333,6 +1333,11 @@ function PackageBoxOnly() {
     'Type3+': { th: 'ชั้น 3+', en: 'Type 3+' },
   };
   const cls = classMap[logic.insuranceClass] ?? { th: logic.insuranceClass, en: logic.insuranceClass };
+  const vmi = sale.policies.find(p => p.kind === 'vmi');
+  const commission = vmi?.affiliateCommission || 0;
+  const premium = vmi?.premiumAfterTax || 0;
+  const sumInsured = vmi?.sumInsured || 0;
+  const fmt = (n: number) => `${Math.round(n).toLocaleString()} Baht`;
   return (
     <div className="space-y-2">
       <SectionLabel>{language === 'th' ? 'แพ็กเกจที่เลือก' : 'Select a package'}</SectionLabel>
@@ -1346,17 +1351,17 @@ function PackageBoxOnly() {
             <img src={insurerLogo} alt="Insurer" className="w-8 h-8 rounded object-cover" loading="lazy" width={512} height={512} />
           </div>
           <div className="space-y-1 text-xs">
-            <div className="grid grid-cols-[1fr_auto] items-center gap-3 py-1">
-              <span className="text-muted-foreground">{language === 'th' ? 'ค่าคอมมิชชั่น' : 'Commission'}</span>
-              <span className="font-semibold text-sidebar-background text-right tabular-nums whitespace-nowrap min-w-[100px]">850 Baht</span>
+            <div className="grid grid-cols-[1fr_auto] items-start gap-3 py-1 border-b border-border/30">
+              <span className="text-xs text-muted-foreground leading-tight">{language === 'th' ? 'ค่าคอมมิชชั่น' : 'Commission'}</span>
+              <span className="text-xs font-medium text-right whitespace-nowrap tabular-nums min-w-[88px]">{fmt(commission)}</span>
             </div>
-            <div className="grid grid-cols-[1fr_auto] items-center gap-3 py-1">
-              <span className="text-muted-foreground">{language === 'th' ? 'ราคาเบี้ยประกันรวม' : 'Total Premium'}</span>
-              <span className="font-semibold text-sidebar-background text-right tabular-nums whitespace-nowrap min-w-[100px]">6,500 Baht</span>
+            <div className="grid grid-cols-[1fr_auto] items-start gap-3 py-1 border-b border-border/30">
+              <span className="text-xs text-muted-foreground leading-tight">{language === 'th' ? 'ราคาเบี้ยประกันรวม' : 'Total Premium'}</span>
+              <span className="text-xs font-medium text-right whitespace-nowrap tabular-nums min-w-[88px]">{fmt(premium)}</span>
             </div>
-            <div className="grid grid-cols-[1fr_auto] items-center gap-3 py-1">
-              <span className="text-muted-foreground">{language === 'th' ? 'ทุนประกัน' : 'Sum Insured'}</span>
-              <span className="font-semibold text-sidebar-background text-right tabular-nums whitespace-nowrap min-w-[100px]">100,000 Baht</span>
+            <div className="grid grid-cols-[1fr_auto] items-start gap-3 py-1">
+              <span className="text-xs text-muted-foreground leading-tight">{language === 'th' ? 'ทุนประกัน' : 'Sum Insured'}</span>
+              <span className="text-xs font-medium text-right whitespace-nowrap tabular-nums min-w-[88px]">{fmt(sumInsured)}</span>
             </div>
           </div>
         </CardContent>
@@ -1471,7 +1476,7 @@ export function ContentTabs({ sale }: ContentTabsProps) {
       </TabsList>
 
       <TabsContent value="package-docs" className="mt-4 space-y-6">
-        <PackageBoxOnly />
+        <PackageBoxOnly sale={sale} />
         <LinkDocumentsTab sale={sale} />
         <NextButton tabKey="package-docs" />
       </TabsContent>
