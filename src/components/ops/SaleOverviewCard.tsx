@@ -247,11 +247,11 @@ export function SaleOverviewCard({ sale }: SaleOverviewCardProps) {
   );
 }
 
-function SummaryRow({ label, value }: { label: string; value: string }) {
+function SummaryRow({ label, value, emphasize }: { label: string; value: string; emphasize?: boolean }) {
   return (
-    <div className="flex items-center justify-between py-1 border-b border-border/30 last:border-0">
-      <span className="text-xs text-muted-foreground">{label}</span>
-      <span className="text-xs font-medium text-right">{value || '—'}</span>
+    <div className="flex items-start justify-between gap-3 py-1 border-b border-border/30 last:border-0">
+      <span className={`text-xs ${emphasize ? 'font-semibold text-foreground' : 'text-muted-foreground'} flex-1 leading-tight`}>{label}</span>
+      <span className={`text-xs ${emphasize ? 'font-semibold' : 'font-medium'} text-right whitespace-nowrap tabular-nums shrink-0`}>{value || '—'}</span>
     </div>
   );
 }
@@ -348,29 +348,28 @@ export function PriceDetailsCard({ sale }: SaleOverviewCardProps) {
           {vmi && <>
             <SummaryRow label={language === 'th' ? 'เบี้ยสุทธิ (VMI)' : 'Net Premium (VMI)'} value={fmt(vmiNet)} />
             <SummaryRow label={language === 'th' ? 'ภาษีและอากร (VMI)' : 'Tax and Duty (VMI)'} value={fmt(vmiTax)} />
-            <SummaryRow label={language === 'th' ? 'เบี้ยรวม (VMI)' : 'Total Premium (VMI)'} value={fmt(vmiTotal)} />
+            <SummaryRow label={language === 'th' ? 'เบี้ยรวม (VMI)' : 'Total Premium (VMI)'} value={fmt(vmiTotal)} emphasize />
           </>}
           {cmi && <>
             <div className="h-2" />
             <SummaryRow label={language === 'th' ? 'เบี้ยสุทธิ (CMI)' : 'Net Premium (CMI)'} value={fmt(cmiNet)} />
             <SummaryRow label={language === 'th' ? 'ภาษีและอากร (CMI)' : 'Tax and Duty (CMI)'} value={fmt(cmiTax)} />
-            <SummaryRow label={language === 'th' ? 'เบี้ยรวม (CMI)' : 'Total Premium (CMI)'} value={fmt(cmiTotal)} />
+            <SummaryRow label={language === 'th' ? 'เบี้ยรวม (CMI)' : 'Total Premium (CMI)'} value={fmt(cmiTotal)} emphasize />
           </>}
           <div className="h-2" />
-          <SummaryRow label={language === 'th' ? 'เบี้ยรวมทั้งหมด (VMI + CMI)' : 'Total Premium (VMI + CMI)'} value={fmt(grandTotal)} />
+          <SummaryRow label={language === 'th' ? 'เบี้ยรวมทั้งหมด (VMI + CMI)' : 'Total Premium (VMI + CMI)'} value={fmt(grandTotal)} emphasize />
           <SummaryRow label={language === 'th' ? 'ส่วนลดจากตัวแทน' : 'Discount from agent'} value="—" />
-          <SummaryRow label={language === 'th' ? 'ยอดโอนให้ FairDee' : 'Transfer amount to FairDee'} value={fmt(grandTotal)} />
+          <SummaryRow label={language === 'th' ? 'ยอดโอนให้ FairDee' : 'Transfer amount to FairDee'} value={fmt(grandTotal)} emphasize />
           <div className="h-2" />
           <SummaryRow label={language === 'th' ? "ค่าคอมประกันสมัครใจ" : "Agent's voluntary insurance Commission"} value={fmt(vmiCommission)} />
           <SummaryRow label={language === 'th' ? 'อัตราค่าคอม VMI' : 'VMI Commission Rate'} value={vmiCommissionRate} />
           <SummaryRow label={language === 'th' ? "ค่าคอมประกันภาคบังคับ" : "Agent's compulsory insurance Commission"} value={fmt(cmiCommission)} />
           <SummaryRow label={language === 'th' ? 'หัก 0% ค่าคอมจาก Admin' : 'Deduct 0% Commission from Admin support'} value={`- ${fmt(0)}`} />
-          <SummaryRow label={language === 'th' ? 'ค่าคอมรวม' : 'Total Commission'} value={fmt(totalCommission)} />
+          <SummaryRow label={language === 'th' ? 'ค่าคอมรวม' : 'Total Commission'} value={fmt(totalCommission)} emphasize />
           <SummaryRow label={language === 'th' ? 'ภาษีหัก ณ ที่จ่าย' : 'Withholding Tax'} value={fmt(withholdingTax)} />
-          <SummaryRow label={language === 'th' ? 'ค่าคอมหลังหักภาษี' : 'Commission after withholding tax'} value={fmt(commissionAfterTax)} />
+          <SummaryRow label={language === 'th' ? 'ค่าคอมหลังหักภาษี' : 'Commission after withholding tax'} value={fmt(commissionAfterTax)} emphasize />
           <div className="h-2" />
-          <SummaryRow label={language === 'th' ? 'ส่วนลดจากตัวแทน' : 'Discount from agent'} value="—" />
-          <SummaryRow label={language === 'th' ? 'ยอดที่คาดว่าจะได้รับจาก FairDee' : 'Expected transfer from FairDee'} value={fmt(commissionAfterTax)} />
+          <SummaryRow label={language === 'th' ? 'ยอดที่คาดว่าจะได้รับจาก FairDee' : 'Expected transfer from FairDee'} value={fmt(commissionAfterTax)} emphasize />
         </div>
       </CardContent>
     </Card>
