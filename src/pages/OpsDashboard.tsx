@@ -4,7 +4,7 @@ import { useLanguageStore } from '@/stores/languageStore';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { MentionNotificationBell } from '@/components/notifications/MentionNotificationBell';
 import { mockSaleDetail } from '@/data/mockSaleDetail';
-import { PolicyStatusCard, AgentDetailsCard, PaymentStatusCard, KycCard, DownloadsCard, HistoryCard } from '@/components/ops/SaleOverviewCard';
+import { PolicyStatusCard, AgentDetailsCard, InsurerDetailsCard, PriceDetailsCard, PaymentStatusCard, KycCard, DownloadsCard, HistoryCard } from '@/components/ops/SaleOverviewCard';
 import { ContentTabs } from '@/components/ops/ContentTabs';
 import { SaleDetailBar } from '@/components/ops/SaleDetailBar';
 import { UploadPolicyModal } from '@/components/ops/UploadPolicyModal';
