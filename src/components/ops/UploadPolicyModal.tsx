@@ -282,30 +282,6 @@ function PolicyForm({
   );
 }
 
-function InheritedFromSaleBanner({ sale, language }: { sale: SaleDetail; language: string }) {
-  const customer = `${sale.customer.firstName} ${sale.customer.lastName}`.trim();
-  const vehicle = sale.vehicle.licensePlate;
-  const items = [
-    { label: language === 'th' ? 'ลูกค้า' : 'Customer', value: customer || '—' },
-    { label: language === 'th' ? 'ทะเบียนรถ' : 'Vehicle', value: vehicle || '—' },
-    { label: language === 'th' ? 'ที่อยู่จัดส่ง' : 'Shipping', value: sale.shipping?.addressLine ? `${sale.shipping.receiverName}` : '—' },
-  ];
-  return (
-    <div className="rounded-md border border-orange-200 bg-orange-50 dark:bg-orange-500/10 dark:border-orange-500/30 px-3 py-2 text-[11px]">
-      <div className="font-medium text-orange-700 dark:text-orange-300 mb-1">
-        {language === 'th' ? 'ข้อมูลที่ใช้ร่วมกับ VMI' : 'Inherited from sale (shared with VMI)'}
-      </div>
-      <div className="grid grid-cols-3 gap-2 text-muted-foreground">
-        {items.map((it) => (
-          <div key={it.label}>
-            <div className="text-[9px] uppercase tracking-wider opacity-70">{it.label}</div>
-            <div className="text-foreground truncate">{it.value}</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 export function UploadPolicyModal({ sale, open, onOpenChange }: UploadPolicyModalProps) {
   const { language } = useLanguageStore();
@@ -339,22 +315,13 @@ export function UploadPolicyModal({ sale, open, onOpenChange }: UploadPolicyModa
               <PolicyForm key="vmi" policy={vmiPolicy!} showGarageAndClass={true} />
             </TabsContent>
             <TabsContent value="cmi">
-              <PolicyForm
-                key="cmi"
-                policy={cmiPolicy!}
-                showGarageAndClass={false}
-                inheritedBanner={<InheritedFromSaleBanner sale={sale} language={language} />}
-              />
+              <PolicyForm key="cmi" policy={cmiPolicy!} showGarageAndClass={false} />
             </TabsContent>
           </Tabs>
         ) : vmiPolicy ? (
           <PolicyForm policy={vmiPolicy} showGarageAndClass={true} />
         ) : cmiPolicy ? (
-          <PolicyForm
-            policy={cmiPolicy}
-            showGarageAndClass={false}
-            inheritedBanner={<InheritedFromSaleBanner sale={sale} language={language} />}
-          />
+          <PolicyForm policy={cmiPolicy} showGarageAndClass={false} />
         ) : null}
       </DialogContent>
     </Dialog>
