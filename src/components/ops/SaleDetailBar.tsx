@@ -204,17 +204,19 @@ export function SaleDetailBar({
 
   const [kycOpen, setKycOpen] = useState(false);
   const [kycValue, setKycValue] = useState<string>('');
+  const [billingOpen, setBillingOpen] = useState(false);
+  const [billingMethod, setBillingMethod] = useState<string>('');
+  const [billingPayable, setBillingPayable] = useState<string>('');
 
   const handlePrimaryClick = (action: PrimaryAction) => {
     if (action.group === 'G4') { onOpenHistoryLog?.(); return; }
     if (action.label === 'Upload Policy' || action.label === 'อัปโหลดกรมธรรม์') { onOpenUploadPolicy?.(); return; }
     if (action.label === 'Manual KYC Approval' || action.label === 'อนุมัติ KYC ด้วยตนเอง') { setKycOpen(true); return; }
+    if (action.label === 'Send Billing Report' || action.label === 'ส่งใบแจ้งหนี้') { setBillingOpen(true); return; }
     // Map CTA → next VMI status (only when VMI is the bottleneck)
     const current = vmiPolicy?.status;
     let next: string | null = null;
-    if (action.label === 'Send Billing Report' || action.label === 'ส่งใบแจ้งหนี้') {
-      if (current === 'pending_payment') next = 'pending_review';
-    } else if (action.label === 'API' || action.label === 'Email' || action.label === 'อีเมล') {
+    if (action.label === 'API' || action.label === 'Email' || action.label === 'อีเมล') {
       if (current === 'pending_review') next = 'pending_issuance';
     }
     if (next && onAdvanceVmiStatus) {
@@ -222,6 +224,15 @@ export function SaleDetailBar({
       return;
     }
     handleAction(action.label);
+  };
+
+  const confirmBillingReport = () => {
+    if (vmiPolicy?.status === 'pending_payment' && onAdvanceVmiStatus) {
+      onAdvanceVmiStatus('pending_review', 'Send Billing Report');
+    } else {
+      handleAction('Send Billing Report');
+    }
+    setBillingOpen(false);
   };
 
   return (
