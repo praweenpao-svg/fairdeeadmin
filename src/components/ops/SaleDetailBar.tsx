@@ -216,9 +216,11 @@ export function SaleDetailBar({
     // Map CTA → next VMI status (only when VMI is the bottleneck)
     const current = vmiPolicy?.status;
     let next: string | null = null;
-    if (action.label === 'API' || action.label === 'Email' || action.label === 'อีเมล') {
+    if (action.label === 'API' || action.label === 'Purchase Policy' || action.label === 'ซื้อกรมธรรม์' || action.label === 'Email' || action.label === 'อีเมล') {
       if (current === 'pending_review') next = 'pending_issuance';
+      if (action.label === 'Purchase Policy' || action.label === 'ซื้อกรมธรรม์') setApiPurchased(true);
     }
+    if (action.label === 'Fetch Policy' || action.label === 'ดึงกรมธรรม์') { handleAction(action.label); return; }
     if (next && onAdvanceVmiStatus) {
       onAdvanceVmiStatus(next, action.label);
       return;
