@@ -207,6 +207,7 @@ export function SaleDetailBar({
   const [billingOpen, setBillingOpen] = useState(false);
   const [billingMethod, setBillingMethod] = useState<string>('');
   const [billingPayable, setBillingPayable] = useState<string>('');
+  const [apiPurchased, setApiPurchased] = useState(false);
 
   const handlePrimaryClick = (action: PrimaryAction) => {
     if (action.group === 'G4') { onOpenHistoryLog?.(); return; }
