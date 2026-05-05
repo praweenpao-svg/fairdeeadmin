@@ -1324,6 +1324,15 @@ const DOWNPAYMENT_INSTALLMENT_OPTIONS = [
 
 function PackageBoxOnly() {
   const { language } = useLanguageStore();
+  const { logic } = useOpsLogic();
+  const classMap: Record<string, { th: string; en: string }> = {
+    Type1: { th: 'ชั้น 1', en: 'Type 1' },
+    Type2: { th: 'ชั้น 2', en: 'Type 2' },
+    Type3: { th: 'ชั้น 3', en: 'Type 3' },
+    'Type2+': { th: 'ชั้น 2+', en: 'Type 2+' },
+    'Type3+': { th: 'ชั้น 3+', en: 'Type 3+' },
+  };
+  const cls = classMap[logic.insuranceClass] ?? { th: logic.insuranceClass, en: logic.insuranceClass };
   return (
     <div className="space-y-2">
       <SectionLabel>{language === 'th' ? 'แพ็กเกจที่เลือก' : 'Select a package'}</SectionLabel>
@@ -1331,7 +1340,7 @@ function PackageBoxOnly() {
         <CardContent className="p-4">
           <div className="flex items-start justify-between mb-3">
             <div>
-              <p className="text-sm font-semibold">{language === 'th' ? 'ชั้น 1 อีซี่' : 'Easy Type 1'}</p>
+              <p className="text-sm font-semibold">{language === 'th' ? cls.th : cls.en}</p>
               <p className="text-xs text-muted-foreground">{language === 'th' ? 'เมืองไทยประกันภัย' : 'Muang Thai Insurance'}</p>
             </div>
             <img src={mtiLogo} alt="MTI" className="w-8 h-8 rounded object-cover" />
