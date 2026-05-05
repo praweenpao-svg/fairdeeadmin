@@ -43,6 +43,9 @@ interface OpsLogicContextValue {
   setCompulsoryShippingFormat: (v: ShippingFormat) => void;
   inspectionAppointmentDate: string;
   setInspectionAppointmentDate: (v: string) => void;
+  // Uploaded docs map (fieldId -> count) — shared so Verify tab can flag missing items
+  fieldDocCounts: Record<string, number>;
+  setFieldDocCounts: React.Dispatch<React.SetStateAction<Record<string, number>>>;
 }
 
 const OpsLogicContext = React.createContext<OpsLogicContextValue | null>(null);
