@@ -333,7 +333,7 @@ export function PriceDetailsCard({ sale }: SaleOverviewCardProps) {
   const commissionAfterTax = Math.round((totalCommission - withholdingTax) * 100) / 100;
   const vmiCommissionRate = vmi && vmiNet ? `${((vmiCommission / vmiNet) * 100).toFixed(2)}%` : '—';
 
-  const fmt = (n: number) => `${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} baht`;
+  const fmt = (n: number) => `${Math.round(n).toLocaleString()} Baht`;
 
   return (
     <Card>
