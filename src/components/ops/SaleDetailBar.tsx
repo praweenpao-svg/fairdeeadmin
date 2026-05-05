@@ -348,9 +348,6 @@ export function SaleDetailBar({
                 <DropdownMenuItem className="text-xs" onClick={() => handleAction('Affiliate: Vehicle Documents')}>
                   {language === 'th' ? 'เอกสารรถ' : 'Vehicle Documents'}
                 </DropdownMenuItem>
-                <DropdownMenuItem className="text-xs" onClick={() => handleAction('Affiliate: Docs Rejection')}>
-                  {language === 'th' ? 'แจ้งเอกสารไม่ถูกต้อง' : 'Docs Rejection'}
-                </DropdownMenuItem>
               </DropdownMenuSubContent>
             </DropdownMenuSub>
             <DropdownMenuSeparator />
@@ -388,10 +385,6 @@ export function SaleDetailBar({
             <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Manual Invoice')}>
               <FilePlus className="w-3.5 h-3.5" />
               {language === 'th' ? 'ออกใบแจ้งหนี้เอง' : 'Manual Invoice'}
-            </DropdownMenuItem>
-            <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Reconcile Payment')}>
-              <Wallet className="w-3.5 h-3.5" />
-              {language === 'th' ? 'กระทบยอดชำระ' : 'Reconcile Payment'}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
