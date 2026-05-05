@@ -27,6 +27,7 @@ interface SaleDetailBarProps {
   onOpenHistoryLog?: () => void;
   onOpenEndorsement?: () => void;
   onOpenUploadDoc?: () => void;
+  onAdvanceVmiStatus?: (next: string, actionLabel: string) => void;
 }
 
 const stageLabels: Record<string, { en: string; th: string }> = {
@@ -156,6 +157,7 @@ export function SaleDetailBar({
   onOpenHistoryLog,
   onOpenEndorsement,
   onOpenUploadDoc,
+  onAdvanceVmiStatus,
 }: SaleDetailBarProps) {
   const { language } = useLanguageStore();
   const { logic } = useOpsLogic();
@@ -163,7 +165,7 @@ export function SaleDetailBar({
   const cmiPolicy = sale.policies.find(p => p.kind === 'cmi');
   const currentStage = 'to_issue';
   const stageLabel = stageLabels[currentStage] || stageLabels.to_issue;
-  const primaryActions = getPrimaryActions(vmiPolicy, undefined, language);
+  const primaryActions = getPrimaryActions(vmiPolicy, cmiPolicy, language);
 
   // Derive display values from Logic Controller (single source of truth for prototype)
   const classDisplay = (logic.insuranceClass || '').replace(/^Type/, '').trim() || (vmiPolicy?.coverage.insuranceClass ?? '—');
@@ -178,7 +180,19 @@ export function SaleDetailBar({
 
   const handlePrimaryClick = (action: PrimaryAction) => {
     if (action.group === 'G4') { onOpenHistoryLog?.(); return; }
-    if (action.group === 'G2' && action.label === 'Upload Policy' || action.label === 'อัปโหลดกรมธรรม์') { onOpenUploadPolicy?.(); return; }
+    if (action.label === 'Upload Policy' || action.label === 'อัปโหลดกรมธรรม์') { onOpenUploadPolicy?.(); return; }
+    // Map CTA → next VMI status (only when VMI is the bottleneck)
+    const current = vmiPolicy?.status;
+    let next: string | null = null;
+    if (action.label === 'Send Billing Report' || action.label === 'ส่งใบแจ้งหนี้') {
+      if (current === 'pending_payment') next = 'pending_review';
+    } else if (action.label === 'API' || action.label === 'Email' || action.label === 'อีเมล') {
+      if (current === 'pending_review') next = 'pending_issuance';
+    }
+    if (next && onAdvanceVmiStatus) {
+      onAdvanceVmiStatus(next, action.label);
+      return;
+    }
     handleAction(action.label);
   };
 

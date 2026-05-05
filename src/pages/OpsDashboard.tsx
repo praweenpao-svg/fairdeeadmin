@@ -11,6 +11,7 @@ import { UploadPolicyModal } from '@/components/ops/UploadPolicyModal';
 import { OpsLogicProvider } from '@/components/ops/OpsLogicContext';
 import { DevLogicControllerFab } from '@/components/ops/DevLogicControllerFab';
 import { PolicyRemarksReworkDialog } from '@/components/pipeline/PolicyRemarksReworkDialog';
+import { useHistoryStore } from '@/stores/historyStore';
 import { toast } from 'sonner';
 import { mockReworkConfigs } from '@/data/mockLeads';
 import { PolicyRemark, PolicyReworkEntry, ReworkAttachment } from '@/types/pipeline';
@@ -154,6 +155,21 @@ export default function OpsDashboard() {
           onOpenHistoryLog={() => setHistorySidebarOpen(true)}
           onOpenEndorsement={() => handleToast(language === 'th' ? 'เปิดอัปเดตการขาย' : 'Open Update Sale')}
           onOpenUploadDoc={() => handleToast(language === 'th' ? 'เปิด Upload Document' : 'Open Upload Document')}
+          onAdvanceVmiStatus={(next, actionLabel) => {
+            handlePolicyStatusChange('vmi', next);
+            const labelMap: Record<string, string> = {
+              pending_review: 'Pending Review',
+              pending_issuance: 'Pending Issuance',
+            };
+            useHistoryStore.getState().add({
+              type: 'status_change',
+              policyKind: 'vmi',
+              description: `VMI → ${labelMap[next] || next} (via ${actionLabel})`,
+            });
+            toast.success(actionLabel, {
+              description: language === 'th' ? `VMI → ${labelMap[next] || next}` : `VMI advanced to ${labelMap[next] || next}`,
+            });
+          }}
         />
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mt-4">
           {/* Left column: Agent Overview + Policy Status */}

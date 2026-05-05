@@ -316,7 +316,11 @@ export function PolicyStatusCard({ sale, onPolicyStatusChange }: SaleOverviewCar
                 <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
                   {policy.kind.toUpperCase()} {language === 'th' ? 'ผู้รับผิดชอบ' : 'Owner'}
                 </span>
-                <p className="text-xs font-medium h-7 flex items-center">Pao</p>
+                <p className="text-xs font-medium h-7 flex items-center">
+                  {['policy_issued', 'policy_delivered', 'policy_cancelled'].includes(policy.status)
+                    ? <span className="text-muted-foreground italic">{language === 'th' ? 'ไม่มี' : '—'}</span>
+                    : 'Pao'}
+                </p>
               </div>
             </div>
           ))}
