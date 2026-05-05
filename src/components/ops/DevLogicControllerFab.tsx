@@ -5,10 +5,12 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Wrench, Sliders } from 'lucide-react';
+import { Wrench, Sliders, FlaskConical } from 'lucide-react';
 import { LogicControllerSection } from './LogicControllerSection';
 import { useOpsLogic, type ShippingFormat, type KycMode, type InstallmentPlan, type AddOnType } from './OpsLogicContext';
 import { useLanguageStore } from '@/stores/languageStore';
+import { TEST_SCENARIOS } from '@/data/testScenarios';
+import { toast } from '@/hooks/use-toast';
 
 /**
  * Floating dev-only FAB that opens the Logic Controller in a side sheet.
