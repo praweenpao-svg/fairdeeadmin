@@ -435,13 +435,13 @@ const pmtStatuses = [
   { value: 'credit_approved', en: 'Credit Approved', th: 'อนุมัติเครดิตแล้ว' },
 ];
 
-// KYC statuses — only relevant for instalment sales
-const kycStatuses = [
-  { value: 'pending_verification', en: 'Identity Verification Pending', th: 'คำขอตรวจสอบการยืนยันตัวตน' },
-  { value: 'verified', en: 'Identity Verified', th: 'ยืนยันตัวตนแล้ว' },
-  { value: 'verification_rejected', en: 'Identity Verification Rejected', th: 'การยืนยันตัวตนถูกปฏิเสธ' },
-  { value: 'not_verified', en: 'Not Verified', th: 'ยังไม่ยืนยันตัวตน' },
-  { value: 'instalment_signed', en: 'Instalment Agreement Signed', th: 'ผู้เอาประกันลงนามสัญญาขอผ่อนเรียบร้อยแล้ว' },
+// KYC statuses — only relevant for instalment sales (used by Manual KYC Approval dialog)
+export const kycStatuses = [
+  { value: 'pending_verification', en: 'EKYC Pending Verification', th: 'กำลังตัวสอบการยืนยันตัวตน' },
+  { value: 'verified', en: 'EKYC Verified', th: 'ยืนยันตัวตนแล้ว' },
+  { value: 'verification_rejected', en: 'EKYC Rejected', th: 'การยืนยันตัวตนถูกปฏิเสธ' },
+  { value: 'not_verified', en: 'EKYC Pending', th: 'ยังไม่ยืนยันตัวตน' },
+  { value: 'instalment_signed', en: 'Loan Contract Signed', th: 'ผู้เอาประกันลงนามสัญญาเงินผ่อนเรียบร้อยแล้ว' },
 ];
 
 export function ActionStatusCard({ sale, onPolicyStatusChange }: SaleOverviewCardProps & { onPolicyStatusChange?: (kind: 'vmi' | 'cmi', status: string) => void }) {
