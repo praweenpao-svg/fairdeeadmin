@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ChevronDown, FileUp, XCircle, Mail, Upload, History, CreditCard, FileText, Send, UserCheck } from 'lucide-react';
 import insurerLogo from '@/assets/insurer-generic.png';
 import { Badge } from '@/components/ui/badge';
@@ -8,6 +8,21 @@ import { SaleDetail, SalePolicy } from '@/data/mockSaleDetail';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useOpsLogic } from './OpsLogicContext';
+import { kycStatuses } from './SaleOverviewCard';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   DropdownMenu,
   DropdownMenuContent,
