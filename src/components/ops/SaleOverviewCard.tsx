@@ -297,10 +297,6 @@ export function InsurerDetailsCard({ sale }: SaleOverviewCardProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="px-4 pb-4">
-        <div className="flex items-center gap-2 mb-3">
-          <img src={insurerGenericLogo} alt="Insurer" className="w-8 h-8 object-contain" />
-          <span className="text-xs font-semibold">{language === 'th' ? 'บริษัทประกัน' : 'Insurer Name'}</span>
-        </div>
         <div className="space-y-2.5">
           <SummaryRow label={language === 'th' ? 'ชื่อแพ็กเกจ' : 'Package Name'} value={language === 'th' ? 'ชื่อแพ็กเกจ' : 'Package Name'} />
           <SummaryRow label={language === 'th' ? 'ชั้นประกัน' : 'Insurance Class'} value={(logic.insuranceClass || '').replace(/^Type/, 'Type ')} />
