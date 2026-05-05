@@ -172,13 +172,12 @@ export default function OpsDashboard() {
           }}
         />
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mt-4">
-          {/* Left column: Agent Overview + Policy Status */}
+          {/* Left column: Action Status first, then sale context */}
           <div className="lg:col-span-1 space-y-3 bg-card rounded-lg p-4 border border-border">
+            <ActionStatusCard sale={sale} onPolicyStatusChange={handlePolicyStatusChange} />
             <AgentDetailsCard sale={sale} />
             <InsurerDetailsCard sale={sale} />
             <PriceDetailsCard sale={sale} />
-            <PolicyStatusCard sale={sale} onPolicyStatusChange={handlePolicyStatusChange} />
-            <ActionStatusCard sale={sale} />
             <DownloadsCard />
             <HistoryCard />
           </div>
