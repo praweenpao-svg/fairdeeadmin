@@ -357,7 +357,7 @@ export function ProcessPaymentTab({ sale }: Props) {
       <Card className="border-border">
         <CardContent className="p-5 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-4">
-            <div className="space-y-1 md:col-span-2">
+            <div className="space-y-1">
               <Label className="text-xs">{language === 'th' ? 'รหัส Cover Note' : 'Cover note code'}</Label>
               <Input className="h-9 text-sm bg-card" defaultValue={isPaymentVerified ? 'FD-VIB-701492' : ''} disabled={isPaymentVerified} />
             </div>
@@ -391,7 +391,7 @@ export function ProcessPaymentTab({ sale }: Props) {
               <Label className="text-xs">{language === 'th' ? 'วันที่ตรวจสภาพรถ' : 'Car inspection date'}</Label>
               <Input type="date" className="h-9 text-sm bg-card" disabled={isPaymentVerified} />
             </div>
-            <div className="space-y-1 md:col-span-2">
+            <div className="space-y-1">
               <Label className="text-xs">{language === 'th' ? 'Quotation ID' : 'Quotation ID'}</Label>
               <Input className="h-9 text-sm bg-card" defaultValue="10332" disabled={isPaymentVerified} />
             </div>
