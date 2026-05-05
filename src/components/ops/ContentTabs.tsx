@@ -1406,24 +1406,11 @@ export function ContentTabs({ sale }: ContentTabsProps) {
     const nextDisabled = done || (isVerify && verifySendCount === 0);
     return (
       <div className="flex items-center justify-end gap-2 mt-4 pt-3 border-t border-border">
-        {isVerify && verifySendCount === 0 && (
-          <span className="text-[11px] text-muted-foreground mr-2">
-            {language === 'th'
-              ? 'ต้องส่งให้ตัวแทนอย่างน้อย 1 ครั้งก่อนดำเนินการต่อ'
-              : 'Send to Agent at least once to continue'}
-          </span>
-        )}
         {isVerify && verifySendCount > 0 && (
           <span className="text-[11px] text-muted-foreground mr-2">
             {language === 'th'
               ? `ส่งให้ตัวแทนแล้ว ${verifySendCount} ครั้ง`
               : `Sent to agent ${verifySendCount} time${verifySendCount > 1 ? 's' : ''}`}
-          </span>
-        )}
-        {isVerify && !verifyReady && verifyBlockers.length > 0 && verifySendCount === 0 && (
-          <span className="text-[11px] text-muted-foreground mr-2">
-            {language === 'th' ? 'หมายเหตุ' : 'Note'}: {verifyBlockers.slice(0, 2).join(' • ')}
-            {verifyBlockers.length > 2 && ` (+${verifyBlockers.length - 2})`}
           </span>
         )}
         <Button
