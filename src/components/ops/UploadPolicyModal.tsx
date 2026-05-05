@@ -70,9 +70,11 @@ interface PolicyFormState {
 function PolicyForm({
   policy,
   showGarageAndClass,
+  inheritedBanner,
 }: {
   policy: SalePolicy;
   showGarageAndClass: boolean;
+  inheritedBanner?: React.ReactNode;
 }) {
   const { language } = useLanguageStore();
   const addHistory = useHistoryStore((s) => s.add);
