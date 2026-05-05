@@ -201,7 +201,7 @@ export const mockSaleDetail: SaleDetail = {
       installmentType: '',
       affiliateCommission: 2000,
       premiumAfterTax: 10000,
-      status: 'pending_review',
+      status: 'pending_payment',
       policyStartDate: '01/04/2026',
       policyEndDate: '01/04/2027',
       coverage: {
