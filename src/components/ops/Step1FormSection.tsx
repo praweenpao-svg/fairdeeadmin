@@ -145,7 +145,7 @@ function PillToggle({ options, value, onChange }: { options: PillOption[]; value
             onClick={() => onChange(opt.value)}
             className={cn(
               'flex-1 px-3 text-xs transition-colors border-r border-input last:border-r-0 flex items-center justify-center gap-1',
-              selected ? 'bg-primary text-primary-foreground font-semibold' : 'bg-background text-foreground hover:bg-muted'
+              selected ? 'bg-primary text-primary-foreground font-semibold' : 'bg-card text-foreground hover:bg-muted'
             )}
           >
             {opt.label} {selected && '✓'}
@@ -166,7 +166,7 @@ function ChipPill({ active, onClick, children }: { active: boolean; onClick: () 
         'px-4 py-1.5 rounded-full text-xs font-medium border transition-colors',
         active
           ? 'bg-primary text-primary-foreground border-primary'
-          : 'bg-background text-foreground border-input hover:bg-muted'
+          : 'bg-card text-foreground border-input hover:bg-muted'
       )}
     >
       {children}
@@ -247,7 +247,7 @@ function InspectionPicker({
             title={isLocked ? t('การต่ออายุใช้วิธีเดียวกับปีก่อน', 'Renewal uses last year\'s method') : undefined}
             className={cn(
               'text-left p-3 rounded-lg border transition-colors',
-              active ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-input bg-background hover:bg-muted',
+              active ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-input bg-card hover:bg-muted',
               isLocked && 'opacity-50 cursor-not-allowed',
             )}
           >
@@ -356,7 +356,7 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
                   role="textbox"
                   aria-readonly="true"
                   tabIndex={0}
-                  className="w-full h-9 flex items-center justify-between gap-2 border border-input rounded-md px-3 text-sm bg-muted/40 text-foreground cursor-not-allowed"
+                  className="w-full h-9 flex items-center justify-between gap-2 border border-input rounded-md px-3 text-sm bg-card text-foreground cursor-not-allowed"
                 >
                   <span className="truncate">{vehicleCodeLabel}</span>
                   <Lock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
