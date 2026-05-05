@@ -358,18 +358,6 @@ export function SaleDetailBar({
               <Wallet className="w-3.5 h-3.5" />
               {language === 'th' ? 'กระทบยอดชำระ' : 'Reconcile Payment'}
             </DropdownMenuItem>
-            <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Self Inspection')}>
-              <ClipboardCheck className="w-3.5 h-3.5" />
-              {language === 'th' ? 'ตรวจสภาพรถด้วยตนเอง' : 'Self Inspection'}
-            </DropdownMenuItem>
-            <DropdownMenuItem className="text-xs gap-2" onClick={() => { if (onOpenEndorsement) onOpenEndorsement(); else handleAction('Endorsement'); }}>
-              <FileText className="w-3.5 h-3.5" />
-              {language === 'th' ? 'สลักหลังกรมธรรม์' : 'Endorsement'}
-            </DropdownMenuItem>
-            <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Rework Log')}>
-              <ClipboardList className="w-3.5 h-3.5" />
-              {language === 'th' ? 'บันทึกการแก้ไข' : 'Rework Log'}
-            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">
               G8 · {language === 'th' ? 'เอกสารและสื่อสาร' : 'Docs & Comms'}
