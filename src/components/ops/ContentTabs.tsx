@@ -703,18 +703,35 @@ function VerifyInformationTab({ sale, onReadinessChange }: VerifyTabProps) {
     );
   };
 
+  // Corporation-specific fields
+  const [companyName, setCompanyName] = React.useState('');
+  const [taxId, setTaxId] = React.useState('');
+  const [authorizedSignatory, setAuthorizedSignatory] = React.useState('');
+
+  // COA review acknowledgement
+  const [coaFormReviewed, setCoaFormReviewed] = React.useState(false);
+
   // Compute readiness for "Send to Agent"
   React.useEffect(() => {
     const blockers: string[] = [];
-    if (ocrStatus.national_id !== 'done') blockers.push(language === 'th' ? 'OCR บัตรประชาชนยังไม่เสร็จ' : 'National ID OCR not run');
+    // Today-start scenario: relax OCR + start-date gating; only formal docs required.
+    if (!isStartToday) {
+      if (ocrStatus.national_id !== 'done') blockers.push(language === 'th' ? 'OCR บัตรประชาชนยังไม่เสร็จ' : 'National ID OCR not run');
+      if (!policyStartDate) blockers.push(language === 'th' ? 'กรุณาระบุวันเริ่มต้นกรมธรรม์' : 'Policy start date required');
+    }
     if (!insurancePhone.trim()) blockers.push(language === 'th' ? 'กรุณาระบุเบอร์โทรศัพท์' : 'Phone number required');
-    if (!policyStartDate) blockers.push(language === 'th' ? 'กรุณาระบุวันเริ่มต้นกรมธรรม์' : 'Policy start date required');
+    if (isCorporation) {
+      if (!companyName.trim()) blockers.push(language === 'th' ? 'กรุณาระบุชื่อบริษัท' : 'Company name required');
+      if (!taxId.trim()) blockers.push(language === 'th' ? 'กรุณาระบุเลขประจำตัวผู้เสียภาษี' : 'Tax ID required');
+      if (!authorizedSignatory.trim()) blockers.push(language === 'th' ? 'กรุณาระบุผู้มีอำนาจลงนาม' : 'Authorized signatory required');
+    }
+    if (isCOA && !coaFormReviewed) blockers.push(language === 'th' ? 'กรุณายืนยันการตรวจสอบแบบฟอร์ม COA' : 'COA form review required');
     if (shippingForm.receiverType !== 'e_policy') {
       if (!shippingForm.addressLine.trim()) blockers.push(language === 'th' ? 'กรุณาระบุที่อยู่จัดส่ง' : 'Shipping address required');
       if (!shippingForm.phoneNumber.trim()) blockers.push(language === 'th' ? 'กรุณาระบุเบอร์โทรผู้รับ' : 'Receiver phone required');
     }
     onReadinessChange?.(blockers.length === 0, blockers);
-  }, [ocrStatus, insurancePhone, policyStartDate, shippingForm, language, onReadinessChange]);
+  }, [ocrStatus, insurancePhone, policyStartDate, shippingForm, language, onReadinessChange, isStartToday, isCorporation, companyName, taxId, authorizedSignatory, isCOA, coaFormReviewed]);
 
   const ocrPill = (status: OcrStatus) => {
     const map: Record<OcrStatus, { label: string; cls: string }> = {
