@@ -208,9 +208,6 @@ export function SaleDetailBar({
   return (
     <div className="bg-card border border-border rounded-lg p-4">
       <div className="flex items-center gap-4">
-        {/* Insurer logo */}
-        <img src={insurerLogo} alt="Insurer Name" className="w-10 h-10 rounded-lg object-cover shrink-0" loading="lazy" width={512} height={512} />
-
         {/* Quotation info */}
         <div className="min-w-0">
           <span className="text-[10px] text-muted-foreground">
