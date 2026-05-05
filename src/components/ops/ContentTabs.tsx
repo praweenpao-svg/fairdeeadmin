@@ -1592,36 +1592,36 @@ export function ContentTabs({ sale }: ContentTabsProps) {
   const NextButton = ({ tabKey }: { tabKey: string }) => {
     const done = completedSteps.has(tabKey);
     const isVerify = tabKey === 'verify';
-    const blocked = isVerify && !verifyReady;
-    const button = (
-      <Button
-        size="sm"
-        className="text-xs"
-        disabled={done || blocked}
-        onClick={() => {
-          if (isVerify) {
-            setSendToAgentOpen(true);
-          } else {
-            handleNext(tabKey);
-          }
-        }}
-      >
-        {done
-          ? (language === 'th' ? 'เสร็จสิ้น' : 'Completed')
-          : isVerify
-          ? (language === 'th' ? 'ส่งให้ตัวแทน' : 'Send to Agent')
-          : (language === 'th' ? 'ถัดไป' : 'Next')}
-      </Button>
-    );
+    const isLast = tabOrder.indexOf(tabKey) === tabOrder.length - 1;
+    // Send to Agent is available on both steps; Verify-tab blockers are advisory only
     return (
-      <div className="flex items-center justify-end gap-3 mt-4 pt-3 border-t border-border">
-        {isVerify && blocked && verifyBlockers.length > 0 && (
-          <span className="text-[11px] text-destructive">
-            {language === 'th' ? 'ติดเงื่อนไข' : 'Blocked'}: {verifyBlockers.slice(0, 2).join(' • ')}
+      <div className="flex items-center justify-end gap-2 mt-4 pt-3 border-t border-border">
+        {isVerify && !verifyReady && verifyBlockers.length > 0 && (
+          <span className="text-[11px] text-muted-foreground mr-2">
+            {language === 'th' ? 'หมายเหตุ' : 'Note'}: {verifyBlockers.slice(0, 2).join(' • ')}
             {verifyBlockers.length > 2 && ` (+${verifyBlockers.length - 2})`}
           </span>
         )}
-        {button}
+        <Button
+          size="sm"
+          variant="outline"
+          className="text-xs"
+          onClick={() => setSendToAgentOpen(true)}
+        >
+          {language === 'th' ? 'ส่งให้ตัวแทน' : 'Send to Agent'}
+        </Button>
+        {!isLast && (
+          <Button
+            size="sm"
+            className="text-xs"
+            disabled={done}
+            onClick={() => handleNext(tabKey)}
+          >
+            {done
+              ? (language === 'th' ? 'เสร็จสิ้น' : 'Completed')
+              : (language === 'th' ? 'ถัดไป' : 'Next')}
+          </Button>
+        )}
       </div>
     );
   };
