@@ -12,7 +12,6 @@ import { OpsLogicProvider } from '@/components/ops/OpsLogicContext';
 import { DevLogicControllerFab } from '@/components/ops/DevLogicControllerFab';
 import { PolicyRemarksReworkDialog } from '@/components/pipeline/PolicyRemarksReworkDialog';
 import { toast } from 'sonner';
-import { toast } from 'sonner';
 import { mockReworkConfigs } from '@/data/mockLeads';
 import { PolicyRemark, PolicyReworkEntry, ReworkAttachment } from '@/types/pipeline';
 
