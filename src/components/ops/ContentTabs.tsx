@@ -775,8 +775,51 @@ function VerifyInformationTab({ sale, onReadinessChange }: VerifyTabProps) {
   if (isCOA) scenarioChips.push({ label: 'COA', cls: 'bg-amber-500/15 text-amber-700 border-amber-500/30' });
   if (isStartToday) scenarioChips.push({ label: language === 'th' ? 'เริ่มคุ้มครองวันนี้' : 'Start today', cls: 'bg-rose-500/15 text-rose-700 border-rose-500/30' });
 
+  // Cross-check: required docs from Step 1 not yet uploaded
+  const { fieldDocCounts } = useOpsLogic();
+  const missingRequiredDocs = React.useMemo(() => {
+    const docs = getRequiredDocuments(
+      logic.saleType, logic.insuranceClass, logic.paymentType, logic.carType,
+      logic.customerType, logic.paymentMethodValue, logic.driverLicenseCount, logic.carInspectionMethod,
+    );
+    return docs
+      .filter(d => d.required && (fieldDocCounts[d.fieldId] || 0) === 0)
+      .map(d => {
+        const def = DOCUMENT_FIELDS[d.fieldId];
+        const label = def ? (language === 'th' ? def.th : def.en) : d.fieldId;
+        const groupLetter = def?.group?.charAt(0) || '?';
+        return { fieldId: d.fieldId, label, group: groupLetter };
+      });
+  }, [logic, fieldDocCounts, language]);
+
   return (
     <div className="space-y-6">
+      {missingRequiredDocs.length > 0 && (
+        <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <div className="text-xs font-semibold text-amber-800 mb-1">
+                {language === 'th'
+                  ? `เอกสารที่ต้องแนบยังไม่ครบ (${missingRequiredDocs.length})`
+                  : `Required documents not yet linked (${missingRequiredDocs.length})`}
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {missingRequiredDocs.slice(0, 8).map(m => (
+                  <Badge key={m.fieldId} variant="outline" className="h-5 px-1.5 text-[10px] bg-card border-amber-500/40 text-amber-800">
+                    {m.group}. {m.label}
+                  </Badge>
+                ))}
+                {missingRequiredDocs.length > 8 && (
+                  <span className="text-[10px] text-amber-800/80 self-center">+{missingRequiredDocs.length - 8}</span>
+                )}
+              </div>
+            </div>
+            <span className="text-[10px] text-amber-800/80 shrink-0">
+              {language === 'th' ? 'กลับไปขั้นตอนที่ 1 เพื่อแนบ' : 'Return to Step 1 to link'}
+            </span>
+          </div>
+        </div>
+      )}
       {scenarioChips.length > 0 && (
         <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
           <span className="uppercase tracking-wide">{language === 'th' ? 'ตามสถานการณ์' : 'Driven by scenario'}:</span>
