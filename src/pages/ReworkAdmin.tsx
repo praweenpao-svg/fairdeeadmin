@@ -13,22 +13,23 @@ export default function ReworkAdmin() {
 
   return (
     <div className="p-6">
-      <Tabs
-        value={tab}
-        onValueChange={(v) => setSearchParams({ tab: v }, { replace: true })}
-        className="w-full"
-      >
-        <TabsList>
-          <TabsTrigger value="reasons">Rework Reasons</TabsTrigger>
-          <TabsTrigger value="config">Assignment Config</TabsTrigger>
-        </TabsList>
-        <TabsContent value="reasons">
-          <ReworkReasons />
-        </TabsContent>
-        <TabsContent value="config">
+    <Tabs
+      value={tab}
+      onValueChange={(v) => setSearchParams({ tab: v }, { replace: true })}
+      className="w-full"
+    >
+      <TabsList className="mx-6 mt-6">
+        <TabsTrigger value="reasons">Rework Reasons</TabsTrigger>
+        <TabsTrigger value="config">Assignment Config</TabsTrigger>
+      </TabsList>
+      <TabsContent value="reasons" className="mt-0">
+        <ReworkReasons />
+      </TabsContent>
+      <TabsContent value="config" className="mt-0">
+        <div className="p-6">
           <ReworkConsoleTable reworkConfigs={reworkConfigs} onUpdate={setReworkConfigs} />
-        </TabsContent>
-      </Tabs>
-    </div>
+        </div>
+      </TabsContent>
+    </Tabs>
   );
 }
