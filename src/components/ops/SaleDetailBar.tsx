@@ -369,6 +369,60 @@ export function SaleDetailBar({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={billingOpen} onOpenChange={setBillingOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{language === 'th' ? 'ข้อมูลเพิ่มเติม' : 'Additional Details'}</DialogTitle>
+            <p className="text-xs text-muted-foreground pt-1">
+              {language === 'th' ? 'โปรดระบุข้อมูลเพื่อดำเนินการต่อ' : 'Please provide the following details to proceed.'}
+            </p>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <label className="text-xs text-muted-foreground">
+                {language === 'th' ? 'วิธีการชำระเงิน' : 'Payment Methods'}
+              </label>
+              <Select value={billingMethod} onValueChange={setBillingMethod}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder={language === 'th' ? 'กรุณาเลือกตัวเลือก' : 'Select an option'} />
+                </SelectTrigger>
+                <SelectContent className="z-50 bg-popover">
+                  <SelectItem value="qr_bill">{language === 'th' ? 'ชำระผ่าน QR / จ่ายบิล' : 'QR Code / Bill Payment'}</SelectItem>
+                  <SelectItem value="credit_card">{language === 'th' ? 'ชำระเงินผ่านบัตรเครดิต' : 'Credit Card Payment'}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs text-muted-foreground">
+                {language === 'th' ? 'ยอดจ่าย' : 'Payable'}
+              </label>
+              <Select value={billingPayable} onValueChange={setBillingPayable}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder={language === 'th' ? 'กรุณาเลือกตัวเลือก' : 'Select an option'} />
+                </SelectTrigger>
+                <SelectContent className="z-50 bg-popover">
+                  <SelectItem value="with_commission">{language === 'th' ? 'จ่ายเบี้ยเต็ม' : 'With Commission'}</SelectItem>
+                  <SelectItem value="without_commission">{language === 'th' ? 'จ่ายเบี้ย หักค่าการตลาด' : 'Without Commission'}</SelectItem>
+                  <SelectItem value="specific">{language === 'th' ? 'จ่ายหักส่วนลด' : 'Specific'}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" size="sm" onClick={() => setBillingOpen(false)}>
+              {language === 'th' ? 'ยกเลิก' : 'Cancel'}
+            </Button>
+            <Button
+              size="sm"
+              disabled={!billingMethod || !billingPayable}
+              onClick={confirmBillingReport}
+            >
+              {language === 'th' ? 'ตกลง' : 'Confirm'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
