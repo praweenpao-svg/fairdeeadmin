@@ -19,7 +19,7 @@ export default function ReworkAdmin() {
     >
       <TabsList className="mx-6 mt-6">
         <TabsTrigger value="reasons">Rework Reasons</TabsTrigger>
-        <TabsTrigger value="config">Assignment Configuration</TabsTrigger>
+        <TabsTrigger value="config">Assignment Config</TabsTrigger>
       </TabsList>
       <TabsContent value="reasons" className="mt-0">
         <ReworkReasons />
