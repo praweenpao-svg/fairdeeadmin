@@ -26,6 +26,10 @@ interface OpsLogicContextValue {
   setCompulsoryEndDate: (v: string) => void;
   shippingAddressSource: string;
   setShippingAddressSource: (v: string) => void;
+  cmiShippingAddressSource: string;
+  setCmiShippingAddressSource: (v: string) => void;
+  cmiShippingSameAsVmi: boolean;
+  setCmiShippingSameAsVmi: (v: boolean) => void;
   policyAddressSource: string;
   setPolicyAddressSource: (v: string) => void;
   // New fields ported from sibling Step 1
@@ -88,6 +92,8 @@ export function OpsLogicProvider({ sale, children }: { sale: SaleDetail; childre
   const [compulsoryStartDate, setCompulsoryStartDateRaw] = React.useState(initialStart);
   const [compulsoryEndDate, setCompulsoryEndDateRaw] = React.useState(addOneYear(initialStart));
   const [shippingAddressSource, setShippingAddressSource] = React.useState('national_id');
+  const [cmiShippingAddressSource, setCmiShippingAddressSource] = React.useState('national_id');
+  const [cmiShippingSameAsVmi, setCmiShippingSameAsVmi] = React.useState(true);
   const [policyAddressSource, setPolicyAddressSource] = React.useState('nid');
 
   // Newly ported state
@@ -137,6 +143,10 @@ export function OpsLogicProvider({ sale, children }: { sale: SaleDetail; childre
     setCompulsoryEndDate,
     shippingAddressSource,
     setShippingAddressSource,
+    cmiShippingAddressSource,
+    setCmiShippingAddressSource,
+    cmiShippingSameAsVmi,
+    setCmiShippingSameAsVmi,
     policyAddressSource,
     setPolicyAddressSource,
     addOns,
