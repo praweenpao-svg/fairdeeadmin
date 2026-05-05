@@ -299,7 +299,6 @@ function LinkDocumentsTab({ sale }: { sale: SaleDetail }) {
   const [unlinkedDocs, setUnlinkedDocs] = React.useState<{ id: string; name: string; size?: string; preview?: string }[]>([]);
 
   // Mirror upload counts up to context so VerifyInformationTab can flag missing required docs
-  const { setFieldDocCounts } = useOpsLogic();
   React.useEffect(() => {
     const counts: Record<string, number> = {};
     Object.entries(fieldDocs).forEach(([k, v]) => { counts[k] = v.length; });
