@@ -8,8 +8,7 @@ import { AppSidebar } from '@/components/layout/AppSidebar';
 import { cn } from '@/lib/utils';
 import Index from "./pages/Index";
 import StaffTiming from "./pages/StaffTiming";
-import ReworkConsole from "./pages/ReworkConsole";
-import ReworkReasons from "./pages/ReworkReasons";
+import ReworkAdmin from "./pages/ReworkAdmin";
 import OpsDashboard from "./pages/OpsDashboard";
 import NotFound from "./pages/NotFound";
 
