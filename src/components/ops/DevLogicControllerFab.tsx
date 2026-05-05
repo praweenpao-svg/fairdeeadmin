@@ -5,10 +5,12 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Wrench, Sliders } from 'lucide-react';
+import { Wrench, Sliders, FlaskConical } from 'lucide-react';
 import { LogicControllerSection } from './LogicControllerSection';
 import { useOpsLogic, type ShippingFormat, type KycMode, type InstallmentPlan, type AddOnType } from './OpsLogicContext';
 import { useLanguageStore } from '@/stores/languageStore';
+import { TEST_SCENARIOS } from '@/data/testScenarios';
+import { toast } from '@/hooks/use-toast';
 
 /**
  * Floating dev-only FAB that opens the Logic Controller in a side sheet.
@@ -26,9 +28,40 @@ export function DevLogicControllerFab() {
     voluntaryShippingFormat, setVoluntaryShippingFormat,
     compulsoryShippingFormat, setCompulsoryShippingFormat,
     inspectionAppointmentDate, setInspectionAppointmentDate,
+    setCoverageStartDate,
   } = useOpsLogic();
   const { language } = useLanguageStore();
   const t = (th: string, en: string) => (language === 'th' ? th : en);
+  const [scenarioId, setScenarioId] = React.useState<string>('');
+
+  const applyScenario = (id: string) => {
+    const sc = TEST_SCENARIOS.find(s => s.id === id);
+    if (!sc) return;
+    setScenarioId(id);
+    const d = sc.data;
+    setLogic(prev => ({
+      ...prev,
+      ...(d.saleType ? { saleType: d.saleType } : {}),
+      ...(d.insuranceClass ? { insuranceClass: d.insuranceClass } : {}),
+      ...(d.paymentType ? { paymentType: d.paymentType } : {}),
+      ...(d.carType ? { carType: d.carType } : {}),
+      ...(d.customerType ? { customerType: d.customerType } : {}),
+      ...(d.paymentMethodValue !== undefined ? { paymentMethodValue: d.paymentMethodValue } : {}),
+      ...(d.driverLicenseCount !== undefined ? { driverLicenseCount: d.driverLicenseCount } : {}),
+      ...(d.carInspectionMethod !== undefined ? { carInspectionMethod: d.carInspectionMethod } : {}),
+    }));
+    if (d.kycMode !== undefined) setKycMode(d.kycMode);
+    if (d.installmentPlan !== undefined) setInstallmentPlan(d.installmentPlan);
+    if (d.installmentCount !== undefined) setInstallmentCount(d.installmentCount);
+    if (d.coverageStartDate) {
+      const v = d.coverageStartDate === 'today' ? new Date().toISOString().slice(0, 10) : d.coverageStartDate;
+      setCoverageStartDate(v);
+    }
+    toast({
+      title: t('โหลดสถานการณ์ทดสอบแล้ว', 'Test scenario loaded'),
+      description: language === 'th' ? sc.labelTh : sc.labelEn,
+    });
+  };
 
   return (
     <>
@@ -59,6 +92,33 @@ export function DevLogicControllerFab() {
           </SheetHeader>
 
           <div className="space-y-4">
+            <Card className="border-primary/40 bg-primary/5">
+              <CardContent className="p-4 space-y-2">
+                <div className="flex items-center gap-2">
+                  <FlaskConical className="w-3.5 h-3.5 text-primary" />
+                  <Badge variant="outline" className="text-[10px] uppercase tracking-wide border-primary/40 text-primary">
+                    {t('สถานการณ์ทดสอบ', 'Test Scenarios')}
+                  </Badge>
+                  <span className="text-[11px] text-muted-foreground">
+                    {t('โหลดค่าทั้งหมดจากสถานการณ์ที่เลือก', 'Snap all logic fields from a preset')}
+                  </span>
+                </div>
+                <Select value={scenarioId} onValueChange={applyScenario}>
+                  <SelectTrigger className="h-9 text-xs">
+                    <SelectValue placeholder={t('— เลือกสถานการณ์ —', '— Pick a scenario —')} />
+                  </SelectTrigger>
+                  <SelectContent className="max-w-[640px]">
+                    {TEST_SCENARIOS.map(sc => (
+                      <SelectItem key={sc.id} value={sc.id} className="text-xs">
+                        <span className="font-medium">{language === 'th' ? sc.labelTh : sc.labelEn}</span>
+                        <span className="text-muted-foreground"> — {language === 'th' ? sc.descTh : sc.descEn}</span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </CardContent>
+            </Card>
+
             <LogicControllerSection
               value={logic}
               onChange={setLogic}
