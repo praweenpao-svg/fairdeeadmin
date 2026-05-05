@@ -37,9 +37,9 @@ const navItems = [
     label: { en: 'Staff Timing', th: 'เวลาทำงานพนักงาน' }
   },
   { 
-    to: '/rework-admin', 
+    to: '/config-board', 
     icon: Settings2, 
-    label: { en: 'Rework Admin', th: 'จัดการ Rework' }
+    label: { en: 'Config Board', th: 'Config Board' }
   },
   { 
     to: '/ops-dashboard', 

@@ -32,6 +32,7 @@ function AppLayout() {
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/staff-timing" element={<StaffTiming />} />
+          <Route path="/config-board" element={<ReworkAdmin />} />
           <Route path="/rework-admin" element={<ReworkAdmin />} />
           <Route path="/rework-console" element={<ReworkAdmin />} />
           <Route path="/rework-reasons" element={<ReworkAdmin />} />
