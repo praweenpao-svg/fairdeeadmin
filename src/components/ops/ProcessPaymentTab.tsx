@@ -354,17 +354,15 @@ export function ProcessPaymentTab({ sale }: Props) {
       </div>
 
       {/* Cover Note */}
-      <div>
-        <SectionLabel>{language === 'th' ? 'ใบรับรองชั่วคราว (Cover Note)' : 'Cover Note'}</SectionLabel>
+      <SectionCard title={language === 'th' ? 'ใบรับรองชั่วคราว (Cover Note)' : 'Cover Note'}>
         <div className="space-y-1 max-w-md">
           <Label className="text-xs">{language === 'th' ? 'รหัส Cover Note' : 'Cover note code'}</Label>
           <Input className="h-9 text-xs" defaultValue={isPaymentVerified ? 'FD-VIB-701492' : ''} disabled={isPaymentVerified} />
         </div>
-      </div>
+      </SectionCard>
 
       {/* Sale Info */}
-      <div>
-        <SectionLabel>{language === 'th' ? 'ข้อมูลการขาย' : 'Sale Info'}</SectionLabel>
+      <SectionCard title={language === 'th' ? 'ข้อมูลการขาย' : 'Sale Info'}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-2xl">
           <div className="space-y-1">
             <Label className="text-xs">{language === 'th' ? 'วันที่ขาย' : 'Date of sale'}</Label>
@@ -382,11 +380,10 @@ export function ProcessPaymentTab({ sale }: Props) {
             </Select>
           </div>
         </div>
-      </div>
+      </SectionCard>
 
       {/* Car Inspection & Quotation ID */}
-      <div>
-        <SectionLabel>{language === 'th' ? 'การตรวจสภาพรถ และ Quotation ID' : 'Car Inspection & Quotation ID'}</SectionLabel>
+      <SectionCard title={language === 'th' ? 'การตรวจสภาพรถ และ Quotation ID' : 'Car Inspection & Quotation ID'}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-2xl">
           <div className="space-y-1">
             <Label className="text-xs">{language === 'th' ? 'สถานะการตรวจสภาพรถ' : 'Car inspection status'}</Label>
@@ -408,7 +405,7 @@ export function ProcessPaymentTab({ sale }: Props) {
             <Input className="h-9 text-xs" defaultValue="10332" disabled={isPaymentVerified} />
           </div>
         </div>
-      </div>
+      </SectionCard>
 
       {/* Payment methods / instalment schedule */}
       {isInstalment
