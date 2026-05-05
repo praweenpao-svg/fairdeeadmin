@@ -274,7 +274,7 @@ export function AgentDetailsCard({ sale }: SaleOverviewCardProps) {
           <SummaryRow label={language === 'th' ? 'เบอร์โทรศัพท์' : 'Agent Phone'} value="0XX-XXX-XXXX" />
           <SummaryRow label={language === 'th' ? 'ระดับ' : 'Level'} value={String(sale.agent.level)} />
           <SummaryRow label={language === 'th' ? 'ประเภทงาน' : 'Type of Sale'} value={sale.saleType || sale.typeOfSale} />
-          <SummaryRow label={language === 'th' ? 'สร้างเมื่อ' : 'Created At'} value="01/03/2026" />
+          <SummaryRow label={language === 'th' ? 'สร้างเมื่อ' : 'Created At'} value="DD/MM/YYYY" />
         </div>
       </CardContent>
     </Card>
@@ -369,6 +369,7 @@ export function PriceDetailsCard({ sale }: SaleOverviewCardProps) {
           <SummaryRow label={language === 'th' ? 'ภาษีหัก ณ ที่จ่าย' : 'Withholding Tax'} value={fmt(withholdingTax)} />
           <SummaryRow label={language === 'th' ? 'ค่าคอมหลังหักภาษี' : 'Commission after withholding tax'} value={fmt(commissionAfterTax)} emphasize />
           <div className="h-2" />
+          <SummaryRow label={language === 'th' ? 'ส่วนลดจากตัวแทน' : 'Discount from agent'} value="—" />
           <SummaryRow label={language === 'th' ? 'ยอดที่คาดว่าจะได้รับจาก FairDee' : 'Expected transfer from FairDee'} value={fmt(commissionAfterTax)} emphasize />
         </div>
       </CardContent>
