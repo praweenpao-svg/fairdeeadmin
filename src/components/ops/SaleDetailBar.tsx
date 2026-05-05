@@ -334,10 +334,6 @@ export function SaleDetailBar({
               <XCircle className="w-3.5 h-3.5" />
               {language === 'th' ? 'อัปเดตการขาย' : 'Update Sale'}
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">
-              {language === 'th' ? 'เอกสารและสื่อสาร' : 'Docs & Comms'}
-            </DropdownMenuLabel>
             <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Commission')}>
               <Percent className="w-3.5 h-3.5" />
               {language === 'th' ? 'ค่าคอมมิชชั่น' : 'Commission'}
