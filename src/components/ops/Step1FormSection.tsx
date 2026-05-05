@@ -599,7 +599,18 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
       </SectionCard>
 
       {/* ════════ Card 3: Policy Address ════════ */}
-      <SectionCard title={t('ที่อยู่ในกรมธรรม์', 'Policy Address')}>
+      <SectionCard
+        title={t('ที่อยู่ในกรมธรรม์', 'Policy Address')}
+        info={policyAddressSource ? (
+          <InfoBanner>
+            {lang === 'th' ? (
+              <>คุณเลือกแหล่งที่อยู่: <strong>{POLICY_ADDRESS_SOURCES.find(s => s.value === policyAddressSource)?.th}</strong>. กรุณาแนบเอกสารที่เกี่ยวข้องในส่วน <strong>"แนบเอกสาร"</strong> ด้านล่าง — ระบบจะอ่านข้อมูลและให้คุณตรวจสอบในขั้นตอนที่ 2</>
+            ) : (
+              <>You selected source: <strong>{POLICY_ADDRESS_SOURCES.find(s => s.value === policyAddressSource)?.en}</strong>. Please attach the related document in the <strong>"Link Documents"</strong> section below — the system will OCR and let you verify in Step 2.</>
+            )}
+          </InfoBanner>
+        ) : undefined}
+      >
         <div className="md:col-span-2 space-y-3">
           <div className="flex flex-wrap gap-2">
             {POLICY_ADDRESS_SOURCES.map(src => (
@@ -612,15 +623,6 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
               </ChipPill>
             ))}
           </div>
-          {policyAddressSource && (
-            <InfoBanner>
-              {lang === 'th' ? (
-                <>คุณเลือกแหล่งที่อยู่: <strong>{POLICY_ADDRESS_SOURCES.find(s => s.value === policyAddressSource)?.th}</strong>. กรุณาแนบเอกสารที่เกี่ยวข้องในส่วน <strong>"แนบเอกสาร"</strong> ด้านล่าง — ระบบจะอ่านข้อมูลและให้คุณตรวจสอบในขั้นตอนที่ 2</>
-              ) : (
-                <>You selected source: <strong>{POLICY_ADDRESS_SOURCES.find(s => s.value === policyAddressSource)?.en}</strong>. Please attach the related document in the <strong>"Link Documents"</strong> section below — the system will OCR and let you verify in Step 2.</>
-              )}
-            </InfoBanner>
-          )}
         </div>
       </SectionCard>
 
