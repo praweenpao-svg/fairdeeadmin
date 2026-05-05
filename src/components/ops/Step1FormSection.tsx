@@ -195,7 +195,8 @@ function InfoBanner({ children, tone = 'info' }: { children: React.ReactNode; to
         <TooltipTrigger asChild>
           <button
             type="button"
-            className={cn('inline-flex items-center gap-1 text-[11px] font-medium cursor-help', cls)}
+            aria-label="More info"
+            className={cn('inline-flex items-center justify-center cursor-help', cls)}
           >
             <Info className="h-3.5 w-3.5" />
           </button>
