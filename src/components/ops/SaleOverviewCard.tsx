@@ -119,12 +119,16 @@ const paymentStatuses = [
   { value: 'credit_approved', en: 'Credit Approved', th: 'อนุมัติเครดิตแล้ว' },
 ];
 
-function StatusDropdown({ label, options, defaultValue, language, onChange }: {
+function StatusDropdown({ label, options, defaultValue, language, onChange, allowedValues, lockedReason }: {
   label: string;
   options: { value: string; en: string; th: string }[];
   defaultValue: string;
   language: string;
   onChange?: (val: string) => void;
+  /** When provided, only these values are selectable; others render disabled. */
+  allowedValues?: string[];
+  /** When set, the dropdown is fully disabled and a tooltip-style hint is shown. */
+  lockedReason?: string;
 }) {
   const [status, setStatus] = useState(defaultValue);
 
@@ -134,6 +138,14 @@ function StatusDropdown({ label, options, defaultValue, language, onChange }: {
   }, [defaultValue]);
 
   const handleChange = (val: string) => {
+    if (allowedValues && !allowedValues.includes(val) && val !== status) {
+      toast.error(language === 'th' ? 'ไม่สามารถเปลี่ยนสถานะนี้ได้' : 'Status transition not allowed', {
+        description: language === 'th'
+          ? 'สถานะต้องดำเนินตามลำดับ หรือเปลี่ยนผ่านระบบ/Rework'
+          : 'Status must follow the lifecycle or be driven by system / rework actions.',
+      });
+      return;
+    }
     setStatus(val);
     onChange?.(val);
     const opt = options.find(s => s.value === val);
@@ -145,20 +157,54 @@ function StatusDropdown({ label, options, defaultValue, language, onChange }: {
   return (
     <div className="space-y-0.5">
       <span className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</span>
-      <Select value={status} onValueChange={handleChange}>
-        <SelectTrigger className="h-7 text-xs">
+      <Select value={status} onValueChange={handleChange} disabled={!!lockedReason}>
+        <SelectTrigger className="h-7 text-xs" title={lockedReason}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent className="bg-popover z-50">
-          {options.map(s => (
-            <SelectItem key={s.value} value={s.value} className="text-xs">
-              {language === 'th' ? s.th : s.en}
-            </SelectItem>
-          ))}
+          {options.map(s => {
+            const disabled = allowedValues ? !allowedValues.includes(s.value) && s.value !== status : false;
+            return (
+              <SelectItem
+                key={s.value}
+                value={s.value}
+                disabled={disabled}
+                className="text-xs"
+              >
+                {language === 'th' ? s.th : s.en}
+              </SelectItem>
+            );
+          })}
         </SelectContent>
       </Select>
     </div>
   );
+}
+
+// Strict policy status lifecycle order. Manual jumps are blocked; only the
+// next sequential step is permitted from the dropdown. rework_required and
+// policy_cancelled are always selectable as escape hatches.
+const POLICY_LIFECYCLE_ORDER = [
+  'pending_payment',
+  'pending_review',
+  'pending_issuance',
+  'policy_issued',
+  'policy_shipped',
+  'policy_delivered',
+] as const;
+
+const TERMINAL_POLICY_STATUSES = new Set(['policy_delivered', 'policy_cancelled']);
+
+function getAllowedPolicyTransitions(current: string): string[] {
+  if (TERMINAL_POLICY_STATUSES.has(current)) return [current];
+  const idx = POLICY_LIFECYCLE_ORDER.indexOf(current as typeof POLICY_LIFECYCLE_ORDER[number]);
+  const allowed: string[] = [current];
+  if (idx >= 0 && idx < POLICY_LIFECYCLE_ORDER.length - 1) {
+    allowed.push(POLICY_LIFECYCLE_ORDER[idx + 1]);
+  }
+  // Always allow rework + cancel as escape hatches from any non-terminal state.
+  allowed.push('rework_required', 'policy_cancelled');
+  return allowed;
 }
 
 export function SaleOverviewCard({ sale }: SaleOverviewCardProps) {
