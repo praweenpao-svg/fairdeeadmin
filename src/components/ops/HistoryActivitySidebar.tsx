@@ -242,6 +242,27 @@ export function HistoryActivitySidebar({ open, onClose, quotationId, availablePo
         </Button>
       </div>
 
+      {/* Type filter chips */}
+      <div className="flex items-center gap-1 px-4 py-2 border-b border-border shrink-0 overflow-x-auto">
+        {FILTER_CHIPS.map((chip) => {
+          const active = typeFilter === chip.value;
+          return (
+            <button
+              key={chip.value}
+              onClick={() => setTypeFilter(chip.value)}
+              className={cn(
+                'shrink-0 px-2 py-0.5 rounded-full text-[10px] border transition-colors',
+                active
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'bg-background text-muted-foreground border-border hover:bg-muted'
+              )}
+            >
+              {language === 'th' ? chip.th : chip.en}
+            </button>
+          );
+        })}
+      </div>
+
       {/* Composition area */}
       {compositionMode !== 'none' && (
         <div className="px-4 py-3 border-b border-border space-y-2 shrink-0 bg-muted/20">
