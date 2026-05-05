@@ -1419,6 +1419,7 @@ export function ContentTabs({ sale }: ContentTabsProps) {
   const NextButton = ({ tabKey }: { tabKey: string }) => {
     const done = completedSteps.has(tabKey);
     const isVerify = tabKey === 'verify';
+    const isProcessPayment = tabKey === 'process-payment';
     const isLast = tabOrder.indexOf(tabKey) === tabOrder.length - 1;
     const nextDisabled = done || (isVerify && verifySendCount === 0);
     return (
@@ -1430,15 +1431,17 @@ export function ContentTabs({ sale }: ContentTabsProps) {
               : `Sent to agent ${verifySendCount} time${verifySendCount > 1 ? 's' : ''}`}
           </span>
         )}
-        <Button
-          size="sm"
-          variant="outline"
-          className="text-xs"
-          onClick={() => setSendToAgentOpen(true)}
-        >
-          {language === 'th' ? 'ส่งให้ตัวแทน' : 'Send to Agent'}
-          {verifySendCount > 0 && ` (${verifySendCount})`}
-        </Button>
+        {!isProcessPayment && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="text-xs"
+            onClick={() => setSendToAgentOpen(true)}
+          >
+            {language === 'th' ? 'ส่งให้ตัวแทน' : 'Send to Agent'}
+            {verifySendCount > 0 && ` (${verifySendCount})`}
+          </Button>
+        )}
         {!isLast && (
           <Button
             size="sm"
