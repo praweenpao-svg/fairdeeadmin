@@ -274,9 +274,43 @@ export function SaleDetailBar({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-64 bg-popover z-50">
             <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">
+              G1 · {language === 'th' ? 'การชำระเงิน' : 'Payment'}
+            </DropdownMenuLabel>
+            <DropdownMenuItem className="text-xs gap-2" onClick={() => setBillingOpen(true)}>
+              <CreditCard className="w-3.5 h-3.5" />
+              {language === 'th' ? 'ส่งใบแจ้งหนี้' : 'Send Billing Report'}
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-xs gap-2" onClick={() => setKycOpen(true)}>
+              <UserCheck className="w-3.5 h-3.5" />
+              {language === 'th' ? 'อนุมัติ KYC ด้วยตนเอง' : 'Manual KYC Approval'}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">
               G2 · {language === 'th' ? 'ออกกรมธรรม์' : 'Policy Issuance'}
             </DropdownMenuLabel>
-            <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Send Email to Insurer')}>
+            <DropdownMenuItem
+              className="text-xs gap-2"
+              onClick={() => {
+                if (vmiPolicy?.status === 'pending_review' && onAdvanceVmiStatus) {
+                  onAdvanceVmiStatus('pending_issuance', 'API');
+                } else {
+                  handleAction('API');
+                }
+              }}
+            >
+              <Send className="w-3.5 h-3.5" />
+              API
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="text-xs gap-2"
+              onClick={() => {
+                if (vmiPolicy?.status === 'pending_review' && onAdvanceVmiStatus) {
+                  onAdvanceVmiStatus('pending_issuance', language === 'th' ? 'อีเมล' : 'Email');
+                } else {
+                  handleAction('Send Email to Insurer');
+                }
+              }}
+            >
               <Mail className="w-3.5 h-3.5" />
               {language === 'th' ? 'ส่งอีเมลถึง บ.ประกัน' : 'Send Email to Insurer'}
             </DropdownMenuItem>
