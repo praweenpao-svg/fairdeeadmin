@@ -155,7 +155,8 @@ export function StickyPageHeader({
   const currentStage = 'to_issue'; // Mock: derive from sale state
   const stageLabel = stageLabels[currentStage] || stageLabels.to_issue;
 
-  const primaryActions = getPrimaryActions(vmiPolicy, cmiPolicy, language);
+  const isInstalment = /install?ment|ผ่อน/i.test(sale.paymentMethod || '');
+  const primaryActions = getPrimaryActions(vmiPolicy, cmiPolicy, language, isInstalment);
 
   const handleAction = (actionName: string) => {
     toast.success(actionName, {
