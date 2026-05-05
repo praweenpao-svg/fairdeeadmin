@@ -271,9 +271,10 @@ function PolicyForm({
 
 export function UploadPolicyModal({ sale, open, onOpenChange }: UploadPolicyModalProps) {
   const { language } = useLanguageStore();
-  const isMultiPolicy = sale.policies.length > 1;
   const vmiPolicy = sale.policies.find(p => p.kind === 'vmi');
   const cmiPolicy = sale.policies.find(p => p.kind === 'cmi');
+  const hasBoth = !!vmiPolicy && !!cmiPolicy;
+  const [activeTab, setActiveTab] = useState<'vmi' | 'cmi'>(vmiPolicy ? 'vmi' : 'cmi');
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -284,7 +285,30 @@ export function UploadPolicyModal({ sale, open, onOpenChange }: UploadPolicyModa
           </DialogTitle>
         </DialogHeader>
 
-        {vmiPolicy && <PolicyForm policy={vmiPolicy} showGarageAndClass={true} />}
+        {hasBoth ? (
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'vmi' | 'cmi')}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="vmi" className="text-xs">
+                <Badge variant="outline" className="mr-2 text-[9px] border-primary text-primary">VMI</Badge>
+                {language === 'th' ? 'ประกันภาคสมัครใจ' : 'Voluntary'}
+              </TabsTrigger>
+              <TabsTrigger value="cmi" className="text-xs">
+                <Badge variant="outline" className="mr-2 text-[9px] border-orange-500 text-orange-600">CMI</Badge>
+                {language === 'th' ? 'พ.ร.บ.' : 'Compulsory'}
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="vmi">
+              <PolicyForm key="vmi" policy={vmiPolicy!} showGarageAndClass={true} />
+            </TabsContent>
+            <TabsContent value="cmi">
+              <PolicyForm key="cmi" policy={cmiPolicy!} showGarageAndClass={false} />
+            </TabsContent>
+          </Tabs>
+        ) : vmiPolicy ? (
+          <PolicyForm policy={vmiPolicy} showGarageAndClass={true} />
+        ) : cmiPolicy ? (
+          <PolicyForm policy={cmiPolicy} showGarageAndClass={false} />
+        ) : null}
       </DialogContent>
     </Dialog>
   );
