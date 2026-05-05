@@ -364,7 +364,7 @@ export function PriceDetailsCard({ sale }: SaleOverviewCardProps) {
           <SummaryRow label={language === 'th' ? "ค่าคอมประกันสมัครใจ" : "Agent's voluntary insurance Commission"} value={fmt(vmiCommission)} />
           <SummaryRow label={language === 'th' ? 'อัตราค่าคอม VMI' : 'VMI Commission Rate'} value={vmiCommissionRate} />
           <SummaryRow label={language === 'th' ? "ค่าคอมประกันภาคบังคับ" : "Agent's compulsory insurance Commission"} value={fmt(cmiCommission)} />
-          <SummaryRow label={language === 'th' ? 'หัก 0% ค่าคอมจาก Admin' : 'Deduct 0% Commission from Admin support'} value={`- ${fmt(0)}`} />
+          <SummaryRow label={language === 'th' ? 'หัก 0% ค่าคอมจาก Admin' : 'Deduct 0% Commission from Admin support'} value={fmt(0)} />
           <SummaryRow label={language === 'th' ? 'ค่าคอมรวม' : 'Total Commission'} value={fmt(totalCommission)} emphasize />
           <SummaryRow label={language === 'th' ? 'ภาษีหัก ณ ที่จ่าย' : 'Withholding Tax'} value={fmt(withholdingTax)} />
           <SummaryRow label={language === 'th' ? 'ค่าคอมหลังหักภาษี' : 'Commission after withholding tax'} value={fmt(commissionAfterTax)} emphasize />
