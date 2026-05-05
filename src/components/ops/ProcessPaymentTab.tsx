@@ -392,7 +392,7 @@ export function ProcessPaymentTab({ sale }: Props) {
               <Input type="date" className="h-9 text-sm bg-card" disabled={isPaymentVerified} />
             </div>
             <div className="space-y-1">
-              <Label className="text-xs">{language === 'th' ? 'Quotation ID' : 'Quotation ID'}</Label>
+              <Label className="text-xs">{language === 'th' ? 'รหัสใบเสนอราคาบริษัทประกัน' : 'Insurer Quotation ID'}</Label>
               <Input className="h-9 text-sm bg-card" defaultValue="10332" disabled={isPaymentVerified} />
             </div>
           </div>
