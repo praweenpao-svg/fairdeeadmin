@@ -1346,17 +1346,17 @@ function PackageBoxOnly() {
             <img src={insurerLogo} alt="Insurer" className="w-8 h-8 rounded object-cover" loading="lazy" width={512} height={512} />
           </div>
           <div className="space-y-1 text-xs">
-            <div className="flex items-center justify-between py-1">
+            <div className="grid grid-cols-[1fr_auto] items-center gap-3 py-1">
               <span className="text-muted-foreground">{language === 'th' ? 'ค่าคอมมิชชั่น' : 'Commission'}</span>
-              <span className="font-semibold text-sidebar-background">850 Baht</span>
+              <span className="font-semibold text-sidebar-background text-right tabular-nums whitespace-nowrap min-w-[100px]">850 Baht</span>
             </div>
-            <div className="flex items-center justify-between py-1">
+            <div className="grid grid-cols-[1fr_auto] items-center gap-3 py-1">
               <span className="text-muted-foreground">{language === 'th' ? 'ราคาเบี้ยประกันรวม' : 'Total Premium'}</span>
-              <span className="font-semibold text-sidebar-background">6,500 Baht</span>
+              <span className="font-semibold text-sidebar-background text-right tabular-nums whitespace-nowrap min-w-[100px]">6,500 Baht</span>
             </div>
-            <div className="flex items-center justify-between py-1">
+            <div className="grid grid-cols-[1fr_auto] items-center gap-3 py-1">
               <span className="text-muted-foreground">{language === 'th' ? 'ทุนประกัน' : 'Sum Insured'}</span>
-              <span className="font-semibold text-sidebar-background">100,000 Baht</span>
+              <span className="font-semibold text-sidebar-background text-right tabular-nums whitespace-nowrap min-w-[100px]">100,000 Baht</span>
             </div>
           </div>
         </CardContent>
