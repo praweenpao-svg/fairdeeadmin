@@ -178,8 +178,7 @@ export default function OpsDashboard() {
             <InsurerDetailsCard sale={sale} />
             <PriceDetailsCard sale={sale} />
             <PolicyStatusCard sale={sale} onPolicyStatusChange={handlePolicyStatusChange} />
-            <PaymentStatusCard sale={sale} />
-            <KycCard sale={sale} />
+            <ActionStatusCard sale={sale} />
             <DownloadsCard />
             <HistoryCard />
           </div>
