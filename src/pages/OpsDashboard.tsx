@@ -4,84 +4,21 @@ import { useLanguageStore } from '@/stores/languageStore';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { MentionNotificationBell } from '@/components/notifications/MentionNotificationBell';
 import { mockSaleDetail } from '@/data/mockSaleDetail';
-import { SaleOverviewCard, PolicyStatusCard, AgentDetailsCard, PaymentStatusCard, KycCard, DownloadsCard, HistoryCard } from '@/components/ops/SaleOverviewCard';
+import { PolicyStatusCard, AgentDetailsCard, PaymentStatusCard, KycCard, DownloadsCard, HistoryCard } from '@/components/ops/SaleOverviewCard';
 import { ContentTabs } from '@/components/ops/ContentTabs';
 import { SaleDetailBar } from '@/components/ops/SaleDetailBar';
 import { UploadPolicyModal } from '@/components/ops/UploadPolicyModal';
 import { OpsLogicProvider } from '@/components/ops/OpsLogicContext';
 import { DevLogicControllerFab } from '@/components/ops/DevLogicControllerFab';
 import { PolicyRemarksReworkDialog } from '@/components/pipeline/PolicyRemarksReworkDialog';
-import { cn } from '@/lib/utils';
-import { Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { mockReworkConfigs } from '@/data/mockLeads';
 import { PolicyRemark, PolicyReworkEntry, ReworkAttachment } from '@/types/pipeline';
 
-const steps = [
-  { en: 'Package Selection', th: 'เลือกแพ็คเกจ' },
-  { en: 'Link Documents', th: 'เชื่อมโยงเอกสาร' },
-  { en: 'Verify Information', th: 'ตรวจสอบข้อมูล' },
-  { en: 'Admin Actions', th: 'จัดการงาน' },
-];
-
-function StepperBar({ currentStep, onStepClick }: { currentStep: number; onStepClick: (step: number) => void }) {
-  const { language } = useLanguageStore();
-
-  return (
-    <div className="flex items-center gap-0 px-6 py-3 bg-muted/30 border-b border-border">
-      {steps.map((step, idx) => {
-        const isCompleted = idx < currentStep;
-        const isCurrent = idx === currentStep;
-        const isLast = idx === steps.length - 1;
-
-        return (
-          <React.Fragment key={idx}>
-            <button onClick={() => onStepClick(idx)} className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
-              <div
-                className={cn(
-                  'w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold border-2 transition-colors shrink-0',
-                  isCompleted
-                    ? 'bg-primary border-primary text-primary-foreground'
-                    : isCurrent
-                    ? 'border-primary text-primary bg-primary/10'
-                    : 'border-muted-foreground/30 text-muted-foreground bg-muted/20'
-                )}
-              >
-                {isCompleted ? <Check className="w-3.5 h-3.5" /> : idx + 1}
-              </div>
-              <span
-                className={cn(
-                  'text-[11px] font-medium whitespace-nowrap',
-                  isCompleted
-                    ? 'text-primary'
-                    : isCurrent
-                    ? 'text-foreground font-semibold'
-                    : 'text-muted-foreground'
-                )}
-              >
-                {language === 'th' ? step.th : step.en}
-              </span>
-            </button>
-            {!isLast && (
-              <div
-                className={cn(
-                  'h-0.5 w-14 mx-2 rounded-full',
-                  isCompleted ? 'bg-primary' : 'bg-border'
-                )}
-              />
-            )}
-          </React.Fragment>
-        );
-      })}
-    </div>
-  );
-}
+// Stepper / wizard scaffolding removed — Step 4 two-column layout is now the only mode.
 
 export default function OpsDashboard() {
   const { language } = useLanguageStore();
-  const [currentStep, setCurrentStep] = useState(3);
-  const mode: 'A' | 'B' = currentStep >= 3 ? 'B' : 'A';
-
   // Live sale state so policy status changes propagate to primary button
   const [sale, setSale] = useState(() => ({ ...mockSaleDetail, policies: mockSaleDetail.policies.map(p => ({ ...p })) }));
 
@@ -208,52 +145,32 @@ export default function OpsDashboard() {
       </header>
 
 
-      {/* 4-Step Stepper — hidden for now, to be brought back later */}
-      {/* <StepperBar currentStep={currentStep} onStepClick={setCurrentStep} /> */}
-
-      {/* Step 4: Two-column layout */}
-      {mode === 'B' && (
-        <div className="flex-1 overflow-y-auto px-6 py-4 w-full">
-          {/* Detail bar spans full width */}
-          <SaleDetailBar
-            sale={sale}
-            hasActiveRework={false}
-            onOpenUploadPolicy={() => setUploadPolicyOpen(true)}
-            onOpenHistoryLog={() => setHistorySidebarOpen(true)}
-            onOpenEndorsement={() => handleToast(language === 'th' ? 'เปิด Record Endorsement' : 'Open Record Endorsement')}
-            onOpenUploadDoc={() => handleToast(language === 'th' ? 'เปิด Upload Document' : 'Open Upload Document')}
-          />
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mt-4">
-            {/* Left column: Agent Overview + Policy Status */}
-            <div className="lg:col-span-1 space-y-4 bg-card rounded-lg p-3 border border-border">
-              <AgentDetailsCard sale={sale} />
-              <PolicyStatusCard sale={sale} onPolicyStatusChange={handlePolicyStatusChange} />
-              <PaymentStatusCard sale={sale} />
-              <KycCard sale={sale} />
-              <DownloadsCard />
-              <HistoryCard />
-            </div>
-            {/* Right column: Content Tabs */}
-            <div className="lg:col-span-4 bg-card rounded-lg p-4 border border-border">
-              <ContentTabs sale={sale} />
+      {/* Two-column layout */}
+      <div className="flex-1 overflow-y-auto px-6 py-4 w-full">
+        <SaleDetailBar
+          sale={sale}
+          hasActiveRework={false}
+          onOpenUploadPolicy={() => setUploadPolicyOpen(true)}
+          onOpenHistoryLog={() => setHistorySidebarOpen(true)}
+          onOpenEndorsement={() => handleToast(language === 'th' ? 'เปิด Record Endorsement' : 'Open Record Endorsement')}
+          onOpenUploadDoc={() => handleToast(language === 'th' ? 'เปิด Upload Document' : 'Open Upload Document')}
+        />
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mt-4">
+          {/* Left column: Agent Overview + Policy Status */}
+          <div className="lg:col-span-1 space-y-4 bg-card rounded-lg p-3 border border-border">
+            <AgentDetailsCard sale={sale} />
+            <PolicyStatusCard sale={sale} onPolicyStatusChange={handlePolicyStatusChange} />
+            <PaymentStatusCard sale={sale} />
+            <KycCard sale={sale} />
+            <DownloadsCard />
+            <HistoryCard />
           </div>
+          {/* Right column: Content Tabs */}
+          <div className="lg:col-span-4 bg-card rounded-lg p-4 border border-border">
+            <ContentTabs sale={sale} />
           </div>
         </div>
-      )}
-
-      {/* Mode A: Wizard step content (placeholder) */}
-      {mode === 'A' && (
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center space-y-3 max-w-md">
-            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-              <span className="text-2xl font-bold text-primary">{currentStep + 1}</span>
-            </div>
-            <h3 className="text-lg font-semibold">
-              {language === 'th' ? steps[currentStep].th : steps[currentStep].en}
-            </h3>
-          </div>
-        </div>
-      )}
+      </div>
 
       {/* Upload Policy Modal (G2) */}
       <UploadPolicyModal
