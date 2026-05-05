@@ -761,8 +761,23 @@ function VerifyInformationTab({ sale, onReadinessChange }: VerifyTabProps) {
     );
   };
 
+  // Scenario hint chips
+  const scenarioChips: { label: string; cls: string }[] = [];
+  if (isCorporation) scenarioChips.push({ label: language === 'th' ? 'นิติบุคคล' : 'Corporation', cls: 'bg-blue-500/15 text-blue-700 border-blue-500/30' });
+  if (isInstalment) scenarioChips.push({ label: language === 'th' ? 'ผ่อนชำระ' : 'Instalment', cls: 'bg-violet-500/15 text-violet-700 border-violet-500/30' });
+  if (isCOA) scenarioChips.push({ label: 'COA', cls: 'bg-amber-500/15 text-amber-700 border-amber-500/30' });
+  if (isStartToday) scenarioChips.push({ label: language === 'th' ? 'เริ่มคุ้มครองวันนี้' : 'Start today', cls: 'bg-rose-500/15 text-rose-700 border-rose-500/30' });
+
   return (
     <div className="space-y-6">
+      {scenarioChips.length > 0 && (
+        <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+          <span className="uppercase tracking-wide">{language === 'th' ? 'ตามสถานการณ์' : 'Driven by scenario'}:</span>
+          {scenarioChips.map((c, i) => (
+            <Badge key={i} variant="outline" className={cn('h-5 px-1.5 text-[10px]', c.cls)}>{c.label}</Badge>
+          ))}
+        </div>
+      )}
       {/* Section 1: National ID */}
       <Card className="border-border">
         <CardContent className="p-0">
