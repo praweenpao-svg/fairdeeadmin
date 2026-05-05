@@ -446,7 +446,8 @@ const kycStatuses = [
 
 export function ActionStatusCard({ sale, onPolicyStatusChange }: SaleOverviewCardProps & { onPolicyStatusChange?: (kind: 'vmi' | 'cmi', status: string) => void }) {
   const { language } = useLanguageStore();
-  const isInstalment = /install?ment|ผ่อน/i.test(sale.paymentMethod || '');
+  const { logic } = useOpsLogic();
+  const isInstalment = logic.paymentType === 'Instalment' || /install?ment|ผ่อน/i.test(sale.paymentMethod || '');
 
   return (
     <Card>
