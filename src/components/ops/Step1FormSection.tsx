@@ -62,23 +62,10 @@ const SHIPPING_FORMATS: { value: Exclude<ShippingFormat, ''>; th: string; en: st
   { value: 'epolicy', th: 'e-Policy', en: 'e-Policy' },
 ];
 
-function MondayTag({ type }: { type: string }) {
-  return (
-    <TooltipProvider delayDuration={150}>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <span
-            className="inline-block w-1.5 h-1.5 rounded-sm bg-purple-500 ml-1.5 align-middle cursor-help"
-            aria-label={`Monday: ${type}`}
-          />
-        </TooltipTrigger>
-        <TooltipContent side="top" className="text-[11px]">
-          Monday: {type}
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  );
+function MondayTag(_: { type: string }) {
+  return null;
 }
+
 
 function FormRow({ label, required, monday, info, children, hint, span = 1 }: { label: string; required?: boolean; monday?: string; info?: React.ReactNode; children: React.ReactNode; hint?: string; span?: 1 | 2 }) {
   return (
