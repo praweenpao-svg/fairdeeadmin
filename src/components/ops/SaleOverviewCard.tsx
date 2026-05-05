@@ -249,9 +249,9 @@ export function SaleOverviewCard({ sale }: SaleOverviewCardProps) {
 
 function SummaryRow({ label, value, emphasize }: { label: string; value: string; emphasize?: boolean }) {
   return (
-    <div className="flex items-start justify-between gap-3 py-1 border-b border-border/30 last:border-0">
-      <span className={`text-xs ${emphasize ? 'font-semibold text-foreground' : 'text-muted-foreground'} flex-1 leading-tight`}>{label}</span>
-      <span className={`text-xs ${emphasize ? 'font-semibold' : 'font-medium'} text-right whitespace-nowrap tabular-nums shrink-0`}>{value || '—'}</span>
+    <div className="grid grid-cols-[1fr_auto] items-start gap-3 py-1 border-b border-border/30 last:border-0">
+      <span className={`text-xs ${emphasize ? 'font-semibold text-foreground' : 'text-muted-foreground'} leading-tight`}>{label}</span>
+      <span className={`text-xs ${emphasize ? 'font-semibold' : 'font-medium'} text-right whitespace-nowrap tabular-nums min-w-[88px]`}>{value || '—'}</span>
     </div>
   );
 }
@@ -274,7 +274,7 @@ export function AgentDetailsCard({ sale }: SaleOverviewCardProps) {
           <SummaryRow label={language === 'th' ? 'เบอร์โทรศัพท์' : 'Agent Phone'} value="0XX-XXX-XXXX" />
           <SummaryRow label={language === 'th' ? 'ระดับ' : 'Level'} value={String(sale.agent.level)} />
           <SummaryRow label={language === 'th' ? 'ประเภทงาน' : 'Type of Sale'} value={sale.saleType || sale.typeOfSale} />
-          <SummaryRow label={language === 'th' ? 'สร้างเมื่อ' : 'Created At'} value="01/03/2026" />
+          <SummaryRow label={language === 'th' ? 'สร้างเมื่อ' : 'Created At'} value="DD/MM/YYYY" />
         </div>
       </CardContent>
     </Card>
@@ -369,6 +369,7 @@ export function PriceDetailsCard({ sale }: SaleOverviewCardProps) {
           <SummaryRow label={language === 'th' ? 'ภาษีหัก ณ ที่จ่าย' : 'Withholding Tax'} value={fmt(withholdingTax)} />
           <SummaryRow label={language === 'th' ? 'ค่าคอมหลังหักภาษี' : 'Commission after withholding tax'} value={fmt(commissionAfterTax)} emphasize />
           <div className="h-2" />
+          <SummaryRow label={language === 'th' ? 'ส่วนลดจากตัวแทน' : 'Discount from agent'} value="—" />
           <SummaryRow label={language === 'th' ? 'ยอดที่คาดว่าจะได้รับจาก FairDee' : 'Expected transfer from FairDee'} value={fmt(commissionAfterTax)} emphasize />
         </div>
       </CardContent>
