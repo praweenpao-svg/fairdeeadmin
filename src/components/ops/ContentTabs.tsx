@@ -1348,7 +1348,9 @@ function PackageBoxOnly({ sale }: { sale: SaleDetail }) {
               <p className="text-sm font-semibold">{language === 'th' ? cls.th : cls.en}</p>
               <p className="text-xs text-muted-foreground">{language === 'th' ? 'ชื่อบริษัทประกัน' : 'Insurer Name'}</p>
             </div>
-            <img src={insurerLogo} alt="Insurer" className="w-8 h-8 rounded object-cover" loading="lazy" width={512} height={512} />
+            <div className="w-10 h-10 border border-border rounded-sm bg-white flex items-center justify-center shrink-0 overflow-hidden">
+              <img src={insurerLogo} alt="Insurer" className="w-full h-full object-contain p-1" loading="lazy" width={512} height={512} />
+            </div>
           </div>
           <div className="space-y-1 text-xs">
             <div className="grid grid-cols-[1fr_auto] items-start gap-3 py-1 border-b border-border/30">
