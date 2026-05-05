@@ -1,6 +1,6 @@
 import React from 'react';
 import { ChevronDown, FileUp, XCircle, Mail, Upload, History, CreditCard, FileText, Send } from 'lucide-react';
-import mtiLogo from '@/assets/insurer-mti.png';
+import insurerLogo from '@/assets/insurer-generic.png';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useLanguageStore } from '@/stores/languageStore';
@@ -200,7 +200,7 @@ export function SaleDetailBar({
     <div className="bg-card border border-border rounded-lg p-4">
       <div className="flex items-center gap-4">
         {/* Insurer logo */}
-        <img src={mtiLogo} alt="Muang Thai Insurance" className="w-10 h-10 rounded-lg object-cover shrink-0" />
+        <img src={insurerLogo} alt="Insurer Name" className="w-10 h-10 rounded-lg object-cover shrink-0" loading="lazy" width={512} height={512} />
 
         {/* Quotation info */}
         <div className="min-w-0">

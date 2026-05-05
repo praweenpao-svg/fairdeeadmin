@@ -2,7 +2,7 @@ import React from 'react';
 import sampleNationalId from '@/assets/sample-national-id.jpeg';
 import sampleCarRegistration from '@/assets/sample-car-registration.jpg';
 import samplePaymentProof from '@/assets/sample-payment-proof.png';
-import mtiLogo from '@/assets/insurer-mti.png';
+import insurerLogo from '@/assets/insurer-generic.png';
 import { useLanguageStore } from '@/stores/languageStore';
 import { SaleDetail } from '@/data/mockSaleDetail';
 import {
@@ -1341,9 +1341,9 @@ function PackageBoxOnly() {
           <div className="flex items-start justify-between mb-3">
             <div>
               <p className="text-sm font-semibold">{language === 'th' ? cls.th : cls.en}</p>
-              <p className="text-xs text-muted-foreground">{language === 'th' ? 'เมืองไทยประกันภัย' : 'Muang Thai Insurance'}</p>
+              <p className="text-xs text-muted-foreground">{language === 'th' ? 'ชื่อบริษัทประกัน' : 'Insurer Name'}</p>
             </div>
-            <img src={mtiLogo} alt="MTI" className="w-8 h-8 rounded object-cover" />
+            <img src={insurerLogo} alt="Insurer" className="w-8 h-8 rounded object-cover" loading="lazy" width={512} height={512} />
           </div>
           <div className="space-y-1 text-xs">
             <div className="flex items-center justify-between py-1">
