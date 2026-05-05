@@ -344,7 +344,7 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
             onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ''))}
             maxLength={10}
             placeholder="0812345678"
-            className="h-9 text-sm"
+            className="h-9 text-sm bg-card"
           />
         </FormRow>
 
