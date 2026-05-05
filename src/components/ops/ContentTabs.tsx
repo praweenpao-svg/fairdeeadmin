@@ -298,6 +298,14 @@ function LinkDocumentsTab({ sale }: { sale: SaleDetail }) {
   const [fieldDocs, setFieldDocs] = React.useState<Record<string, DocFile[]>>({});
   const [unlinkedDocs, setUnlinkedDocs] = React.useState<{ id: string; name: string; size?: string; preview?: string }[]>([]);
 
+  // Mirror upload counts up to context so VerifyInformationTab can flag missing required docs
+  const { setFieldDocCounts } = useOpsLogic();
+  React.useEffect(() => {
+    const counts: Record<string, number> = {};
+    Object.entries(fieldDocs).forEach(([k, v]) => { counts[k] = v.length; });
+    setFieldDocCounts(counts);
+  }, [fieldDocs, setFieldDocCounts]);
+
   // Upload dialog
   const [uploadDialogOpen, setUploadDialogOpen] = React.useState(false);
   const [uploadTarget, setUploadTarget] = React.useState<string | null>(null);
