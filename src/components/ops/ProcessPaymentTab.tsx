@@ -353,59 +353,51 @@ export function ProcessPaymentTab({ sale }: Props) {
         )}
       </div>
 
-      {/* Cover Note */}
-      <SectionCard title={language === 'th' ? 'ใบรับรองชั่วคราว (Cover Note)' : 'Cover Note'}>
-        <div className="space-y-1">
-          <Label className="text-xs">{language === 'th' ? 'รหัส Cover Note' : 'Cover note code'}</Label>
-          <Input className="h-9 text-sm bg-card" defaultValue={isPaymentVerified ? 'FD-VIB-701492' : ''} disabled={isPaymentVerified} />
-        </div>
-      </SectionCard>
-
-      {/* Sale Info */}
-      <SectionCard title={language === 'th' ? 'ข้อมูลการขาย' : 'Sale Info'}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div className="space-y-1">
-            <Label className="text-xs">{language === 'th' ? 'วันที่ขาย' : 'Date of sale'}</Label>
-            <Input type="date" className="h-9 text-sm bg-card" defaultValue="2026-04-21" disabled={isPaymentVerified} />
+      {/* Sale Details — Cover Note + Sale Info + Car Inspection/Quotation */}
+      <Card className="border-border">
+        <CardContent className="p-5 space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-4">
+            <div className="space-y-1 md:col-span-2">
+              <Label className="text-xs">{language === 'th' ? 'รหัส Cover Note' : 'Cover note code'}</Label>
+              <Input className="h-9 text-sm bg-card" defaultValue={isPaymentVerified ? 'FD-VIB-701492' : ''} disabled={isPaymentVerified} />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">{language === 'th' ? 'วันที่ขาย' : 'Date of sale'}</Label>
+              <Input type="date" className="h-9 text-sm bg-card" defaultValue="2026-04-21" disabled={isPaymentVerified} />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">{language === 'th' ? 'ประเภทการขาย' : 'Sale type'}</Label>
+              <Select defaultValue="cbc" disabled={isPaymentVerified}>
+                <SelectTrigger className="h-9 text-sm bg-card"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="cbc" className="text-xs">CBC to Fairdee</SelectItem>
+                  <SelectItem value="direct" className="text-xs">Direct</SelectItem>
+                  <SelectItem value="affiliate" className="text-xs">Affiliate</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">{language === 'th' ? 'สถานะการตรวจสภาพรถ' : 'Car inspection status'}</Label>
+              <Select disabled={isPaymentVerified}>
+                <SelectTrigger className="h-9 text-sm bg-card"><SelectValue placeholder={language === 'th' ? 'เลือกสถานะ' : 'Select Status'} /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="passed" className="text-xs">Passed</SelectItem>
+                  <SelectItem value="failed" className="text-xs">Failed</SelectItem>
+                  <SelectItem value="not_required" className="text-xs">Not Required</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">{language === 'th' ? 'วันที่ตรวจสภาพรถ' : 'Car inspection date'}</Label>
+              <Input type="date" className="h-9 text-sm bg-card" disabled={isPaymentVerified} />
+            </div>
+            <div className="space-y-1 md:col-span-2">
+              <Label className="text-xs">{language === 'th' ? 'Quotation ID' : 'Quotation ID'}</Label>
+              <Input className="h-9 text-sm bg-card" defaultValue="10332" disabled={isPaymentVerified} />
+            </div>
           </div>
-          <div className="space-y-1">
-            <Label className="text-xs">{language === 'th' ? 'ประเภทการขาย' : 'Sale type'}</Label>
-            <Select defaultValue="cbc" disabled={isPaymentVerified}>
-              <SelectTrigger className="h-9 text-sm bg-card"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="cbc" className="text-xs">CBC to Fairdee</SelectItem>
-                <SelectItem value="direct" className="text-xs">Direct</SelectItem>
-                <SelectItem value="affiliate" className="text-xs">Affiliate</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      </SectionCard>
-
-      {/* Car Inspection & Quotation ID */}
-      <SectionCard title={language === 'th' ? 'การตรวจสภาพรถ และ Quotation ID' : 'Car Inspection & Quotation ID'}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div className="space-y-1">
-            <Label className="text-xs">{language === 'th' ? 'สถานะการตรวจสภาพรถ' : 'Car inspection status'}</Label>
-            <Select disabled={isPaymentVerified}>
-              <SelectTrigger className="h-9 text-sm bg-card"><SelectValue placeholder={language === 'th' ? 'เลือกสถานะ' : 'Select Status'} /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="passed" className="text-xs">Passed</SelectItem>
-                <SelectItem value="failed" className="text-xs">Failed</SelectItem>
-                <SelectItem value="not_required" className="text-xs">Not Required</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-1">
-            <Label className="text-xs">{language === 'th' ? 'วันที่ตรวจสภาพรถ' : 'Car inspection date'}</Label>
-            <Input type="date" className="h-9 text-sm bg-card" disabled={isPaymentVerified} />
-          </div>
-          <div className="space-y-1">
-            <Label className="text-xs">{language === 'th' ? 'Quotation ID' : 'Quotation ID'}</Label>
-            <Input className="h-9 text-sm bg-card" defaultValue="10332" disabled={isPaymentVerified} />
-          </div>
-        </div>
-      </SectionCard>
+        </CardContent>
+      </Card>
 
       {/* Payment methods / instalment schedule */}
       {isInstalment
