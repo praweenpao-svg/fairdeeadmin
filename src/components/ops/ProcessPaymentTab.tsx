@@ -46,12 +46,15 @@ const PAID_STATUSES = new Set([
 
 const fmtBaht = (n: number) => `${Math.round(n).toLocaleString()} Baht`;
 
-function SectionCard({ title, badge, children }: { title: string; badge?: React.ReactNode; children: React.ReactNode }) {
+function SectionCard({ title, badge, info, children }: { title: string; badge?: React.ReactNode; info?: string; children: React.ReactNode }) {
   return (
     <Card className="border-border">
       <CardContent className="p-5 space-y-4">
         <div className="flex items-start justify-between gap-3 pb-3 border-b border-border">
-          <h3 className="text-sm font-bold">{title}</h3>
+          <h3 className="text-sm font-bold flex items-center gap-1.5">
+            {title}
+            {info && <InfoTip text={info} />}
+          </h3>
           {badge}
         </div>
         {children}
