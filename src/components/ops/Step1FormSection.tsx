@@ -277,6 +277,8 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
     compulsoryStartDate, setCompulsoryStartDate,
     compulsoryEndDate, setCompulsoryEndDate,
     shippingAddressSource, setShippingAddressSource,
+    cmiShippingAddressSource, setCmiShippingAddressSource,
+    cmiShippingSameAsVmi, setCmiShippingSameAsVmi,
     policyAddressSource, setPolicyAddressSource,
     addOns, setAddOns,
     kycMode, setKycMode,
