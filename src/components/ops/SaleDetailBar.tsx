@@ -165,7 +165,7 @@ export function SaleDetailBar({
   const cmiPolicy = sale.policies.find(p => p.kind === 'cmi');
   const currentStage = 'to_issue';
   const stageLabel = stageLabels[currentStage] || stageLabels.to_issue;
-  const primaryActions = getPrimaryActions(vmiPolicy, undefined, language);
+  const primaryActions = getPrimaryActions(vmiPolicy, cmiPolicy, language);
 
   // Derive display values from Logic Controller (single source of truth for prototype)
   const classDisplay = (logic.insuranceClass || '').replace(/^Type/, '').trim() || (vmiPolicy?.coverage.insuranceClass ?? '—');
