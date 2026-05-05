@@ -92,6 +92,33 @@ export function DevLogicControllerFab() {
           </SheetHeader>
 
           <div className="space-y-4">
+            <Card className="border-primary/40 bg-primary/5">
+              <CardContent className="p-4 space-y-2">
+                <div className="flex items-center gap-2">
+                  <FlaskConical className="w-3.5 h-3.5 text-primary" />
+                  <Badge variant="outline" className="text-[10px] uppercase tracking-wide border-primary/40 text-primary">
+                    {t('สถานการณ์ทดสอบ', 'Test Scenarios')}
+                  </Badge>
+                  <span className="text-[11px] text-muted-foreground">
+                    {t('โหลดค่าทั้งหมดจากสถานการณ์ที่เลือก', 'Snap all logic fields from a preset')}
+                  </span>
+                </div>
+                <Select value={scenarioId} onValueChange={applyScenario}>
+                  <SelectTrigger className="h-9 text-xs">
+                    <SelectValue placeholder={t('— เลือกสถานการณ์ —', '— Pick a scenario —')} />
+                  </SelectTrigger>
+                  <SelectContent className="max-w-[640px]">
+                    {TEST_SCENARIOS.map(sc => (
+                      <SelectItem key={sc.id} value={sc.id} className="text-xs">
+                        <span className="font-medium">{language === 'th' ? sc.labelTh : sc.labelEn}</span>
+                        <span className="text-muted-foreground"> — {language === 'th' ? sc.descTh : sc.descEn}</span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </CardContent>
+            </Card>
+
             <LogicControllerSection
               value={logic}
               onChange={setLogic}
