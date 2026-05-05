@@ -406,30 +406,6 @@ export function SaleDetailBar({
                 </DropdownMenuItem>
               </DropdownMenuSubContent>
             </DropdownMenuSub>
-            <DropdownMenuSeparator />
-            <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">
-              G9 · {language === 'th' ? 'ดาวน์โหลด' : 'Downloads'}
-            </DropdownMenuLabel>
-            <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Download: Cover Note')}>
-              <FileDown className="w-3.5 h-3.5" />
-              {language === 'th' ? 'หนังสือคุ้มครอง' : 'Cover Note'}
-            </DropdownMenuItem>
-            <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Download: Invoice')}>
-              <Receipt className="w-3.5 h-3.5" />
-              {language === 'th' ? 'ใบแจ้งหนี้' : 'Invoice'}
-            </DropdownMenuItem>
-            <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Download: Corporate Invoice')}>
-              <Receipt className="w-3.5 h-3.5" />
-              {language === 'th' ? 'ใบแจ้งหนี้นิติบุคคล' : 'Corporate Invoice'}
-            </DropdownMenuItem>
-            <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Download: Temporary Receipt')}>
-              <Receipt className="w-3.5 h-3.5" />
-              {language === 'th' ? 'ใบเสร็จชั่วคราว' : 'Temporary Receipt'}
-            </DropdownMenuItem>
-            <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Download: Fetch Policy')}>
-              <Download className="w-3.5 h-3.5" />
-              {language === 'th' ? 'ดึงกรมธรรม์' : 'Fetch Policy'}
-            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
