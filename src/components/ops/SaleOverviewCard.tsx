@@ -298,7 +298,7 @@ export function InsurerDetailsCard({ sale }: SaleOverviewCardProps) {
       </CardHeader>
       <CardContent className="px-4 pb-4">
         <div className="space-y-2.5">
-          <SummaryRow label={language === 'th' ? 'ชื่อบริษัทประกัน' : 'Insurer Name'} value={vmi.coverage.insurer || (language === 'th' ? 'ชื่อบริษัทประกัน' : 'Insurer Name')} />
+          <SummaryRow label={language === 'th' ? 'ชื่อบริษัทประกัน' : 'Insurer Name'} value={language === 'th' ? 'ชื่อบริษัทประกัน' : 'Insurer Name'} />
           <SummaryRow label={language === 'th' ? 'ชื่อแพ็กเกจ' : 'Package Name'} value={language === 'th' ? 'ชื่อแพ็กเกจ' : 'Package Name'} />
           <SummaryRow label={language === 'th' ? 'ชั้นประกัน' : 'Insurance Class'} value={(logic.insuranceClass || '').replace(/^Type/, 'Type ')} />
           <SummaryRow label={language === 'th' ? 'ทุนประกัน' : 'Sum Insured'} value={vmi.sumInsured ? `${vmi.sumInsured.toLocaleString()} Baht` : '—'} />
