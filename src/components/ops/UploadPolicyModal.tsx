@@ -117,6 +117,7 @@ function PolicyForm({
 
   return (
     <div className="space-y-4 py-2">
+      {inheritedBanner}
       {/* Insurer */}
       <div>
         <Label className="text-xs">{language === 'th' ? 'บริษัทประกัน' : 'Insurer'}</Label>
