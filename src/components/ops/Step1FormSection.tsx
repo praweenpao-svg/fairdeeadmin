@@ -64,10 +64,19 @@ const SHIPPING_FORMATS: { value: Exclude<ShippingFormat, ''>; th: string; en: st
 
 function MondayTag({ type }: { type: string }) {
   return (
-    <span className="inline-flex items-center gap-1 text-[9px] font-semibold text-purple-700 bg-purple-50 border border-purple-200 rounded px-1.5 py-0.5 ml-1.5 align-middle">
-      <span className="w-1.5 h-1.5 rounded-sm bg-purple-700" />
-      Monday: {type}
-    </span>
+    <TooltipProvider delayDuration={150}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span
+            className="inline-block w-1.5 h-1.5 rounded-sm bg-purple-500 ml-1.5 align-middle cursor-help"
+            aria-label={`Monday: ${type}`}
+          />
+        </TooltipTrigger>
+        <TooltipContent side="top" className="text-[11px]">
+          Monday: {type}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
 
@@ -177,13 +186,24 @@ function ChipPill({ active, onClick, children }: { active: boolean; onClick: () 
 function InfoBanner({ children, tone = 'info' }: { children: React.ReactNode; tone?: 'info' | 'warn' }) {
   const cls =
     tone === 'warn'
-      ? 'bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-950/40 dark:border-amber-900 dark:text-amber-200'
-      : 'bg-blue-50 border-blue-200 text-blue-800 dark:bg-blue-950/40 dark:border-blue-900 dark:text-blue-200';
+      ? 'text-amber-600 hover:text-amber-700'
+      : 'text-blue-600 hover:text-blue-700';
   return (
-    <div className={cn('flex items-start gap-2 px-3 py-2 border rounded-md text-[11px] leading-relaxed', cls)}>
-      <Info className="h-3.5 w-3.5 shrink-0 mt-0.5" />
-      <div>{children}</div>
-    </div>
+    <TooltipProvider delayDuration={150}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            className={cn('inline-flex items-center gap-1 text-[11px] font-medium cursor-help', cls)}
+          >
+            <Info className="h-3.5 w-3.5" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="top" align="start" className="max-w-xs text-[11px] leading-relaxed">
+          {children}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
 
