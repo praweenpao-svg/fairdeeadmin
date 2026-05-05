@@ -108,11 +108,44 @@ function formatDateTime(ts: string) {
  * used identically across Admin Portal and OPS Dashboard.
  * Data model, rework taxonomy, and @mention behaviour per Section 8.
  */
+type EntryType = 'rework' | 'remark' | 'status_change' | 'assignment' | 'field_update';
+
+const FILTER_CHIPS: { value: EntryType | 'all'; en: string; th: string }[] = [
+  { value: 'all', en: 'All', th: 'ทั้งหมด' },
+  { value: 'rework', en: 'Rework', th: 'Rework' },
+  { value: 'remark', en: 'Remark', th: 'หมายเหตุ' },
+  { value: 'status_change', en: 'Status', th: 'สถานะ' },
+  { value: 'assignment', en: 'Assignment', th: 'มอบหมาย' },
+  { value: 'field_update', en: 'Updates', th: 'อัปเดต' },
+];
+
+function dayKey(ts: string): string {
+  const d = new Date(ts);
+  if (Number.isNaN(d.getTime())) return ts;
+  const today = new Date();
+  const yesterday = new Date(); yesterday.setDate(today.getDate() - 1);
+  const sameDay = (a: Date, b: Date) => a.toDateString() === b.toDateString();
+  if (sameDay(d, today)) return 'today';
+  if (sameDay(d, yesterday)) return 'yesterday';
+  return d.toISOString().slice(0, 10);
+}
+
+function dayLabel(key: string, language: string): string {
+  if (key === 'today') return language === 'th' ? 'วันนี้' : 'Today';
+  if (key === 'yesterday') return language === 'th' ? 'เมื่อวาน' : 'Yesterday';
+  try {
+    return new Date(key).toLocaleDateString(language === 'th' ? 'th-TH' : 'en-GB', {
+      day: 'numeric', month: 'short', year: 'numeric',
+    });
+  } catch { return key; }
+}
+
 export function HistoryActivitySidebar({ open, onClose, quotationId, availablePolicies }: HistoryActivitySidebarProps) {
   const { language } = useLanguageStore();
   const [compositionMode, setCompositionMode] = useState<'none' | 'rework' | 'remark'>('none');
   const [draftText, setDraftText] = useState('');
   const [policyFilter, setPolicyFilter] = useState<'all' | 'vmi' | 'cmi'>('all');
+  const [typeFilter, setTypeFilter] = useState<EntryType | 'all'>('all');
   const liveEntries = useHistoryStore((s) => s.entries);
   const addEntry = useHistoryStore((s) => s.add);
 
@@ -121,9 +154,20 @@ export function HistoryActivitySidebar({ open, onClose, quotationId, availablePo
   const hasBothPolicies = availablePolicies && availablePolicies.includes('vmi') && availablePolicies.includes('cmi');
 
   const combined = [...liveEntries, ...mockHistory];
-  const filteredHistory = policyFilter === 'all'
-    ? combined
-    : combined.filter(e => !e.policyKind || e.policyKind === policyFilter);
+  const filteredHistory = combined.filter(e => {
+    if (policyFilter !== 'all' && e.policyKind && e.policyKind !== policyFilter) return false;
+    if (typeFilter !== 'all' && e.type !== typeFilter) return false;
+    return true;
+  });
+
+  // Group by day (today / yesterday / ISO date), preserving recency order.
+  const groups: { key: string; entries: HistoryEntry[] }[] = [];
+  for (const e of filteredHistory) {
+    const k = dayKey(e.timestamp);
+    const last = groups[groups.length - 1];
+    if (last && last.key === k) last.entries.push(e);
+    else groups.push({ key: k, entries: [e] });
+  }
 
   const handleSubmit = (type: 'rework' | 'remark') => {
     if (!draftText.trim()) return;
@@ -198,6 +242,27 @@ export function HistoryActivitySidebar({ open, onClose, quotationId, availablePo
         </Button>
       </div>
 
+      {/* Type filter chips */}
+      <div className="flex items-center gap-1 px-4 py-2 border-b border-border shrink-0 overflow-x-auto">
+        {FILTER_CHIPS.map((chip) => {
+          const active = typeFilter === chip.value;
+          return (
+            <button
+              key={chip.value}
+              onClick={() => setTypeFilter(chip.value)}
+              className={cn(
+                'shrink-0 px-2 py-0.5 rounded-full text-[10px] border transition-colors',
+                active
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'bg-background text-muted-foreground border-border hover:bg-muted'
+              )}
+            >
+              {language === 'th' ? chip.th : chip.en}
+            </button>
+          );
+        })}
+      </div>
+
       {/* Composition area */}
       {compositionMode !== 'none' && (
         <div className="px-4 py-3 border-b border-border space-y-2 shrink-0 bg-muted/20">
@@ -230,60 +295,74 @@ export function HistoryActivitySidebar({ open, onClose, quotationId, availablePo
 
       {/* Activity feed */}
       <ScrollArea className="flex-1">
-        <div className="px-4 py-3 space-y-3">
-          {filteredHistory.map((entry) => {
-            const config = typeConfig[entry.type] || typeConfig.field_update;
-            const Icon = config.icon;
-            return (
-              <div key={entry.id} className="relative pl-6 pb-3 border-l-2 border-border last:border-0">
-                <div className={cn('absolute left-[-9px] top-0 w-4 h-4 rounded-full bg-card border-2 border-border flex items-center justify-center')}>
-                  <Icon className={cn('w-2.5 h-2.5', config.color)} />
-                </div>
-                <div className="space-y-0.5">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className={cn('text-[9px]', config.color)}>
-                      {language === 'th' ? config.label.th : config.label.en}
-                    </Badge>
-                    {entry.policyKind && (
-                      <Badge variant="outline" className={cn(
-                        'text-[9px]',
-                        entry.policyKind === 'vmi' ? 'border-primary text-primary' : 'border-orange-500 text-orange-600'
-                      )}>
-                        {entry.policyKind.toUpperCase()}
-                      </Badge>
-                    )}
-                    {entry.type === 'rework' && !entry.resolved && (
-                      <Badge className="text-[9px] bg-orange-500/10 text-orange-600 border border-orange-500/30">
-                        {language === 'th' ? 'เปิดอยู่' : 'Open'}
-                      </Badge>
-                    )}
-                    {entry.type === 'rework' && entry.resolved && (
-                      <Badge className="text-[9px] bg-green-500/10 text-green-600 border border-green-500/30">
-                        {language === 'th' ? 'แก้ไขแล้ว' : 'Resolved'}
-                      </Badge>
-                    )}
-                  </div>
-                  <p className="text-xs text-foreground leading-relaxed">{entry.description}</p>
-                  <div className="flex items-center justify-between">
-                    <p className="text-[10px] text-muted-foreground">
-                      {entry.user} · {formatDateTime(entry.timestamp)}
-                    </p>
-                    {entry.type === 'rework' && !entry.resolved && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-5 px-2 text-[10px] text-green-600 hover:text-green-700"
-                        onClick={() => handleResolve(entry.id)}
-                      >
-                        <CheckCircle2 className="w-3 h-3 mr-1" />
-                        {language === 'th' ? 'แก้ไข' : 'Resolve'}
-                      </Button>
-                    )}
-                  </div>
-                </div>
+        <div className="px-4 py-3 space-y-4">
+          {groups.length === 0 && (
+            <p className="text-xs text-muted-foreground text-center py-8">
+              {language === 'th' ? 'ไม่มีรายการ' : 'No entries match these filters'}
+            </p>
+          )}
+          {groups.map((group) => (
+            <div key={group.key} className="space-y-3">
+              <div className="sticky top-0 z-10 -mx-4 px-4 py-1 bg-card/95 backdrop-blur-sm">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  {dayLabel(group.key, language)}
+                </p>
               </div>
-            );
-          })}
+              {group.entries.map((entry) => {
+                const config = typeConfig[entry.type] || typeConfig.field_update;
+                const Icon = config.icon;
+                return (
+                  <div key={entry.id} className="relative pl-6 pb-3 border-l-2 border-border last:border-0">
+                    <div className={cn('absolute left-[-9px] top-0 w-4 h-4 rounded-full bg-card border-2 border-border flex items-center justify-center')}>
+                      <Icon className={cn('w-2.5 h-2.5', config.color)} />
+                    </div>
+                    <div className="space-y-0.5">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className={cn('text-[9px]', config.color)}>
+                          {language === 'th' ? config.label.th : config.label.en}
+                        </Badge>
+                        {entry.policyKind && (
+                          <Badge variant="outline" className={cn(
+                            'text-[9px]',
+                            entry.policyKind === 'vmi' ? 'border-primary text-primary' : 'border-orange-500 text-orange-600'
+                          )}>
+                            {entry.policyKind.toUpperCase()}
+                          </Badge>
+                        )}
+                        {entry.type === 'rework' && !entry.resolved && (
+                          <Badge className="text-[9px] bg-orange-500/10 text-orange-600 border border-orange-500/30">
+                            {language === 'th' ? 'เปิดอยู่' : 'Open'}
+                          </Badge>
+                        )}
+                        {entry.type === 'rework' && entry.resolved && (
+                          <Badge className="text-[9px] bg-green-500/10 text-green-600 border border-green-500/30">
+                            {language === 'th' ? 'แก้ไขแล้ว' : 'Resolved'}
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-xs text-foreground leading-relaxed">{entry.description}</p>
+                      <div className="flex items-center justify-between">
+                        <p className="text-[10px] text-muted-foreground">
+                          {entry.user} · {formatDateTime(entry.timestamp)}
+                        </p>
+                        {entry.type === 'rework' && !entry.resolved && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-5 px-2 text-[10px] text-green-600 hover:text-green-700"
+                            onClick={() => handleResolve(entry.id)}
+                          >
+                            <CheckCircle2 className="w-3 h-3 mr-1" />
+                            {language === 'th' ? 'แก้ไข' : 'Resolve'}
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ))}
         </div>
       </ScrollArea>
     </div>
