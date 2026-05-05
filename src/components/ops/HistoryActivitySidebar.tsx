@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { useHistoryStore } from '@/stores/historyStore';
 
 export interface HistoryEntry {
   id: string;
