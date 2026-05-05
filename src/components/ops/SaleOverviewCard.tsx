@@ -501,7 +501,7 @@ export function ActionStatusCard({ sale, onPolicyStatusChange }: SaleOverviewCar
           <StatusDropdown
             label={language === 'th' ? 'สถานะ KYC' : 'KYC Status'}
             options={kycStatuses}
-            defaultValue="pending_kyc"
+            defaultValue="pending_verification"
             language={language}
           />
         ) : (
