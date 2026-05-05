@@ -239,11 +239,11 @@ export function SaleDetailBar({
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">
-              G5 · {language === 'th' ? 'สลักหลัง' : 'Endorsement'}
+              G5 · {language === 'th' ? 'อัปเดตการขาย' : 'Update Sale'}
             </DropdownMenuLabel>
-            <DropdownMenuItem className="text-xs gap-2" onClick={() => { if (onOpenEndorsement) onOpenEndorsement(); else handleAction('Record Endorsement'); }}>
+            <DropdownMenuItem className="text-xs gap-2" onClick={() => { if (onOpenEndorsement) onOpenEndorsement(); else handleAction('Update Sale'); }}>
               <XCircle className="w-3.5 h-3.5" />
-              {language === 'th' ? 'บันทึกสลักหลัง' : 'Record Endorsement'}
+              {language === 'th' ? 'อัปเดตการขาย' : 'Update Sale'}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">
