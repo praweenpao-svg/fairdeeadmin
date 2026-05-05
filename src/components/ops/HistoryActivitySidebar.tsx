@@ -295,60 +295,74 @@ export function HistoryActivitySidebar({ open, onClose, quotationId, availablePo
 
       {/* Activity feed */}
       <ScrollArea className="flex-1">
-        <div className="px-4 py-3 space-y-3">
-          {filteredHistory.map((entry) => {
-            const config = typeConfig[entry.type] || typeConfig.field_update;
-            const Icon = config.icon;
-            return (
-              <div key={entry.id} className="relative pl-6 pb-3 border-l-2 border-border last:border-0">
-                <div className={cn('absolute left-[-9px] top-0 w-4 h-4 rounded-full bg-card border-2 border-border flex items-center justify-center')}>
-                  <Icon className={cn('w-2.5 h-2.5', config.color)} />
-                </div>
-                <div className="space-y-0.5">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className={cn('text-[9px]', config.color)}>
-                      {language === 'th' ? config.label.th : config.label.en}
-                    </Badge>
-                    {entry.policyKind && (
-                      <Badge variant="outline" className={cn(
-                        'text-[9px]',
-                        entry.policyKind === 'vmi' ? 'border-primary text-primary' : 'border-orange-500 text-orange-600'
-                      )}>
-                        {entry.policyKind.toUpperCase()}
-                      </Badge>
-                    )}
-                    {entry.type === 'rework' && !entry.resolved && (
-                      <Badge className="text-[9px] bg-orange-500/10 text-orange-600 border border-orange-500/30">
-                        {language === 'th' ? 'เปิดอยู่' : 'Open'}
-                      </Badge>
-                    )}
-                    {entry.type === 'rework' && entry.resolved && (
-                      <Badge className="text-[9px] bg-green-500/10 text-green-600 border border-green-500/30">
-                        {language === 'th' ? 'แก้ไขแล้ว' : 'Resolved'}
-                      </Badge>
-                    )}
-                  </div>
-                  <p className="text-xs text-foreground leading-relaxed">{entry.description}</p>
-                  <div className="flex items-center justify-between">
-                    <p className="text-[10px] text-muted-foreground">
-                      {entry.user} · {formatDateTime(entry.timestamp)}
-                    </p>
-                    {entry.type === 'rework' && !entry.resolved && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-5 px-2 text-[10px] text-green-600 hover:text-green-700"
-                        onClick={() => handleResolve(entry.id)}
-                      >
-                        <CheckCircle2 className="w-3 h-3 mr-1" />
-                        {language === 'th' ? 'แก้ไข' : 'Resolve'}
-                      </Button>
-                    )}
-                  </div>
-                </div>
+        <div className="px-4 py-3 space-y-4">
+          {groups.length === 0 && (
+            <p className="text-xs text-muted-foreground text-center py-8">
+              {language === 'th' ? 'ไม่มีรายการ' : 'No entries match these filters'}
+            </p>
+          )}
+          {groups.map((group) => (
+            <div key={group.key} className="space-y-3">
+              <div className="sticky top-0 z-10 -mx-4 px-4 py-1 bg-card/95 backdrop-blur-sm">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  {dayLabel(group.key, language)}
+                </p>
               </div>
-            );
-          })}
+              {group.entries.map((entry) => {
+                const config = typeConfig[entry.type] || typeConfig.field_update;
+                const Icon = config.icon;
+                return (
+                  <div key={entry.id} className="relative pl-6 pb-3 border-l-2 border-border last:border-0">
+                    <div className={cn('absolute left-[-9px] top-0 w-4 h-4 rounded-full bg-card border-2 border-border flex items-center justify-center')}>
+                      <Icon className={cn('w-2.5 h-2.5', config.color)} />
+                    </div>
+                    <div className="space-y-0.5">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className={cn('text-[9px]', config.color)}>
+                          {language === 'th' ? config.label.th : config.label.en}
+                        </Badge>
+                        {entry.policyKind && (
+                          <Badge variant="outline" className={cn(
+                            'text-[9px]',
+                            entry.policyKind === 'vmi' ? 'border-primary text-primary' : 'border-orange-500 text-orange-600'
+                          )}>
+                            {entry.policyKind.toUpperCase()}
+                          </Badge>
+                        )}
+                        {entry.type === 'rework' && !entry.resolved && (
+                          <Badge className="text-[9px] bg-orange-500/10 text-orange-600 border border-orange-500/30">
+                            {language === 'th' ? 'เปิดอยู่' : 'Open'}
+                          </Badge>
+                        )}
+                        {entry.type === 'rework' && entry.resolved && (
+                          <Badge className="text-[9px] bg-green-500/10 text-green-600 border border-green-500/30">
+                            {language === 'th' ? 'แก้ไขแล้ว' : 'Resolved'}
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-xs text-foreground leading-relaxed">{entry.description}</p>
+                      <div className="flex items-center justify-between">
+                        <p className="text-[10px] text-muted-foreground">
+                          {entry.user} · {formatDateTime(entry.timestamp)}
+                        </p>
+                        {entry.type === 'rework' && !entry.resolved && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-5 px-2 text-[10px] text-green-600 hover:text-green-700"
+                            onClick={() => handleResolve(entry.id)}
+                          >
+                            <CheckCircle2 className="w-3 h-3 mr-1" />
+                            {language === 'th' ? 'แก้ไข' : 'Resolve'}
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ))}
         </div>
       </ScrollArea>
     </div>
