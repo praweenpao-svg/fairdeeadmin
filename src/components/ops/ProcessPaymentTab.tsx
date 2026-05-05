@@ -110,14 +110,14 @@ function FullPaymentView({ sale, isPaid }: { sale: SaleDetail; isPaid: boolean }
       <Card className="border-border">
         <CardContent className="p-4 space-y-3">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-semibold">{language === 'th' ? 'วิธีชำระเงิน 2' : 'Payment 2'}</p>
+            <div className="flex items-center gap-1.5">
+              <p className="text-sm font-semibold">{language === 'th' ? 'วิธีชำระเงิน 2' : 'Payment 2'}</p>
+              <InfoTip text={language === 'th'
+                ? 'โอนเงินตามจำนวนที่ต้องชำระเข้าบัญชีธนาคารด้านล่าง และอัปโหลดหลักฐานเมื่อชำระเรียบร้อย'
+                : 'Transfer the amount payable to following bank account and upload the payment proof once the payment is done'} />
+            </div>
             <Badge variant="outline" className="text-[10px]">Bank Transfer</Badge>
           </div>
-          <p className="text-xs text-muted-foreground">
-            {language === 'th'
-              ? 'โอนเงินตามจำนวนที่ต้องชำระเข้าบัญชีธนาคารด้านล่าง และอัปโหลดหลักฐานเมื่อชำระเรียบร้อย'
-              : 'Transfer the amount payable to following bank account and upload the payment proof once the payment is done'}
-          </p>
           <div className="text-xs space-y-0.5 bg-card border border-border rounded-md p-3">
             <p>{language === 'th' ? 'ชื่อบัญชี' : 'Account Name'}: บจก. พินนาเคิล โบรกเกอร์เรจ</p>
             <p>{language === 'th' ? 'ธนาคาร' : 'Bank'}: ธนาคาร กสิกรไทย</p>
