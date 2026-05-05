@@ -10,8 +10,24 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { FileText, QrCode, Upload, CreditCard, CheckCircle2, MessageSquare, Receipt } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { FileText, QrCode, Upload, CreditCard, CheckCircle2, MessageSquare, Receipt, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+function InfoTip({ text }: { text: string }) {
+  return (
+    <TooltipProvider delayDuration={150}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button type="button" className="inline-flex items-center text-muted-foreground hover:text-foreground">
+            <Info className="w-3.5 h-3.5" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="max-w-xs text-xs">{text}</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
 
 interface Props {
   sale: SaleDetail;
@@ -30,12 +46,15 @@ const PAID_STATUSES = new Set([
 
 const fmtBaht = (n: number) => `${Math.round(n).toLocaleString()} Baht`;
 
-function SectionCard({ title, badge, children }: { title: string; badge?: React.ReactNode; children: React.ReactNode }) {
+function SectionCard({ title, badge, info, children }: { title: string; badge?: React.ReactNode; info?: string; children: React.ReactNode }) {
   return (
     <Card className="border-border">
       <CardContent className="p-5 space-y-4">
         <div className="flex items-start justify-between gap-3 pb-3 border-b border-border">
-          <h3 className="text-sm font-bold">{title}</h3>
+          <h3 className="text-sm font-bold flex items-center gap-1.5">
+            {title}
+            {info && <InfoTip text={info} />}
+          </h3>
           {badge}
         </div>
         {children}
@@ -50,10 +69,10 @@ function FullPaymentView({ sale, isPaid }: { sale: SaleDetail; isPaid: boolean }
   const totalPremium = sale.policies.reduce((s, p) => s + p.premiumAfterTax, 0);
 
   return (
-    <SectionCard title={language === 'th' ? 'วิธีชำระเงิน' : 'Payment Methods'}>
-      <p className="text-xs text-muted-foreground -mt-2">
-        {language === 'th' ? 'เลือกวิธีการชำระเงินที่ต้องการ' : 'Please choose your preferred method of payment'}
-      </p>
+    <SectionCard
+      title={language === 'th' ? 'วิธีชำระเงิน' : 'Payment Methods'}
+      info={language === 'th' ? 'เลือกวิธีการชำระเงินที่ต้องการ' : 'Please choose your preferred method of payment'}
+    >
 
       {/* Payment 1 — QR */}
       <Card className="border-border">
@@ -91,14 +110,14 @@ function FullPaymentView({ sale, isPaid }: { sale: SaleDetail; isPaid: boolean }
       <Card className="border-border">
         <CardContent className="p-4 space-y-3">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-semibold">{language === 'th' ? 'วิธีชำระเงิน 2' : 'Payment 2'}</p>
+            <div className="flex items-center gap-1.5">
+              <p className="text-sm font-semibold">{language === 'th' ? 'วิธีชำระเงิน 2' : 'Payment 2'}</p>
+              <InfoTip text={language === 'th'
+                ? 'โอนเงินตามจำนวนที่ต้องชำระเข้าบัญชีธนาคารด้านล่าง และอัปโหลดหลักฐานเมื่อชำระเรียบร้อย'
+                : 'Transfer the amount payable to following bank account and upload the payment proof once the payment is done'} />
+            </div>
             <Badge variant="outline" className="text-[10px]">Bank Transfer</Badge>
           </div>
-          <p className="text-xs text-muted-foreground">
-            {language === 'th'
-              ? 'โอนเงินตามจำนวนที่ต้องชำระเข้าบัญชีธนาคารด้านล่าง และอัปโหลดหลักฐานเมื่อชำระเรียบร้อย'
-              : 'Transfer the amount payable to following bank account and upload the payment proof once the payment is done'}
-          </p>
           <div className="text-xs space-y-0.5 bg-card border border-border rounded-md p-3">
             <p>{language === 'th' ? 'ชื่อบัญชี' : 'Account Name'}: บจก. พินนาเคิล โบรกเกอร์เรจ</p>
             <p>{language === 'th' ? 'ธนาคาร' : 'Bank'}: ธนาคาร กสิกรไทย</p>
