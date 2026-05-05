@@ -12,7 +12,6 @@ export default function ReworkAdmin() {
   const tab = searchParams.get('tab') === 'config' ? 'config' : 'reasons';
 
   return (
-    <div className="p-6">
     <Tabs
       value={tab}
       onValueChange={(v) => setSearchParams({ tab: v }, { replace: true })}
