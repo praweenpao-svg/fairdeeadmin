@@ -499,21 +499,6 @@ export function ActionStatusCard({ sale, onPolicyStatusChange }: SaleOverviewCar
           defaultValue="payment_verified"
           language={language}
         />
-        {isInstalment ? (
-          <StatusDropdown
-            label={language === 'th' ? 'สถานะ KYC' : 'KYC Status'}
-            options={kycStatuses}
-            defaultValue="pending_verification"
-            language={language}
-          />
-        ) : (
-          <div className="space-y-1">
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
-              {language === 'th' ? 'สถานะ KYC' : 'KYC Status'}
-            </span>
-            <p className="text-xs italic text-muted-foreground h-7 flex items-center">N/A</p>
-          </div>
-        )}
       </CardContent>
     </Card>
   );
