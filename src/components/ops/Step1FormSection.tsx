@@ -64,10 +64,19 @@ const SHIPPING_FORMATS: { value: Exclude<ShippingFormat, ''>; th: string; en: st
 
 function MondayTag({ type }: { type: string }) {
   return (
-    <span className="inline-flex items-center gap-1 text-[9px] font-semibold text-purple-700 bg-purple-50 border border-purple-200 rounded px-1.5 py-0.5 ml-1.5 align-middle">
-      <span className="w-1.5 h-1.5 rounded-sm bg-purple-700" />
-      Monday: {type}
-    </span>
+    <TooltipProvider delayDuration={150}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span
+            className="inline-block w-1.5 h-1.5 rounded-sm bg-purple-500 ml-1.5 align-middle cursor-help"
+            aria-label={`Monday: ${type}`}
+          />
+        </TooltipTrigger>
+        <TooltipContent side="top" className="text-[11px]">
+          Monday: {type}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
 
