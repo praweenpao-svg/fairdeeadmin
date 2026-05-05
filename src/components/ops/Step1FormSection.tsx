@@ -658,8 +658,19 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
 
         {needsShippingAddress && (
           <div className="md:col-span-2 mt-1 p-4 bg-muted/40 border border-border rounded-md space-y-3">
-            <div className="text-sm font-bold flex items-center">
+            <div className="text-sm font-bold flex items-center gap-1.5">
               {t('ที่อยู่จัดส่ง', 'Shipping Address')}
+              {shippingAddressSource && (
+                <InfoBanner>
+                  {shippingAddressSource === 'national_id'
+                    ? t('ที่อยู่จัดส่งจะใช้ข้อมูลเดียวกับที่อยู่บนกรมธรรม์ คุณสามารถตรวจสอบและแก้ไขได้ในขั้นตอนที่ 2', 'Shipping address will mirror the Policy Address. You can review and edit it in Step 2.')
+                    : shippingAddressSource === 'agent'
+                      ? t('ใช้ที่อยู่ตัวแทน (FairDee). ตรวจสอบรายละเอียดในขั้นตอนที่ 2', 'Using FairDee agent address. Review details in Step 2.')
+                      : shippingAddressSource === 'car_reg'
+                        ? t('กรุณาแนบทะเบียนรถในส่วน "แนบเอกสาร" ด้านล่าง — ระบบจะอ่านที่อยู่และให้คุณตรวจสอบในขั้นตอนที่ 2', 'Please attach the Car Registration in "Link Documents" below — OCR will populate the shipping fields for review in Step 2.')
+                        : t('กรอกที่อยู่จัดส่งใหม่ในขั้นตอนที่ 2', 'Enter the new shipping address in Step 2.')}
+                </InfoBanner>
+              )}
               <MondayTag type="dropdown" />
             </div>
 
@@ -694,18 +705,6 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
                   </Button>
                 ))}
               </div>
-            )}
-
-            {shippingAddressSource && (
-              <InfoBanner>
-                {shippingAddressSource === 'national_id'
-                  ? t('ที่อยู่จัดส่งจะใช้ข้อมูลเดียวกับที่อยู่บนกรมธรรม์ คุณสามารถตรวจสอบและแก้ไขได้ในขั้นตอนที่ 2', 'Shipping address will mirror the Policy Address. You can review and edit it in Step 2.')
-                  : shippingAddressSource === 'agent'
-                    ? t('ใช้ที่อยู่ตัวแทน (FairDee). ตรวจสอบรายละเอียดในขั้นตอนที่ 2', 'Using FairDee agent address. Review details in Step 2.')
-                    : shippingAddressSource === 'car_reg'
-                      ? t('กรุณาแนบทะเบียนรถในส่วน "แนบเอกสาร" ด้านล่าง — ระบบจะอ่านที่อยู่และให้คุณตรวจสอบในขั้นตอนที่ 2', 'Please attach the Car Registration in "Link Documents" below — OCR will populate the shipping fields for review in Step 2.')
-                      : t('กรอกที่อยู่จัดส่งใหม่ในขั้นตอนที่ 2', 'Enter the new shipping address in Step 2.')}
-              </InfoBanner>
             )}
           </div>
         )}
