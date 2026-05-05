@@ -573,10 +573,20 @@ interface VerifyTabProps {
 
 function VerifyInformationTab({ sale, onReadinessChange }: VerifyTabProps) {
   const { language } = useLanguageStore();
+  const { logic, installmentPlan, installmentCount, coverageStartDate } = useOpsLogic();
   const customer = sale.customer;
   const vehicle = sale.vehicle;
   const shipping = sale.shipping;
   const agent = sale.agent;
+
+  // Scenario-driven flags
+  const isCorporation = logic.customerType === 'corporation';
+  const isInstalment = logic.paymentType === 'Instalment';
+  const isCOA = logic.saleType === 'COA';
+  const isStartToday = React.useMemo(() => {
+    if (!coverageStartDate) return false;
+    return coverageStartDate === new Date().toISOString().slice(0, 10);
+  }, [coverageStartDate]);
 
   const [zoom, setZoom] = React.useState<Record<string, number>>({ national_id: 100, car_reg: 100, payment: 100 });
   // OCR sim status per source
@@ -693,18 +703,35 @@ function VerifyInformationTab({ sale, onReadinessChange }: VerifyTabProps) {
     );
   };
 
+  // Corporation-specific fields
+  const [companyName, setCompanyName] = React.useState('');
+  const [taxId, setTaxId] = React.useState('');
+  const [authorizedSignatory, setAuthorizedSignatory] = React.useState('');
+
+  // COA review acknowledgement
+  const [coaFormReviewed, setCoaFormReviewed] = React.useState(false);
+
   // Compute readiness for "Send to Agent"
   React.useEffect(() => {
     const blockers: string[] = [];
-    if (ocrStatus.national_id !== 'done') blockers.push(language === 'th' ? 'OCR บัตรประชาชนยังไม่เสร็จ' : 'National ID OCR not run');
+    // Today-start scenario: relax OCR + start-date gating; only formal docs required.
+    if (!isStartToday) {
+      if (ocrStatus.national_id !== 'done') blockers.push(language === 'th' ? 'OCR บัตรประชาชนยังไม่เสร็จ' : 'National ID OCR not run');
+      if (!policyStartDate) blockers.push(language === 'th' ? 'กรุณาระบุวันเริ่มต้นกรมธรรม์' : 'Policy start date required');
+    }
     if (!insurancePhone.trim()) blockers.push(language === 'th' ? 'กรุณาระบุเบอร์โทรศัพท์' : 'Phone number required');
-    if (!policyStartDate) blockers.push(language === 'th' ? 'กรุณาระบุวันเริ่มต้นกรมธรรม์' : 'Policy start date required');
+    if (isCorporation) {
+      if (!companyName.trim()) blockers.push(language === 'th' ? 'กรุณาระบุชื่อบริษัท' : 'Company name required');
+      if (!taxId.trim()) blockers.push(language === 'th' ? 'กรุณาระบุเลขประจำตัวผู้เสียภาษี' : 'Tax ID required');
+      if (!authorizedSignatory.trim()) blockers.push(language === 'th' ? 'กรุณาระบุผู้มีอำนาจลงนาม' : 'Authorized signatory required');
+    }
+    if (isCOA && !coaFormReviewed) blockers.push(language === 'th' ? 'กรุณายืนยันการตรวจสอบแบบฟอร์ม COA' : 'COA form review required');
     if (shippingForm.receiverType !== 'e_policy') {
       if (!shippingForm.addressLine.trim()) blockers.push(language === 'th' ? 'กรุณาระบุที่อยู่จัดส่ง' : 'Shipping address required');
       if (!shippingForm.phoneNumber.trim()) blockers.push(language === 'th' ? 'กรุณาระบุเบอร์โทรผู้รับ' : 'Receiver phone required');
     }
     onReadinessChange?.(blockers.length === 0, blockers);
-  }, [ocrStatus, insurancePhone, policyStartDate, shippingForm, language, onReadinessChange]);
+  }, [ocrStatus, insurancePhone, policyStartDate, shippingForm, language, onReadinessChange, isStartToday, isCorporation, companyName, taxId, authorizedSignatory, isCOA, coaFormReviewed]);
 
   const ocrPill = (status: OcrStatus) => {
     const map: Record<OcrStatus, { label: string; cls: string }> = {
@@ -734,8 +761,23 @@ function VerifyInformationTab({ sale, onReadinessChange }: VerifyTabProps) {
     );
   };
 
+  // Scenario hint chips
+  const scenarioChips: { label: string; cls: string }[] = [];
+  if (isCorporation) scenarioChips.push({ label: language === 'th' ? 'นิติบุคคล' : 'Corporation', cls: 'bg-blue-500/15 text-blue-700 border-blue-500/30' });
+  if (isInstalment) scenarioChips.push({ label: language === 'th' ? 'ผ่อนชำระ' : 'Instalment', cls: 'bg-violet-500/15 text-violet-700 border-violet-500/30' });
+  if (isCOA) scenarioChips.push({ label: 'COA', cls: 'bg-amber-500/15 text-amber-700 border-amber-500/30' });
+  if (isStartToday) scenarioChips.push({ label: language === 'th' ? 'เริ่มคุ้มครองวันนี้' : 'Start today', cls: 'bg-rose-500/15 text-rose-700 border-rose-500/30' });
+
   return (
     <div className="space-y-6">
+      {scenarioChips.length > 0 && (
+        <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+          <span className="uppercase tracking-wide">{language === 'th' ? 'ตามสถานการณ์' : 'Driven by scenario'}:</span>
+          {scenarioChips.map((c, i) => (
+            <Badge key={i} variant="outline" className={cn('h-5 px-1.5 text-[10px]', c.cls)}>{c.label}</Badge>
+          ))}
+        </div>
+      )}
       {/* Section 1: National ID */}
       <Card className="border-border">
         <CardContent className="p-0">
@@ -882,6 +924,95 @@ function VerifyInformationTab({ sale, onReadinessChange }: VerifyTabProps) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Corporation: company KYC fields */}
+      {isCorporation && (
+        <Card className="border-blue-500/30 bg-blue-500/5">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <ShieldCheck className="w-4 h-4 text-blue-700" />
+              <h5 className="text-sm font-semibold">{language === 'th' ? 'ข้อมูลนิติบุคคล' : 'Corporation KYC'}</h5>
+              <Badge variant="outline" className="h-5 px-1.5 text-[10px] bg-blue-500/15 text-blue-700 border-blue-500/30">
+                {language === 'th' ? 'จำเป็นสำหรับนิติบุคคล' : 'Required for Corporation'}
+              </Badge>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <VerifyField
+                label={language === 'th' ? 'ชื่อบริษัท *' : 'Company Name *'}
+                value={companyName}
+                onChange={setCompanyName}
+                source="Business Registration"
+                required
+              />
+              <VerifyField
+                label={language === 'th' ? 'เลขประจำตัวผู้เสียภาษี *' : 'Tax ID *'}
+                value={taxId}
+                onChange={setTaxId}
+                source="Business Registration"
+                required
+              />
+              <VerifyField
+                label={language === 'th' ? 'ผู้มีอำนาจลงนาม *' : 'Authorized Signatory *'}
+                value={authorizedSignatory}
+                onChange={setAuthorizedSignatory}
+                source="Business Registration"
+                required
+              />
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Instalment: payment schedule preview */}
+      {isInstalment && (
+        <Card className="border-violet-500/30 bg-violet-500/5">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <CreditCard className="w-4 h-4 text-violet-700" />
+              <h5 className="text-sm font-semibold">{language === 'th' ? 'ตารางผ่อนชำระ' : 'Instalment Schedule'}</h5>
+              <Badge variant="outline" className="h-5 px-1.5 text-[10px] bg-violet-500/15 text-violet-700 border-violet-500/30">
+                {installmentPlan === 'downpayment'
+                  ? (language === 'th' ? '25% ดาวน์' : '25% Downpayment')
+                  : (language === 'th' ? 'ผ่อนเท่ากัน' : 'Equal Plan')}
+                {installmentCount && ` · ${installmentCount} ${language === 'th' ? 'งวด' : 'instalments'}`}
+              </Badge>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {language === 'th'
+                ? 'ตรวจสอบยอดดาวน์และงวดที่จะเรียกเก็บก่อนส่งให้ตัวแทน'
+                : 'Review downpayment and instalment amounts before sending to agent.'}
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* COA: form review acknowledgement */}
+      {isCOA && (
+        <Card className="border-amber-500/30 bg-amber-500/5">
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <FileText className="w-4 h-4 text-amber-700 mt-0.5" />
+              <div className="flex-1">
+                <h5 className="text-sm font-semibold mb-1">{language === 'th' ? 'ตรวจสอบแบบฟอร์ม COA' : 'COA Form Review'}</h5>
+                <p className="text-xs text-muted-foreground mb-3">
+                  {language === 'th'
+                    ? 'ยืนยันว่าตรวจสอบเอกสารโอนโค้ดแล้วก่อนดำเนินการต่อ'
+                    : 'Confirm COA transfer documents have been reviewed before proceeding.'}
+                </p>
+                <label className="flex items-center gap-2 text-xs cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={coaFormReviewed}
+                    onChange={(e) => setCoaFormReviewed(e.target.checked)}
+                    className="rounded border-border"
+                  />
+                  <span>{language === 'th' ? 'ตรวจสอบและยืนยันแบบฟอร์ม COA แล้ว' : 'COA forms reviewed and confirmed'}</span>
+                </label>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Shipping Address */}
       <Card className="border-border">
