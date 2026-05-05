@@ -283,8 +283,7 @@ function LinkDocumentsTab({ sale }: { sale: SaleDetail }) {
   const { language } = useLanguageStore();
 
   // Pull live logic state from context (driven by Step1FormSection + dev FAB).
-  const opsLogic = useOpsLogic();
-  const { logic } = opsLogic;
+  const { logic, setFieldDocCounts } = useOpsLogic();
   const { saleType, insuranceClass, paymentType, carType, customerType, paymentMethodValue: paymentMethod, driverLicenseCount, carInspectionMethod } = logic;
 
   const docGroups = React.useMemo(
