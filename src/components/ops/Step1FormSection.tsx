@@ -657,30 +657,13 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
         )}
 
         {addCompulsory && compulsoryShippingFormat === 'fairdee' && (
-          <div className="md:col-span-2 mt-1 p-4 bg-muted/40 border border-border rounded-md space-y-3">
-            <div className="flex items-center justify-between gap-3">
-              <div className="text-sm font-bold">{t('ที่อยู่จัดส่ง พ.ร.บ. (CMI)', 'Shipping Address (CMI)')}</div>
-              <label className="flex items-center gap-2 text-xs text-foreground cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={cmiShippingSameAsVmi}
-                  onChange={(e) => setCmiShippingSameAsVmi(e.target.checked)}
-                  className="h-3.5 w-3.5 accent-primary"
-                />
-                {t('ใช้ที่อยู่เดียวกับภาคสมัครใจ', 'Same as Voluntary')}
-              </label>
-            </div>
-            {!cmiShippingSameAsVmi && (
-              <ShippingAddressBlock
-                title=""
-                source={cmiShippingAddressSource}
-                onSourceChange={setCmiShippingAddressSource}
-                t={t}
-                lang={lang}
-                bare
-              />
-            )}
-          </div>
+          <ShippingAddressBlock
+            title={t('ที่อยู่จัดส่ง พ.ร.บ. (CMI)', 'Shipping Address (CMI)')}
+            source={cmiShippingAddressSource}
+            onSourceChange={setCmiShippingAddressSource}
+            t={t}
+            lang={lang}
+          />
         )}
       </SectionCard>
     </div>
