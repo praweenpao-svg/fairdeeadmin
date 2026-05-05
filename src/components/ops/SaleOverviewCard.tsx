@@ -431,35 +431,14 @@ export function PolicyStatusCard({ sale, onPolicyStatusChange }: SaleOverviewCar
   );
 }
 
-export function PaymentStatusCard({ sale }: SaleOverviewCardProps) {
-  const { language } = useLanguageStore();
+// Payment statuses
+const pmtStatuses = [
+  { value: 'payment_verified', en: 'Payment Verified', th: 'ยืนยันการชำระเงินแล้ว' },
+  { value: 'insurer_notified', en: 'Insurer Notified', th: 'แจ้งบริษัทประกันแล้ว' },
+  { value: 'credit_approved', en: 'Credit Approved', th: 'อนุมัติเครดิตแล้ว' },
+];
 
-  const pmtStatuses = [
-    { value: 'payment_verified', en: 'Payment Verified', th: 'ยืนยันการชำระเงินแล้ว' },
-    { value: 'insurer_notified', en: 'Insurer Notified', th: 'แจ้งบริษัทประกันแล้ว' },
-    { value: 'credit_approved', en: 'Credit Approved', th: 'อนุมัติเครดิตแล้ว' },
-  ];
-
-  return (
-    <Card>
-      <CardHeader className="pb-2 pt-4 px-4">
-        <CardTitle className="text-sm font-semibold">
-          {language === 'th' ? 'การชำระเงิน' : 'Payment'}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="px-4 pb-4">
-        <StatusDropdown
-          label={language === 'th' ? 'สถานะ' : 'Status'}
-          options={pmtStatuses}
-          defaultValue="payment_verified"
-          language={language}
-        />
-      </CardContent>
-    </Card>
-  );
-}
-
-// KYC Section — only shown for instalment sales
+// KYC statuses — only relevant for instalment sales
 const kycStatuses = [
   { value: 'pending_kyc', en: 'Pending KYC', th: 'รอ KYC' },
   { value: 'kyc_in_review', en: 'KYC In Review', th: 'กำลังตรวจสอบ KYC' },
@@ -467,28 +446,50 @@ const kycStatuses = [
   { value: 'kyc_rejected', en: 'KYC Rejected', th: 'KYC ถูกปฏิเสธ' },
 ];
 
-export function KycCard({ sale }: SaleOverviewCardProps) {
+export function ActionStatusCard({ sale }: SaleOverviewCardProps) {
   const { language } = useLanguageStore();
   const isInstalment = /install?ment|ผ่อน/i.test(sale.paymentMethod || '');
-  if (!isInstalment) return null;
 
   return (
     <Card>
       <CardHeader className="pb-2 pt-4 px-4">
         <CardTitle className="text-sm font-semibold">
-          {language === 'th' ? 'KYC' : 'KYC'}
+          {language === 'th' ? 'สถานะการดำเนินการ' : 'Action Status'}
         </CardTitle>
       </CardHeader>
-      <CardContent className="px-4 pb-4">
+      <CardContent className="px-4 pb-4 space-y-3">
         <StatusDropdown
-          label={language === 'th' ? 'สถานะ' : 'Status'}
-          options={kycStatuses}
-          defaultValue="pending_kyc"
+          label={language === 'th' ? 'สถานะการชำระเงิน' : 'Payment Status'}
+          options={pmtStatuses}
+          defaultValue="payment_verified"
           language={language}
         />
+        {isInstalment ? (
+          <StatusDropdown
+            label={language === 'th' ? 'สถานะ KYC' : 'KYC Status'}
+            options={kycStatuses}
+            defaultValue="pending_kyc"
+            language={language}
+          />
+        ) : (
+          <div className="space-y-1">
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
+              {language === 'th' ? 'สถานะ KYC' : 'KYC Status'}
+            </span>
+            <p className="text-xs italic text-muted-foreground h-7 flex items-center">N/A</p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
+}
+
+// Deprecated — kept as thin wrappers for backward compatibility
+export function PaymentStatusCard({ sale }: SaleOverviewCardProps) {
+  return <ActionStatusCard sale={sale} />;
+}
+export function KycCard(_: SaleOverviewCardProps) {
+  return null;
 }
 
 // Downloads Section
