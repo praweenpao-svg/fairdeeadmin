@@ -474,6 +474,23 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
             span={2}
             label={t('วิธีตรวจสภาพรถ', 'Car Inspection Method')}
             hint={t('สำหรับประกันชั้น 1 เท่านั้น', 'Required for Type 1 only')}
+            info={
+              isRenewalInspectionLocked ? (
+                <InfoBanner tone="warn">
+                  {t(
+                    'งานต่ออายุ: วิธีตรวจสภาพรถจะใช้แบบเดียวกับปีก่อน (อัปโหลดภาพถ่าย 8 มุม) และเอกสารถูกแนบไว้ให้แล้ว',
+                    "Renewal: car inspection method follows last year's selection (Upload 8-angle photos) and documents are pre-attached.",
+                  )}
+                </InfoBanner>
+              ) : logic.carInspectionMethod === 'upload_photos' ? (
+                <InfoBanner>
+                  {t(
+                    'ต้องอัปโหลดภาพถ่ายรถอย่างน้อย 8 มุม ในส่วนแนบเอกสาร',
+                    'You must upload at least 8 car inspection photos in the attachment section.',
+                  )}
+                </InfoBanner>
+              ) : undefined
+            }
           >
             <InspectionPicker
               value={logic.carInspectionMethod}
@@ -484,26 +501,6 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
               locked={isRenewalInspectionLocked}
               lang={lang}
             />
-            {isRenewalInspectionLocked && (
-              <div className="mt-2">
-                <InfoBanner tone="warn">
-                  {t(
-                    'งานต่ออายุ: วิธีตรวจสภาพรถจะใช้แบบเดียวกับปีก่อน (อัปโหลดภาพถ่าย 8 มุม) และเอกสารถูกแนบไว้ให้แล้ว',
-                    "Renewal: car inspection method follows last year's selection (Upload 8-angle photos) and documents are pre-attached.",
-                  )}
-                </InfoBanner>
-              </div>
-            )}
-            {logic.carInspectionMethod === 'upload_photos' && !isRenewalInspectionLocked && (
-              <div className="mt-2">
-                <InfoBanner>
-                  📸 {t(
-                    'ต้องอัปโหลดภาพถ่ายรถอย่างน้อย 8 มุม ในส่วนแนบเอกสาร',
-                    'You must upload at least 8 car inspection photos in the attachment section.',
-                  )}
-                </InfoBanner>
-              </div>
-            )}
             {logic.carInspectionMethod === 'inspection_appointment' && (
               <div className="mt-3 space-y-2">
                 <Label className="text-xs font-medium text-muted-foreground">
