@@ -646,58 +646,111 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
         )}
 
         {needsShippingAddress && (
+          <ShippingAddressBlock
+            title={addCompulsory ? t('ที่อยู่จัดส่ง (ภาคสมัครใจ)', 'Shipping Address (Voluntary)') : t('ที่อยู่จัดส่ง', 'Shipping Address')}
+            source={shippingAddressSource}
+            onSourceChange={setShippingAddressSource}
+            t={t}
+            lang={lang}
+          />
+        )}
+
+        {addCompulsory && (
           <div className="md:col-span-2 mt-1 p-4 bg-muted/40 border border-border rounded-md space-y-3">
-            <div className="text-sm font-bold flex items-center gap-1.5">
-              {t('ที่อยู่จัดส่ง', 'Shipping Address')}
-              {shippingAddressSource && (
-                <InfoBanner>
-                  {shippingAddressSource === 'national_id'
-                    ? t('ที่อยู่จัดส่งจะใช้ข้อมูลเดียวกับที่อยู่บนกรมธรรม์ คุณสามารถตรวจสอบและแก้ไขได้ในขั้นตอนที่ 2', 'Shipping address will mirror the Policy Address. You can review and edit it in Step 2.')
-                    : shippingAddressSource === 'agent'
-                      ? t('ใช้ที่อยู่ตัวแทน (FairDee). ตรวจสอบรายละเอียดในขั้นตอนที่ 2', 'Using FairDee agent address. Review details in Step 2.')
-                      : shippingAddressSource === 'car_reg'
-                        ? t('กรุณาแนบทะเบียนรถในส่วน "แนบเอกสาร" ด้านล่าง — ระบบจะอ่านที่อยู่และให้คุณตรวจสอบในขั้นตอนที่ 2', 'Please attach the Car Registration in "Link Documents" below — OCR will populate the shipping fields for review in Step 2.')
-                        : t('กรอกที่อยู่จัดส่งใหม่ในขั้นตอนที่ 2', 'Enter the new shipping address in Step 2.')}
-                </InfoBanner>
-              )}
-              <MondayTag type="dropdown" />
+            <div className="flex items-center justify-between gap-3">
+              <div className="text-sm font-bold">{t('ที่อยู่จัดส่ง พ.ร.บ. (CMI)', 'Shipping Address (CMI)')}</div>
+              <label className="flex items-center gap-2 text-xs text-foreground cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={cmiShippingSameAsVmi}
+                  onChange={(e) => setCmiShippingSameAsVmi(e.target.checked)}
+                  className="h-3.5 w-3.5 accent-primary"
+                />
+                {t('ใช้ที่อยู่เดียวกับภาคสมัครใจ', 'Same as Voluntary')}
+              </label>
             </div>
-
-            <div className="flex flex-wrap gap-2">
-              {SHIPPING_ADDRESS_SOURCES.map(src => (
-                <ChipPill
-                  key={src.value}
-                  active={shippingAddressSource === src.value}
-                  onClick={() => setShippingAddressSource(src.value)}
-                >
-                  {lang === 'th' ? src.th : src.en}
-                </ChipPill>
-              ))}
-            </div>
-
-            {shippingAddressSource === 'new' && (
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xs text-muted-foreground">{t('คัดลอกจาก:', 'Copy from:')}</span>
-                {[
-                  { copyFrom: 'insured', label: t('ผู้เอาประกันภัย', 'Insured') },
-                  { copyFrom: 'car_reg', label: t('ทะเบียนรถ', 'Car Reg.') },
-                ].map(opt => (
-                  <Button
-                    key={opt.copyFrom}
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="h-7 px-2 text-xs gap-1"
-                    onClick={() => toast.info(t('จะคัดลอกที่อยู่ในขั้นตอนที่ 2', 'Address will be copied in Step 2.'))}
-                  >
-                    <Copy className="h-3 w-3" /> {opt.label}
-                  </Button>
-                ))}
-              </div>
+            {!cmiShippingSameAsVmi && (
+              <ShippingAddressBlock
+                title=""
+                source={cmiShippingAddressSource}
+                onSourceChange={setCmiShippingAddressSource}
+                t={t}
+                lang={lang}
+                bare
+              />
             )}
           </div>
         )}
       </SectionCard>
+    </div>
+  );
+}
+
+function ShippingAddressBlock({
+  title, source, onSourceChange, t, lang, bare = false,
+}: {
+  title: string;
+  source: string;
+  onSourceChange: (v: string) => void;
+  t: (th: string, en: string) => string;
+  lang: string;
+  bare?: boolean;
+}) {
+  const hint =
+    source === 'national_id'
+      ? t('ที่อยู่จัดส่งจะใช้ข้อมูลเดียวกับที่อยู่บนกรมธรรม์ คุณสามารถตรวจสอบและแก้ไขได้ในขั้นตอนที่ 2', 'Shipping address will mirror the Policy Address. You can review and edit it in Step 2.')
+      : source === 'agent'
+        ? t('ใช้ที่อยู่ตัวแทน (FairDee). ตรวจสอบรายละเอียดในขั้นตอนที่ 2', 'Using FairDee agent address. Review details in Step 2.')
+        : source === 'car_reg'
+          ? t('กรุณาแนบทะเบียนรถในส่วน "แนบเอกสาร" ด้านล่าง — ระบบจะอ่านที่อยู่และให้คุณตรวจสอบในขั้นตอนที่ 2', 'Please attach the Car Registration in "Link Documents" below — OCR will populate the shipping fields for review in Step 2.')
+          : t('กรอกที่อยู่จัดส่งใหม่ในขั้นตอนที่ 2', 'Enter the new shipping address in Step 2.');
+
+  const inner = (
+    <>
+      {title && (
+        <div className="text-sm font-bold flex items-center gap-1.5">
+          {title}
+          {source && <InfoBanner>{hint}</InfoBanner>}
+        </div>
+      )}
+      <div className="flex flex-wrap gap-2">
+        {SHIPPING_ADDRESS_SOURCES.map(src => (
+          <ChipPill
+            key={src.value}
+            active={source === src.value}
+            onClick={() => onSourceChange(src.value)}
+          >
+            {lang === 'th' ? src.th : src.en}
+          </ChipPill>
+        ))}
+      </div>
+      {source === 'new' && (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs text-muted-foreground">{t('คัดลอกจาก:', 'Copy from:')}</span>
+          {[
+            { copyFrom: 'insured', label: t('ผู้เอาประกันภัย', 'Insured') },
+            { copyFrom: 'car_reg', label: t('ทะเบียนรถ', 'Car Reg.') },
+          ].map(opt => (
+            <Button
+              key={opt.copyFrom}
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-7 px-2 text-xs gap-1"
+              onClick={() => toast.info(t('จะคัดลอกที่อยู่ในขั้นตอนที่ 2', 'Address will be copied in Step 2.'))}
+            >
+              <Copy className="h-3 w-3" /> {opt.label}
+            </Button>
+          ))}
+        </div>
+      )}
+    </>
+  );
+
+  if (bare) return <div className="space-y-3">{inner}</div>;
+  return (
+    <div className="md:col-span-2 mt-1 p-4 bg-muted/40 border border-border rounded-md space-y-3">
+      {inner}
     </div>
   );
 }
