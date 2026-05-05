@@ -99,7 +99,7 @@ function FullPaymentView({ sale, isPaid }: { sale: SaleDetail; isPaid: boolean }
               ? 'โอนเงินตามจำนวนที่ต้องชำระเข้าบัญชีธนาคารด้านล่าง และอัปโหลดหลักฐานเมื่อชำระเรียบร้อย'
               : 'Transfer the amount payable to following bank account and upload the payment proof once the payment is done'}
           </p>
-          <div className="text-xs space-y-0.5 bg-muted/30 rounded-md p-3">
+          <div className="text-xs space-y-0.5 bg-card border border-border rounded-md p-3">
             <p>{language === 'th' ? 'ชื่อบัญชี' : 'Account Name'}: บจก. พินนาเคิล โบรกเกอร์เรจ</p>
             <p>{language === 'th' ? 'ธนาคาร' : 'Bank'}: ธนาคาร กสิกรไทย</p>
             <p>{language === 'th' ? 'เลขที่บัญชี' : 'Account No.'}: 055-3-20926-9</p>
@@ -355,7 +355,7 @@ export function ProcessPaymentTab({ sale }: Props) {
 
       {/* Cover Note */}
       <SectionCard title={language === 'th' ? 'ใบรับรองชั่วคราว (Cover Note)' : 'Cover Note'}>
-        <div className="space-y-1 max-w-md">
+        <div className="space-y-1">
           <Label className="text-xs">{language === 'th' ? 'รหัส Cover Note' : 'Cover note code'}</Label>
           <Input className="h-9 text-sm bg-card" defaultValue={isPaymentVerified ? 'FD-VIB-701492' : ''} disabled={isPaymentVerified} />
         </div>
@@ -363,7 +363,7 @@ export function ProcessPaymentTab({ sale }: Props) {
 
       {/* Sale Info */}
       <SectionCard title={language === 'th' ? 'ข้อมูลการขาย' : 'Sale Info'}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-2xl">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div className="space-y-1">
             <Label className="text-xs">{language === 'th' ? 'วันที่ขาย' : 'Date of sale'}</Label>
             <Input type="date" className="h-9 text-sm bg-card" defaultValue="2026-04-21" disabled={isPaymentVerified} />
@@ -384,7 +384,7 @@ export function ProcessPaymentTab({ sale }: Props) {
 
       {/* Car Inspection & Quotation ID */}
       <SectionCard title={language === 'th' ? 'การตรวจสภาพรถ และ Quotation ID' : 'Car Inspection & Quotation ID'}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-2xl">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div className="space-y-1">
             <Label className="text-xs">{language === 'th' ? 'สถานะการตรวจสภาพรถ' : 'Car inspection status'}</Label>
             <Select disabled={isPaymentVerified}>
