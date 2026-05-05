@@ -69,10 +69,10 @@ function FullPaymentView({ sale, isPaid }: { sale: SaleDetail; isPaid: boolean }
   const totalPremium = sale.policies.reduce((s, p) => s + p.premiumAfterTax, 0);
 
   return (
-    <SectionCard title={language === 'th' ? 'วิธีชำระเงิน' : 'Payment Methods'}>
-      <p className="text-xs text-muted-foreground -mt-2">
-        {language === 'th' ? 'เลือกวิธีการชำระเงินที่ต้องการ' : 'Please choose your preferred method of payment'}
-      </p>
+    <SectionCard
+      title={language === 'th' ? 'วิธีชำระเงิน' : 'Payment Methods'}
+      info={language === 'th' ? 'เลือกวิธีการชำระเงินที่ต้องการ' : 'Please choose your preferred method of payment'}
+    >
 
       {/* Payment 1 — QR */}
       <Card className="border-border">
