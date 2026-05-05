@@ -515,7 +515,17 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
 
       {/* ════════ Card 2: Payment ════════ */}
       <SectionCard title={t('การชำระเงิน', 'Payment')}>
-        <FormRow span={isInstallment ? 2 : 1} label={t('วิธีการชำระเงิน', 'Payment Method')} required monday="dropdown">
+        <FormRow
+          span={isInstallment ? 2 : 1}
+          label={t('วิธีการชำระเงิน', 'Payment Method')}
+          required
+          monday="dropdown"
+          info={isInstallment ? (
+            <InfoBanner tone="warn">
+              {t('ผ่อนชำระ — ระบบจะขอเอกสารเพิ่มเติมในส่วนแนบเอกสาร', 'Instalment selected — additional documents will be required below.')}
+            </InfoBanner>
+          ) : undefined}
+        >
           <Select
             value={logic.paymentMethodValue}
             onValueChange={(v) => {
@@ -539,14 +549,6 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
               ))}
             </SelectContent>
           </Select>
-          {isInstallment && (
-            <div className="mt-2">
-              <InfoBanner tone="warn">
-                {t('ผ่อนชำระ — ระบบจะขอเอกสารเพิ่มเติมในส่วนแนบเอกสาร', 'Instalment selected — additional documents will be required below.')}
-              </InfoBanner>
-            </div>
-          )}
-        </FormRow>
 
         {showKyc && (
           <FormRow label={t('ข้อมูล KYC', 'KYC Information')}>
