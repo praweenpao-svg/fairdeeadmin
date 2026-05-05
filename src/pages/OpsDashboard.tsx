@@ -147,52 +147,32 @@ export default function OpsDashboard() {
       </header>
 
 
-      {/* 4-Step Stepper — hidden for now, to be brought back later */}
-      {/* <StepperBar currentStep={currentStep} onStepClick={setCurrentStep} /> */}
-
-      {/* Step 4: Two-column layout */}
-      {mode === 'B' && (
-        <div className="flex-1 overflow-y-auto px-6 py-4 w-full">
-          {/* Detail bar spans full width */}
-          <SaleDetailBar
-            sale={sale}
-            hasActiveRework={false}
-            onOpenUploadPolicy={() => setUploadPolicyOpen(true)}
-            onOpenHistoryLog={() => setHistorySidebarOpen(true)}
-            onOpenEndorsement={() => handleToast(language === 'th' ? 'เปิด Record Endorsement' : 'Open Record Endorsement')}
-            onOpenUploadDoc={() => handleToast(language === 'th' ? 'เปิด Upload Document' : 'Open Upload Document')}
-          />
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mt-4">
-            {/* Left column: Agent Overview + Policy Status */}
-            <div className="lg:col-span-1 space-y-4 bg-card rounded-lg p-3 border border-border">
-              <AgentDetailsCard sale={sale} />
-              <PolicyStatusCard sale={sale} onPolicyStatusChange={handlePolicyStatusChange} />
-              <PaymentStatusCard sale={sale} />
-              <KycCard sale={sale} />
-              <DownloadsCard />
-              <HistoryCard />
-            </div>
-            {/* Right column: Content Tabs */}
-            <div className="lg:col-span-4 bg-card rounded-lg p-4 border border-border">
-              <ContentTabs sale={sale} />
+      {/* Two-column layout */}
+      <div className="flex-1 overflow-y-auto px-6 py-4 w-full">
+        <SaleDetailBar
+          sale={sale}
+          hasActiveRework={false}
+          onOpenUploadPolicy={() => setUploadPolicyOpen(true)}
+          onOpenHistoryLog={() => setHistorySidebarOpen(true)}
+          onOpenEndorsement={() => handleToast(language === 'th' ? 'เปิด Record Endorsement' : 'Open Record Endorsement')}
+          onOpenUploadDoc={() => handleToast(language === 'th' ? 'เปิด Upload Document' : 'Open Upload Document')}
+        />
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mt-4">
+          {/* Left column: Agent Overview + Policy Status */}
+          <div className="lg:col-span-1 space-y-4 bg-card rounded-lg p-3 border border-border">
+            <AgentDetailsCard sale={sale} />
+            <PolicyStatusCard sale={sale} onPolicyStatusChange={handlePolicyStatusChange} />
+            <PaymentStatusCard sale={sale} />
+            <KycCard sale={sale} />
+            <DownloadsCard />
+            <HistoryCard />
           </div>
+          {/* Right column: Content Tabs */}
+          <div className="lg:col-span-4 bg-card rounded-lg p-4 border border-border">
+            <ContentTabs sale={sale} />
           </div>
         </div>
-      )}
-
-      {/* Mode A: Wizard step content (placeholder) */}
-      {mode === 'A' && (
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center space-y-3 max-w-md">
-            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-              <span className="text-2xl font-bold text-primary">{currentStep + 1}</span>
-            </div>
-            <h3 className="text-lg font-semibold">
-              {language === 'th' ? steps[currentStep].th : steps[currentStep].en}
-            </h3>
-          </div>
-        </div>
-      )}
+      </div>
 
       {/* Upload Policy Modal (G2) */}
       <UploadPolicyModal
