@@ -209,11 +209,11 @@ export function SaleDetailBar({
     <div className="bg-card border border-border rounded-lg p-4">
       <div className="flex items-center gap-4">
         {/* Quotation info */}
-        <div className="flex items-baseline gap-2 min-w-0">
-          <span className="text-xs text-muted-foreground">
+        <div className="min-w-0">
+          <span className="text-[10px] text-muted-foreground">
             {language === 'th' ? 'เลขใบเสนอราคา' : 'Quotation Number'}
           </span>
-          <p className="text-sm font-bold tabular-nums">{sale.qqId}</p>
+          <p className="text-sm font-bold leading-tight">{sale.qqId}</p>
         </div>
 
         <div className="flex-1" />
