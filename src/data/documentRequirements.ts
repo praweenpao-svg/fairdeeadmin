@@ -199,15 +199,15 @@ export function getRequiredDocuments(
     docs.push({ fieldId: 'business_registration_certificate', required: true, isOcr: false, category: 'conditional', conditionNote: 'Corporate customer' });
   }
 
-  // E. Vehicle Inspection
-  if (insuranceClass === 'Type1') {
+  // E. Vehicle Inspection — Type 1 only, and only for New/COA sales (not Renewal)
+  if (insuranceClass === 'Type1' && saleType !== 'Renewable') {
     const isUploadPhotos = carInspectionMethod === 'upload_photos';
     docs.push({
       fieldId: 'car_inspection_photos',
       required: isUploadPhotos,
       isOcr: false,
       category: 'conditional',
-      conditionNote: saleType === 'Renewable' ? 'Renewal — same as last year (≥ 8 photos)' : 'Type 1 only (at least 8 photos)',
+      conditionNote: 'Type 1 only (at least 8 photos)',
       requiredCount: isUploadPhotos ? 8 : undefined,
     });
     docs.push({ fieldId: 'car_inspection_form', required: false, isOcr: false, category: 'conditional', conditionNote: 'Type 1 only' });

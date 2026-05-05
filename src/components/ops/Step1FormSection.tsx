@@ -294,8 +294,9 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
   const vehicleCodeLabel = `${vehicleCode} - ${language === 'th' ? vcDef.th : vcDef.en}`;
 
   const isInstallment = logic.paymentType === 'Instalment';
-  const showInspection = logic.insuranceClass === 'Type1';
-  const isRenewalInspectionLocked = logic.saleType === 'Renewable' && showInspection;
+  // Type 1 inspection method only required for New and COA sales (not Renewal)
+  const showInspection = logic.insuranceClass === 'Type1' && logic.saleType !== 'Renewable';
+  const isRenewalInspectionLocked = false;
 
   // KYC visible for instalment via bank/QR (sibling rule)
   const showKyc = isInstallment && (
