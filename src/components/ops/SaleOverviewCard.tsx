@@ -8,6 +8,7 @@ import insurerGenericLogo from '@/assets/insurer-generic.png';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useHistoryStore } from '@/stores/historyStore';
+import { useOpsLogic } from './OpsLogicContext';
 import {
   Select,
   SelectContent,
@@ -282,29 +283,10 @@ export function AgentDetailsCard({ sale }: SaleOverviewCardProps) {
 
 export function InsurerDetailsCard({ sale }: SaleOverviewCardProps) {
   const { language } = useLanguageStore();
-  const vmi = sale.policies.find(p => p.kind === 'vmi');
-  const ctx = React.useContext(require('./OpsLogicContext').default ?? null);
-  // Use the logic controller's garageType when available so changes there reflect here.
-  let garageType = vmi?.garageType || 'Dealership';
-  try {
-    // Lazy import to avoid require complications
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { useOpsLogic } = require('./OpsLogicContext');
-    // hooks must be called unconditionally — handled below in inner component
-    void useOpsLogic;
-  } catch {}
-  if (!vmi) return null;
-
-  return <InsurerDetailsCardInner sale={sale} fallbackGarage={garageType} />;
-}
-
-function InsurerDetailsCardInner({ sale, fallbackGarage }: SaleOverviewCardProps & { fallbackGarage: string }) {
-  const { language } = useLanguageStore();
-  const vmi = sale.policies.find(p => p.kind === 'vmi')!;
-  // Pull garage type from logic controller context
-  const { useOpsLogic } = require('./OpsLogicContext') as typeof import('./OpsLogicContext');
   const { logic } = useOpsLogic();
-  const garageType = logic.garageType || fallbackGarage;
+  const vmi = sale.policies.find(p => p.kind === 'vmi');
+  if (!vmi) return null;
+  const garageType = logic.garageType || vmi.garageType;
 
   return (
     <Card>
