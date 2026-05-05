@@ -4,7 +4,7 @@ import { useLanguageStore } from '@/stores/languageStore';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { MentionNotificationBell } from '@/components/notifications/MentionNotificationBell';
 import { mockSaleDetail } from '@/data/mockSaleDetail';
-import { PolicyStatusCard, AgentDetailsCard, PaymentStatusCard, KycCard, DownloadsCard, HistoryCard } from '@/components/ops/SaleOverviewCard';
+import { PolicyStatusCard, AgentDetailsCard, InsurerDetailsCard, PriceDetailsCard, PaymentStatusCard, KycCard, DownloadsCard, HistoryCard } from '@/components/ops/SaleOverviewCard';
 import { ContentTabs } from '@/components/ops/ContentTabs';
 import { SaleDetailBar } from '@/components/ops/SaleDetailBar';
 import { UploadPolicyModal } from '@/components/ops/UploadPolicyModal';
@@ -175,6 +175,8 @@ export default function OpsDashboard() {
           {/* Left column: Agent Overview + Policy Status */}
           <div className="lg:col-span-1 space-y-3 bg-card rounded-lg p-4 border border-border">
             <AgentDetailsCard sale={sale} />
+            <InsurerDetailsCard sale={sale} />
+            <PriceDetailsCard sale={sale} />
             <PolicyStatusCard sale={sale} onPolicyStatusChange={handlePolicyStatusChange} />
             <PaymentStatusCard sale={sale} />
             <KycCard sale={sale} />
