@@ -925,6 +925,95 @@ function VerifyInformationTab({ sale, onReadinessChange }: VerifyTabProps) {
         </CardContent>
       </Card>
 
+      {/* Corporation: company KYC fields */}
+      {isCorporation && (
+        <Card className="border-blue-500/30 bg-blue-500/5">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <ShieldCheck className="w-4 h-4 text-blue-700" />
+              <h5 className="text-sm font-semibold">{language === 'th' ? 'ข้อมูลนิติบุคคล' : 'Corporation KYC'}</h5>
+              <Badge variant="outline" className="h-5 px-1.5 text-[10px] bg-blue-500/15 text-blue-700 border-blue-500/30">
+                {language === 'th' ? 'จำเป็นสำหรับนิติบุคคล' : 'Required for Corporation'}
+              </Badge>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <VerifyField
+                label={language === 'th' ? 'ชื่อบริษัท *' : 'Company Name *'}
+                value={companyName}
+                onChange={setCompanyName}
+                source="Business Registration"
+                required
+              />
+              <VerifyField
+                label={language === 'th' ? 'เลขประจำตัวผู้เสียภาษี *' : 'Tax ID *'}
+                value={taxId}
+                onChange={setTaxId}
+                source="Business Registration"
+                required
+              />
+              <VerifyField
+                label={language === 'th' ? 'ผู้มีอำนาจลงนาม *' : 'Authorized Signatory *'}
+                value={authorizedSignatory}
+                onChange={setAuthorizedSignatory}
+                source="Business Registration"
+                required
+              />
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Instalment: payment schedule preview */}
+      {isInstalment && (
+        <Card className="border-violet-500/30 bg-violet-500/5">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <CreditCard className="w-4 h-4 text-violet-700" />
+              <h5 className="text-sm font-semibold">{language === 'th' ? 'ตารางผ่อนชำระ' : 'Instalment Schedule'}</h5>
+              <Badge variant="outline" className="h-5 px-1.5 text-[10px] bg-violet-500/15 text-violet-700 border-violet-500/30">
+                {installmentPlan === 'downpayment'
+                  ? (language === 'th' ? '25% ดาวน์' : '25% Downpayment')
+                  : (language === 'th' ? 'ผ่อนเท่ากัน' : 'Equal Plan')}
+                {installmentCount && ` · ${installmentCount} ${language === 'th' ? 'งวด' : 'instalments'}`}
+              </Badge>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {language === 'th'
+                ? 'ตรวจสอบยอดดาวน์และงวดที่จะเรียกเก็บก่อนส่งให้ตัวแทน'
+                : 'Review downpayment and instalment amounts before sending to agent.'}
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* COA: form review acknowledgement */}
+      {isCOA && (
+        <Card className="border-amber-500/30 bg-amber-500/5">
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <FileText className="w-4 h-4 text-amber-700 mt-0.5" />
+              <div className="flex-1">
+                <h5 className="text-sm font-semibold mb-1">{language === 'th' ? 'ตรวจสอบแบบฟอร์ม COA' : 'COA Form Review'}</h5>
+                <p className="text-xs text-muted-foreground mb-3">
+                  {language === 'th'
+                    ? 'ยืนยันว่าตรวจสอบเอกสารโอนโค้ดแล้วก่อนดำเนินการต่อ'
+                    : 'Confirm COA transfer documents have been reviewed before proceeding.'}
+                </p>
+                <label className="flex items-center gap-2 text-xs cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={coaFormReviewed}
+                    onChange={(e) => setCoaFormReviewed(e.target.checked)}
+                    className="rounded border-border"
+                  />
+                  <span>{language === 'th' ? 'ตรวจสอบและยืนยันแบบฟอร์ม COA แล้ว' : 'COA forms reviewed and confirmed'}</span>
+                </label>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Shipping Address */}
       <Card className="border-border">
         <CardContent className="p-4">
