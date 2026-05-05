@@ -26,40 +26,9 @@ export function DevLogicControllerFab() {
     voluntaryShippingFormat, setVoluntaryShippingFormat,
     compulsoryShippingFormat, setCompulsoryShippingFormat,
     inspectionAppointmentDate, setInspectionAppointmentDate,
-    setCoverageStartDate,
   } = useOpsLogic();
   const { language } = useLanguageStore();
   const t = (th: string, en: string) => (language === 'th' ? th : en);
-  const [scenarioId, setScenarioId] = React.useState<string>('');
-
-  const applyScenario = (id: string) => {
-    const sc = TEST_SCENARIOS.find(s => s.id === id);
-    if (!sc) return;
-    setScenarioId(id);
-    const d = sc.data;
-    setLogic(prev => ({
-      ...prev,
-      ...(d.saleType ? { saleType: d.saleType } : {}),
-      ...(d.insuranceClass ? { insuranceClass: d.insuranceClass } : {}),
-      ...(d.paymentType ? { paymentType: d.paymentType } : {}),
-      ...(d.carType ? { carType: d.carType } : {}),
-      ...(d.customerType ? { customerType: d.customerType } : {}),
-      ...(d.paymentMethodValue !== undefined ? { paymentMethodValue: d.paymentMethodValue } : {}),
-      ...(d.driverLicenseCount !== undefined ? { driverLicenseCount: d.driverLicenseCount } : {}),
-      ...(d.carInspectionMethod !== undefined ? { carInspectionMethod: d.carInspectionMethod } : {}),
-    }));
-    if (d.kycMode !== undefined) setKycMode(d.kycMode);
-    if (d.installmentPlan !== undefined) setInstallmentPlan(d.installmentPlan);
-    if (d.installmentCount !== undefined) setInstallmentCount(d.installmentCount);
-    if (d.coverageStartDate) {
-      const v = d.coverageStartDate === 'today' ? new Date().toISOString().slice(0, 10) : d.coverageStartDate;
-      setCoverageStartDate(v);
-    }
-    toast({
-      title: t('โหลดสถานการณ์ทดสอบแล้ว', 'Test scenario loaded'),
-      description: language === 'th' ? sc.labelTh : sc.labelEn,
-    });
-  };
 
   return (
     <>
