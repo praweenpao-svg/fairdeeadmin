@@ -63,6 +63,7 @@ const seedFromSale = (sale: SaleDetail): LogicControllerState => ({
   paymentMethodValue: sale.paymentMethodValue ?? '',
   driverLicenseCount: sale.driverLicenseCount ?? 0,
   carInspectionMethod: sale.carInspectionMethod ?? '',
+  garageType: (sale.policies.find(p => p.kind === 'vmi')?.garageType as 'Dealership' | 'General Garage') || 'Dealership',
 });
 
 const addOneYear = (yyyyMmDd: string): string => {

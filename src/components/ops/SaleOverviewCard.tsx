@@ -8,6 +8,7 @@ import insurerGenericLogo from '@/assets/insurer-generic.png';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useHistoryStore } from '@/stores/historyStore';
+import { useOpsLogic } from './OpsLogicContext';
 import {
   Select,
   SelectContent,
@@ -268,24 +269,12 @@ export function AgentDetailsCard({ sale }: SaleOverviewCardProps) {
       </CardHeader>
       <CardContent className="px-4 pb-4">
         <div className="space-y-2.5">
-          <p className="text-xs text-muted-foreground italic mb-2">
-            {language === 'th'
-              ? `แสดงใบเสนอราคาสำหรับ ${sale.customer.firstName} ${sale.customer.lastName}, ${sale.vehicle.brand} ${sale.vehicle.model} ${sale.vehicle.year} - ${sale.vehicle.licensePlate}`
-              : `Showing Quotation for ${sale.customer.firstName} ${sale.customer.lastName}, ${sale.vehicle.brand} ${sale.vehicle.model} ${sale.vehicle.year} - ${sale.vehicle.licensePlate}`}
-          </p>
-          <SummaryRow label={language === 'th' ? 'ยี่ห้อ' : 'Model'} value={sale.vehicle.brand} />
-          <SummaryRow label={language === 'th' ? 'รุ่นย่อย' : 'Submodel'} value={sale.vehicle.model} />
-          <SummaryRow label={language === 'th' ? 'ชื่อตัวแทน' : 'Agent Name'} value={language === 'th' ? sale.agent.nameTh : sale.agent.name} />
+          <SummaryRow label={language === 'th' ? 'ชื่อตัวแทน' : 'Agent Name'} value="Agent Name" />
+          <SummaryRow label={language === 'th' ? 'รหัสตัวแทน' : 'Agent Code'} value="FX-XXXXX" />
+          <SummaryRow label={language === 'th' ? 'เบอร์โทรศัพท์' : 'Agent Phone'} value="0XX-XXX-XXXX" />
           <SummaryRow label={language === 'th' ? 'ระดับ' : 'Level'} value={String(sale.agent.level)} />
-          <SummaryRow label={language === 'th' ? 'เบอร์โทรศัพท์' : 'Agent Phone'} value={sale.agent.phone} />
-          <SummaryRow label={language === 'th' ? 'รหัสตัวแทน' : 'Agent Code'} value={sale.agent.code} />
-          <SummaryRow label={language === 'th' ? 'ระยะเวลาเป็นสมาชิก' : 'Time Since Joined'} value={sale.agent.membershipDuration} />
-          <SummaryRow label={language === 'th' ? 'ทุนประกันแนะนำ' : 'Recommended Sum Insured'} value={sale.agent.sumInsured ? `${sale.agent.sumInsured.toLocaleString()} Baht` : '—'} />
-          <SummaryRow label={language === 'th' ? 'ทุนประกันแนะนำจากเดิม' : 'Recommended sum insured from Previous/Final sub model'} value={sale.agent.sumInsuredFromOriginal} />
-          <SummaryRow label={language === 'th' ? 'ทุนประกันก่อนหน้า' : 'Previous sum insured'} value={sale.agent.originalSumInsured} />
           <SummaryRow label={language === 'th' ? 'ประเภทงาน' : 'Type of Sale'} value={sale.saleType || sale.typeOfSale} />
-          <SummaryRow label={language === 'th' ? 'ราคาดีที่สุด' : 'Cheapest price'} value={sale.agent.bestPremium ? (language === 'th' ? 'ใช่' : 'Yes') : (language === 'th' ? 'ไม่' : 'No')} />
-          <SummaryRow label={language === 'th' ? 'สร้างเมื่อ' : 'Created At'} value={sale.createdAt} />
+          <SummaryRow label={language === 'th' ? 'สร้างเมื่อ' : 'Created At'} value="01/03/2026" />
         </div>
       </CardContent>
     </Card>
@@ -294,8 +283,10 @@ export function AgentDetailsCard({ sale }: SaleOverviewCardProps) {
 
 export function InsurerDetailsCard({ sale }: SaleOverviewCardProps) {
   const { language } = useLanguageStore();
+  const { logic } = useOpsLogic();
   const vmi = sale.policies.find(p => p.kind === 'vmi');
   if (!vmi) return null;
+  const garageType = logic.garageType || vmi.garageType;
 
   return (
     <Card>
@@ -308,12 +299,13 @@ export function InsurerDetailsCard({ sale }: SaleOverviewCardProps) {
       <CardContent className="px-4 pb-4">
         <div className="flex items-center gap-2 mb-3">
           <img src={insurerGenericLogo} alt="Insurer" className="w-8 h-8 object-contain" />
-          <span className="text-xs font-semibold">{vmi.coverage.insurer} ({language === 'th' ? 'สาขา' : 'Branch'})</span>
+          <span className="text-xs font-semibold">{language === 'th' ? 'บริษัทประกัน' : 'Insurer Name'}</span>
         </div>
         <div className="space-y-2.5">
-          <SummaryRow label={language === 'th' ? 'ประเภทประกัน' : 'Type of insurance'} value={`MV${vmi.coverage.insuranceClass} : ${vmi.packageName}`} />
+          <SummaryRow label={language === 'th' ? 'ชื่อแพ็กเกจ' : 'Package Name'} value={language === 'th' ? 'ชื่อแพ็กเกจ' : 'Package Name'} />
+          <SummaryRow label={language === 'th' ? 'ชั้นประกัน' : 'Insurance Class'} value={`MV${vmi.coverage.insuranceClass}`} />
           <SummaryRow label={language === 'th' ? 'ทุนประกัน' : 'Sum Insured'} value={vmi.sumInsured ? `${vmi.sumInsured.toLocaleString()} Baht` : '—'} />
-          <SummaryRow label={language === 'th' ? 'ประเภทอู่' : 'Garage Type'} value={vmi.garageType} />
+          <SummaryRow label={language === 'th' ? 'ประเภทอู่' : 'Garage Type'} value={garageType} />
         </div>
       </CardContent>
     </Card>
@@ -341,7 +333,7 @@ export function PriceDetailsCard({ sale }: SaleOverviewCardProps) {
   const commissionAfterTax = Math.round((totalCommission - withholdingTax) * 100) / 100;
   const vmiCommissionRate = vmi && vmiNet ? `${((vmiCommission / vmiNet) * 100).toFixed(2)}%` : '—';
 
-  const fmt = (n: number) => `${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} baht`;
+  const fmt = (n: number) => `${Math.round(n).toLocaleString()} Baht`;
 
   return (
     <Card>
