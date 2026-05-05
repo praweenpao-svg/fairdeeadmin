@@ -26,6 +26,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { SaleDetail, SalePolicy } from '@/data/mockSaleDetail';
+import { useHistoryStore } from '@/stores/historyStore';
 
 interface ActionPanelProps {
   sale: SaleDetail;
@@ -84,6 +85,7 @@ function PerPolicyRow({ policies, label, renderAction }: {
 
 export function ActionPanel({ sale, onUpdate }: ActionPanelProps) {
   const { language } = useLanguageStore();
+  const addHistory = useHistoryStore((s) => s.add);
   const [assignments, setAssignments] = useState(sale.assignment);
   const [reworkDialogOpen, setReworkDialogOpen] = useState(false);
   const [remarkDialogOpen, setRemarkDialogOpen] = useState(false);
@@ -100,8 +102,13 @@ export function ActionPanel({ sale, onUpdate }: ActionPanelProps) {
   };
 
   const handleAssignmentChange = (role: keyof typeof assignments, value: string) => {
+    const prev = assignments[role] || (language === 'th' ? 'ยังไม่มอบหมาย' : 'Unassigned');
     const updated = { ...assignments, [role]: value };
     setAssignments(updated);
+    addHistory({
+      type: 'assignment',
+      description: `${role.toUpperCase()}: ${prev} → ${value}`,
+    });
     toast.success(
       `${role.toUpperCase()} → ${value}`,
       { description: language === 'th' ? 'เปลี่ยนผู้รับผิดชอบแล้ว' : 'Assignment updated' }
@@ -110,6 +117,11 @@ export function ActionPanel({ sale, onUpdate }: ActionPanelProps) {
 
   const handleLogRework = () => {
     if (!reworkText.trim()) return;
+    addHistory({
+      type: 'rework',
+      description: reworkText,
+      policyKind: isMultiPolicy ? selectedPolicy : 'vmi',
+    });
     toast.success(language === 'th' ? 'บันทึก Rework สำเร็จ' : 'Rework logged', {
       description: `${isMultiPolicy ? `[${selectedPolicy.toUpperCase()}] ` : ''}${reworkText}`,
     });
@@ -119,6 +131,11 @@ export function ActionPanel({ sale, onUpdate }: ActionPanelProps) {
 
   const handleAddRemark = () => {
     if (!remarkText.trim()) return;
+    addHistory({
+      type: 'remark',
+      description: remarkText,
+      policyKind: isMultiPolicy ? selectedPolicy : 'vmi',
+    });
     toast.success(language === 'th' ? 'เพิ่มหมายเหตุสำเร็จ' : 'Remark added', {
       description: `${isMultiPolicy ? `[${selectedPolicy.toUpperCase()}] ` : ''}${remarkText}`,
     });

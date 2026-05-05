@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { useHistoryStore } from '@/stores/historyStore';
 
 export interface HistoryEntry {
   id: string;
@@ -112,17 +113,25 @@ export function HistoryActivitySidebar({ open, onClose, quotationId, availablePo
   const [compositionMode, setCompositionMode] = useState<'none' | 'rework' | 'remark'>('none');
   const [draftText, setDraftText] = useState('');
   const [policyFilter, setPolicyFilter] = useState<'all' | 'vmi' | 'cmi'>('all');
+  const liveEntries = useHistoryStore((s) => s.entries);
+  const addEntry = useHistoryStore((s) => s.add);
 
   if (!open) return null;
 
   const hasBothPolicies = availablePolicies && availablePolicies.includes('vmi') && availablePolicies.includes('cmi');
 
+  const combined = [...liveEntries, ...mockHistory];
   const filteredHistory = policyFilter === 'all'
-    ? mockHistory
-    : mockHistory.filter(e => !e.policyKind || e.policyKind === policyFilter);
+    ? combined
+    : combined.filter(e => !e.policyKind || e.policyKind === policyFilter);
 
   const handleSubmit = (type: 'rework' | 'remark') => {
     if (!draftText.trim()) return;
+    addEntry({
+      type,
+      description: draftText,
+      policyKind: policyFilter === 'all' ? undefined : policyFilter,
+    });
     toast.success(
       type === 'rework'
         ? (language === 'th' ? 'บันทึก Rework สำเร็จ' : 'Rework logged')

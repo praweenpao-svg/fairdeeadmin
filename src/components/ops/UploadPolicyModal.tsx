@@ -12,6 +12,7 @@ import { CalendarIcon } from 'lucide-react';
 import { format, parse } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { useHistoryStore } from '@/stores/historyStore';
 import {
   Dialog,
   DialogContent,
@@ -74,6 +75,7 @@ function PolicyForm({
   showGarageAndClass: boolean;
 }) {
   const { language } = useLanguageStore();
+  const addHistory = useHistoryStore((s) => s.add);
   const [form, setForm] = useState<PolicyFormState>({
     insurer: policy.insurer,
     policyFile: null,
@@ -87,10 +89,18 @@ function PolicyForm({
   });
 
   const handleSave = () => {
+    const kind = policy.kind.toUpperCase();
+    addHistory({
+      type: 'status_change',
+      policyKind: policy.kind,
+      description: form.trackingCode
+        ? `${kind}: Policy uploaded → Policy Shipped (tracking: ${form.trackingCode})`
+        : `${kind}: Policy uploaded${form.policyNumber ? ` (#${form.policyNumber})` : ''}`,
+    });
     toast.success(
       language === 'th'
-        ? `บันทึกข้อมูล ${policy.kind.toUpperCase()} สำเร็จ`
-        : `${policy.kind.toUpperCase()} policy saved`,
+        ? `บันทึกข้อมูล ${kind} สำเร็จ`
+        : `${kind} policy saved`,
       {
         description: form.trackingCode
           ? language === 'th'
