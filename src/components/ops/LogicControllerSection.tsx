@@ -85,6 +85,7 @@ export function LogicControllerSection({ value, onChange, onReset }: Props) {
       paymentMethodValue: o.paymentMethodValue ?? value.paymentMethodValue,
       driverLicenseCount: o.driverLicenseCount ?? value.driverLicenseCount,
       carInspectionMethod: o.carInspectionMethod ?? value.carInspectionMethod,
+      garageType: value.garageType,
     });
     setActiveScenario(scenario.id);
   };
@@ -233,6 +234,15 @@ export function LogicControllerSection({ value, onChange, onReset }: Props) {
                       {language === 'th' ? o.th : o.en}
                     </SelectItem>
                   ))}
+                </SelectContent>
+              </Select>
+            </Field>
+            <Field label={t('ประเภทอู่', 'Garage Type')}>
+              <Select value={value.garageType} onValueChange={(v) => set('garageType', v as LogicControllerState['garageType'])}>
+                <SelectTrigger className="h-7 text-[11px] font-sans"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Dealership" className="text-[11px] font-sans">{t('ศูนย์', 'Dealership')}</SelectItem>
+                  <SelectItem value="General Garage" className="text-[11px] font-sans">{t('อู่ทั่วไป', 'General Garage')}</SelectItem>
                 </SelectContent>
               </Select>
             </Field>
