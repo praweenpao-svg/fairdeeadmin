@@ -573,10 +573,20 @@ interface VerifyTabProps {
 
 function VerifyInformationTab({ sale, onReadinessChange }: VerifyTabProps) {
   const { language } = useLanguageStore();
+  const { logic, installmentPlan, installmentCount, coverageStartDate } = useOpsLogic();
   const customer = sale.customer;
   const vehicle = sale.vehicle;
   const shipping = sale.shipping;
   const agent = sale.agent;
+
+  // Scenario-driven flags
+  const isCorporation = logic.customerType === 'corporation';
+  const isInstalment = logic.paymentType === 'Instalment';
+  const isCOA = logic.saleType === 'COA';
+  const isStartToday = React.useMemo(() => {
+    if (!coverageStartDate) return false;
+    return coverageStartDate === new Date().toISOString().slice(0, 10);
+  }, [coverageStartDate]);
 
   const [zoom, setZoom] = React.useState<Record<string, number>>({ national_id: 100, car_reg: 100, payment: 100 });
   // OCR sim status per source
