@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Check, Pencil, X, FileText, Download, History, DollarSign } from 'lucide-react';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useHistoryStore } from '@/stores/historyStore';
 import {
   Select,
   SelectContent,
