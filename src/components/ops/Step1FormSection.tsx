@@ -549,6 +549,7 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
               ))}
             </SelectContent>
           </Select>
+        </FormRow>
 
         {showKyc && (
           <FormRow label={t('ข้อมูล KYC', 'KYC Information')}>
