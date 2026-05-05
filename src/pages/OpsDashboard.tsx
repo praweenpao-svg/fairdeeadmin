@@ -21,9 +21,6 @@ import { PolicyRemark, PolicyReworkEntry, ReworkAttachment } from '@/types/pipel
 
 export default function OpsDashboard() {
   const { language } = useLanguageStore();
-  const [currentStep, setCurrentStep] = useState(3);
-  const mode: 'A' | 'B' = currentStep >= 3 ? 'B' : 'A';
-
   // Live sale state so policy status changes propagate to primary button
   const [sale, setSale] = useState(() => ({ ...mockSaleDetail, policies: mockSaleDetail.policies.map(p => ({ ...p })) }));
 
