@@ -227,12 +227,12 @@ export function SaleOverviewCard({ sale }: SaleOverviewCardProps) {
 
   return (
     <Card>
-      <CardHeader className="pb-2 pt-3 px-5">
+      <CardHeader className="pb-2 pt-4 px-4">
         <CardTitle className="text-sm font-semibold">
           {language === 'th' ? 'สรุปงาน' : 'Sale Summary'}
         </CardTitle>
       </CardHeader>
-      <CardContent className="px-5 pb-4">
+      <CardContent className="px-4 pb-4">
         <div className="space-y-2.5">
           <SummaryRow label={language === 'th' ? 'เลขงาน' : 'Sale ID'} value={sale.qqId} />
           <SummaryRow label={language === 'th' ? 'ทะเบียนรถ' : 'Vehicle Number'} value={sale.vehicle.licensePlate} />
@@ -259,12 +259,12 @@ export function AgentDetailsCard({ sale }: SaleOverviewCardProps) {
 
   return (
     <Card>
-      <CardHeader className="pb-2 pt-3 px-5">
+      <CardHeader className="pb-2 pt-4 px-4">
         <CardTitle className="text-sm font-semibold">
           {language === 'th' ? 'ข้อมูลตัวแทน' : 'Agent Details'}
         </CardTitle>
       </CardHeader>
-      <CardContent className="px-5 pb-4">
+      <CardContent className="px-4 pb-4">
         <div className="space-y-2.5">
           <SummaryRow label={language === 'th' ? 'ชื่อตัวแทน' : 'Agent Name'} value={language === 'th' ? sale.agent.nameTh : sale.agent.name} />
           <SummaryRow label={language === 'th' ? 'ระดับ' : 'Level'} value={String(sale.agent.level)} />
@@ -281,12 +281,12 @@ export function PolicyStatusCard({ sale, onPolicyStatusChange }: SaleOverviewCar
 
   return (
     <Card>
-      <CardHeader className="pb-2 pt-3 px-5">
+      <CardHeader className="pb-2 pt-4 px-4">
         <CardTitle className="text-sm font-semibold">
           {language === 'th' ? 'สถานะกรมธรรม์' : 'Policy Status'}
         </CardTitle>
       </CardHeader>
-      <CardContent className="px-5 pb-4">
+      <CardContent className="px-4 pb-4">
         <div className="space-y-3">
 
           {/* VMI and CMI rows: status + owner */}
@@ -341,12 +341,12 @@ export function PaymentStatusCard({ sale }: SaleOverviewCardProps) {
 
   return (
     <Card>
-      <CardHeader className="pb-2 pt-3 px-5">
+      <CardHeader className="pb-2 pt-4 px-4">
         <CardTitle className="text-sm font-semibold">
           {language === 'th' ? 'การชำระเงิน' : 'Payment'}
         </CardTitle>
       </CardHeader>
-      <CardContent className="px-5 pb-4">
+      <CardContent className="px-4 pb-4">
         <StatusDropdown
           label={language === 'th' ? 'สถานะ' : 'Status'}
           options={pmtStatuses}
@@ -377,12 +377,12 @@ export function KycCard({ sale }: SaleOverviewCardProps) {
 
   return (
     <Card>
-      <CardHeader className="pb-2 pt-3 px-5">
+      <CardHeader className="pb-2 pt-4 px-4">
         <CardTitle className="text-sm font-semibold">
           {language === 'th' ? 'KYC' : 'KYC'}
         </CardTitle>
       </CardHeader>
-      <CardContent className="px-5 pb-4">
+      <CardContent className="px-4 pb-4">
         <StatusDropdown
           label={language === 'th' ? 'สถานะ' : 'Status'}
           options={kycStatuses}
@@ -407,13 +407,13 @@ export function DownloadsCard() {
 
   return (
     <Card>
-      <CardHeader className="pb-2 pt-3 px-5">
+      <CardHeader className="pb-2 pt-4 px-4">
         <CardTitle className="text-sm font-semibold flex items-center gap-2">
           <Download className="w-4 h-4" />
           {language === 'th' ? 'ดาวน์โหลด' : 'Downloads'}
         </CardTitle>
       </CardHeader>
-      <CardContent className="px-5 pb-4">
+      <CardContent className="px-4 pb-4">
         <div className="grid grid-cols-2 gap-2">
           {downloadItems.map((item, idx) => (
             <button
@@ -540,13 +540,13 @@ export function HistoryCard() {
   return (
     <>
       <Card>
-        <CardHeader className="pb-2 pt-3 px-5">
+        <CardHeader className="pb-2 pt-4 px-4">
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
             <History className="w-4 h-4" />
             {language === 'th' ? 'ประวัติ' : 'History'}
           </CardTitle>
         </CardHeader>
-        <CardContent className="px-5 pb-4">
+        <CardContent className="px-4 pb-4">
           <div className="grid grid-cols-2 gap-2">
             {historyItems.map((item, idx) => (
               <button
