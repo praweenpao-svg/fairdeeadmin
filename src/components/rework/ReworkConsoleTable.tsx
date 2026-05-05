@@ -521,7 +521,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold">Assignment Configuration Board</h2>
+          <h2 className="text-lg font-semibold">Assignment Configuration</h2>
           <p className="text-sm text-muted-foreground">
             Manage assignment, rework, and endorsement configurations
           </p>
