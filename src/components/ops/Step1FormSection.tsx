@@ -80,12 +80,13 @@ function MondayTag({ type }: { type: string }) {
   );
 }
 
-function FormRow({ label, required, monday, children, hint, span = 1 }: { label: string; required?: boolean; monday?: string; children: React.ReactNode; hint?: string; span?: 1 | 2 }) {
+function FormRow({ label, required, monday, info, children, hint, span = 1 }: { label: string; required?: boolean; monday?: string; info?: React.ReactNode; children: React.ReactNode; hint?: string; span?: 1 | 2 }) {
   return (
     <div className={cn('space-y-1.5 min-w-0', span === 2 && 'md:col-span-2')}>
-      <Label className="text-xs font-semibold text-foreground flex items-center flex-wrap leading-tight min-h-[18px]">
+      <Label className="text-xs font-semibold text-foreground flex items-center flex-wrap gap-1 leading-tight min-h-[18px]">
         {label}
         {required && <span className="text-destructive ml-0.5">*</span>}
+        {info}
         {monday && <MondayTag type={monday} />}
       </Label>
       {children}
@@ -94,13 +95,16 @@ function FormRow({ label, required, monday, children, hint, span = 1 }: { label:
   );
 }
 
-function SectionCard({ title, subtitle, badge, children }: { title: string; subtitle?: string; badge?: React.ReactNode; children: React.ReactNode }) {
+function SectionCard({ title, subtitle, badge, info, children }: { title: string; subtitle?: string; badge?: React.ReactNode; info?: React.ReactNode; children: React.ReactNode }) {
   return (
     <Card className="border-border">
       <CardContent className="p-5 space-y-4">
         <div className="flex items-start justify-between gap-3 pb-3 border-b border-border">
           <div>
-            <h3 className="text-sm font-bold">{title}</h3>
+            <h3 className="text-sm font-bold flex items-center gap-1.5">
+              {title}
+              {info}
+            </h3>
             {subtitle && <p className="text-[11px] text-muted-foreground mt-0.5">{subtitle}</p>}
           </div>
           {badge}
@@ -194,7 +198,8 @@ function InfoBanner({ children, tone = 'info' }: { children: React.ReactNode; to
         <TooltipTrigger asChild>
           <button
             type="button"
-            className={cn('inline-flex items-center gap-1 text-[11px] font-medium cursor-help', cls)}
+            aria-label="More info"
+            className={cn('inline-flex items-center justify-center cursor-help', cls)}
           >
             <Info className="h-3.5 w-3.5" />
           </button>
@@ -405,7 +410,18 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
           />
         </FormRow>
 
-        <FormRow label={t('ต้องการระบุผู้ขับขี่หรือไม่?', 'Driver License Required?')} span={logic.driverLicenseCount > 0 ? 2 : 1}>
+        <FormRow
+          label={t('ต้องการระบุผู้ขับขี่หรือไม่?', 'Driver License Required?')}
+          span={logic.driverLicenseCount > 0 ? 2 : 1}
+          info={logic.driverLicenseCount > 0 ? (
+            <InfoBanner>
+              {t(
+                `ต้องแนบใบอนุญาตขับขี่ ${logic.driverLicenseCount} ใบ ในส่วนแนบเอกสาร`,
+                `${logic.driverLicenseCount} driver license(s) required in the attachment section below.`
+              )}
+            </InfoBanner>
+          ) : undefined}
+        >
           <Select
             value={String(logic.driverLicenseCount)}
             onValueChange={(v) => setLogicField('driverLicenseCount', Number(v))}
@@ -418,16 +434,6 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
               ))}
             </SelectContent>
           </Select>
-          {logic.driverLicenseCount > 0 && (
-            <div className="mt-2">
-              <InfoBanner>
-                {t(
-                  `ต้องแนบใบอนุญาตขับขี่ ${logic.driverLicenseCount} ใบ ในส่วนแนบเอกสาร`,
-                  `${logic.driverLicenseCount} driver license(s) required in the attachment section below.`
-                )}
-              </InfoBanner>
-            </div>
-          )}
         </FormRow>
 
         <FormRow label={t('ซื้อ พ.ร.บ. เพิ่ม?', 'Add Compulsory Insurance?')} monday="tick box">
@@ -471,6 +477,23 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
             span={2}
             label={t('วิธีตรวจสภาพรถ', 'Car Inspection Method')}
             hint={t('สำหรับประกันชั้น 1 เท่านั้น', 'Required for Type 1 only')}
+            info={
+              isRenewalInspectionLocked ? (
+                <InfoBanner tone="warn">
+                  {t(
+                    'งานต่ออายุ: วิธีตรวจสภาพรถจะใช้แบบเดียวกับปีก่อน (อัปโหลดภาพถ่าย 8 มุม) และเอกสารถูกแนบไว้ให้แล้ว',
+                    "Renewal: car inspection method follows last year's selection (Upload 8-angle photos) and documents are pre-attached.",
+                  )}
+                </InfoBanner>
+              ) : logic.carInspectionMethod === 'upload_photos' ? (
+                <InfoBanner>
+                  {t(
+                    'ต้องอัปโหลดภาพถ่ายรถอย่างน้อย 8 มุม ในส่วนแนบเอกสาร',
+                    'You must upload at least 8 car inspection photos in the attachment section.',
+                  )}
+                </InfoBanner>
+              ) : undefined
+            }
           >
             <InspectionPicker
               value={logic.carInspectionMethod}
@@ -481,26 +504,6 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
               locked={isRenewalInspectionLocked}
               lang={lang}
             />
-            {isRenewalInspectionLocked && (
-              <div className="mt-2">
-                <InfoBanner tone="warn">
-                  {t(
-                    'งานต่ออายุ: วิธีตรวจสภาพรถจะใช้แบบเดียวกับปีก่อน (อัปโหลดภาพถ่าย 8 มุม) และเอกสารถูกแนบไว้ให้แล้ว',
-                    "Renewal: car inspection method follows last year's selection (Upload 8-angle photos) and documents are pre-attached.",
-                  )}
-                </InfoBanner>
-              </div>
-            )}
-            {logic.carInspectionMethod === 'upload_photos' && !isRenewalInspectionLocked && (
-              <div className="mt-2">
-                <InfoBanner>
-                  📸 {t(
-                    'ต้องอัปโหลดภาพถ่ายรถอย่างน้อย 8 มุม ในส่วนแนบเอกสาร',
-                    'You must upload at least 8 car inspection photos in the attachment section.',
-                  )}
-                </InfoBanner>
-              </div>
-            )}
             {logic.carInspectionMethod === 'inspection_appointment' && (
               <div className="mt-3 space-y-2">
                 <Label className="text-xs font-medium text-muted-foreground">
@@ -515,7 +518,17 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
 
       {/* ════════ Card 2: Payment ════════ */}
       <SectionCard title={t('การชำระเงิน', 'Payment')}>
-        <FormRow span={isInstallment ? 2 : 1} label={t('วิธีการชำระเงิน', 'Payment Method')} required monday="dropdown">
+        <FormRow
+          span={isInstallment ? 2 : 1}
+          label={t('วิธีการชำระเงิน', 'Payment Method')}
+          required
+          monday="dropdown"
+          info={isInstallment ? (
+            <InfoBanner tone="warn">
+              {t('ผ่อนชำระ — ระบบจะขอเอกสารเพิ่มเติมในส่วนแนบเอกสาร', 'Instalment selected — additional documents will be required below.')}
+            </InfoBanner>
+          ) : undefined}
+        >
           <Select
             value={logic.paymentMethodValue}
             onValueChange={(v) => {
@@ -539,13 +552,6 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
               ))}
             </SelectContent>
           </Select>
-          {isInstallment && (
-            <div className="mt-2">
-              <InfoBanner tone="warn">
-                {t('ผ่อนชำระ — ระบบจะขอเอกสารเพิ่มเติมในส่วนแนบเอกสาร', 'Instalment selected — additional documents will be required below.')}
-              </InfoBanner>
-            </div>
-          )}
         </FormRow>
 
         {showKyc && (
@@ -593,7 +599,18 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
       </SectionCard>
 
       {/* ════════ Card 3: Policy Address ════════ */}
-      <SectionCard title={t('ที่อยู่ในกรมธรรม์', 'Policy Address')}>
+      <SectionCard
+        title={t('ที่อยู่ในกรมธรรม์', 'Policy Address')}
+        info={policyAddressSource ? (
+          <InfoBanner>
+            {lang === 'th' ? (
+              <>คุณเลือกแหล่งที่อยู่: <strong>{POLICY_ADDRESS_SOURCES.find(s => s.value === policyAddressSource)?.th}</strong>. กรุณาแนบเอกสารที่เกี่ยวข้องในส่วน <strong>"แนบเอกสาร"</strong> ด้านล่าง — ระบบจะอ่านข้อมูลและให้คุณตรวจสอบในขั้นตอนที่ 2</>
+            ) : (
+              <>You selected source: <strong>{POLICY_ADDRESS_SOURCES.find(s => s.value === policyAddressSource)?.en}</strong>. Please attach the related document in the <strong>"Link Documents"</strong> section below — the system will OCR and let you verify in Step 2.</>
+            )}
+          </InfoBanner>
+        ) : undefined}
+      >
         <div className="md:col-span-2 space-y-3">
           <div className="flex flex-wrap gap-2">
             {POLICY_ADDRESS_SOURCES.map(src => (
@@ -606,15 +623,6 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
               </ChipPill>
             ))}
           </div>
-          {policyAddressSource && (
-            <InfoBanner>
-              {lang === 'th' ? (
-                <>คุณเลือกแหล่งที่อยู่: <strong>{POLICY_ADDRESS_SOURCES.find(s => s.value === policyAddressSource)?.th}</strong>. กรุณาแนบเอกสารที่เกี่ยวข้องในส่วน <strong>"แนบเอกสาร"</strong> ด้านล่าง — ระบบจะอ่านข้อมูลและให้คุณตรวจสอบในขั้นตอนที่ 2</>
-              ) : (
-                <>You selected source: <strong>{POLICY_ADDRESS_SOURCES.find(s => s.value === policyAddressSource)?.en}</strong>. Please attach the related document in the <strong>"Link Documents"</strong> section below — the system will OCR and let you verify in Step 2.</>
-              )}
-            </InfoBanner>
-          )}
         </div>
       </SectionCard>
 
@@ -650,8 +658,19 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
 
         {needsShippingAddress && (
           <div className="md:col-span-2 mt-1 p-4 bg-muted/40 border border-border rounded-md space-y-3">
-            <div className="text-sm font-bold flex items-center">
+            <div className="text-sm font-bold flex items-center gap-1.5">
               {t('ที่อยู่จัดส่ง', 'Shipping Address')}
+              {shippingAddressSource && (
+                <InfoBanner>
+                  {shippingAddressSource === 'national_id'
+                    ? t('ที่อยู่จัดส่งจะใช้ข้อมูลเดียวกับที่อยู่บนกรมธรรม์ คุณสามารถตรวจสอบและแก้ไขได้ในขั้นตอนที่ 2', 'Shipping address will mirror the Policy Address. You can review and edit it in Step 2.')
+                    : shippingAddressSource === 'agent'
+                      ? t('ใช้ที่อยู่ตัวแทน (FairDee). ตรวจสอบรายละเอียดในขั้นตอนที่ 2', 'Using FairDee agent address. Review details in Step 2.')
+                      : shippingAddressSource === 'car_reg'
+                        ? t('กรุณาแนบทะเบียนรถในส่วน "แนบเอกสาร" ด้านล่าง — ระบบจะอ่านที่อยู่และให้คุณตรวจสอบในขั้นตอนที่ 2', 'Please attach the Car Registration in "Link Documents" below — OCR will populate the shipping fields for review in Step 2.')
+                        : t('กรอกที่อยู่จัดส่งใหม่ในขั้นตอนที่ 2', 'Enter the new shipping address in Step 2.')}
+                </InfoBanner>
+              )}
               <MondayTag type="dropdown" />
             </div>
 
@@ -686,18 +705,6 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
                   </Button>
                 ))}
               </div>
-            )}
-
-            {shippingAddressSource && (
-              <InfoBanner>
-                {shippingAddressSource === 'national_id'
-                  ? t('ที่อยู่จัดส่งจะใช้ข้อมูลเดียวกับที่อยู่บนกรมธรรม์ คุณสามารถตรวจสอบและแก้ไขได้ในขั้นตอนที่ 2', 'Shipping address will mirror the Policy Address. You can review and edit it in Step 2.')
-                  : shippingAddressSource === 'agent'
-                    ? t('ใช้ที่อยู่ตัวแทน (FairDee). ตรวจสอบรายละเอียดในขั้นตอนที่ 2', 'Using FairDee agent address. Review details in Step 2.')
-                    : shippingAddressSource === 'car_reg'
-                      ? t('กรุณาแนบทะเบียนรถในส่วน "แนบเอกสาร" ด้านล่าง — ระบบจะอ่านที่อยู่และให้คุณตรวจสอบในขั้นตอนที่ 2', 'Please attach the Car Registration in "Link Documents" below — OCR will populate the shipping fields for review in Step 2.')
-                      : t('กรอกที่อยู่จัดส่งใหม่ในขั้นตอนที่ 2', 'Enter the new shipping address in Step 2.')}
-              </InfoBanner>
             )}
           </div>
         )}
