@@ -442,7 +442,7 @@ const kycStatuses = [
   { value: 'kyc_rejected', en: 'KYC Rejected', th: 'KYC ถูกปฏิเสธ' },
 ];
 
-export function ActionStatusCard({ sale }: SaleOverviewCardProps) {
+export function ActionStatusCard({ sale, onPolicyStatusChange }: SaleOverviewCardProps & { onPolicyStatusChange?: (kind: 'vmi' | 'cmi', status: string) => void }) {
   const { language } = useLanguageStore();
   const isInstalment = /install?ment|ผ่อน/i.test(sale.paymentMethod || '');
 
@@ -454,6 +454,42 @@ export function ActionStatusCard({ sale }: SaleOverviewCardProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="px-4 pb-4 space-y-3">
+        {/* Policy statuses (VMI / CMI) with owner */}
+        {[...sale.policies]
+          .sort((a, b) => (a.kind === 'vmi' ? -1 : b.kind === 'vmi' ? 1 : 0))
+          .map((policy) => (
+            <div key={policy.kind} className="grid grid-cols-3 gap-x-3 items-end">
+              <div className="col-span-2">
+                <StatusDropdown
+                  label={`${policy.kind.toUpperCase()} ${language === 'th' ? 'สถานะ' : 'Status'}`}
+                  options={policyStatuses}
+                  defaultValue={policy.status}
+                  language={language}
+                  allowedValues={getAllowedPolicyTransitions(policy.status)}
+                  onChange={(val) => {
+                    onPolicyStatusChange?.(policy.kind, val);
+                    const opt = policyStatuses.find(s => s.value === val);
+                    useHistoryStore.getState().add({
+                      type: 'status_change',
+                      policyKind: policy.kind,
+                      description: `${policy.kind.toUpperCase()} → ${opt ? (language === 'th' ? opt.th : opt.en) : val}`,
+                    });
+                  }}
+                />
+              </div>
+              <div className="space-y-0.5">
+                <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                  {policy.kind.toUpperCase()} {language === 'th' ? 'ผู้รับผิดชอบ' : 'Owner'}
+                </span>
+                <p className="text-xs font-medium h-7 flex items-center">
+                  {['policy_issued', 'policy_delivered', 'policy_cancelled'].includes(policy.status)
+                    ? <span className="text-muted-foreground italic">{language === 'th' ? 'ไม่มี' : '—'}</span>
+                    : 'Pao'}
+                </p>
+              </div>
+            </div>
+          ))}
+
         <StatusDropdown
           label={language === 'th' ? 'สถานะการชำระเงิน' : 'Payment Status'}
           options={pmtStatuses}
