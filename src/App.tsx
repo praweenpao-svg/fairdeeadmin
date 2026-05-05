@@ -8,8 +8,7 @@ import { AppSidebar } from '@/components/layout/AppSidebar';
 import { cn } from '@/lib/utils';
 import Index from "./pages/Index";
 import StaffTiming from "./pages/StaffTiming";
-import ReworkConsole from "./pages/ReworkConsole";
-import ReworkReasons from "./pages/ReworkReasons";
+import ReworkAdmin from "./pages/ReworkAdmin";
 import OpsDashboard from "./pages/OpsDashboard";
 import NotFound from "./pages/NotFound";
 
@@ -33,8 +32,9 @@ function AppLayout() {
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/staff-timing" element={<StaffTiming />} />
-          <Route path="/rework-console" element={<ReworkConsole />} />
-          <Route path="/rework-reasons" element={<ReworkReasons />} />
+          <Route path="/rework-admin" element={<ReworkAdmin />} />
+          <Route path="/rework-console" element={<ReworkAdmin />} />
+          <Route path="/rework-reasons" element={<ReworkAdmin />} />
           <Route path="/ops-dashboard" element={<OpsDashboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
