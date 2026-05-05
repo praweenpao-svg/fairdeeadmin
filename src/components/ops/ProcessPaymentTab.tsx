@@ -210,9 +210,7 @@ function InstalmentView({ sale, count }: { sale: SaleDetail; count: number }) {
   const dueFromAffiliate = Math.max(0, totalToPay - totalPaid);
 
   return (
-    <div className="space-y-3">
-      <SectionLabel>{language === 'th' ? 'รายการผ่อนชำระ' : 'Instalment Schedule'}</SectionLabel>
-
+    <SectionCard title={language === 'th' ? 'รายการผ่อนชำระ' : 'Instalment Schedule'}>
       <div className="space-y-3">
         {rows.map((r) => {
           const isPaid = r.payments.length > 0 && r.payments.reduce((s, p) => s + p.amount, 0) >= r.amount;
@@ -322,7 +320,7 @@ function InstalmentView({ sale, count }: { sale: SaleDetail; count: number }) {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </SectionCard>
   );
 }
 
