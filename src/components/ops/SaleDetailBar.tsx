@@ -274,7 +274,7 @@ export function SaleDetailBar({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-64 bg-popover z-50">
             <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">
-              G1 · {language === 'th' ? 'การชำระเงิน' : 'Payment'}
+              {language === 'th' ? 'การชำระเงิน' : 'Payment'}
             </DropdownMenuLabel>
             <DropdownMenuItem className="text-xs gap-2" onClick={() => setBillingOpen(true)}>
               <CreditCard className="w-3.5 h-3.5" />
@@ -286,7 +286,7 @@ export function SaleDetailBar({
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">
-              G2 · {language === 'th' ? 'ออกกรมธรรม์' : 'Policy Issuance'}
+              {language === 'th' ? 'ออกกรมธรรม์' : 'Policy Issuance'}
             </DropdownMenuLabel>
             <DropdownMenuItem
               className="text-xs gap-2"
@@ -320,7 +320,7 @@ export function SaleDetailBar({
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">
-              G4 · {language === 'th' ? 'ประวัติและกิจกรรม' : 'History & Activity Log'}
+              {language === 'th' ? 'ประวัติและกิจกรรม' : 'History & Activity Log'}
             </DropdownMenuLabel>
             <DropdownMenuItem className={cn('text-xs gap-2', hasActiveRework && 'text-orange-600')} onClick={() => { if (onOpenHistoryLog) onOpenHistoryLog(); else handleAction('History & Activity Log'); }}>
               <History className={cn('w-3.5 h-3.5', hasActiveRework && 'text-orange-500')} />
@@ -328,7 +328,7 @@ export function SaleDetailBar({
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">
-              G5 · {language === 'th' ? 'อัปเดตการขาย' : 'Update Sale'}
+              {language === 'th' ? 'อัปเดตการขาย' : 'Update Sale'}
             </DropdownMenuLabel>
             <DropdownMenuItem className="text-xs gap-2" onClick={() => { if (onOpenEndorsement) onOpenEndorsement(); else handleAction('Update Sale'); }}>
               <XCircle className="w-3.5 h-3.5" />
@@ -336,7 +336,7 @@ export function SaleDetailBar({
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">
-              G8 · {language === 'th' ? 'เอกสารและสื่อสาร' : 'Docs & Comms'}
+              {language === 'th' ? 'เอกสารและสื่อสาร' : 'Docs & Comms'}
             </DropdownMenuLabel>
             <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Commission')}>
               <Percent className="w-3.5 h-3.5" />
@@ -360,7 +360,7 @@ export function SaleDetailBar({
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">
-              G8 · {language === 'th' ? 'เอกสารและสื่อสาร' : 'Docs & Comms'}
+              {language === 'th' ? 'เอกสารและสื่อสาร' : 'Docs & Comms'}
             </DropdownMenuLabel>
             <DropdownMenuItem className="text-xs gap-2" onClick={() => { if (onOpenUploadDoc) onOpenUploadDoc(); else handleAction('Upload Document'); }}>
               <Upload className="w-3.5 h-3.5" />
