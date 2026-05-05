@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ChevronDown, FileUp, XCircle, Mail, Upload, History, CreditCard, FileText, Send, UserCheck } from 'lucide-react';
 import insurerLogo from '@/assets/insurer-generic.png';
 import { Badge } from '@/components/ui/badge';
@@ -8,6 +8,21 @@ import { SaleDetail, SalePolicy } from '@/data/mockSaleDetail';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useOpsLogic } from './OpsLogicContext';
+import { kycStatuses } from './SaleOverviewCard';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -187,9 +202,13 @@ export function SaleDetailBar({
     });
   };
 
+  const [kycOpen, setKycOpen] = useState(false);
+  const [kycValue, setKycValue] = useState<string>('');
+
   const handlePrimaryClick = (action: PrimaryAction) => {
     if (action.group === 'G4') { onOpenHistoryLog?.(); return; }
     if (action.label === 'Upload Policy' || action.label === 'อัปโหลดกรมธรรม์') { onOpenUploadPolicy?.(); return; }
+    if (action.label === 'Manual KYC Approval' || action.label === 'อนุมัติ KYC ด้วยตนเอง') { setKycOpen(true); return; }
     // Map CTA → next VMI status (only when VMI is the bottleneck)
     const current = vmiPolicy?.status;
     let next: string | null = null;
@@ -298,6 +317,47 @@ export function SaleDetailBar({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      <Dialog open={kycOpen} onOpenChange={setKycOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{language === 'th' ? 'อนุมัติ KYC ด้วยตนเอง' : 'Manual KYC Approval'}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2 py-2">
+            <label className="text-xs text-muted-foreground">
+              {language === 'th' ? 'สถานะ' : 'Status'}
+            </label>
+            <Select value={kycValue} onValueChange={setKycValue}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder={language === 'th' ? 'เลือกสถานะ EKYC' : 'Select EKYC Status'} />
+              </SelectTrigger>
+              <SelectContent className="z-50 bg-popover">
+                {kycStatuses.map(opt => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {language === 'th' ? opt.th : opt.en}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" size="sm" onClick={() => setKycOpen(false)}>
+              {language === 'th' ? 'ยกเลิก' : 'Cancel'}
+            </Button>
+            <Button
+              size="sm"
+              disabled={!kycValue}
+              onClick={() => {
+                const opt = kycStatuses.find(s => s.value === kycValue);
+                handleAction(`KYC: ${opt ? (language === 'th' ? opt.th : opt.en) : kycValue}`);
+                setKycOpen(false);
+              }}
+            >
+              {language === 'th' ? 'บันทึก' : 'Save'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
