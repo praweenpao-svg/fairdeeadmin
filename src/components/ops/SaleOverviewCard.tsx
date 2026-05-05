@@ -299,7 +299,16 @@ export function PolicyStatusCard({ sale, onPolicyStatusChange }: SaleOverviewCar
                   options={policyStatuses}
                   defaultValue={policy.status}
                   language={language}
-                  onChange={(val) => onPolicyStatusChange?.(policy.kind, val)}
+                  allowedValues={getAllowedPolicyTransitions(policy.status)}
+                  onChange={(val) => {
+                    onPolicyStatusChange?.(policy.kind, val);
+                    const opt = policyStatuses.find(s => s.value === val);
+                    useHistoryStore.getState().add({
+                      type: 'status_change',
+                      policyKind: policy.kind,
+                      description: `${policy.kind.toUpperCase()} → ${opt ? (language === 'th' ? opt.th : opt.en) : val}`,
+                    });
+                  }}
                 />
               </div>
               <div className="space-y-0.5">
