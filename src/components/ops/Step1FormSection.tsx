@@ -95,13 +95,16 @@ function FormRow({ label, required, monday, info, children, hint, span = 1 }: { 
   );
 }
 
-function SectionCard({ title, subtitle, badge, children }: { title: string; subtitle?: string; badge?: React.ReactNode; children: React.ReactNode }) {
+function SectionCard({ title, subtitle, badge, info, children }: { title: string; subtitle?: string; badge?: React.ReactNode; info?: React.ReactNode; children: React.ReactNode }) {
   return (
     <Card className="border-border">
       <CardContent className="p-5 space-y-4">
         <div className="flex items-start justify-between gap-3 pb-3 border-b border-border">
           <div>
-            <h3 className="text-sm font-bold">{title}</h3>
+            <h3 className="text-sm font-bold flex items-center gap-1.5">
+              {title}
+              {info}
+            </h3>
             {subtitle && <p className="text-[11px] text-muted-foreground mt-0.5">{subtitle}</p>}
           </div>
           {badge}
