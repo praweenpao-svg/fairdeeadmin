@@ -160,7 +160,7 @@ function getPrimaryActions(
     }
     case 'pending_review':
       return [
-        { label: 'API', icon: Send, group: 'G2' },
+        { label: language === 'th' ? 'ซื้อกรมธรรม์' : 'Purchase Policy', icon: Send, group: 'G2' },
         { label: language === 'th' ? 'อีเมล' : 'Email', icon: Mail, group: 'G2' },
       ];
     case 'pending_issuance':
@@ -207,6 +207,7 @@ export function SaleDetailBar({
   const [billingOpen, setBillingOpen] = useState(false);
   const [billingMethod, setBillingMethod] = useState<string>('');
   const [billingPayable, setBillingPayable] = useState<string>('');
+  const [apiPurchased, setApiPurchased] = useState(false);
 
   const handlePrimaryClick = (action: PrimaryAction) => {
     if (action.group === 'G4') { onOpenHistoryLog?.(); return; }
@@ -216,9 +217,11 @@ export function SaleDetailBar({
     // Map CTA → next VMI status (only when VMI is the bottleneck)
     const current = vmiPolicy?.status;
     let next: string | null = null;
-    if (action.label === 'API' || action.label === 'Email' || action.label === 'อีเมล') {
+    if (action.label === 'API' || action.label === 'Purchase Policy' || action.label === 'ซื้อกรมธรรม์' || action.label === 'Email' || action.label === 'อีเมล') {
       if (current === 'pending_review') next = 'pending_issuance';
+      if (action.label === 'Purchase Policy' || action.label === 'ซื้อกรมธรรม์') setApiPurchased(true);
     }
+    if (action.label === 'Fetch Policy' || action.label === 'ดึงกรมธรรม์') { handleAction(action.label); return; }
     if (next && onAdvanceVmiStatus) {
       onAdvanceVmiStatus(next, action.label);
       return;
@@ -284,14 +287,6 @@ export function SaleDetailBar({
               <UserCheck className="w-3.5 h-3.5" />
               {language === 'th' ? 'อนุมัติ KYC ด้วยตนเอง' : 'Manual KYC Approval'}
             </DropdownMenuItem>
-            <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Commission')}>
-              <Percent className="w-3.5 h-3.5" />
-              {language === 'th' ? 'ค่าคอมมิชชั่น' : 'Commission'}
-            </DropdownMenuItem>
-            <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Discounts')}>
-              <Tag className="w-3.5 h-3.5" />
-              {language === 'th' ? 'ส่วนลด' : 'Discounts'}
-            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">
               {language === 'th' ? 'ออกกรมธรรม์' : 'Policy Issuance'}
@@ -299,15 +294,22 @@ export function SaleDetailBar({
             <DropdownMenuItem
               className="text-xs gap-2"
               onClick={() => {
-                if (vmiPolicy?.status === 'pending_review' && onAdvanceVmiStatus) {
-                  onAdvanceVmiStatus('pending_issuance', 'API');
-                } else {
-                  handleAction('API');
+                if (apiPurchased) {
+                  handleAction(language === 'th' ? 'ดึงกรมธรรม์' : 'Fetch Policy');
+                  return;
                 }
+                if (vmiPolicy?.status === 'pending_review' && onAdvanceVmiStatus) {
+                  onAdvanceVmiStatus('pending_issuance', language === 'th' ? 'ซื้อกรมธรรม์' : 'Purchase Policy');
+                } else {
+                  handleAction(language === 'th' ? 'ซื้อกรมธรรม์' : 'Purchase Policy');
+                }
+                setApiPurchased(true);
               }}
             >
-              <Send className="w-3.5 h-3.5" />
-              API
+              {apiPurchased ? <Download className="w-3.5 h-3.5" /> : <Send className="w-3.5 h-3.5" />}
+              {apiPurchased
+                ? (language === 'th' ? 'ดึงกรมธรรม์' : 'Fetch Policy')
+                : (language === 'th' ? 'ซื้อกรมธรรม์' : 'Purchase Policy')}
             </DropdownMenuItem>
             <DropdownMenuItem
               className="text-xs gap-2"
@@ -325,38 +327,6 @@ export function SaleDetailBar({
             <DropdownMenuItem className="text-xs gap-2" onClick={() => { if (onOpenUploadPolicy) onOpenUploadPolicy(); else handleAction('Upload Policy'); }}>
               <FileUp className="w-3.5 h-3.5" />
               {language === 'th' ? 'อัปโหลดกรมธรรม์' : 'Upload Policy'}
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">
-              {language === 'th' ? 'ประวัติและกิจกรรม' : 'History & Activity Log'}
-            </DropdownMenuLabel>
-            <DropdownMenuItem className={cn('text-xs gap-2', hasActiveRework && 'text-orange-600')} onClick={() => { if (onOpenHistoryLog) onOpenHistoryLog(); else handleAction('History & Activity Log'); }}>
-              <History className={cn('w-3.5 h-3.5', hasActiveRework && 'text-orange-500')} />
-              {language === 'th' ? 'ประวัติและกิจกรรม' : 'History & Activity Log'}
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">
-              {language === 'th' ? 'อัปเดตการขาย' : 'Update Sale'}
-            </DropdownMenuLabel>
-            <DropdownMenuItem className="text-xs gap-2" onClick={() => { if (onOpenEndorsement) onOpenEndorsement(); else handleAction('Update Sale'); }}>
-              <XCircle className="w-3.5 h-3.5" />
-              {language === 'th' ? 'อัปเดตการขาย' : 'Update Sale'}
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">
-              {language === 'th' ? 'การเงิน' : 'Finance'}
-            </DropdownMenuLabel>
-            <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Revise Premium')}>
-              <FilePen className="w-3.5 h-3.5" />
-              {language === 'th' ? 'แก้ไขเบี้ย' : 'Revise Premium'}
-            </DropdownMenuItem>
-            <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Manual Invoice')}>
-              <FilePlus className="w-3.5 h-3.5" />
-              {language === 'th' ? 'ออกใบแจ้งหนี้เอง' : 'Manual Invoice'}
-            </DropdownMenuItem>
-            <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Reconcile Payment')}>
-              <Wallet className="w-3.5 h-3.5" />
-              {language === 'th' ? 'กระทบยอดชำระ' : 'Reconcile Payment'}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">
@@ -383,6 +353,46 @@ export function SaleDetailBar({
                 </DropdownMenuItem>
               </DropdownMenuSubContent>
             </DropdownMenuSub>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">
+              {language === 'th' ? 'ประวัติและกิจกรรม' : 'History & Activity Log'}
+            </DropdownMenuLabel>
+            <DropdownMenuItem className={cn('text-xs gap-2', hasActiveRework && 'text-orange-600')} onClick={() => { if (onOpenHistoryLog) onOpenHistoryLog(); else handleAction('History & Activity Log'); }}>
+              <History className={cn('w-3.5 h-3.5', hasActiveRework && 'text-orange-500')} />
+              {language === 'th' ? 'ประวัติและกิจกรรม' : 'History & Activity Log'}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">
+              {language === 'th' ? 'อัปเดตการขาย' : 'Update Sale'}
+            </DropdownMenuLabel>
+            <DropdownMenuItem className="text-xs gap-2" onClick={() => { if (onOpenEndorsement) onOpenEndorsement(); else handleAction('Update Sale'); }}>
+              <XCircle className="w-3.5 h-3.5" />
+              {language === 'th' ? 'อัปเดตการขาย' : 'Update Sale'}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">
+              {language === 'th' ? 'การเงิน' : 'Finance'}
+            </DropdownMenuLabel>
+            <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Commission')}>
+              <Percent className="w-3.5 h-3.5" />
+              {language === 'th' ? 'ค่าคอมมิชชั่น' : 'Commission'}
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Discounts')}>
+              <Tag className="w-3.5 h-3.5" />
+              {language === 'th' ? 'ส่วนลด' : 'Discounts'}
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Revise Premium')}>
+              <FilePen className="w-3.5 h-3.5" />
+              {language === 'th' ? 'แก้ไขเบี้ย' : 'Revise Premium'}
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Manual Invoice')}>
+              <FilePlus className="w-3.5 h-3.5" />
+              {language === 'th' ? 'ออกใบแจ้งหนี้เอง' : 'Manual Invoice'}
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Reconcile Payment')}>
+              <Wallet className="w-3.5 h-3.5" />
+              {language === 'th' ? 'กระทบยอดชำระ' : 'Reconcile Payment'}
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
