@@ -24,7 +24,7 @@ export interface LogicControllerState {
   paymentMethodValue: string;
   driverLicenseCount: number;
   carInspectionMethod: 'upload_photos' | 'inspection_appointment' | '';
-  garageType: 'Dealership' | 'General Garage';
+  garageType: 'Dealership' | 'Garage';
 }
 
 interface Props {
@@ -242,7 +242,7 @@ export function LogicControllerSection({ value, onChange, onReset }: Props) {
                 <SelectTrigger className="h-7 text-[11px] font-sans"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Dealership" className="text-[11px] font-sans">{t('ศูนย์', 'Dealership')}</SelectItem>
-                  <SelectItem value="General Garage" className="text-[11px] font-sans">{t('อู่ทั่วไป', 'General Garage')}</SelectItem>
+                  <SelectItem value="Garage" className="text-[11px] font-sans">{t('อู่', 'Garage')}</SelectItem>
                 </SelectContent>
               </Select>
             </Field>
