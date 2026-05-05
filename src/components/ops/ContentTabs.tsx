@@ -1390,6 +1390,7 @@ export function ContentTabs({ sale }: ContentTabsProps) {
   };
 
   const [sendToAgentOpen, setSendToAgentOpen] = React.useState(false);
+  const [verifySendCount, setVerifySendCount] = React.useState(0);
   // Verify-tab readiness — driven by VerifyInformationTab's onReadinessChange
   const [verifyReady, setVerifyReady] = React.useState(false);
   const [verifyBlockers, setVerifyBlockers] = React.useState<string[]>([]);
@@ -1402,10 +1403,24 @@ export function ContentTabs({ sale }: ContentTabsProps) {
     const done = completedSteps.has(tabKey);
     const isVerify = tabKey === 'verify';
     const isLast = tabOrder.indexOf(tabKey) === tabOrder.length - 1;
-    // Send to Agent is available on both steps; Verify-tab blockers are advisory only
+    const nextDisabled = done || (isVerify && verifySendCount === 0);
     return (
       <div className="flex items-center justify-end gap-2 mt-4 pt-3 border-t border-border">
-        {isVerify && !verifyReady && verifyBlockers.length > 0 && (
+        {isVerify && verifySendCount === 0 && (
+          <span className="text-[11px] text-muted-foreground mr-2">
+            {language === 'th'
+              ? 'ต้องส่งให้ตัวแทนอย่างน้อย 1 ครั้งก่อนดำเนินการต่อ'
+              : 'Send to Agent at least once to continue'}
+          </span>
+        )}
+        {isVerify && verifySendCount > 0 && (
+          <span className="text-[11px] text-muted-foreground mr-2">
+            {language === 'th'
+              ? `ส่งให้ตัวแทนแล้ว ${verifySendCount} ครั้ง`
+              : `Sent to agent ${verifySendCount} time${verifySendCount > 1 ? 's' : ''}`}
+          </span>
+        )}
+        {isVerify && !verifyReady && verifyBlockers.length > 0 && verifySendCount === 0 && (
           <span className="text-[11px] text-muted-foreground mr-2">
             {language === 'th' ? 'หมายเหตุ' : 'Note'}: {verifyBlockers.slice(0, 2).join(' • ')}
             {verifyBlockers.length > 2 && ` (+${verifyBlockers.length - 2})`}
@@ -1418,12 +1433,13 @@ export function ContentTabs({ sale }: ContentTabsProps) {
           onClick={() => setSendToAgentOpen(true)}
         >
           {language === 'th' ? 'ส่งให้ตัวแทน' : 'Send to Agent'}
+          {isVerify && verifySendCount > 0 && ` (${verifySendCount})`}
         </Button>
         {!isLast && (
           <Button
             size="sm"
             className="text-xs"
-            disabled={done}
+            disabled={nextDisabled}
             onClick={() => handleNext(tabKey)}
           >
             {done
@@ -1437,7 +1453,7 @@ export function ContentTabs({ sale }: ContentTabsProps) {
 
   const handleSendToAgent = () => {
     setSendToAgentOpen(false);
-    handleNext('verify');
+    setVerifySendCount((c) => c + 1);
     toast.success(language === 'th' ? 'ส่งข้อมูลให้ตัวแทนเรียบร้อย' : 'Information sent to agent successfully');
   };
 
