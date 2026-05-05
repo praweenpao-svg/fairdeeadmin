@@ -646,7 +646,7 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
           </FormRow>
         )}
 
-        {needsShippingAddress && (
+        {voluntaryShippingFormat === 'fairdee' && needsShippingAddress && (
           <ShippingAddressBlock
             title={addCompulsory ? t('ที่อยู่จัดส่ง (ภาคสมัครใจ)', 'Shipping Address (Voluntary)') : t('ที่อยู่จัดส่ง', 'Shipping Address')}
             source={shippingAddressSource}
@@ -656,7 +656,7 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
           />
         )}
 
-        {addCompulsory && (
+        {addCompulsory && compulsoryShippingFormat === 'fairdee' && (
           <div className="md:col-span-2 mt-1 p-4 bg-muted/40 border border-border rounded-md space-y-3">
             <div className="flex items-center justify-between gap-3">
               <div className="text-sm font-bold">{t('ที่อยู่จัดส่ง พ.ร.บ. (CMI)', 'Shipping Address (CMI)')}</div>
