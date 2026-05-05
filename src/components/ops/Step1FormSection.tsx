@@ -87,10 +87,10 @@ function FormRow({ label, required, monday, info, children, hint, span = 1 }: { 
         {label}
         {required && <span className="text-destructive ml-0.5">*</span>}
         {info}
+        {hint && <InfoBanner tone="info">{hint}</InfoBanner>}
         {monday && <MondayTag type={monday} />}
       </Label>
       {children}
-      {hint && <p className="text-[10.5px] text-muted-foreground leading-snug">{hint}</p>}
     </div>
   );
 }
