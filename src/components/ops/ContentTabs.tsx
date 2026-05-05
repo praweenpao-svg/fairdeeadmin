@@ -580,7 +580,7 @@ interface VerifyTabProps {
 
 function VerifyInformationTab({ sale, onReadinessChange }: VerifyTabProps) {
   const { language } = useLanguageStore();
-  const { logic, installmentPlan, installmentCount, coverageStartDate } = useOpsLogic();
+  const { logic, installmentPlan, installmentCount, coverageStartDate, fieldDocCounts } = useOpsLogic();
   const customer = sale.customer;
   const vehicle = sale.vehicle;
   const shipping = sale.shipping;
