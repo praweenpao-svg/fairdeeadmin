@@ -383,17 +383,6 @@ export function SaleDetailBar({
                 </DropdownMenuItem>
               </DropdownMenuSubContent>
             </DropdownMenuSub>
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger className="text-xs gap-2">
-                <Mail className="w-3.5 h-3.5" />
-                {language === 'th' ? 'ส่งอีเมลถึง บ.ประกัน' : 'Email to Insurer'}
-              </DropdownMenuSubTrigger>
-              <DropdownMenuSubContent className="bg-popover z-50">
-                <DropdownMenuItem className="text-xs" onClick={() => handleAction('Insurer: Vehicle Documents')}>
-                  {language === 'th' ? 'เอกสารรถ' : 'Vehicle Documents'}
-                </DropdownMenuItem>
-              </DropdownMenuSubContent>
-            </DropdownMenuSub>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
