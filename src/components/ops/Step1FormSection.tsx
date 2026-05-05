@@ -80,12 +80,13 @@ function MondayTag({ type }: { type: string }) {
   );
 }
 
-function FormRow({ label, required, monday, children, hint, span = 1 }: { label: string; required?: boolean; monday?: string; children: React.ReactNode; hint?: string; span?: 1 | 2 }) {
+function FormRow({ label, required, monday, info, children, hint, span = 1 }: { label: string; required?: boolean; monday?: string; info?: React.ReactNode; children: React.ReactNode; hint?: string; span?: 1 | 2 }) {
   return (
     <div className={cn('space-y-1.5 min-w-0', span === 2 && 'md:col-span-2')}>
-      <Label className="text-xs font-semibold text-foreground flex items-center flex-wrap leading-tight min-h-[18px]">
+      <Label className="text-xs font-semibold text-foreground flex items-center flex-wrap gap-1 leading-tight min-h-[18px]">
         {label}
         {required && <span className="text-destructive ml-0.5">*</span>}
+        {info}
         {monday && <MondayTag type={monday} />}
       </Label>
       {children}
