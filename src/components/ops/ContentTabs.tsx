@@ -1426,17 +1426,15 @@ export function ContentTabs({ sale }: ContentTabsProps) {
             {verifyBlockers.length > 2 && ` (+${verifyBlockers.length - 2})`}
           </span>
         )}
-        {isVerify && (
-          <Button
-            size="sm"
-            variant="outline"
-            className="text-xs"
-            onClick={() => setSendToAgentOpen(true)}
-          >
-            {language === 'th' ? 'ส่งให้ตัวแทน' : 'Send to Agent'}
-            {verifySendCount > 0 && ` (${verifySendCount})`}
-          </Button>
-        )}
+        <Button
+          size="sm"
+          variant="outline"
+          className="text-xs"
+          onClick={() => setSendToAgentOpen(true)}
+        >
+          {language === 'th' ? 'ส่งให้ตัวแทน' : 'Send to Agent'}
+          {verifySendCount > 0 && ` (${verifySendCount})`}
+        </Button>
         {!isLast && (
           <Button
             size="sm"
