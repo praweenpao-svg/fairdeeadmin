@@ -401,7 +401,7 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
 
         <FormRow
           label={t('ต้องการระบุผู้ขับขี่หรือไม่?', 'Driver License Required?')}
-          span={logic.driverLicenseCount > 0 ? 2 : 1}
+          span={1}
           info={logic.driverLicenseCount > 0 ? (
             <InfoBanner>
               {t(
