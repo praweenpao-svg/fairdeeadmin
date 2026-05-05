@@ -17,65 +17,7 @@ import { toast } from 'sonner';
 import { mockReworkConfigs } from '@/data/mockLeads';
 import { PolicyRemark, PolicyReworkEntry, ReworkAttachment } from '@/types/pipeline';
 
-const steps = [
-  { en: 'Package Selection', th: 'เลือกแพ็คเกจ' },
-  { en: 'Link Documents', th: 'เชื่อมโยงเอกสาร' },
-  { en: 'Verify Information', th: 'ตรวจสอบข้อมูล' },
-  { en: 'Admin Actions', th: 'จัดการงาน' },
-];
-
-function StepperBar({ currentStep, onStepClick }: { currentStep: number; onStepClick: (step: number) => void }) {
-  const { language } = useLanguageStore();
-
-  return (
-    <div className="flex items-center gap-0 px-6 py-3 bg-muted/30 border-b border-border">
-      {steps.map((step, idx) => {
-        const isCompleted = idx < currentStep;
-        const isCurrent = idx === currentStep;
-        const isLast = idx === steps.length - 1;
-
-        return (
-          <React.Fragment key={idx}>
-            <button onClick={() => onStepClick(idx)} className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
-              <div
-                className={cn(
-                  'w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold border-2 transition-colors shrink-0',
-                  isCompleted
-                    ? 'bg-primary border-primary text-primary-foreground'
-                    : isCurrent
-                    ? 'border-primary text-primary bg-primary/10'
-                    : 'border-muted-foreground/30 text-muted-foreground bg-muted/20'
-                )}
-              >
-                {isCompleted ? <Check className="w-3.5 h-3.5" /> : idx + 1}
-              </div>
-              <span
-                className={cn(
-                  'text-[11px] font-medium whitespace-nowrap',
-                  isCompleted
-                    ? 'text-primary'
-                    : isCurrent
-                    ? 'text-foreground font-semibold'
-                    : 'text-muted-foreground'
-                )}
-              >
-                {language === 'th' ? step.th : step.en}
-              </span>
-            </button>
-            {!isLast && (
-              <div
-                className={cn(
-                  'h-0.5 w-14 mx-2 rounded-full',
-                  isCompleted ? 'bg-primary' : 'bg-border'
-                )}
-              />
-            )}
-          </React.Fragment>
-        );
-      })}
-    </div>
-  );
-}
+// Stepper / wizard scaffolding removed — Step 4 two-column layout is now the only mode.
 
 export default function OpsDashboard() {
   const { language } = useLanguageStore();
