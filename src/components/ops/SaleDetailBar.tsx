@@ -173,7 +173,6 @@ export function SaleDetailBar({
   const cmiPolicy = sale.policies.find(p => p.kind === 'cmi');
   const currentStage = 'to_issue';
   const stageLabel = stageLabels[currentStage] || stageLabels.to_issue;
-  const { logic } = useOpsLogic();
   const isInstalment = logic.paymentType === 'Instalment' || /install?ment|ผ่อน/i.test(sale.paymentMethod || '');
   const primaryActions = getPrimaryActions(vmiPolicy, cmiPolicy, language, isInstalment);
 
