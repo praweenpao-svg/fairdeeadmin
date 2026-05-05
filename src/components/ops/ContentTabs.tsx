@@ -20,6 +20,7 @@ import { useOpsLogic } from './OpsLogicContext';
 import { PolicyDetailsZone } from './PolicyDetailsZone';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { InvoiceListTab } from './InvoiceListTab';
+import { ProcessPaymentTab } from './ProcessPaymentTab';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -1379,7 +1380,7 @@ export function ContentTabs({ sale }: ContentTabsProps) {
   const [activeTab, setActiveTab] = React.useState('package-docs');
   const [completedSteps, setCompletedSteps] = React.useState<Set<string>>(new Set());
 
-  const tabOrder = ['package-docs', 'verify', 'invoice'];
+  const tabOrder = ['package-docs', 'verify', 'process-payment', 'invoice'];
 
   const handleNext = (currentTab: string) => {
     // Mock validation: for demo, always pass
@@ -1471,9 +1472,13 @@ export function ContentTabs({ sale }: ContentTabsProps) {
           <ShieldCheck className="w-3.5 h-3.5" />
           {tabLabel('verify', 'ขั้นตอนที่ 2', 'Step 2')}
         </TabsTrigger>
-        <TabsTrigger value="invoice" className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
+        <TabsTrigger value="process-payment" className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
           <CreditCard className="w-3.5 h-3.5" />
-          {language === 'th' ? 'ขั้นตอนที่ 3' : 'Step 3'}
+          {tabLabel('process-payment', 'ขั้นตอนที่ 3', 'Step 3')}
+        </TabsTrigger>
+        <TabsTrigger value="invoice" className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
+          <FileText className="w-3.5 h-3.5" />
+          {language === 'th' ? 'ขั้นตอนที่ 4' : 'Step 4'}
         </TabsTrigger>
       </TabsList>
 
@@ -1485,6 +1490,10 @@ export function ContentTabs({ sale }: ContentTabsProps) {
       <TabsContent value="verify" className="mt-4">
         <VerifyInformationTab sale={sale} onReadinessChange={handleVerifyReadiness} />
         <NextButton tabKey="verify" />
+      </TabsContent>
+      <TabsContent value="process-payment" className="mt-4">
+        <ProcessPaymentTab sale={sale} />
+        <NextButton tabKey="process-payment" />
       </TabsContent>
       <TabsContent value="invoice" className="mt-4">
         <InvoiceListTab sale={sale} />
