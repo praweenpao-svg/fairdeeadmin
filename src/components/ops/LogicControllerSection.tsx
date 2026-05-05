@@ -24,6 +24,7 @@ export interface LogicControllerState {
   paymentMethodValue: string;
   driverLicenseCount: number;
   carInspectionMethod: 'upload_photos' | 'inspection_appointment' | '';
+  garageType: 'Dealership' | 'General Garage';
 }
 
 interface Props {
