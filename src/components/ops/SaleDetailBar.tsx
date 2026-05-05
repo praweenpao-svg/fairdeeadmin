@@ -202,9 +202,13 @@ export function SaleDetailBar({
     });
   };
 
+  const [kycOpen, setKycOpen] = useState(false);
+  const [kycValue, setKycValue] = useState<string>('');
+
   const handlePrimaryClick = (action: PrimaryAction) => {
     if (action.group === 'G4') { onOpenHistoryLog?.(); return; }
     if (action.label === 'Upload Policy' || action.label === 'อัปโหลดกรมธรรม์') { onOpenUploadPolicy?.(); return; }
+    if (action.label === 'Manual KYC Approval' || action.label === 'อนุมัติ KYC ด้วยตนเอง') { setKycOpen(true); return; }
     // Map CTA → next VMI status (only when VMI is the bottleneck)
     const current = vmiPolicy?.status;
     let next: string | null = null;
