@@ -43,6 +43,9 @@ interface OpsLogicContextValue {
   setCompulsoryShippingFormat: (v: ShippingFormat) => void;
   inspectionAppointmentDate: string;
   setInspectionAppointmentDate: (v: string) => void;
+  // Uploaded docs map (fieldId -> count) — shared so Verify tab can flag missing items
+  fieldDocCounts: Record<string, number>;
+  setFieldDocCounts: React.Dispatch<React.SetStateAction<Record<string, number>>>;
 }
 
 const OpsLogicContext = React.createContext<OpsLogicContextValue | null>(null);
@@ -95,6 +98,7 @@ export function OpsLogicProvider({ sale, children }: { sale: SaleDetail; childre
   const [voluntaryShippingFormat, setVoluntaryShippingFormat] = React.useState<ShippingFormat>('');
   const [compulsoryShippingFormat, setCompulsoryShippingFormat] = React.useState<ShippingFormat>('');
   const [inspectionAppointmentDate, setInspectionAppointmentDate] = React.useState<string>('');
+  const [fieldDocCounts, setFieldDocCounts] = React.useState<Record<string, number>>({});
 
   // Auto-extend end-dates when start changes (only if end was the prior auto-default or empty)
   const prevAutoEnd = React.useRef(addOneYear(initialStart));
@@ -149,6 +153,8 @@ export function OpsLogicProvider({ sale, children }: { sale: SaleDetail; childre
     setCompulsoryShippingFormat,
     inspectionAppointmentDate,
     setInspectionAppointmentDate,
+    fieldDocCounts,
+    setFieldDocCounts,
   };
 
   return <OpsLogicContext.Provider value={value}>{children}</OpsLogicContext.Provider>;
