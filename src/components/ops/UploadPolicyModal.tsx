@@ -314,13 +314,22 @@ export function UploadPolicyModal({ sale, open, onOpenChange }: UploadPolicyModa
               <PolicyForm key="vmi" policy={vmiPolicy!} showGarageAndClass={true} />
             </TabsContent>
             <TabsContent value="cmi">
-              <PolicyForm key="cmi" policy={cmiPolicy!} showGarageAndClass={false} />
+              <PolicyForm
+                key="cmi"
+                policy={cmiPolicy!}
+                showGarageAndClass={false}
+                inheritedBanner={<InheritedFromSaleBanner sale={sale} language={language} />}
+              />
             </TabsContent>
           </Tabs>
         ) : vmiPolicy ? (
           <PolicyForm policy={vmiPolicy} showGarageAndClass={true} />
         ) : cmiPolicy ? (
-          <PolicyForm policy={cmiPolicy} showGarageAndClass={false} />
+          <PolicyForm
+            policy={cmiPolicy}
+            showGarageAndClass={false}
+            inheritedBanner={<InheritedFromSaleBanner sale={sale} language={language} />}
+          />
         ) : null}
       </DialogContent>
     </Dialog>
