@@ -65,7 +65,7 @@ function FullPaymentView({ sale, isPaid }: { sale: SaleDetail; isPaid: boolean }
           <div className="space-y-1">
             <Label className="text-xs">{language === 'th' ? 'วิธีชำระเงิน' : 'Payment method'}</Label>
             <Select defaultValue="qr" disabled={isPaid}>
-              <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="h-9 text-sm bg-card"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="qr" className="text-xs">QR payment</SelectItem>
                 <SelectItem value="cc" className="text-xs">Online Credit Card</SelectItem>
@@ -99,7 +99,7 @@ function FullPaymentView({ sale, isPaid }: { sale: SaleDetail; isPaid: boolean }
               ? 'โอนเงินตามจำนวนที่ต้องชำระเข้าบัญชีธนาคารด้านล่าง และอัปโหลดหลักฐานเมื่อชำระเรียบร้อย'
               : 'Transfer the amount payable to following bank account and upload the payment proof once the payment is done'}
           </p>
-          <div className="text-xs space-y-0.5 bg-muted/30 rounded-md p-3">
+          <div className="text-xs space-y-0.5 bg-card border border-border rounded-md p-3">
             <p>{language === 'th' ? 'ชื่อบัญชี' : 'Account Name'}: บจก. พินนาเคิล โบรกเกอร์เรจ</p>
             <p>{language === 'th' ? 'ธนาคาร' : 'Bank'}: ธนาคาร กสิกรไทย</p>
             <p>{language === 'th' ? 'เลขที่บัญชี' : 'Account No.'}: 055-3-20926-9</p>
@@ -355,23 +355,23 @@ export function ProcessPaymentTab({ sale }: Props) {
 
       {/* Cover Note */}
       <SectionCard title={language === 'th' ? 'ใบรับรองชั่วคราว (Cover Note)' : 'Cover Note'}>
-        <div className="space-y-1 max-w-md">
+        <div className="space-y-1">
           <Label className="text-xs">{language === 'th' ? 'รหัส Cover Note' : 'Cover note code'}</Label>
-          <Input className="h-9 text-xs" defaultValue={isPaymentVerified ? 'FD-VIB-701492' : ''} disabled={isPaymentVerified} />
+          <Input className="h-9 text-sm bg-card" defaultValue={isPaymentVerified ? 'FD-VIB-701492' : ''} disabled={isPaymentVerified} />
         </div>
       </SectionCard>
 
       {/* Sale Info */}
       <SectionCard title={language === 'th' ? 'ข้อมูลการขาย' : 'Sale Info'}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-2xl">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div className="space-y-1">
             <Label className="text-xs">{language === 'th' ? 'วันที่ขาย' : 'Date of sale'}</Label>
-            <Input type="date" className="h-9 text-xs" defaultValue="2026-04-21" disabled={isPaymentVerified} />
+            <Input type="date" className="h-9 text-sm bg-card" defaultValue="2026-04-21" disabled={isPaymentVerified} />
           </div>
           <div className="space-y-1">
             <Label className="text-xs">{language === 'th' ? 'ประเภทการขาย' : 'Sale type'}</Label>
             <Select defaultValue="cbc" disabled={isPaymentVerified}>
-              <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="h-9 text-sm bg-card"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="cbc" className="text-xs">CBC to Fairdee</SelectItem>
                 <SelectItem value="direct" className="text-xs">Direct</SelectItem>
@@ -384,11 +384,11 @@ export function ProcessPaymentTab({ sale }: Props) {
 
       {/* Car Inspection & Quotation ID */}
       <SectionCard title={language === 'th' ? 'การตรวจสภาพรถ และ Quotation ID' : 'Car Inspection & Quotation ID'}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-2xl">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div className="space-y-1">
             <Label className="text-xs">{language === 'th' ? 'สถานะการตรวจสภาพรถ' : 'Car inspection status'}</Label>
             <Select disabled={isPaymentVerified}>
-              <SelectTrigger className="h-9 text-xs"><SelectValue placeholder={language === 'th' ? 'เลือกสถานะ' : 'Select Status'} /></SelectTrigger>
+              <SelectTrigger className="h-9 text-sm bg-card"><SelectValue placeholder={language === 'th' ? 'เลือกสถานะ' : 'Select Status'} /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="passed" className="text-xs">Passed</SelectItem>
                 <SelectItem value="failed" className="text-xs">Failed</SelectItem>
@@ -398,11 +398,11 @@ export function ProcessPaymentTab({ sale }: Props) {
           </div>
           <div className="space-y-1">
             <Label className="text-xs">{language === 'th' ? 'วันที่ตรวจสภาพรถ' : 'Car inspection date'}</Label>
-            <Input type="date" className="h-9 text-xs" disabled={isPaymentVerified} />
+            <Input type="date" className="h-9 text-sm bg-card" disabled={isPaymentVerified} />
           </div>
           <div className="space-y-1">
             <Label className="text-xs">{language === 'th' ? 'Quotation ID' : 'Quotation ID'}</Label>
-            <Input className="h-9 text-xs" defaultValue="10332" disabled={isPaymentVerified} />
+            <Input className="h-9 text-sm bg-card" defaultValue="10332" disabled={isPaymentVerified} />
           </div>
         </div>
       </SectionCard>
