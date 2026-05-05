@@ -160,7 +160,7 @@ function getPrimaryActions(
     }
     case 'pending_review':
       return [
-        { label: 'API', icon: Send, group: 'G2' },
+        { label: language === 'th' ? 'ซื้อกรมธรรม์' : 'Purchase Policy', icon: Send, group: 'G2' },
         { label: language === 'th' ? 'อีเมล' : 'Email', icon: Mail, group: 'G2' },
       ];
     case 'pending_issuance':
