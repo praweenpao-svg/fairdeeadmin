@@ -108,11 +108,44 @@ function formatDateTime(ts: string) {
  * used identically across Admin Portal and OPS Dashboard.
  * Data model, rework taxonomy, and @mention behaviour per Section 8.
  */
+type EntryType = 'rework' | 'remark' | 'status_change' | 'assignment' | 'field_update';
+
+const FILTER_CHIPS: { value: EntryType | 'all'; en: string; th: string }[] = [
+  { value: 'all', en: 'All', th: 'ทั้งหมด' },
+  { value: 'rework', en: 'Rework', th: 'Rework' },
+  { value: 'remark', en: 'Remark', th: 'หมายเหตุ' },
+  { value: 'status_change', en: 'Status', th: 'สถานะ' },
+  { value: 'assignment', en: 'Assignment', th: 'มอบหมาย' },
+  { value: 'field_update', en: 'Updates', th: 'อัปเดต' },
+];
+
+function dayKey(ts: string): string {
+  const d = new Date(ts);
+  if (Number.isNaN(d.getTime())) return ts;
+  const today = new Date();
+  const yesterday = new Date(); yesterday.setDate(today.getDate() - 1);
+  const sameDay = (a: Date, b: Date) => a.toDateString() === b.toDateString();
+  if (sameDay(d, today)) return 'today';
+  if (sameDay(d, yesterday)) return 'yesterday';
+  return d.toISOString().slice(0, 10);
+}
+
+function dayLabel(key: string, language: string): string {
+  if (key === 'today') return language === 'th' ? 'วันนี้' : 'Today';
+  if (key === 'yesterday') return language === 'th' ? 'เมื่อวาน' : 'Yesterday';
+  try {
+    return new Date(key).toLocaleDateString(language === 'th' ? 'th-TH' : 'en-GB', {
+      day: 'numeric', month: 'short', year: 'numeric',
+    });
+  } catch { return key; }
+}
+
 export function HistoryActivitySidebar({ open, onClose, quotationId, availablePolicies }: HistoryActivitySidebarProps) {
   const { language } = useLanguageStore();
   const [compositionMode, setCompositionMode] = useState<'none' | 'rework' | 'remark'>('none');
   const [draftText, setDraftText] = useState('');
   const [policyFilter, setPolicyFilter] = useState<'all' | 'vmi' | 'cmi'>('all');
+  const [typeFilter, setTypeFilter] = useState<EntryType | 'all'>('all');
   const liveEntries = useHistoryStore((s) => s.entries);
   const addEntry = useHistoryStore((s) => s.add);
 
@@ -121,9 +154,20 @@ export function HistoryActivitySidebar({ open, onClose, quotationId, availablePo
   const hasBothPolicies = availablePolicies && availablePolicies.includes('vmi') && availablePolicies.includes('cmi');
 
   const combined = [...liveEntries, ...mockHistory];
-  const filteredHistory = policyFilter === 'all'
-    ? combined
-    : combined.filter(e => !e.policyKind || e.policyKind === policyFilter);
+  const filteredHistory = combined.filter(e => {
+    if (policyFilter !== 'all' && e.policyKind && e.policyKind !== policyFilter) return false;
+    if (typeFilter !== 'all' && e.type !== typeFilter) return false;
+    return true;
+  });
+
+  // Group by day (today / yesterday / ISO date), preserving recency order.
+  const groups: { key: string; entries: HistoryEntry[] }[] = [];
+  for (const e of filteredHistory) {
+    const k = dayKey(e.timestamp);
+    const last = groups[groups.length - 1];
+    if (last && last.key === k) last.entries.push(e);
+    else groups.push({ key: k, entries: [e] });
+  }
 
   const handleSubmit = (type: 'rework' | 'remark') => {
     if (!draftText.trim()) return;
