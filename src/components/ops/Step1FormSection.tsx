@@ -58,7 +58,7 @@ const SHIPPING_ADDRESS_SOURCES = [
 
 const SHIPPING_FORMATS: { value: Exclude<ShippingFormat, ''>; th: string; en: string }[] = [
   { value: 'fairdee', th: 'พิมพ์โดย FairDee', en: 'Print by FairDee' },
-  { value: 'self', th: 'พิมพ์เอง', en: 'Print Self' },
+  { value: 'self', th: 'พิมพ์เอง', en: 'Print by Myself' },
   { value: 'epolicy', th: 'e-Policy', en: 'e-Policy' },
 ];
 
