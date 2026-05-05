@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronDown, FileUp, XCircle, Mail, Upload, History, CreditCard, FileText, Send } from 'lucide-react';
+import { ChevronDown, FileUp, XCircle, Mail, Upload, History, CreditCard, FileText, Send, UserCheck } from 'lucide-react';
 import insurerLogo from '@/assets/insurer-generic.png';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
