@@ -30,11 +30,17 @@ const PAID_STATUSES = new Set([
 
 const fmtBaht = (n: number) => `${Math.round(n).toLocaleString()} Baht`;
 
-function SectionLabel({ children }: { children: React.ReactNode }) {
+function SectionCard({ title, badge, children }: { title: string; badge?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <h4 className="text-xs font-bold uppercase tracking-wide text-muted-foreground pb-1.5 border-b border-border mb-3">
-      {children}
-    </h4>
+    <Card className="border-border">
+      <CardContent className="p-5 space-y-4">
+        <div className="flex items-start justify-between gap-3 pb-3 border-b border-border">
+          <h3 className="text-sm font-bold">{title}</h3>
+          {badge}
+        </div>
+        {children}
+      </CardContent>
+    </Card>
   );
 }
 
@@ -44,8 +50,7 @@ function FullPaymentView({ sale, isPaid }: { sale: SaleDetail; isPaid: boolean }
   const totalPremium = sale.policies.reduce((s, p) => s + p.premiumAfterTax, 0);
 
   return (
-    <div className="space-y-3">
-      <SectionLabel>{language === 'th' ? 'วิธีชำระเงิน' : 'Payment Methods'}</SectionLabel>
+    <SectionCard title={language === 'th' ? 'วิธีชำระเงิน' : 'Payment Methods'}>
       <p className="text-xs text-muted-foreground -mt-2">
         {language === 'th' ? 'เลือกวิธีการชำระเงินที่ต้องการ' : 'Please choose your preferred method of payment'}
       </p>
@@ -121,7 +126,7 @@ function FullPaymentView({ sale, isPaid }: { sale: SaleDetail; isPaid: boolean }
           )}
         </CardContent>
       </Card>
-    </div>
+    </SectionCard>
   );
 }
 
@@ -205,9 +210,7 @@ function InstalmentView({ sale, count }: { sale: SaleDetail; count: number }) {
   const dueFromAffiliate = Math.max(0, totalToPay - totalPaid);
 
   return (
-    <div className="space-y-3">
-      <SectionLabel>{language === 'th' ? 'รายการผ่อนชำระ' : 'Instalment Schedule'}</SectionLabel>
-
+    <SectionCard title={language === 'th' ? 'รายการผ่อนชำระ' : 'Instalment Schedule'}>
       <div className="space-y-3">
         {rows.map((r) => {
           const isPaid = r.payments.length > 0 && r.payments.reduce((s, p) => s + p.amount, 0) >= r.amount;
@@ -317,7 +320,7 @@ function InstalmentView({ sale, count }: { sale: SaleDetail; count: number }) {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </SectionCard>
   );
 }
 
@@ -351,17 +354,15 @@ export function ProcessPaymentTab({ sale }: Props) {
       </div>
 
       {/* Cover Note */}
-      <div>
-        <SectionLabel>{language === 'th' ? 'ใบรับรองชั่วคราว (Cover Note)' : 'Cover Note'}</SectionLabel>
+      <SectionCard title={language === 'th' ? 'ใบรับรองชั่วคราว (Cover Note)' : 'Cover Note'}>
         <div className="space-y-1 max-w-md">
           <Label className="text-xs">{language === 'th' ? 'รหัส Cover Note' : 'Cover note code'}</Label>
           <Input className="h-9 text-xs" defaultValue={isPaymentVerified ? 'FD-VIB-701492' : ''} disabled={isPaymentVerified} />
         </div>
-      </div>
+      </SectionCard>
 
       {/* Sale Info */}
-      <div>
-        <SectionLabel>{language === 'th' ? 'ข้อมูลการขาย' : 'Sale Info'}</SectionLabel>
+      <SectionCard title={language === 'th' ? 'ข้อมูลการขาย' : 'Sale Info'}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-2xl">
           <div className="space-y-1">
             <Label className="text-xs">{language === 'th' ? 'วันที่ขาย' : 'Date of sale'}</Label>
@@ -379,11 +380,10 @@ export function ProcessPaymentTab({ sale }: Props) {
             </Select>
           </div>
         </div>
-      </div>
+      </SectionCard>
 
       {/* Car Inspection & Quotation ID */}
-      <div>
-        <SectionLabel>{language === 'th' ? 'การตรวจสภาพรถ และ Quotation ID' : 'Car Inspection & Quotation ID'}</SectionLabel>
+      <SectionCard title={language === 'th' ? 'การตรวจสภาพรถ และ Quotation ID' : 'Car Inspection & Quotation ID'}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-2xl">
           <div className="space-y-1">
             <Label className="text-xs">{language === 'th' ? 'สถานะการตรวจสภาพรถ' : 'Car inspection status'}</Label>
@@ -405,7 +405,7 @@ export function ProcessPaymentTab({ sale }: Props) {
             <Input className="h-9 text-xs" defaultValue="10332" disabled={isPaymentVerified} />
           </div>
         </div>
-      </div>
+      </SectionCard>
 
       {/* Payment methods / instalment schedule */}
       {isInstalment
