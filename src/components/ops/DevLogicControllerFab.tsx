@@ -69,7 +69,7 @@ export function DevLogicControllerFab() {
         type="button"
         size="icon"
         onClick={() => setOpen(true)}
-        className="fixed bottom-5 right-5 z-40 h-12 w-12 rounded-full shadow-lg bg-primary text-primary-foreground hover:bg-primary/90 border-2 border-background"
+        className="fixed bottom-5 left-5 z-40 h-12 w-12 rounded-full shadow-lg bg-primary text-primary-foreground hover:bg-primary/90 border-2 border-background"
         title="Dev: Logic Controller"
         aria-label="Open Logic Controller (dev tool)"
       >
