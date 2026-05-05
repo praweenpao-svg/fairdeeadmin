@@ -407,7 +407,18 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
           />
         </FormRow>
 
-        <FormRow label={t('ต้องการระบุผู้ขับขี่หรือไม่?', 'Driver License Required?')} span={logic.driverLicenseCount > 0 ? 2 : 1}>
+        <FormRow
+          label={t('ต้องการระบุผู้ขับขี่หรือไม่?', 'Driver License Required?')}
+          span={logic.driverLicenseCount > 0 ? 2 : 1}
+          info={logic.driverLicenseCount > 0 ? (
+            <InfoBanner>
+              {t(
+                `ต้องแนบใบอนุญาตขับขี่ ${logic.driverLicenseCount} ใบ ในส่วนแนบเอกสาร`,
+                `${logic.driverLicenseCount} driver license(s) required in the attachment section below.`
+              )}
+            </InfoBanner>
+          ) : undefined}
+        >
           <Select
             value={String(logic.driverLicenseCount)}
             onValueChange={(v) => setLogicField('driverLicenseCount', Number(v))}
@@ -420,16 +431,6 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
               ))}
             </SelectContent>
           </Select>
-          {logic.driverLicenseCount > 0 && (
-            <div className="mt-2">
-              <InfoBanner>
-                {t(
-                  `ต้องแนบใบอนุญาตขับขี่ ${logic.driverLicenseCount} ใบ ในส่วนแนบเอกสาร`,
-                  `${logic.driverLicenseCount} driver license(s) required in the attachment section below.`
-                )}
-              </InfoBanner>
-            </div>
-          )}
         </FormRow>
 
         <FormRow label={t('ซื้อ พ.ร.บ. เพิ่ม?', 'Add Compulsory Insurance?')} monday="tick box">
