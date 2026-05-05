@@ -175,6 +175,8 @@ export default function OpsDashboard() {
           {/* Left column: Agent Overview + Policy Status */}
           <div className="lg:col-span-1 space-y-3 bg-card rounded-lg p-4 border border-border">
             <AgentDetailsCard sale={sale} />
+            <InsurerDetailsCard sale={sale} />
+            <PriceDetailsCard sale={sale} />
             <PolicyStatusCard sale={sale} onPolicyStatusChange={handlePolicyStatusChange} />
             <PaymentStatusCard sale={sale} />
             <KycCard sale={sale} />
