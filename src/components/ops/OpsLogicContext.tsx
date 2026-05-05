@@ -153,6 +153,8 @@ export function OpsLogicProvider({ sale, children }: { sale: SaleDetail; childre
     setCompulsoryShippingFormat,
     inspectionAppointmentDate,
     setInspectionAppointmentDate,
+    fieldDocCounts,
+    setFieldDocCounts,
   };
 
   return <OpsLogicContext.Provider value={value}>{children}</OpsLogicContext.Provider>;
