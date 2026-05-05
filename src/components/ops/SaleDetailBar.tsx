@@ -204,17 +204,19 @@ export function SaleDetailBar({
 
   const [kycOpen, setKycOpen] = useState(false);
   const [kycValue, setKycValue] = useState<string>('');
+  const [billingOpen, setBillingOpen] = useState(false);
+  const [billingMethod, setBillingMethod] = useState<string>('');
+  const [billingPayable, setBillingPayable] = useState<string>('');
 
   const handlePrimaryClick = (action: PrimaryAction) => {
     if (action.group === 'G4') { onOpenHistoryLog?.(); return; }
     if (action.label === 'Upload Policy' || action.label === 'อัปโหลดกรมธรรม์') { onOpenUploadPolicy?.(); return; }
     if (action.label === 'Manual KYC Approval' || action.label === 'อนุมัติ KYC ด้วยตนเอง') { setKycOpen(true); return; }
+    if (action.label === 'Send Billing Report' || action.label === 'ส่งใบแจ้งหนี้') { setBillingOpen(true); return; }
     // Map CTA → next VMI status (only when VMI is the bottleneck)
     const current = vmiPolicy?.status;
     let next: string | null = null;
-    if (action.label === 'Send Billing Report' || action.label === 'ส่งใบแจ้งหนี้') {
-      if (current === 'pending_payment') next = 'pending_review';
-    } else if (action.label === 'API' || action.label === 'Email' || action.label === 'อีเมล') {
+    if (action.label === 'API' || action.label === 'Email' || action.label === 'อีเมล') {
       if (current === 'pending_review') next = 'pending_issuance';
     }
     if (next && onAdvanceVmiStatus) {
@@ -222,6 +224,15 @@ export function SaleDetailBar({
       return;
     }
     handleAction(action.label);
+  };
+
+  const confirmBillingReport = () => {
+    if (vmiPolicy?.status === 'pending_payment' && onAdvanceVmiStatus) {
+      onAdvanceVmiStatus('pending_review', 'Send Billing Report');
+    } else {
+      handleAction('Send Billing Report');
+    }
+    setBillingOpen(false);
   };
 
   return (
@@ -354,6 +365,60 @@ export function SaleDetailBar({
               }}
             >
               {language === 'th' ? 'บันทึก' : 'Save'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={billingOpen} onOpenChange={setBillingOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{language === 'th' ? 'ข้อมูลเพิ่มเติม' : 'Additional Details'}</DialogTitle>
+            <p className="text-xs text-muted-foreground pt-1">
+              {language === 'th' ? 'โปรดระบุข้อมูลเพื่อดำเนินการต่อ' : 'Please provide the following details to proceed.'}
+            </p>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <label className="text-xs text-muted-foreground">
+                {language === 'th' ? 'วิธีการชำระเงิน' : 'Payment Methods'}
+              </label>
+              <Select value={billingMethod} onValueChange={setBillingMethod}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder={language === 'th' ? 'กรุณาเลือกตัวเลือก' : 'Select an option'} />
+                </SelectTrigger>
+                <SelectContent className="z-50 bg-popover">
+                  <SelectItem value="qr_bill">{language === 'th' ? 'ชำระผ่าน QR / จ่ายบิล' : 'QR Code / Bill Payment'}</SelectItem>
+                  <SelectItem value="credit_card">{language === 'th' ? 'ชำระเงินผ่านบัตรเครดิต' : 'Credit Card Payment'}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs text-muted-foreground">
+                {language === 'th' ? 'ยอดจ่าย' : 'Payable'}
+              </label>
+              <Select value={billingPayable} onValueChange={setBillingPayable}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder={language === 'th' ? 'กรุณาเลือกตัวเลือก' : 'Select an option'} />
+                </SelectTrigger>
+                <SelectContent className="z-50 bg-popover">
+                  <SelectItem value="with_commission">{language === 'th' ? 'จ่ายเบี้ยเต็ม' : 'With Commission'}</SelectItem>
+                  <SelectItem value="without_commission">{language === 'th' ? 'จ่ายเบี้ย หักค่าการตลาด' : 'Without Commission'}</SelectItem>
+                  <SelectItem value="specific">{language === 'th' ? 'จ่ายหักส่วนลด' : 'Specific'}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" size="sm" onClick={() => setBillingOpen(false)}>
+              {language === 'th' ? 'ยกเลิก' : 'Cancel'}
+            </Button>
+            <Button
+              size="sm"
+              disabled={!billingMethod || !billingPayable}
+              onClick={confirmBillingReport}
+            >
+              {language === 'th' ? 'ตกลง' : 'Confirm'}
             </Button>
           </DialogFooter>
         </DialogContent>
