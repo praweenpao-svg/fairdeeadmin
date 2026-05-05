@@ -284,6 +284,14 @@ export function SaleDetailBar({
               <UserCheck className="w-3.5 h-3.5" />
               {language === 'th' ? 'อนุมัติ KYC ด้วยตนเอง' : 'Manual KYC Approval'}
             </DropdownMenuItem>
+            <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Commission')}>
+              <Percent className="w-3.5 h-3.5" />
+              {language === 'th' ? 'ค่าคอมมิชชั่น' : 'Commission'}
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Discounts')}>
+              <Tag className="w-3.5 h-3.5" />
+              {language === 'th' ? 'ส่วนลด' : 'Discounts'}
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">
               {language === 'th' ? 'ออกกรมธรรม์' : 'Policy Issuance'}
@@ -334,14 +342,10 @@ export function SaleDetailBar({
               <XCircle className="w-3.5 h-3.5" />
               {language === 'th' ? 'อัปเดตการขาย' : 'Update Sale'}
             </DropdownMenuItem>
-            <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Commission')}>
-              <Percent className="w-3.5 h-3.5" />
-              {language === 'th' ? 'ค่าคอมมิชชั่น' : 'Commission'}
-            </DropdownMenuItem>
-            <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Discounts')}>
-              <Tag className="w-3.5 h-3.5" />
-              {language === 'th' ? 'ส่วนลด' : 'Discounts'}
-            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">
+              {language === 'th' ? 'การเงิน' : 'Finance'}
+            </DropdownMenuLabel>
             <DropdownMenuItem className="text-xs gap-2" onClick={() => handleAction('Revise Premium')}>
               <FilePen className="w-3.5 h-3.5" />
               {language === 'th' ? 'แก้ไขเบี้ย' : 'Revise Premium'}
