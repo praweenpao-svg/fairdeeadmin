@@ -249,9 +249,9 @@ export function SaleOverviewCard({ sale }: SaleOverviewCardProps) {
 
 function SummaryRow({ label, value, emphasize }: { label: string; value: string; emphasize?: boolean }) {
   return (
-    <div className="flex items-start justify-between gap-3 py-1 border-b border-border/30 last:border-0">
-      <span className={`text-xs ${emphasize ? 'font-semibold text-foreground' : 'text-muted-foreground'} flex-1 leading-tight`}>{label}</span>
-      <span className={`text-xs ${emphasize ? 'font-semibold' : 'font-medium'} text-right whitespace-nowrap tabular-nums shrink-0`}>{value || '—'}</span>
+    <div className="grid grid-cols-[1fr_auto] items-start gap-3 py-1 border-b border-border/30 last:border-0">
+      <span className={`text-xs ${emphasize ? 'font-semibold text-foreground' : 'text-muted-foreground'} leading-tight`}>{label}</span>
+      <span className={`text-xs ${emphasize ? 'font-semibold' : 'font-medium'} text-right whitespace-nowrap tabular-nums min-w-[88px]`}>{value || '—'}</span>
     </div>
   );
 }
