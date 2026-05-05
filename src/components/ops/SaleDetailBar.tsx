@@ -317,6 +317,47 @@ export function SaleDetailBar({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      <Dialog open={kycOpen} onOpenChange={setKycOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{language === 'th' ? 'อนุมัติ KYC ด้วยตนเอง' : 'Manual KYC Approval'}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2 py-2">
+            <label className="text-xs text-muted-foreground">
+              {language === 'th' ? 'สถานะ' : 'Status'}
+            </label>
+            <Select value={kycValue} onValueChange={setKycValue}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder={language === 'th' ? 'เลือกสถานะ EKYC' : 'Select EKYC Status'} />
+              </SelectTrigger>
+              <SelectContent className="z-50 bg-popover">
+                {kycStatuses.map(opt => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {language === 'th' ? opt.th : opt.en}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" size="sm" onClick={() => setKycOpen(false)}>
+              {language === 'th' ? 'ยกเลิก' : 'Cancel'}
+            </Button>
+            <Button
+              size="sm"
+              disabled={!kycValue}
+              onClick={() => {
+                const opt = kycStatuses.find(s => s.value === kycValue);
+                handleAction(`KYC: ${opt ? (language === 'th' ? opt.th : opt.en) : kycValue}`);
+                setKycOpen(false);
+              }}
+            >
+              {language === 'th' ? 'บันทึก' : 'Save'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
