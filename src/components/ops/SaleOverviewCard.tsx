@@ -436,10 +436,11 @@ const pmtStatuses = [
 
 // KYC statuses — only relevant for instalment sales
 const kycStatuses = [
-  { value: 'pending_kyc', en: 'Pending KYC', th: 'รอ KYC' },
-  { value: 'kyc_in_review', en: 'KYC In Review', th: 'กำลังตรวจสอบ KYC' },
-  { value: 'kyc_approved', en: 'KYC Approved', th: 'อนุมัติ KYC แล้ว' },
-  { value: 'kyc_rejected', en: 'KYC Rejected', th: 'KYC ถูกปฏิเสธ' },
+  { value: 'pending_verification', en: 'Identity Verification Pending', th: 'คำขอตรวจสอบการยืนยันตัวตน' },
+  { value: 'verified', en: 'Identity Verified', th: 'ยืนยันตัวตนแล้ว' },
+  { value: 'verification_rejected', en: 'Identity Verification Rejected', th: 'การยืนยันตัวตนถูกปฏิเสธ' },
+  { value: 'not_verified', en: 'Not Verified', th: 'ยังไม่ยืนยันตัวตน' },
+  { value: 'instalment_signed', en: 'Instalment Agreement Signed', th: 'ผู้เอาประกันลงนามสัญญาขอผ่อนเรียบร้อยแล้ว' },
 ];
 
 export function ActionStatusCard({ sale, onPolicyStatusChange }: SaleOverviewCardProps & { onPolicyStatusChange?: (kind: 'vmi' | 'cmi', status: string) => void }) {
@@ -500,7 +501,7 @@ export function ActionStatusCard({ sale, onPolicyStatusChange }: SaleOverviewCar
           <StatusDropdown
             label={language === 'th' ? 'สถานะ KYC' : 'KYC Status'}
             options={kycStatuses}
-            defaultValue="pending_kyc"
+            defaultValue="pending_verification"
             language={language}
           />
         ) : (

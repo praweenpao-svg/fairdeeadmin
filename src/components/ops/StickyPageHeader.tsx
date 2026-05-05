@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, FileUp, AlertTriangle, XCircle, MessageSquare, Mail, Upload, History, FileText, CreditCard, Send } from 'lucide-react';
+import { ChevronDown, FileUp, AlertTriangle, XCircle, MessageSquare, Mail, Upload, History, FileText, CreditCard, Send, UserCheck } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useLanguageStore } from '@/stores/languageStore';
@@ -104,6 +104,7 @@ function getPrimaryActions(
   vmiPolicy: SalePolicy | undefined,
   cmiPolicy: SalePolicy | undefined,
   language: string,
+  isInstalment: boolean = false,
 ): { label: string; icon?: React.ElementType; group: string }[] {
   const vmiStatus = vmiPolicy?.status;
   const cmiStatus = cmiPolicy?.status;
@@ -116,8 +117,13 @@ function getPrimaryActions(
   const least = getLeastProgressedStatus(vmiStatus, cmiStatus);
   if (!least) return [];
   switch (least) {
-    case 'pending_payment':
-      return [{ label: language === 'th' ? 'ส่งใบแจ้งหนี้' : 'Send Billing Report', icon: CreditCard, group: 'G1' }];
+    case 'pending_payment': {
+      const actions = [{ label: language === 'th' ? 'ส่งใบแจ้งหนี้' : 'Send Billing Report', icon: CreditCard, group: 'G1' }];
+      if (isInstalment) {
+        actions.push({ label: language === 'th' ? 'อนุมัติ KYC ด้วยตนเอง' : 'Manual KYC Approval', icon: UserCheck, group: 'G1' });
+      }
+      return actions;
+    }
     case 'pending_review':
       return [
         { label: 'API', icon: Send, group: 'G2' },
@@ -149,7 +155,8 @@ export function StickyPageHeader({
   const currentStage = 'to_issue'; // Mock: derive from sale state
   const stageLabel = stageLabels[currentStage] || stageLabels.to_issue;
 
-  const primaryActions = getPrimaryActions(vmiPolicy, cmiPolicy, language);
+  const isInstalment = /install?ment|ผ่อน/i.test(sale.paymentMethod || '');
+  const primaryActions = getPrimaryActions(vmiPolicy, cmiPolicy, language, isInstalment);
 
   const handleAction = (actionName: string) => {
     toast.success(actionName, {
