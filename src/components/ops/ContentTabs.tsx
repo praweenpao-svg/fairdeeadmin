@@ -776,7 +776,7 @@ function VerifyInformationTab({ sale, onReadinessChange }: VerifyTabProps) {
   if (isStartToday) scenarioChips.push({ label: language === 'th' ? 'เริ่มคุ้มครองวันนี้' : 'Start today', cls: 'bg-rose-500/15 text-rose-700 border-rose-500/30' });
 
   // Cross-check: required docs from Step 1 not yet uploaded
-  const { fieldDocCounts } = useOpsLogic();
+  // Cross-check uses fieldDocCounts already pulled above
   const missingRequiredDocs = React.useMemo(() => {
     const docs = getRequiredDocuments(
       logic.saleType, logic.insuranceClass, logic.paymentType, logic.carType,
