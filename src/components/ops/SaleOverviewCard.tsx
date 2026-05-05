@@ -303,7 +303,7 @@ export function InsurerDetailsCard({ sale }: SaleOverviewCardProps) {
         </div>
         <div className="space-y-2.5">
           <SummaryRow label={language === 'th' ? 'ชื่อแพ็กเกจ' : 'Package Name'} value={language === 'th' ? 'ชื่อแพ็กเกจ' : 'Package Name'} />
-          <SummaryRow label={language === 'th' ? 'ชั้นประกัน' : 'Insurance Class'} value={`MV${vmi.coverage.insuranceClass}`} />
+          <SummaryRow label={language === 'th' ? 'ชั้นประกัน' : 'Insurance Class'} value={(logic.insuranceClass || '').replace(/^Type/, 'Type ')} />
           <SummaryRow label={language === 'th' ? 'ทุนประกัน' : 'Sum Insured'} value={vmi.sumInsured ? `${vmi.sumInsured.toLocaleString()} Baht` : '—'} />
           <SummaryRow label={language === 'th' ? 'ประเภทอู่' : 'Garage Type'} value={garageType} />
         </div>
