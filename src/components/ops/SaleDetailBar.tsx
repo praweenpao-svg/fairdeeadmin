@@ -207,9 +207,14 @@ export function SaleDetailBar({
 
   return (
     <div className="bg-card border border-border rounded-lg p-4">
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
+        {/* Insurer logo */}
+        <div className="w-10 h-10 border border-border rounded-sm bg-white flex items-center justify-center shrink-0 overflow-hidden">
+          <img src={insurerLogo} alt="Insurer" className="w-full h-full object-contain p-1" />
+        </div>
+
         {/* Quotation info */}
-        <div className="min-w-0 pl-2">
+        <div className="min-w-0">
           <span className="text-[10px] text-muted-foreground">
             {language === 'th' ? 'เลขใบเสนอราคา' : 'Quotation Number'}
           </span>
