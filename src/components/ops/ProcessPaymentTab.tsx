@@ -360,22 +360,17 @@ export function ProcessPaymentTab({ sale }: Props) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2 mb-2">
-        <CreditCard className="w-4 h-4 text-muted-foreground" />
-        <h3 className="text-sm font-bold">
-          {language === 'th' ? 'ดำเนินการชำระเงิน' : 'Process Payment'}
-        </h3>
-        {isPaymentVerified && (
+      {isPaymentVerified && (
+        <div className="flex items-center gap-2 mb-2">
           <Badge variant="outline" className="text-[10px] border-green-300 bg-green-50 text-green-700 gap-1">
             <CheckCircle2 className="w-3 h-3" /> {language === 'th' ? 'ชำระเงินแล้ว' : 'Payment Verified'}
           </Badge>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Sale Details — Cover Note + Sale Info + Car Inspection/Quotation */}
-      <Card className="border-border">
-        <CardContent className="p-5 space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-4">
+      <SectionCard title={language === 'th' ? 'รายละเอียดการขาย' : 'Sale Details'}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-4">
             <div className="space-y-1">
               <Label className="text-xs">{language === 'th' ? 'รหัส Cover Note' : 'Cover note code'}</Label>
               <Input className="h-9 text-sm bg-card" defaultValue={isPaymentVerified ? 'FD-VIB-701492' : ''} disabled={isPaymentVerified} />
@@ -414,9 +409,8 @@ export function ProcessPaymentTab({ sale }: Props) {
               <Label className="text-xs">{language === 'th' ? 'รหัสใบเสนอราคาบริษัทประกัน' : 'Insurer Quotation ID'}</Label>
               <Input className="h-9 text-sm bg-card" defaultValue="10332" disabled={isPaymentVerified} />
             </div>
-          </div>
-        </CardContent>
-      </Card>
+        </div>
+      </SectionCard>
 
       {/* Payment methods / instalment schedule */}
       {isInstalment
