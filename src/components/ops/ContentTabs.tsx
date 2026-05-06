@@ -1341,7 +1341,6 @@ function PackageBoxOnly({ sale }: { sale: SaleDetail }) {
   const fmt = (n: number) => `${Math.round(n).toLocaleString()} Baht`;
   return (
     <div className="space-y-2">
-      <SectionLabel>{language === 'th' ? 'แพ็กเกจที่เลือก' : 'Select a package'}</SectionLabel>
       <Card className="border-border">
         <CardContent className="p-4">
           <div className="flex items-start justify-between mb-3">
