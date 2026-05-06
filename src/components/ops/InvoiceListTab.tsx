@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ChevronDown, ChevronRight, DollarSign } from 'lucide-react';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 
 interface Invoice {
   id: string;
@@ -413,14 +413,8 @@ function InvoiceSectionTable({ section }: { section: InvoiceSection }) {
 }
 
 export function InvoiceListTab({ sale }: { sale: SaleDetail }) {
-  const { language } = useLanguageStore();
-
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2 mb-2">
-        <DollarSign className="w-4 h-4 text-muted-foreground" />
-        <h3 className="text-sm font-bold">{language === 'th' ? 'รายการใบแจ้งหนี้' : 'Invoice List'}</h3>
-      </div>
       {mockInvoiceSections.map((section, idx) => (
         <InvoiceSectionTable key={idx} section={section} />
       ))}
