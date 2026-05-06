@@ -409,9 +409,8 @@ export function ProcessPaymentTab({ sale }: Props) {
               <Label className="text-xs">{language === 'th' ? 'รหัสใบเสนอราคาบริษัทประกัน' : 'Insurer Quotation ID'}</Label>
               <Input className="h-9 text-sm bg-card" defaultValue="10332" disabled={isPaymentVerified} />
             </div>
-          </div>
-        </CardContent>
-      </Card>
+        </div>
+      </SectionCard>
 
       {/* Payment methods / instalment schedule */}
       {isInstalment
