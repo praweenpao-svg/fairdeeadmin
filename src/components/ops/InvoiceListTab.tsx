@@ -413,8 +413,6 @@ function InvoiceSectionTable({ section }: { section: InvoiceSection }) {
 }
 
 export function InvoiceListTab({ sale }: { sale: SaleDetail }) {
-  const { language } = useLanguageStore();
-
   return (
     <div className="space-y-6">
       {mockInvoiceSections.map((section, idx) => (
