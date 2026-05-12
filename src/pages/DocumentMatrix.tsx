@@ -1069,7 +1069,7 @@ function LibraryPanel({ library, usageCount, onEditDoc, onToggleActive, onAddDoc
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filtered.map(d => {
+                {paged.map(d => {
                   const usage = usageCount(d.id);
                   const isEditing = editingId === d.id;
                   return (
