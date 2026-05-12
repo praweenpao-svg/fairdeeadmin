@@ -248,11 +248,18 @@ export default function DocumentMatrix() {
       </header>
 
       <div className="px-6 py-5">
-        <Tabs defaultValue="library" className="w-full">
-          <TabsList>
-            <TabsTrigger value="library" className="gap-2"><Library className="w-4 h-4" />Manage Library</TabsTrigger>
-            <TabsTrigger value="matrix" className="gap-2"><FileStack className="w-4 h-4" />Matrix</TabsTrigger>
-          </TabsList>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <div className="flex items-center justify-between gap-2">
+            <TabsList>
+              <TabsTrigger value="library" className="gap-2"><Library className="w-4 h-4" />Manage Library</TabsTrigger>
+              <TabsTrigger value="matrix" className="gap-2"><FileStack className="w-4 h-4" />Matrix</TabsTrigger>
+            </TabsList>
+            {activeTab === 'library' && isSuperAdmin && (
+              <Button size="sm" onClick={() => setShowAddDoc(s => !s)} className="gap-1">
+                <Plus className="w-4 h-4" /> Add Document
+              </Button>
+            )}
+          </div>
 
           <TabsContent value="matrix" className="mt-4 space-y-4">
             <div className="rounded-lg border border-border bg-card p-4">
