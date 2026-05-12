@@ -1018,12 +1018,8 @@ function LibraryPanel({ library, usageCount, onEditDoc, onToggleActive, onAddDoc
   };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-3xl overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle className="flex items-center gap-2"><Library className="w-4 h-4" /> Document Library</SheetTitle>
-          <p className="text-xs text-muted-foreground mt-1">Master list. Editing names or notes here updates every scenario that references the document.</p>
-        </SheetHeader>
+    <div className="space-y-3">
+      <p className="text-xs text-muted-foreground">Master list. Editing names or notes here updates every scenario that references the document.</p>
 
         <div className="mt-4 space-y-3">
           <div className="flex items-center gap-2">
