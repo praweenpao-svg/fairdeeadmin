@@ -440,7 +440,7 @@ function renderRow(
         <TableCell className="font-medium">{c.sale_type}</TableCell>
         <TableCell>{CLASS_LABEL[c.insurance_class]}</TableCell>
         <TableCell>{c.payment_type}</TableCell>
-        <TableCell>{c.car_type}</TableCell>
+        
         <TableCell className="text-center"><Badge variant="outline" className={tierColor.Required}>{counts.Required}</Badge></TableCell>
         <TableCell className="text-center"><Badge variant="outline" className={tierColor.Conditional}>{counts.Conditional}</Badge></TableCell>
         <TableCell className="text-center"><Badge variant="outline" className={tierColor.Optional}>{counts.Optional}</Badge></TableCell>
