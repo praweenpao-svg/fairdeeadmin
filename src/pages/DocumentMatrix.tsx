@@ -1072,7 +1072,6 @@ function LibraryPanel({ library, usageCount, onEditDoc, onDeleteDoc, onAddDoc, i
                   <TableHead>Name (TH)</TableHead>
                   <TableHead className="w-32">Default Tier</TableHead>
                   <TableHead className="w-24 text-center">Usage</TableHead>
-                  <TableHead className="w-24 text-center">Status</TableHead>
                   <TableHead className="w-40 text-right">Action</TableHead>
                 </TableRow>
               </TableHeader>
@@ -1082,7 +1081,7 @@ function LibraryPanel({ library, usageCount, onEditDoc, onDeleteDoc, onAddDoc, i
                   const isEditing = editingId === d.id;
                   return (
                     <>
-                      <TableRow key={d.id} className={`${!d.is_active ? 'opacity-60 ' : ''}hover:bg-primary/5`}>
+                      <TableRow key={d.id} className="hover:bg-primary/5">
                         <TableCell className="font-medium text-sm">{d.name_en}</TableCell>
                         <TableCell className="text-sm text-muted-foreground">{d.name_th}</TableCell>
                         <TableCell><Badge variant="outline" className={tierColor[normalizeTier(d.default_tier)]}>{normalizeTier(d.default_tier)}</Badge></TableCell>
@@ -1090,11 +1089,6 @@ function LibraryPanel({ library, usageCount, onEditDoc, onDeleteDoc, onAddDoc, i
                           <Badge variant="outline" className={usage > 0 ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-slate-100 text-slate-500 border-slate-200'}>
                             {usage} {usage === 1 ? 'rule' : 'rules'}
                           </Badge>
-                        </TableCell>
-                        <TableCell className="text-center">
-                          {d.is_active
-                            ? <Badge variant="outline" className="bg-emerald-100 text-emerald-700 border-emerald-200">Active</Badge>
-                            : <Badge variant="outline" className="bg-slate-100 text-slate-600 border-slate-200">Inactive</Badge>}
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-1">
@@ -1106,7 +1100,7 @@ function LibraryPanel({ library, usageCount, onEditDoc, onDeleteDoc, onAddDoc, i
                       </TableRow>
                       {isEditing && (
                         <TableRow key={d.id + '-edit'} className="bg-muted/20 hover:bg-muted/20">
-                          <TableCell colSpan={6} className="p-3">
+                          <TableCell colSpan={5} className="p-3">
                             <div className="grid grid-cols-3 gap-2">
                               <div>
                                 <label className="text-xs text-muted-foreground">Name (EN)</label>
