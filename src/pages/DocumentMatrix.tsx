@@ -1038,16 +1038,16 @@ function LibraryPanel({ library, usageCount, onEditDoc, onToggleActive, onAddDoc
               <div className="space-y-3">
                 <div>
                   <label className="text-xs text-muted-foreground">Name (EN)</label>
-                  <Input value={newEN} onChange={(e) => setNewEN(e.target.value)} className="h-9 text-sm bg-background" />
+                  <Input value={newEN} onChange={(e) => setNewEN(e.target.value)} className="h-9 text-sm bg-card" />
                 </div>
                 <div>
                   <label className="text-xs text-muted-foreground">Name (TH)</label>
-                  <Input value={newTH} onChange={(e) => setNewTH(e.target.value)} className="h-9 text-sm bg-background" />
+                  <Input value={newTH} onChange={(e) => setNewTH(e.target.value)} className="h-9 text-sm bg-card" />
                 </div>
                 <div>
                   <label className="text-xs text-muted-foreground">Default Tier</label>
                   <Select value={newTier} onValueChange={(v) => setNewTier(v as UITier)}>
-                    <SelectTrigger className="h-9 text-sm bg-background"><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="h-9 text-sm bg-card"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {(['Required', 'Conditional', 'Optional'] as UITier[]).map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                     </SelectContent>
