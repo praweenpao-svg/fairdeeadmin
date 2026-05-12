@@ -979,7 +979,8 @@ function LibraryPanel({ library, usageCount, onEditDoc, onToggleActive, onAddDoc
   onAddDoc: (row: Omit<DocLibraryRow, 'id' | 'created_at' | 'updated_at'>) => string | null;
   isSuperAdmin: boolean;
 }) {
-  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [showAdd, setShowAdd] = useState(false);
   const [newEN, setNewEN] = useState('');
   const [newTH, setNewTH] = useState('');
