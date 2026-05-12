@@ -654,34 +654,37 @@ function EditScenarioModal({ combination, onClose, rules, docById, library, onSa
                   {items.map(r => {
                     const d = docById[r.document_id];
                     return (
-                      <div key={r.id} className="px-3 py-2.5 grid grid-cols-12 gap-2 items-start">
-                        <div className="col-span-4">
-                          <div className="text-sm font-medium">{d?.name_en}</div>
-                          <div className="text-xs text-muted-foreground">{d?.name_th}</div>
+                      <div key={r.id} className="px-3 py-2.5 space-y-2">
+                        <div className="grid grid-cols-12 gap-2 items-start">
+                          <div className="col-span-4">
+                            <div className="text-sm font-medium">{d?.name_en}</div>
+                            <div className="text-xs text-muted-foreground">{d?.name_th}</div>
+                          </div>
+                          <div className="col-span-5">
+                            <Input
+                              value={r.condition_note}
+                              onChange={(e) => updateRule(r.id, { condition_note: e.target.value })}
+                              placeholder="Condition note"
+                              className="h-8 text-xs"
+                            />
+                          </div>
+                          <div className="col-span-2">
+                            <Input
+                              type="number"
+                              min={1}
+                              value={r.min_count}
+                              onChange={(e) => updateRule(r.id, { min_count: Number(e.target.value) || 1 })}
+                              className="h-8 text-xs"
+                              title="Min count"
+                            />
+                          </div>
+                          <div className="col-span-1 flex justify-end">
+                            <Button size="icon" variant="ghost" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => setRemoved(prev => new Set(prev).add(r.id))}>
+                              <X className="w-3.5 h-3.5" />
+                            </Button>
+                          </div>
                         </div>
-                        <div className="col-span-5">
-                          <Input
-                            value={r.condition_note}
-                            onChange={(e) => updateRule(r.id, { condition_note: e.target.value })}
-                            placeholder="Condition note"
-                            className="h-8 text-xs"
-                          />
-                        </div>
-                        <div className="col-span-2">
-                          <Input
-                            type="number"
-                            min={1}
-                            value={r.min_count}
-                            onChange={(e) => updateRule(r.id, { min_count: Number(e.target.value) || 1 })}
-                            className="h-8 text-xs"
-                            title="Min count"
-                          />
-                        </div>
-                        <div className="col-span-1 flex justify-end">
-                          <Button size="icon" variant="ghost" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => setRemoved(prev => new Set(prev).add(r.id))}>
-                            <X className="w-3.5 h-3.5" />
-                          </Button>
-                        </div>
+                        <RuleConditionEditor rule={r} onChange={(patch) => updateRule(r.id, patch)} />
                       </div>
                     );
                   })}
