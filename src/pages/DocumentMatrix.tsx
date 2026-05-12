@@ -675,15 +675,20 @@ function EditScenarioModal({ combination, onClose, rules, docById, library, onSa
                 <div className="px-3 py-2 border-t border-border bg-muted/20">
                   {addingTier === tier ? (
                     <div className="flex items-center gap-2">
-                      <Select onValueChange={(v) => addDoc(Number(v), tier)}>
-                        <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Pick from Document Library..." /></SelectTrigger>
-                        <SelectContent>
-                          {availableDocs.length === 0 && <div className="px-2 py-1.5 text-xs text-muted-foreground">All active documents already added</div>}
-                          {availableDocs.map(d => (
-                            <SelectItem key={d.id} value={String(d.id)}>{d.name_en} · {d.name_th}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      {(() => {
+                        const tierDocs = availableDocs.filter(d => normalizeTier(d.default_tier) === tier);
+                        return (
+                          <Select onValueChange={(v) => addDoc(Number(v), tier)}>
+                            <SelectTrigger className="h-8 text-xs"><SelectValue placeholder={`Pick from ${tier} documents...`} /></SelectTrigger>
+                            <SelectContent>
+                              {tierDocs.length === 0 && <div className="px-2 py-1.5 text-xs text-muted-foreground">No {tier} documents in library</div>}
+                              {tierDocs.map(d => (
+                                <SelectItem key={d.id} value={String(d.id)}>{d.name_en} · {d.name_th}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        );
+                      })()}
                       <Button size="sm" variant="ghost" onClick={() => setAddingTier(null)}>Cancel</Button>
                     </div>
                   ) : (
