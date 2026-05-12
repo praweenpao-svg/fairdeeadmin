@@ -10,6 +10,7 @@ import Index from "./pages/Index";
 import StaffTiming from "./pages/StaffTiming";
 import ReworkAdmin from "./pages/ReworkAdmin";
 import OpsDashboard from "./pages/OpsDashboard";
+import DocumentMatrix from "./pages/DocumentMatrix";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,6 +38,7 @@ function AppLayout() {
           <Route path="/rework-console" element={<ReworkAdmin />} />
           <Route path="/rework-reasons" element={<ReworkAdmin />} />
           <Route path="/ops-dashboard" element={<OpsDashboard />} />
+          <Route path="/document-matrix" element={<DocumentMatrix />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

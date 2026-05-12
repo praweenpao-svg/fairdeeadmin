@@ -6,6 +6,7 @@ import {
   PanelLeft,
   Settings2,
   LayoutDashboard,
+  FileStack,
   Check,
   ChevronUp,
   
@@ -45,6 +46,11 @@ const navItems = [
     to: '/ops-dashboard', 
     icon: LayoutDashboard, 
     label: { en: 'OPS Dashboard', th: 'OPS Dashboard' }
+  },
+  {
+    to: '/document-matrix',
+    icon: FileStack,
+    label: { en: 'Document Matrix', th: 'Document Matrix' }
   },
 ];
 
