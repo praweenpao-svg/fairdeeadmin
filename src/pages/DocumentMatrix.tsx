@@ -1146,8 +1146,17 @@ function LibraryPanel({ library, usageCount, onEditDoc, onToggleActive, onAddDoc
                 })}
               </TableBody>
             </Table>
+        {library.length > 0 && (
+          <TablePagination
+            currentPage={safePage}
+            totalPages={totalPages}
+            totalItems={library.length}
+            rowsPerPage={rowsPerPage}
+            onPageChange={setPage}
+            onRowsPerPageChange={(n) => { setRowsPerPage(n); setPage(1); }}
+          />
+        )}
           </div>
-        </div>
-      </div>
+    </div>
   );
 }
