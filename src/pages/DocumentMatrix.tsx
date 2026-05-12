@@ -1101,15 +1101,6 @@ function LibraryPanel({ library, usageCount, onEditDoc, onDeleteDoc, onAddDoc, i
                             <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => isEditing ? setEditingId(null) : startEdit(d)}>
                               {isEditing ? 'Close' : <><Pencil className="w-3 h-3 mr-1" />Edit</>}
                             </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="h-7 text-xs text-destructive hover:text-destructive"
-                              onClick={() => onDeleteDoc(d)}
-                              title={usage > 0 ? `Cannot delete — used by ${usage} active rule(s)` : ''}
-                            >
-                              Delete
-                            </Button>
                           </div>
                         </TableCell>
                       </TableRow>
