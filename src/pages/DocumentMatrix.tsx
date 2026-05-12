@@ -728,26 +728,31 @@ function RuleConditionEditor({ rule, onChange }: { rule: DocMatrixRule; onChange
   const isEmpty = tree.children.length === 0;
 
   return (
-    <div className="rounded-md border border-dashed border-border bg-muted/20 px-2.5 py-2">
-      <div className="flex items-center justify-between mb-1.5">
-        <span className="text-[10px] uppercase tracking-wide text-muted-foreground">Apply when</span>
-        {!isEmpty && (
-          <Button size="sm" variant="ghost" className="h-6 px-2 text-[11px] text-muted-foreground"
-            onClick={() => commit(emptyGroup('AND'))}>
-            Reset to default
-          </Button>
-        )}
-      </div>
+    <div className="rounded-md border border-dashed border-border bg-muted/20 px-2.5 py-1.5">
       {isEmpty ? (
-        <div className="flex items-center gap-2">
-          <span className="text-[11px] text-muted-foreground italic">Default — applies to all</span>
-          <Button size="sm" variant="outline" className="h-7 text-xs gap-1"
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-[10px] uppercase tracking-wide text-muted-foreground shrink-0">Apply when</span>
+            <span className="text-[11px] text-muted-foreground italic truncate">Default — applies to all</span>
+          </div>
+          <Button size="sm" variant="outline" className="h-7 text-xs gap-1 shrink-0"
             onClick={() => commit({ ...tree, children: [newLeaf('insurer')] })}>
             <Plus className="w-3 h-3" /> Add condition
           </Button>
         </div>
       ) : (
-        <ConditionGroupEditor group={tree} onChange={commit} depth={0} />
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-start gap-2 min-w-0 flex-1">
+            <span className="text-[10px] uppercase tracking-wide text-muted-foreground shrink-0 mt-1.5">Apply when</span>
+            <div className="flex-1 min-w-0">
+              <ConditionGroupEditor group={tree} onChange={commit} depth={0} />
+            </div>
+          </div>
+          <Button size="sm" variant="ghost" className="h-6 px-2 text-[11px] text-muted-foreground shrink-0"
+            onClick={() => commit(emptyGroup('AND'))}>
+            Reset
+          </Button>
+        </div>
       )}
     </div>
   );
