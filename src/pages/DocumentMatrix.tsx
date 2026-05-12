@@ -1019,16 +1019,9 @@ function LibraryPanel({ library, usageCount, onEditDoc, onToggleActive, onAddDoc
 
   return (
     <div className="space-y-3">
-      <p className="text-xs text-muted-foreground">Master list. Editing names or notes here updates every scenario that references the document.</p>
-
-        <div className="mt-4 space-y-3">
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-2.5 top-2.5 w-4 h-4 text-muted-foreground" />
-              <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by EN / TH name..." className="pl-8 h-9" />
-            </div>
-            <Button size="sm" onClick={() => setShowAdd(s => !s)} className="gap-1"><Plus className="w-4 h-4" /> Add Document</Button>
-          </div>
+      <div className="flex items-center justify-end">
+        <Button size="sm" onClick={() => setShowAdd(s => !s)} className="gap-1"><Plus className="w-4 h-4" /> Add Document</Button>
+      </div>
 
           {showAdd && (
             <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-2">
