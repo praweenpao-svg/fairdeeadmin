@@ -18,53 +18,86 @@ import {
   mockAuditLog,
   mockInsurers,
   mockVehicleCodes,
+  CONDITION_FIELDS,
+  OPERATORS_FOR_TYPE,
+  emptyGroup,
+  newLeaf,
+  
+  migrateLegacyConditions,
   type DocTier,
   type SaleType,
   type InsuranceClass,
   type PaymentType,
   type DocMatrixRule,
   type DocLibraryRow,
-  type SumInsuredOp,
+  
+  type ConditionGroup,
+  type ConditionLeaf,
+  type ConditionNode,
+  type ConditionFieldKey,
+  type ConditionOperator,
+  type LogicOp,
 } from '@/data/mockDocumentMatrix';
 
-const SUM_OPS: SumInsuredOp[] = ['<', '<=', '=', '>=', '>'];
+
 const formatThb = (n: number) => new Intl.NumberFormat('en-US').format(n);
 const insurerName = (id: string) => mockInsurers.find(i => i.id === id)?.name ?? id;
 const vehicleName = (id: string) => mockVehicleCodes.find(v => v.id === id)?.name ?? id;
 
+const OP_LABEL: Record<ConditionOperator, string> = {
+  in: 'in', not_in: 'not in', equals: '=', not_equals: '≠',
+  is_true: 'is true', is_false: 'is false',
+  '<': '<', '<=': '≤', '=': '=', '>=': '≥', '>': '>', between: 'between',
+};
+
+function fieldDef(key: ConditionFieldKey) {
+  return CONDITION_FIELDS.find(f => f.key === key)!;
+}
+
+function leafLabel(leaf: ConditionLeaf): string {
+  const def = fieldDef(leaf.field);
+  const renderVal = (): string => {
+    const v = leaf.value;
+    if (def.type === 'multi-select') {
+      const arr = (Array.isArray(v) ? v : []) as string[];
+      if (arr.length === 0) return '∅';
+      const names = arr.map(id => {
+        if (leaf.field === 'insurer') return insurerName(id);
+        if (leaf.field === 'vehicle_code') return vehicleName(id);
+        return def.options?.find(o => o.value === id)?.label ?? id;
+      });
+      return names.length <= 2 ? names.join(', ') : `${names.length} items`;
+    }
+    if (def.type === 'select') return def.options?.find(o => o.value === v)?.label ?? String(v ?? '');
+    if (def.type === 'boolean') return '';
+    if (def.type === 'number') {
+      if (leaf.operator === 'between' && Array.isArray(v)) return `${formatThb(Number(v[0]))} – ${formatThb(Number(v[1]))} ${def.unit ?? ''}`.trim();
+      return `${formatThb(Number(v ?? 0))} ${def.unit ?? ''}`.trim();
+    }
+    return String(v ?? '');
+  };
+  const valStr = renderVal();
+  return valStr ? `${def.label} ${OP_LABEL[leaf.operator]} ${valStr}` : `${def.label} ${OP_LABEL[leaf.operator]}`;
+}
+
+function summarizeTree(node: ConditionNode, depth = 0): string {
+  if (node.kind === 'leaf') return leafLabel(node);
+  if (node.children.length === 0) return '';
+  const parts = node.children.map(c => summarizeTree(c, depth + 1)).filter(Boolean);
+  const joined = parts.join(` ${node.op} `);
+  return depth === 0 ? joined : `(${joined})`;
+}
+
 function ConditionChips({ rule }: { rule: DocMatrixRule }) {
-  const hasInsurers = rule.insurer_ids && rule.insurer_ids.length > 0;
-  const hasVehicles = rule.vehicle_codes && rule.vehicle_codes.length > 0;
-  const hasSI = rule.sum_insured_op && rule.sum_insured_value != null;
-  if (!hasInsurers && !hasVehicles && !hasSI) return null;
-
-  const vehicleSummary = (() => {
-    if (!hasVehicles) return '';
-    const ids = rule.vehicle_codes!;
-    const evIds = mockVehicleCodes.filter(v => v.is_ev).map(v => v.id);
-    const allEv = ids.length > 0 && ids.every(id => evIds.includes(id)) && evIds.every(id => ids.includes(id));
-    if (allEv) return 'All EV models';
-    if (ids.length <= 2) return ids.map(vehicleName).join(', ');
-    return `${ids.length} models`;
-  })();
-
+  const tree = migrateLegacyConditions(rule);
+  if (!tree || tree.children.length === 0) return null;
+  const summary = summarizeTree(tree);
   return (
     <div className="flex flex-wrap gap-1 mt-1">
-      {hasInsurers && (
-        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-[10px] font-normal">
-          Insurer: {rule.insurer_ids!.map(insurerName).join(', ')}
-        </Badge>
-      )}
-      {hasVehicles && (
-        <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] font-normal">
-          Vehicle: {vehicleSummary}
-        </Badge>
-      )}
-      {hasSI && (
-        <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200 text-[10px] font-normal">
-          Sum insured {rule.sum_insured_op} {formatThb(rule.sum_insured_value!)} Baht
-        </Badge>
-      )}
+      <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-200 text-[10px] font-normal max-w-full">
+        <span className="font-semibold mr-1">IF</span>
+        <span className="truncate">{summary}</span>
+      </Badge>
     </div>
   );
 }
@@ -577,16 +610,52 @@ function EditScenarioModal({ combination, onClose, rules, docById, library, onSa
 
   const availableDocs = library.filter(d => d.is_active);
 
+  const treeKey = (n?: ConditionGroup): string => {
+    if (!n || n.children.length === 0) return '';
+    const stringify = (node: ConditionNode): string => {
+      if (node.kind === 'leaf') {
+        const v = Array.isArray(node.value) ? [...node.value].map(String).sort().join(',') : String(node.value ?? '');
+        return `${node.field}:${node.operator}:${v}`;
+      }
+      const kids = node.children.map(stringify).sort().join('|');
+      return `${node.op}(${kids})`;
+    };
+    return stringify(n);
+  };
+
   const ruleScopeKey = (r: DocMatrixRule) => {
-    const ins = (r.insurer_ids ?? []).slice().sort().join(',');
-    const veh = (r.vehicle_codes ?? []).slice().sort().join(',');
-    const si = r.sum_insured_op && r.sum_insured_value != null ? `${r.sum_insured_op}${r.sum_insured_value}` : '';
-    return `${r.document_id}|${ins}|${veh}|${si}`;
+    const tree = r.conditions ?? migrateLegacyConditions(r);
+    return `${r.document_id}|${treeKey(tree)}`;
+  };
+
+  const validateTree = (node: ConditionNode, errs: string[], docName: string) => {
+    if (node.kind === 'group') {
+      if (node.children.length === 0) errs.push(`"${docName}" has an empty condition group.`);
+      node.children.forEach(c => validateTree(c, errs, docName));
+      return;
+    }
+    const def = CONDITION_FIELDS.find(f => f.key === node.field);
+    if (!def) return;
+    const v = node.value;
+    if (def.type === 'multi-select' && (!Array.isArray(v) || v.length === 0)) {
+      errs.push(`"${docName}" condition ${def.label} ${OP_LABEL[node.operator]} needs at least one value.`);
+    }
+    if (def.type === 'select' && (v === undefined || v === '' || v === null)) {
+      errs.push(`"${docName}" condition ${def.label} needs a value.`);
+    }
+    if (def.type === 'number') {
+      if (node.operator === 'between') {
+        if (!Array.isArray(v) || v.length !== 2 || Number(v[0]) > Number(v[1])) {
+          errs.push(`"${docName}" between range is invalid.`);
+        }
+      } else if (v === undefined || v === '' || Number.isNaN(Number(v)) || Number(v) < 0) {
+        errs.push(`"${docName}" ${def.label} value must be ≥ 0.`);
+      }
+    }
   };
 
   const validate = (): string[] => {
     const errs: string[] = [];
-    // Duplicate doc with identical scope (same insurers + same SI threshold) is invalid.
     const seen = new Map<string, number>();
     visible.forEach(r => {
       const k = ruleScopeKey(r);
@@ -595,22 +664,17 @@ function EditScenarioModal({ combination, onClose, rules, docById, library, onSa
     seen.forEach((count, k) => {
       if (count > 1) {
         const docId = Number(k.split('|')[0]);
-        errs.push(`"${docById[docId]?.name_en}" has duplicate rules with the same insurer/sum-insured scope. Differentiate them or remove duplicates.`);
+        errs.push(`"${docById[docId]?.name_en}" has duplicate rules with identical conditions. Differentiate or remove duplicates.`);
       }
     });
     visible.forEach(r => {
-      if (!Number.isFinite(r.min_count) || r.min_count < 1) errs.push(`"${docById[r.document_id]?.name_en}" has invalid min_count (must be ≥ 1).`);
+      const docName = docById[r.document_id]?.name_en ?? `#${r.document_id}`;
+      if (!Number.isFinite(r.min_count) || r.min_count < 1) errs.push(`"${docName}" has invalid min_count (must be ≥ 1).`);
       if (normalizeTier(r.tier) === 'Conditional' && !r.condition_note.trim()) {
-        errs.push(`"${docById[r.document_id]?.name_en}" is Conditional but has no condition note.`);
+        errs.push(`"${docName}" is Conditional but has no condition note.`);
       }
-      // SI op + value must be paired
-      const opSet = !!r.sum_insured_op;
-      const valSet = r.sum_insured_value != null && !Number.isNaN(r.sum_insured_value);
-      if (opSet !== valSet) {
-        errs.push(`"${docById[r.document_id]?.name_en}" sum-insured condition is incomplete (operator and value must both be set).`);
-      }
-      if (valSet && (r.sum_insured_value as number) < 0) {
-        errs.push(`"${docById[r.document_id]?.name_en}" sum-insured value must be ≥ 0.`);
+      if (r.conditions && r.conditions.children.length > 0) {
+        validateTree(r.conditions, errs, docName);
       }
     });
     return errs;
@@ -735,136 +799,265 @@ function EditScenarioModal({ combination, onClose, rules, docById, library, onSa
   );
 }
 
+// ===================== Condition Tree Editor (CleverTap-style) =====================
+
 function RuleConditionEditor({ rule, onChange }: { rule: DocMatrixRule; onChange: (patch: Partial<DocMatrixRule>) => void }) {
-  const insurers = rule.insurer_ids ?? [];
-  const vehicles = rule.vehicle_codes ?? [];
-  const hasSI = !!rule.sum_insured_op;
-  const insurerSummary = insurers.length === 0 ? 'All insurers' : insurers.length === 1 ? insurerName(insurers[0]) : `${insurers.length} insurers`;
-  const evIds = mockVehicleCodes.filter(v => v.is_ev).map(v => v.id);
-  const allEvSelected = vehicles.length > 0 && vehicles.every(id => evIds.includes(id)) && evIds.every(id => vehicles.includes(id));
-  const vehicleSummary = vehicles.length === 0
-    ? 'All vehicles'
-    : allEvSelected
-      ? 'All EV models'
-      : vehicles.length === 1 ? vehicleName(vehicles[0]) : `${vehicles.length} models`;
+  const tree: ConditionGroup = rule.conditions ?? migrateLegacyConditions(rule) ?? emptyGroup('AND');
+
+  const commit = (next: ConditionGroup) => {
+    // When tree becomes the source of truth, clear legacy fields to avoid drift.
+    onChange({
+      conditions: next,
+      insurer_ids: undefined,
+      vehicle_codes: undefined,
+      sum_insured_op: undefined,
+      sum_insured_value: undefined,
+    });
+  };
+
+  const isEmpty = tree.children.length === 0;
 
   return (
     <div className="rounded-md border border-dashed border-border bg-muted/20 px-2.5 py-2">
-      <div className="flex items-center gap-2 flex-wrap">
+      <div className="flex items-center justify-between mb-1.5">
         <span className="text-[10px] uppercase tracking-wide text-muted-foreground">Apply when</span>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className="h-7 text-xs font-normal gap-1">
-              <span>Insurer:</span><span className="text-foreground">{insurerSummary}</span>
-              <ChevronDown className="w-3 h-3 opacity-60" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent align="start" className="w-60 p-2">
-            <div className="text-[10px] uppercase tracking-wide text-muted-foreground px-1 pb-1">Insurer scope</div>
-            <label className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted cursor-pointer">
-              <Checkbox checked={insurers.length === 0} onCheckedChange={() => onChange({ insurer_ids: undefined })} />
-              <span className="text-sm">All insurers (default)</span>
-            </label>
-            <div className="border-t border-border my-1" />
-            <div className="max-h-56 overflow-y-auto">
-              {mockInsurers.map(i => {
-                const on = insurers.includes(i.id);
-                return (
-                  <label key={i.id} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted cursor-pointer">
-                    <Checkbox
-                      checked={on}
-                      onCheckedChange={(checked) => {
-                        const next = checked ? [...insurers, i.id] : insurers.filter(x => x !== i.id);
-                        onChange({ insurer_ids: next.length === 0 ? undefined : next });
-                      }}
-                    />
-                    <span className="text-sm">{i.name}</span>
-                  </label>
-                );
-              })}
-            </div>
-          </PopoverContent>
-        </Popover>
-
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className="h-7 text-xs font-normal gap-1">
-              <span>Vehicle:</span><span className="text-foreground">{vehicleSummary}</span>
-              <ChevronDown className="w-3 h-3 opacity-60" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent align="start" className="w-72 p-2">
-            <div className="text-[10px] uppercase tracking-wide text-muted-foreground px-1 pb-1">Vehicle code scope</div>
-            <label className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted cursor-pointer">
-              <Checkbox checked={vehicles.length === 0} onCheckedChange={() => onChange({ vehicle_codes: undefined })} />
-              <span className="text-sm">All vehicles (default)</span>
-            </label>
-            <label className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted cursor-pointer">
-              <Checkbox checked={allEvSelected} onCheckedChange={(checked) => onChange({ vehicle_codes: checked ? evIds : undefined })} />
-              <span className="text-sm">All EV models (preset)</span>
-            </label>
-            <div className="border-t border-border my-1" />
-            <div className="max-h-56 overflow-y-auto">
-              {mockVehicleCodes.map(v => {
-                const on = vehicles.includes(v.id);
-                return (
-                  <label key={v.id} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted cursor-pointer">
-                    <Checkbox
-                      checked={on}
-                      onCheckedChange={(checked) => {
-                        const next = checked ? [...vehicles, v.id] : vehicles.filter(x => x !== v.id);
-                        onChange({ vehicle_codes: next.length === 0 ? undefined : next });
-                      }}
-                    />
-                    <span className="text-sm flex-1">{v.name}</span>
-                    {v.is_ev && <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] font-normal">EV</Badge>}
-                  </label>
-                );
-              })}
-            </div>
-          </PopoverContent>
-        </Popover>
-
-        <div className="flex items-center gap-1">
-          <span className="text-xs text-muted-foreground">Sum insured</span>
-          <Select
-            value={rule.sum_insured_op ?? 'none'}
-            onValueChange={(v) => {
-              if (v === 'none') onChange({ sum_insured_op: undefined, sum_insured_value: undefined });
-              else onChange({ sum_insured_op: v as SumInsuredOp, sum_insured_value: rule.sum_insured_value ?? 0 });
-            }}
-          >
-            <SelectTrigger className="h-7 w-16 text-xs"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">any</SelectItem>
-              {SUM_OPS.map(op => <SelectItem key={op} value={op}>{op}</SelectItem>)}
-            </SelectContent>
-          </Select>
-          <Input
-            type="number"
-            min={0}
-            step={50000}
-            disabled={!hasSI}
-            value={rule.sum_insured_value ?? ''}
-            onChange={(e) => onChange({ sum_insured_value: e.target.value === '' ? undefined : Number(e.target.value) })}
-            className="h-7 w-32 text-xs"
-            placeholder="Value"
-          />
-          <span className="text-xs text-muted-foreground">Baht</span>
-        </div>
-
-        {(insurers.length > 0 || vehicles.length > 0 || hasSI) && (
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-6 px-2 text-[11px] text-muted-foreground"
-            onClick={() => onChange({ insurer_ids: undefined, vehicle_codes: undefined, sum_insured_op: undefined, sum_insured_value: undefined })}
-          >
+        {!isEmpty && (
+          <Button size="sm" variant="ghost" className="h-6 px-2 text-[11px] text-muted-foreground"
+            onClick={() => commit(emptyGroup('AND'))}>
             Reset to default
           </Button>
         )}
       </div>
+      {isEmpty ? (
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] text-muted-foreground italic">Default — applies to all</span>
+          <Button size="sm" variant="outline" className="h-7 text-xs gap-1"
+            onClick={() => commit({ ...tree, children: [newLeaf('insurer')] })}>
+            <Plus className="w-3 h-3" /> Add condition
+          </Button>
+        </div>
+      ) : (
+        <ConditionGroupEditor group={tree} onChange={commit} depth={0} />
+      )}
     </div>
+  );
+}
+
+function ConditionGroupEditor({ group, onChange, depth }: {
+  group: ConditionGroup;
+  onChange: (g: ConditionGroup) => void;
+  depth: number;
+}) {
+  const updateChild = (idx: number, child: ConditionNode) => {
+    const next = [...group.children];
+    next[idx] = child;
+    onChange({ ...group, children: next });
+  };
+  const removeChild = (idx: number) => {
+    const next = group.children.filter((_, i) => i !== idx);
+    onChange({ ...group, children: next });
+  };
+  const addLeaf = () => onChange({ ...group, children: [...group.children, newLeaf('insurer')] });
+  const addGroup = () => onChange({ ...group, children: [...group.children, emptyGroup(group.op === 'AND' ? 'OR' : 'AND')] });
+
+  const borderColor = group.op === 'AND' ? 'border-blue-300' : 'border-purple-300';
+  const bgColor = group.op === 'AND' ? 'bg-blue-50/40' : 'bg-purple-50/40';
+  const opBadge = group.op === 'AND'
+    ? 'bg-blue-100 text-blue-700 border-blue-200'
+    : 'bg-purple-100 text-purple-700 border-purple-200';
+
+  return (
+    <div className={`rounded-md border ${borderColor} ${bgColor} p-2 space-y-1.5`}>
+      <div className="flex items-center gap-2">
+        <Select value={group.op} onValueChange={(v) => onChange({ ...group, op: v as LogicOp })}>
+          <SelectTrigger className={`h-6 w-[68px] text-[10px] font-bold uppercase ${opBadge}`}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="AND">AND</SelectItem>
+            <SelectItem value="OR">OR</SelectItem>
+          </SelectContent>
+        </Select>
+        <span className="text-[10px] text-muted-foreground">
+          Match {group.op === 'AND' ? 'ALL' : 'ANY'} of the following
+        </span>
+      </div>
+
+      <div className="space-y-1.5 pl-2 border-l-2 border-dashed border-border/60">
+        {group.children.map((child, idx) => (
+          <div key={child.id} className="flex items-start gap-1.5">
+            <div className="flex-1 min-w-0">
+              {child.kind === 'leaf' ? (
+                <ConditionLeafEditor leaf={child} onChange={(l) => updateChild(idx, l)} />
+              ) : (
+                <ConditionGroupEditor group={child} onChange={(g) => updateChild(idx, g)} depth={depth + 1} />
+              )}
+            </div>
+            <Button size="icon" variant="ghost" className="h-6 w-6 text-muted-foreground hover:text-destructive shrink-0"
+              onClick={() => removeChild(idx)}>
+              <X className="w-3 h-3" />
+            </Button>
+          </div>
+        ))}
+        {group.children.length === 0 && (
+          <div className="text-[11px] text-muted-foreground italic px-1">Empty group</div>
+        )}
+      </div>
+
+      <div className="flex items-center gap-1 pt-0.5">
+        <Button size="sm" variant="ghost" className="h-6 px-2 text-[11px] gap-1" onClick={addLeaf}>
+          <Plus className="w-3 h-3" /> Condition
+        </Button>
+        {depth < 2 && (
+          <Button size="sm" variant="ghost" className="h-6 px-2 text-[11px] gap-1" onClick={addGroup}>
+            <Plus className="w-3 h-3" /> Group
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ConditionLeafEditor({ leaf, onChange }: { leaf: ConditionLeaf; onChange: (l: ConditionLeaf) => void }) {
+  const def = CONDITION_FIELDS.find(f => f.key === leaf.field)!;
+  const ops = OPERATORS_FOR_TYPE[def.type];
+
+  const setField = (key: ConditionFieldKey) => {
+    const newDef = CONDITION_FIELDS.find(f => f.key === key)!;
+    const newOp = OPERATORS_FOR_TYPE[newDef.type][0];
+    let v: ConditionLeaf['value'];
+    if (newDef.type === 'multi-select') v = [];
+    else if (newDef.type === 'select') v = newDef.options?.[0]?.value;
+    else if (newDef.type === 'number') v = 0;
+    onChange({ ...leaf, field: key, operator: newOp, value: v });
+  };
+
+  return (
+    <div className="flex items-center gap-1.5 flex-wrap rounded-md bg-background border border-border px-2 py-1.5">
+      {/* Field */}
+      <Select value={leaf.field} onValueChange={(v) => setField(v as ConditionFieldKey)}>
+        <SelectTrigger className="h-7 w-[150px] text-xs">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {CONDITION_FIELDS.map(f => (
+            <SelectItem key={f.key} value={f.key}>{f.label}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      {/* Operator */}
+      <Select value={leaf.operator} onValueChange={(v) => {
+        const op = v as ConditionOperator;
+        // Switching to/from between resets value shape
+        let val = leaf.value;
+        if (op === 'between' && !Array.isArray(val)) val = [0, 0];
+        if (op !== 'between' && Array.isArray(val) && def.type === 'number') val = Number(val[0]) || 0;
+        onChange({ ...leaf, operator: op, value: val });
+      }}>
+        <SelectTrigger className="h-7 w-[88px] text-xs">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {ops.map(op => <SelectItem key={op} value={op}>{OP_LABEL[op]}</SelectItem>)}
+        </SelectContent>
+      </Select>
+
+      {/* Value editor */}
+      <LeafValueEditor leaf={leaf} onChange={onChange} />
+    </div>
+  );
+}
+
+function LeafValueEditor({ leaf, onChange }: { leaf: ConditionLeaf; onChange: (l: ConditionLeaf) => void }) {
+  const def = CONDITION_FIELDS.find(f => f.key === leaf.field)!;
+
+  if (def.type === 'boolean') return null;
+
+  if (def.type === 'select') {
+    return (
+      <Select value={String(leaf.value ?? '')} onValueChange={(v) => onChange({ ...leaf, value: v })}>
+        <SelectTrigger className="h-7 min-w-[140px] text-xs"><SelectValue /></SelectTrigger>
+        <SelectContent>
+          {def.options?.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+        </SelectContent>
+      </Select>
+    );
+  }
+
+  if (def.type === 'number') {
+    if (leaf.operator === 'between') {
+      const arr = (Array.isArray(leaf.value) ? leaf.value : [0, 0]) as number[];
+      return (
+        <div className="flex items-center gap-1">
+          <Input type="number" min={0} step={50000} value={arr[0] ?? 0} className="h-7 w-28 text-xs"
+            onChange={(e) => onChange({ ...leaf, value: [Number(e.target.value) || 0, arr[1] ?? 0] })} />
+          <span className="text-[10px] text-muted-foreground">and</span>
+          <Input type="number" min={0} step={50000} value={arr[1] ?? 0} className="h-7 w-28 text-xs"
+            onChange={(e) => onChange({ ...leaf, value: [arr[0] ?? 0, Number(e.target.value) || 0] })} />
+          {def.unit && <span className="text-[10px] text-muted-foreground">{def.unit}</span>}
+        </div>
+      );
+    }
+    return (
+      <div className="flex items-center gap-1">
+        <Input type="number" min={0} step={50000} value={Number(leaf.value ?? 0)} className="h-7 w-32 text-xs"
+          onChange={(e) => onChange({ ...leaf, value: Number(e.target.value) || 0 })} />
+        {def.unit && <span className="text-[10px] text-muted-foreground">{def.unit}</span>}
+      </div>
+    );
+  }
+
+  // multi-select
+  const arr = (Array.isArray(leaf.value) ? leaf.value : []) as string[];
+  const options: { value: string; label: string }[] =
+    leaf.field === 'insurer'
+      ? mockInsurers.map(i => ({ value: i.id, label: i.name }))
+      : leaf.field === 'vehicle_code'
+        ? mockVehicleCodes.map(v => ({ value: v.id, label: v.name + (v.is_ev ? ' (EV)' : '') }))
+        : (def.options ?? []);
+
+  const summary = arr.length === 0 ? 'Select…'
+    : arr.length === 1 ? (options.find(o => o.value === arr[0])?.label ?? arr[0])
+    : `${arr.length} selected`;
+
+  const evIds = mockVehicleCodes.filter(v => v.is_ev).map(v => v.id);
+  const allEvSelected = leaf.field === 'vehicle_code' && arr.length > 0 && arr.every(id => evIds.includes(id)) && evIds.every(id => arr.includes(id));
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button variant="outline" size="sm" className="h-7 text-xs font-normal gap-1 min-w-[140px] justify-between">
+          <span className="truncate">{summary}</span>
+          <ChevronDown className="w-3 h-3 opacity-60 shrink-0" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-64 p-2">
+        {leaf.field === 'vehicle_code' && (
+          <>
+            <label className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted cursor-pointer">
+              <Checkbox checked={allEvSelected} onCheckedChange={(c) => onChange({ ...leaf, value: c ? evIds : [] })} />
+              <span className="text-sm">All EV models (preset)</span>
+            </label>
+            <div className="border-t border-border my-1" />
+          </>
+        )}
+        <div className="max-h-56 overflow-y-auto">
+          {options.map(o => {
+            const on = arr.includes(o.value);
+            return (
+              <label key={o.value} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted cursor-pointer">
+                <Checkbox checked={on} onCheckedChange={(c) => {
+                  const next = c ? [...arr, o.value] : arr.filter(x => x !== o.value);
+                  onChange({ ...leaf, value: next });
+                }} />
+                <span className="text-sm">{o.label}</span>
+              </label>
+            );
+          })}
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }
 

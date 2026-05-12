@@ -63,6 +63,92 @@ export const mockVehicleCodes: VehicleCodeRow[] = [
   { id: 'mazda-cx-5', name: 'Mazda CX-5' },
 ];
 
+// ---------- Flexible condition tree (CleverTap-style) ----------
+
+export type LogicOp = 'AND' | 'OR';
+
+export type ConditionFieldKey =
+  | 'insurer'
+  | 'vehicle_code'
+  | 'vehicle_is_ev'
+  | 'sum_insured'
+  | 'customer_type'
+  | 'payment_method'
+  | 'policy_start'
+  | 'named_driver'
+  | 'coverage_addon';
+
+export type ConditionOperator =
+  | 'in' | 'not_in'
+  | 'equals' | 'not_equals'
+  | 'is_true' | 'is_false'
+  | '<' | '<=' | '=' | '>=' | '>' | 'between';
+
+export interface ConditionLeaf {
+  kind: 'leaf';
+  id: string;
+  field: ConditionFieldKey;
+  operator: ConditionOperator;
+  /** Single value, list, or [min,max] for between. */
+  value?: string | number | boolean | Array<string | number>;
+}
+
+export interface ConditionGroup {
+  kind: 'group';
+  id: string;
+  op: LogicOp;
+  children: ConditionNode[];
+}
+
+export type ConditionNode = ConditionLeaf | ConditionGroup;
+
+export interface ConditionFieldDef {
+  key: ConditionFieldKey;
+  label: string;
+  /** Drives operator list and value editor. */
+  type: 'multi-select' | 'select' | 'boolean' | 'number';
+  /** For select / multi-select. */
+  options?: { value: string; label: string }[];
+  /** For number type, e.g. 'Baht'. */
+  unit?: string;
+}
+
+export const CONDITION_FIELDS: ConditionFieldDef[] = [
+  { key: 'insurer', label: 'Insurer', type: 'multi-select' },
+  { key: 'vehicle_code', label: 'Vehicle code', type: 'multi-select' },
+  { key: 'vehicle_is_ev', label: 'Vehicle is EV', type: 'boolean' },
+  { key: 'sum_insured', label: 'Sum insured', type: 'number', unit: 'Baht' },
+  { key: 'customer_type', label: 'Customer type', type: 'select', options: [
+    { value: 'Individual', label: 'Individual' },
+    { value: 'Corporate', label: 'Corporate' },
+  ]},
+  { key: 'payment_method', label: 'Payment method', type: 'multi-select', options: [
+    { value: 'BankTransfer', label: 'Bank Transfer' },
+    { value: 'CreditCard', label: 'Credit Card' },
+    { value: 'Cash', label: 'Cash' },
+    { value: 'QR', label: 'QR / PromptPay' },
+  ]},
+  { key: 'policy_start', label: 'Policy start', type: 'select', options: [
+    { value: 'Today', label: 'Today' },
+    { value: 'Future', label: 'Future-dated' },
+    { value: 'Backdated', label: 'Back-dated' },
+  ]},
+  { key: 'named_driver', label: 'Named-driver applied', type: 'boolean' },
+  { key: 'coverage_addon', label: 'Coverage add-on', type: 'multi-select', options: [
+    { value: 'Flood', label: 'Flood' },
+    { value: 'Theft', label: 'Theft' },
+    { value: 'PersonalAccident', label: 'Personal Accident' },
+    { value: 'BailBond', label: 'Bail Bond' },
+  ]},
+];
+
+export const OPERATORS_FOR_TYPE: Record<ConditionFieldDef['type'], ConditionOperator[]> = {
+  'multi-select': ['in', 'not_in'],
+  'select': ['equals', 'not_equals'],
+  'boolean': ['is_true', 'is_false'],
+  'number': ['<', '<=', '=', '>=', '>', 'between'],
+};
+
 export interface DocMatrixRule {
   id: number;
   sale_type: SaleType;
@@ -73,11 +159,11 @@ export interface DocMatrixRule {
   condition_note: string;
   min_count: number;
   is_active: boolean;
-  /** Optional. Empty/undefined = applies to all insurers. */
+  /** Flexible condition tree (CleverTap-style). Undefined or empty group = default rule. */
+  conditions?: ConditionGroup;
+  // ---- Legacy convenience fields (still supported, auto-migrated to `conditions`) ----
   insurer_ids?: string[];
-  /** Optional. Empty/undefined = applies to all vehicle codes. */
   vehicle_codes?: string[];
-  /** Optional sum-insured threshold. Both fields required together. */
   sum_insured_op?: SumInsuredOp;
   sum_insured_value?: number;
   created_at: string;
@@ -150,3 +236,63 @@ export const mockAuditLog: DocAuditLog[] = [
   { id: 1006, matrix_rule_id: 104, action: 'Added', field_changed: '—', old_value: '—', new_value: 'Instalment NID rule added', actor_email: 'admin@fairdee.com', created_at: '2026-01-16 11:20' },
   { id: 1007, matrix_rule_id: 103, action: 'Updated', field_changed: 'condition_note', old_value: 'Always required', new_value: 'Type1 always inspects (8 angles)', actor_email: 'pao@fairdee.com', created_at: '2026-03-01 10:09' },
 ];
+
+// ---------- Condition-tree helpers ----------
+
+let __cidSeed = 1;
+export const newConditionId = () => `c${Date.now().toString(36)}_${(__cidSeed++).toString(36)}`;
+
+export const emptyGroup = (op: LogicOp = 'AND'): ConditionGroup => ({
+  kind: 'group', id: newConditionId(), op, children: [],
+});
+
+export const newLeaf = (field: ConditionFieldKey = 'insurer'): ConditionLeaf => {
+  const def = CONDITION_FIELDS.find(f => f.key === field)!;
+  const op = OPERATORS_FOR_TYPE[def.type][0];
+  let value: ConditionLeaf['value'];
+  if (def.type === 'multi-select') value = [];
+  else if (def.type === 'select') value = def.options?.[0]?.value;
+  else if (def.type === 'number') value = 0;
+  return { kind: 'leaf', id: newConditionId(), field, operator: op, value };
+};
+
+/** Promote legacy flat fields on a rule to a `conditions` tree (idempotent, non-destructive). */
+export function migrateLegacyConditions(rule: DocMatrixRule): ConditionGroup | undefined {
+  if (rule.conditions && rule.conditions.children.length > 0) return rule.conditions;
+  const children: ConditionNode[] = [];
+  if (rule.insurer_ids && rule.insurer_ids.length > 0) {
+    children.push({ kind: 'leaf', id: newConditionId(), field: 'insurer', operator: 'in', value: rule.insurer_ids });
+  }
+  if (rule.vehicle_codes && rule.vehicle_codes.length > 0) {
+    children.push({ kind: 'leaf', id: newConditionId(), field: 'vehicle_code', operator: 'in', value: rule.vehicle_codes });
+  }
+  if (rule.sum_insured_op && rule.sum_insured_value != null) {
+    children.push({ kind: 'leaf', id: newConditionId(), field: 'sum_insured', operator: rule.sum_insured_op as ConditionOperator, value: rule.sum_insured_value });
+  }
+  if (children.length === 0) return undefined;
+  return { kind: 'group', id: newConditionId(), op: 'AND', children };
+}
+
+/** A demo rule using nested AND/OR tree to showcase the editor. */
+mockMatrixRules.push({
+  id: 117,
+  sale_type: 'New', insurance_class: 'Type1', payment_type: 'Instalment',
+  document_id: 9, tier: 'Conditional',
+  condition_note: 'Corp cert required when (Viriyah AND SI ≥ 5M) OR (MSIG/Bangkok AND Corporate)',
+  min_count: 1, is_active: true,
+  conditions: {
+    kind: 'group', id: 'demo_root', op: 'OR',
+    children: [
+      { kind: 'group', id: 'demo_g1', op: 'AND', children: [
+        { kind: 'leaf', id: 'demo_l1', field: 'insurer', operator: 'in', value: ['viriyah'] },
+        { kind: 'leaf', id: 'demo_l2', field: 'sum_insured', operator: '>=', value: 5000000 },
+      ]},
+      { kind: 'group', id: 'demo_g2', op: 'AND', children: [
+        { kind: 'leaf', id: 'demo_l3', field: 'insurer', operator: 'in', value: ['msig', 'bangkok'] },
+        { kind: 'leaf', id: 'demo_l4', field: 'customer_type', operator: 'equals', value: 'Corporate' },
+      ]},
+    ],
+  },
+  created_at: '2026-05-01 09:00', updated_at: '2026-05-01 09:00',
+  created_by: 'pao@fairdee.com', updated_by: 'pao@fairdee.com',
+});
