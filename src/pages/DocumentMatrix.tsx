@@ -1021,7 +1021,7 @@ function LibraryPanel({ library, usageCount, onEditDoc, onDeleteDoc, onAddDoc, i
                   <TableHead>Name (TH)</TableHead>
                   <TableHead className="w-32">Default Tier</TableHead>
                   <TableHead className="w-24 text-center">Usage</TableHead>
-                  <TableHead className="w-40 text-right">Action</TableHead>
+                  {isSuperAdmin && <TableHead className="w-40 text-right">Action</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -1039,17 +1039,19 @@ function LibraryPanel({ library, usageCount, onEditDoc, onDeleteDoc, onAddDoc, i
                             {usage} {usage === 1 ? 'rule' : 'rules'}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-1">
-                            <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => isEditing ? setEditingId(null) : startEdit(d)}>
-                              {isEditing ? 'Close' : <><Pencil className="w-3 h-3 mr-1" />Edit</>}
-                            </Button>
-                          </div>
-                        </TableCell>
+                        {isSuperAdmin && (
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end gap-1">
+                              <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => isEditing ? setEditingId(null) : startEdit(d)}>
+                                {isEditing ? 'Close' : <><Pencil className="w-3 h-3 mr-1" />Edit</>}
+                              </Button>
+                            </div>
+                          </TableCell>
+                        )}
                       </TableRow>
                       {isEditing && (
                         <TableRow key={d.id + '-edit'} className="bg-muted/20 hover:bg-muted/20">
-                          <TableCell colSpan={5} className="p-3">
+                          <TableCell colSpan={isSuperAdmin ? 5 : 4} className="p-3">
                             <div className="grid grid-cols-3 gap-2">
                               <div>
                                 <label className="text-xs text-muted-foreground">Name (EN)</label>
