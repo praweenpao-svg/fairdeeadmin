@@ -513,7 +513,7 @@ function EditScenarioModal({ combination, onClose, rules, docById, library, onSa
       payment_type: combination.payment_type,
 
       document_id: docId,
-      tier: tier as DocTier,
+      tier: (tier === 'Required' ? 'Required Base' : tier === 'Conditional' ? 'Conditional' : 'Optional') as DocTier,
       condition_note: d?.default_condition_note ?? '',
       min_count: 1,
       is_active: true,
