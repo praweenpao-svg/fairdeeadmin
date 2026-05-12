@@ -981,17 +981,18 @@ function LeafValueEditor({ leaf, onChange }: { leaf: ConditionLeaf; onChange: (l
   );
 }
 
-function LibraryPanel({ library, usageCount, onEditDoc, onToggleActive, onAddDoc, isSuperAdmin }: {
+function LibraryPanel({ library, usageCount, onEditDoc, onToggleActive, onAddDoc, isSuperAdmin, showAdd, setShowAdd }: {
   library: DocLibraryRow[];
   usageCount: (id: number) => number;
   onEditDoc: (id: number, patch: Partial<DocLibraryRow>) => void;
   onToggleActive: (d: DocLibraryRow) => void;
   onAddDoc: (row: Omit<DocLibraryRow, 'id' | 'created_at' | 'updated_at'>) => string | null;
   isSuperAdmin: boolean;
+  showAdd: boolean;
+  setShowAdd: (v: boolean | ((s: boolean) => boolean)) => void;
 }) {
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [showAdd, setShowAdd] = useState(false);
   const [newEN, setNewEN] = useState('');
   const [newTH, setNewTH] = useState('');
   const [newTier, setNewTier] = useState<UITier>('Required');
