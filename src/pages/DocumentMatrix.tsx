@@ -44,39 +44,60 @@ const formatThb = (n: number) => new Intl.NumberFormat('en-US').format(n);
 const insurerName = (id: string) => mockInsurers.find(i => i.id === id)?.name ?? id;
 const vehicleName = (id: string) => mockVehicleCodes.find(v => v.id === id)?.name ?? id;
 
+const OP_LABEL: Record<ConditionOperator, string> = {
+  in: 'in', not_in: 'not in', equals: '=', not_equals: '≠',
+  is_true: 'is true', is_false: 'is false',
+  '<': '<', '<=': '≤', '=': '=', '>=': '≥', '>': '>', between: 'between',
+};
+
+function fieldDef(key: ConditionFieldKey) {
+  return CONDITION_FIELDS.find(f => f.key === key)!;
+}
+
+function leafLabel(leaf: ConditionLeaf): string {
+  const def = fieldDef(leaf.field);
+  const renderVal = (): string => {
+    const v = leaf.value;
+    if (def.type === 'multi-select') {
+      const arr = (Array.isArray(v) ? v : []) as string[];
+      if (arr.length === 0) return '∅';
+      const names = arr.map(id => {
+        if (leaf.field === 'insurer') return insurerName(id);
+        if (leaf.field === 'vehicle_code') return vehicleName(id);
+        return def.options?.find(o => o.value === id)?.label ?? id;
+      });
+      return names.length <= 2 ? names.join(', ') : `${names.length} items`;
+    }
+    if (def.type === 'select') return def.options?.find(o => o.value === v)?.label ?? String(v ?? '');
+    if (def.type === 'boolean') return '';
+    if (def.type === 'number') {
+      if (leaf.operator === 'between' && Array.isArray(v)) return `${formatThb(Number(v[0]))} – ${formatThb(Number(v[1]))} ${def.unit ?? ''}`.trim();
+      return `${formatThb(Number(v ?? 0))} ${def.unit ?? ''}`.trim();
+    }
+    return String(v ?? '');
+  };
+  const valStr = renderVal();
+  return valStr ? `${def.label} ${OP_LABEL[leaf.operator]} ${valStr}` : `${def.label} ${OP_LABEL[leaf.operator]}`;
+}
+
+function summarizeTree(node: ConditionNode, depth = 0): string {
+  if (node.kind === 'leaf') return leafLabel(node);
+  if (node.children.length === 0) return '';
+  const parts = node.children.map(c => summarizeTree(c, depth + 1)).filter(Boolean);
+  const joined = parts.join(` ${node.op} `);
+  return depth === 0 ? joined : `(${joined})`;
+}
+
 function ConditionChips({ rule }: { rule: DocMatrixRule }) {
-  const hasInsurers = rule.insurer_ids && rule.insurer_ids.length > 0;
-  const hasVehicles = rule.vehicle_codes && rule.vehicle_codes.length > 0;
-  const hasSI = rule.sum_insured_op && rule.sum_insured_value != null;
-  if (!hasInsurers && !hasVehicles && !hasSI) return null;
-
-  const vehicleSummary = (() => {
-    if (!hasVehicles) return '';
-    const ids = rule.vehicle_codes!;
-    const evIds = mockVehicleCodes.filter(v => v.is_ev).map(v => v.id);
-    const allEv = ids.length > 0 && ids.every(id => evIds.includes(id)) && evIds.every(id => ids.includes(id));
-    if (allEv) return 'All EV models';
-    if (ids.length <= 2) return ids.map(vehicleName).join(', ');
-    return `${ids.length} models`;
-  })();
-
+  const tree = migrateLegacyConditions(rule);
+  if (!tree || tree.children.length === 0) return null;
+  const summary = summarizeTree(tree);
   return (
     <div className="flex flex-wrap gap-1 mt-1">
-      {hasInsurers && (
-        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-[10px] font-normal">
-          Insurer: {rule.insurer_ids!.map(insurerName).join(', ')}
-        </Badge>
-      )}
-      {hasVehicles && (
-        <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] font-normal">
-          Vehicle: {vehicleSummary}
-        </Badge>
-      )}
-      {hasSI && (
-        <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200 text-[10px] font-normal">
-          Sum insured {rule.sum_insured_op} {formatThb(rule.sum_insured_value!)} Baht
-        </Badge>
-      )}
+      <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-200 text-[10px] font-normal max-w-full">
+        <span className="font-semibold mr-1">IF</span>
+        <span className="truncate">{summary}</span>
+      </Badge>
     </div>
   );
 }
