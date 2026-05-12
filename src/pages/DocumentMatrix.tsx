@@ -786,6 +786,45 @@ function RuleConditionEditor({ rule, onChange }: { rule: DocMatrixRule; onChange
           </PopoverContent>
         </Popover>
 
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className="h-7 text-xs font-normal gap-1">
+              <span>Vehicle:</span><span className="text-foreground">{vehicleSummary}</span>
+              <ChevronDown className="w-3 h-3 opacity-60" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent align="start" className="w-72 p-2">
+            <div className="text-[10px] uppercase tracking-wide text-muted-foreground px-1 pb-1">Vehicle code scope</div>
+            <label className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted cursor-pointer">
+              <Checkbox checked={vehicles.length === 0} onCheckedChange={() => onChange({ vehicle_codes: undefined })} />
+              <span className="text-sm">All vehicles (default)</span>
+            </label>
+            <label className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted cursor-pointer">
+              <Checkbox checked={allEvSelected} onCheckedChange={(checked) => onChange({ vehicle_codes: checked ? evIds : undefined })} />
+              <span className="text-sm">All EV models (preset)</span>
+            </label>
+            <div className="border-t border-border my-1" />
+            <div className="max-h-56 overflow-y-auto">
+              {mockVehicleCodes.map(v => {
+                const on = vehicles.includes(v.id);
+                return (
+                  <label key={v.id} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted cursor-pointer">
+                    <Checkbox
+                      checked={on}
+                      onCheckedChange={(checked) => {
+                        const next = checked ? [...vehicles, v.id] : vehicles.filter(x => x !== v.id);
+                        onChange({ vehicle_codes: next.length === 0 ? undefined : next });
+                      }}
+                    />
+                    <span className="text-sm flex-1">{v.name}</span>
+                    {v.is_ev && <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] font-normal">EV</Badge>}
+                  </label>
+                );
+              })}
+            </div>
+          </PopoverContent>
+        </Popover>
+
         <div className="flex items-center gap-1">
           <span className="text-xs text-muted-foreground">Sum insured</span>
           <Select
