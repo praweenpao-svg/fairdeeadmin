@@ -285,7 +285,7 @@ export default function DocumentMatrix() {
             </div>
 
             <div className="rounded-lg border border-border bg-card overflow-hidden">
-              <Table className="[&_tbody_tr]:hover:bg-primary/5">
+              <Table>
                 <TableHeader className="bg-muted/50">
                   <TableRow>
                     <TableHead className="w-8" />
@@ -388,7 +388,7 @@ function renderRow(
   const isOpen = expanded === key;
   return (
     <>
-      <TableRow key={key} className="cursor-pointer hover:bg-muted/40" onClick={() => setExpanded(isOpen ? null : key)}>
+      <TableRow key={key} className="cursor-pointer hover:bg-primary/5" onClick={() => setExpanded(isOpen ? null : key)}>
         <TableCell className="text-muted-foreground">{isOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}</TableCell>
         <TableCell className="font-medium">{c.sale_type}</TableCell>
         <TableCell>{CLASS_LABEL[c.insurance_class]}</TableCell>
@@ -1067,7 +1067,7 @@ function LibraryPanel({ library, usageCount, onEditDoc, onToggleActive, onAddDoc
           </Dialog>
 
           <div className="rounded-lg border border-border bg-card overflow-hidden">
-            <Table className="[&_tbody_tr]:hover:bg-primary/5">
+            <Table>
               <TableHeader className="bg-muted/50">
                 <TableRow>
                   <TableHead>Name (EN)</TableHead>
@@ -1084,7 +1084,7 @@ function LibraryPanel({ library, usageCount, onEditDoc, onToggleActive, onAddDoc
                   const isEditing = editingId === d.id;
                   return (
                     <>
-                      <TableRow key={d.id} className={!d.is_active ? 'opacity-60' : ''}>
+                      <TableRow key={d.id} className={`${!d.is_active ? 'opacity-60 ' : ''}hover:bg-primary/5`}>
                         <TableCell className="font-medium text-sm">{d.name_en}</TableCell>
                         <TableCell className="text-sm text-muted-foreground">{d.name_th}</TableCell>
                         <TableCell><Badge variant="outline" className={tierColor[normalizeTier(d.default_tier)]}>{normalizeTier(d.default_tier)}</Badge></TableCell>
