@@ -631,10 +631,6 @@ function EditScenarioModal({ combination, onClose, rules, docById, library, onSa
           </div>
         )}
 
-        <div className="rounded-md border border-border bg-muted/30 px-3 py-2 text-[11px] text-muted-foreground">
-          A rule with no extra condition is the <strong>default</strong> for this scenario (all insurers, any sum insured).
-          Add an <strong>Insurer</strong> or <strong>Sum-insured</strong> condition to layer extra documents on top — e.g. only required when insurer is Viriyah, or when sum insured ≥ 2,000,000 Baht.
-        </div>
 
         <div className="space-y-4">
           {tiers.map(tier => {
