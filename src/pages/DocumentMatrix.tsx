@@ -271,17 +271,11 @@ export default function DocumentMatrix() {
                 <MultiSelectFilter label="Class" selected={fClass} onChange={setFClass} options={CLASSES.map(c => ({ v: c, l: CLASS_LABEL[c] }))} />
                 <MultiSelectFilter label="Payment Type" selected={fPayment} onChange={setFPayment} options={PAYMENTS.map(p => ({ v: p, l: p }))} />
               </div>
-              <div className="mt-3 flex items-center justify-between gap-2 text-xs">
+              <div className="mt-3 flex items-center justify-end gap-2 text-xs">
                 <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground">Showing</span>
-                  <Badge variant="outline">{filteredCombos.length} of {allCombinations.length} scenarios</Badge>
                   {(fSale.length + fClass.length + fPayment.length) > 0 && (
                     <Button size="sm" variant="ghost" className="h-6 px-2 text-xs" onClick={() => { setFSale([]); setFClass([]); setFPayment([]); }}>Clear filters</Button>
                   )}
-                </div>
-                <div className="flex items-center gap-1 rounded-md border border-border p-0.5 bg-muted/40">
-                  <button onClick={() => setView('flat')} className={`text-xs px-2 py-1 rounded flex items-center gap-1 ${view === 'flat' ? 'bg-card shadow-sm' : 'text-muted-foreground'}`}><List className="w-3.5 h-3.5" /> Flat</button>
-                  <button onClick={() => setView('grouped')} className={`text-xs px-2 py-1 rounded flex items-center gap-1 ${view === 'grouped' ? 'bg-card shadow-sm' : 'text-muted-foreground'}`}><LayoutGrid className="w-3.5 h-3.5" /> Group by Sale Type</button>
                 </div>
               </div>
             </div>
