@@ -161,7 +161,8 @@ export default function DocumentMatrix() {
 
   const [expanded, setExpanded] = useState<string | null>(null);
   const [editing, setEditing] = useState<Combination | null>(null);
-  
+  const [activeTab, setActiveTab] = useState<string>('library');
+  const [showAddDoc, setShowAddDoc] = useState(false);
 
   // Pagination
   const [page, setPage] = useState(1);
@@ -248,11 +249,18 @@ export default function DocumentMatrix() {
       </header>
 
       <div className="px-6 py-5">
-        <Tabs defaultValue="library" className="w-full">
-          <TabsList>
-            <TabsTrigger value="library" className="gap-2"><Library className="w-4 h-4" />Manage Library</TabsTrigger>
-            <TabsTrigger value="matrix" className="gap-2"><FileStack className="w-4 h-4" />Matrix</TabsTrigger>
-          </TabsList>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <div className="flex items-center justify-between gap-2">
+            <TabsList>
+              <TabsTrigger value="library" className="gap-2"><Library className="w-4 h-4" />Manage Library</TabsTrigger>
+              <TabsTrigger value="matrix" className="gap-2"><FileStack className="w-4 h-4" />Matrix</TabsTrigger>
+            </TabsList>
+            {activeTab === 'library' && isSuperAdmin && (
+              <Button size="sm" onClick={() => setShowAddDoc(s => !s)} className="gap-1">
+                <Plus className="w-4 h-4" /> Add Document
+              </Button>
+            )}
+          </div>
 
           <TabsContent value="matrix" className="mt-4 space-y-4">
             <div className="rounded-lg border border-border bg-card p-4">
@@ -277,7 +285,7 @@ export default function DocumentMatrix() {
             </div>
 
             <div className="rounded-lg border border-border bg-card overflow-hidden">
-              <Table>
+              <Table className="[&_tbody_tr]:hover:bg-primary/10">
                 <TableHeader className="bg-muted/50">
                   <TableRow>
                     <TableHead className="w-8" />
@@ -342,6 +350,8 @@ export default function DocumentMatrix() {
               onToggleActive={handleToggleActive}
               onAddDoc={handleAddDoc}
               isSuperAdmin={isSuperAdmin}
+              showAdd={showAddDoc}
+              setShowAdd={setShowAddDoc}
             />
           </TabsContent>
         </Tabs>
@@ -971,17 +981,18 @@ function LeafValueEditor({ leaf, onChange }: { leaf: ConditionLeaf; onChange: (l
   );
 }
 
-function LibraryPanel({ library, usageCount, onEditDoc, onToggleActive, onAddDoc, isSuperAdmin }: {
+function LibraryPanel({ library, usageCount, onEditDoc, onToggleActive, onAddDoc, isSuperAdmin, showAdd, setShowAdd }: {
   library: DocLibraryRow[];
   usageCount: (id: number) => number;
   onEditDoc: (id: number, patch: Partial<DocLibraryRow>) => void;
   onToggleActive: (d: DocLibraryRow) => void;
   onAddDoc: (row: Omit<DocLibraryRow, 'id' | 'created_at' | 'updated_at'>) => string | null;
   isSuperAdmin: boolean;
+  showAdd: boolean;
+  setShowAdd: (v: boolean | ((s: boolean) => boolean)) => void;
 }) {
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [showAdd, setShowAdd] = useState(false);
   const [newEN, setNewEN] = useState('');
   const [newTH, setNewTH] = useState('');
   const [newTier, setNewTier] = useState<UITier>('Required');
@@ -1019,10 +1030,6 @@ function LibraryPanel({ library, usageCount, onEditDoc, onToggleActive, onAddDoc
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-end">
-        <Button size="sm" onClick={() => setShowAdd(s => !s)} className="gap-1"><Plus className="w-4 h-4" /> Add Document</Button>
-      </div>
-
           {showAdd && (
             <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-2">
               <div className="grid grid-cols-2 gap-2">
@@ -1057,7 +1064,7 @@ function LibraryPanel({ library, usageCount, onEditDoc, onToggleActive, onAddDoc
           )}
 
           <div className="rounded-lg border border-border bg-card overflow-hidden">
-            <Table>
+            <Table className="[&_tbody_tr]:hover:bg-primary/10">
               <TableHeader className="bg-muted/50">
                 <TableRow>
                   <TableHead>Name (EN)</TableHead>
