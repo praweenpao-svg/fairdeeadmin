@@ -16,6 +16,7 @@ import {
   mockDocLibrary,
   mockMatrixRules,
   mockAuditLog,
+  mockInsurers,
   type DocTier,
   type SaleType,
   type InsuranceClass,
@@ -23,7 +24,32 @@ import {
   type CarType,
   type DocMatrixRule,
   type DocLibraryRow,
+  type SumInsuredOp,
 } from '@/data/mockDocumentMatrix';
+
+const SUM_OPS: SumInsuredOp[] = ['<', '<=', '=', '>=', '>'];
+const formatThb = (n: number) => new Intl.NumberFormat('en-US').format(n);
+const insurerName = (id: string) => mockInsurers.find(i => i.id === id)?.name ?? id;
+
+function ConditionChips({ rule }: { rule: DocMatrixRule }) {
+  const hasInsurers = rule.insurer_ids && rule.insurer_ids.length > 0;
+  const hasSI = rule.sum_insured_op && rule.sum_insured_value != null;
+  if (!hasInsurers && !hasSI) return null;
+  return (
+    <div className="flex flex-wrap gap-1 mt-1">
+      {hasInsurers && (
+        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-[10px] font-normal">
+          Insurer: {rule.insurer_ids!.map(insurerName).join(', ')}
+        </Badge>
+      )}
+      {hasSI && (
+        <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200 text-[10px] font-normal">
+          Sum insured {rule.sum_insured_op} {formatThb(rule.sum_insured_value!)} Baht
+        </Badge>
+      )}
+    </div>
+  );
+}
 
 type UITier = 'Required' | 'Conditional' | 'Optional';
 const normalizeTier = (t: DocTier): UITier => {
@@ -486,6 +512,7 @@ function ExpandedRowDetail({ rules, docById }: { rules: DocMatrixRule[]; docById
                       <div className="font-medium">{d?.name_en}</div>
                       <div className="text-muted-foreground">{d?.name_th}</div>
                       {r.condition_note && <div className="text-[11px] text-muted-foreground italic mt-0.5">{r.condition_note}{r.min_count > 1 && ` · min ${r.min_count}`}</div>}
+                      <ConditionChips rule={r} />
                     </li>
                   );
                 })}
@@ -537,25 +564,41 @@ function EditScenarioModal({ combination, onClose, rules, docById, library, onSa
     setAddingTier(null);
   };
 
-  const usedDocIds = new Set(visible.map(r => r.document_id));
-  const availableDocs = library.filter(d => d.is_active && !usedDocIds.has(d.id));
+  const availableDocs = library.filter(d => d.is_active);
+
+  const ruleScopeKey = (r: DocMatrixRule) => {
+    const ins = (r.insurer_ids ?? []).slice().sort().join(',');
+    const si = r.sum_insured_op && r.sum_insured_value != null ? `${r.sum_insured_op}${r.sum_insured_value}` : '';
+    return `${r.document_id}|${ins}|${si}`;
+  };
 
   const validate = (): string[] => {
     const errs: string[] = [];
-    // Duplicate doc across tiers
-    const seen = new Map<number, number>();
-    visible.forEach(r => seen.set(r.document_id, (seen.get(r.document_id) ?? 0) + 1));
-    seen.forEach((count, docId) => {
-      if (count > 1) errs.push(`"${docById[docId]?.name_en}" appears more than once. A document may only be assigned to one tier.`);
+    // Duplicate doc with identical scope (same insurers + same SI threshold) is invalid.
+    const seen = new Map<string, number>();
+    visible.forEach(r => {
+      const k = ruleScopeKey(r);
+      seen.set(k, (seen.get(k) ?? 0) + 1);
     });
-    // min_count
+    seen.forEach((count, k) => {
+      if (count > 1) {
+        const docId = Number(k.split('|')[0]);
+        errs.push(`"${docById[docId]?.name_en}" has duplicate rules with the same insurer/sum-insured scope. Differentiate them or remove duplicates.`);
+      }
+    });
     visible.forEach(r => {
       if (!Number.isFinite(r.min_count) || r.min_count < 1) errs.push(`"${docById[r.document_id]?.name_en}" has invalid min_count (must be ≥ 1).`);
-    });
-    // Required tier with empty condition_note is OK; conditional should have a note
-    visible.forEach(r => {
       if (normalizeTier(r.tier) === 'Conditional' && !r.condition_note.trim()) {
         errs.push(`"${docById[r.document_id]?.name_en}" is Conditional but has no condition note.`);
+      }
+      // SI op + value must be paired
+      const opSet = !!r.sum_insured_op;
+      const valSet = r.sum_insured_value != null && !Number.isNaN(r.sum_insured_value);
+      if (opSet !== valSet) {
+        errs.push(`"${docById[r.document_id]?.name_en}" sum-insured condition is incomplete (operator and value must both be set).`);
+      }
+      if (valSet && (r.sum_insured_value as number) < 0) {
+        errs.push(`"${docById[r.document_id]?.name_en}" sum-insured value must be ≥ 0.`);
       }
     });
     return errs;
@@ -590,6 +633,11 @@ function EditScenarioModal({ combination, onClose, rules, docById, library, onSa
           </div>
         )}
 
+        <div className="rounded-md border border-border bg-muted/30 px-3 py-2 text-[11px] text-muted-foreground">
+          A rule with no extra condition is the <strong>default</strong> for this scenario (all insurers, any sum insured).
+          Add an <strong>Insurer</strong> or <strong>Sum-insured</strong> condition to layer extra documents on top — e.g. only required when insurer is Viriyah, or when sum insured ≥ 2,000,000 Baht.
+        </div>
+
         <div className="space-y-4">
           {tiers.map(tier => {
             const items = visible.filter(r => normalizeTier(r.tier) === tier);
@@ -606,34 +654,37 @@ function EditScenarioModal({ combination, onClose, rules, docById, library, onSa
                   {items.map(r => {
                     const d = docById[r.document_id];
                     return (
-                      <div key={r.id} className="px-3 py-2.5 grid grid-cols-12 gap-2 items-start">
-                        <div className="col-span-4">
-                          <div className="text-sm font-medium">{d?.name_en}</div>
-                          <div className="text-xs text-muted-foreground">{d?.name_th}</div>
+                      <div key={r.id} className="px-3 py-2.5 space-y-2">
+                        <div className="grid grid-cols-12 gap-2 items-start">
+                          <div className="col-span-4">
+                            <div className="text-sm font-medium">{d?.name_en}</div>
+                            <div className="text-xs text-muted-foreground">{d?.name_th}</div>
+                          </div>
+                          <div className="col-span-5">
+                            <Input
+                              value={r.condition_note}
+                              onChange={(e) => updateRule(r.id, { condition_note: e.target.value })}
+                              placeholder="Condition note"
+                              className="h-8 text-xs"
+                            />
+                          </div>
+                          <div className="col-span-2">
+                            <Input
+                              type="number"
+                              min={1}
+                              value={r.min_count}
+                              onChange={(e) => updateRule(r.id, { min_count: Number(e.target.value) || 1 })}
+                              className="h-8 text-xs"
+                              title="Min count"
+                            />
+                          </div>
+                          <div className="col-span-1 flex justify-end">
+                            <Button size="icon" variant="ghost" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => setRemoved(prev => new Set(prev).add(r.id))}>
+                              <X className="w-3.5 h-3.5" />
+                            </Button>
+                          </div>
                         </div>
-                        <div className="col-span-5">
-                          <Input
-                            value={r.condition_note}
-                            onChange={(e) => updateRule(r.id, { condition_note: e.target.value })}
-                            placeholder="Condition note"
-                            className="h-8 text-xs"
-                          />
-                        </div>
-                        <div className="col-span-2">
-                          <Input
-                            type="number"
-                            min={1}
-                            value={r.min_count}
-                            onChange={(e) => updateRule(r.id, { min_count: Number(e.target.value) || 1 })}
-                            className="h-8 text-xs"
-                            title="Min count"
-                          />
-                        </div>
-                        <div className="col-span-1 flex justify-end">
-                          <Button size="icon" variant="ghost" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => setRemoved(prev => new Set(prev).add(r.id))}>
-                            <X className="w-3.5 h-3.5" />
-                          </Button>
-                        </div>
+                        <RuleConditionEditor rule={r} onChange={(patch) => updateRule(r.id, patch)} />
                       </div>
                     );
                   })}
@@ -669,6 +720,92 @@ function EditScenarioModal({ combination, onClose, rules, docById, library, onSa
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function RuleConditionEditor({ rule, onChange }: { rule: DocMatrixRule; onChange: (patch: Partial<DocMatrixRule>) => void }) {
+  const insurers = rule.insurer_ids ?? [];
+  const hasSI = !!rule.sum_insured_op;
+  const insurerSummary = insurers.length === 0 ? 'All insurers' : insurers.length === 1 ? insurerName(insurers[0]) : `${insurers.length} insurers`;
+
+  return (
+    <div className="rounded-md border border-dashed border-border bg-muted/20 px-2.5 py-2">
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="text-[10px] uppercase tracking-wide text-muted-foreground">Apply when</span>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className="h-7 text-xs font-normal gap-1">
+              <span>Insurer:</span><span className="text-foreground">{insurerSummary}</span>
+              <ChevronDown className="w-3 h-3 opacity-60" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent align="start" className="w-60 p-2">
+            <div className="text-[10px] uppercase tracking-wide text-muted-foreground px-1 pb-1">Insurer scope</div>
+            <label className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted cursor-pointer">
+              <Checkbox checked={insurers.length === 0} onCheckedChange={() => onChange({ insurer_ids: undefined })} />
+              <span className="text-sm">All insurers (default)</span>
+            </label>
+            <div className="border-t border-border my-1" />
+            <div className="max-h-56 overflow-y-auto">
+              {mockInsurers.map(i => {
+                const on = insurers.includes(i.id);
+                return (
+                  <label key={i.id} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted cursor-pointer">
+                    <Checkbox
+                      checked={on}
+                      onCheckedChange={(checked) => {
+                        const next = checked ? [...insurers, i.id] : insurers.filter(x => x !== i.id);
+                        onChange({ insurer_ids: next.length === 0 ? undefined : next });
+                      }}
+                    />
+                    <span className="text-sm">{i.name}</span>
+                  </label>
+                );
+              })}
+            </div>
+          </PopoverContent>
+        </Popover>
+
+        <div className="flex items-center gap-1">
+          <span className="text-xs text-muted-foreground">Sum insured</span>
+          <Select
+            value={rule.sum_insured_op ?? 'none'}
+            onValueChange={(v) => {
+              if (v === 'none') onChange({ sum_insured_op: undefined, sum_insured_value: undefined });
+              else onChange({ sum_insured_op: v as SumInsuredOp, sum_insured_value: rule.sum_insured_value ?? 0 });
+            }}
+          >
+            <SelectTrigger className="h-7 w-16 text-xs"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">any</SelectItem>
+              {SUM_OPS.map(op => <SelectItem key={op} value={op}>{op}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Input
+            type="number"
+            min={0}
+            step={50000}
+            disabled={!hasSI}
+            value={rule.sum_insured_value ?? ''}
+            onChange={(e) => onChange({ sum_insured_value: e.target.value === '' ? undefined : Number(e.target.value) })}
+            className="h-7 w-32 text-xs"
+            placeholder="Value"
+          />
+          <span className="text-xs text-muted-foreground">Baht</span>
+        </div>
+
+        {(insurers.length > 0 || hasSI) && (
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-6 px-2 text-[11px] text-muted-foreground"
+            onClick={() => onChange({ insurer_ids: undefined, sum_insured_op: undefined, sum_insured_value: undefined })}
+          >
+            Reset to default
+          </Button>
+        )}
+      </div>
+    </div>
   );
 }
 
