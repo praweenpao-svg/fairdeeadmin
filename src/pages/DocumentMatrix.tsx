@@ -240,18 +240,17 @@ export default function DocumentMatrix() {
           {/* ---------------- MATRIX ---------------- */}
           <TabsContent value="matrix" className="mt-4 space-y-4">
             <div className="rounded-lg border border-border bg-card p-4">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <MultiSelectFilter label="Sale Type" selected={fSale} onChange={setFSale} options={SALE_TYPES.map(s => ({ v: s, l: s }))} />
                 <MultiSelectFilter label="Class" selected={fClass} onChange={setFClass} options={CLASSES.map(c => ({ v: c, l: CLASS_LABEL[c] }))} />
                 <MultiSelectFilter label="Payment Type" selected={fPayment} onChange={setFPayment} options={PAYMENTS.map(p => ({ v: p, l: p }))} />
-                <MultiSelectFilter label="Car Type" selected={fCar} onChange={setFCar} options={CAR_TYPES.map(c => ({ v: c, l: c }))} />
               </div>
               <div className="mt-3 flex items-center justify-between gap-2 text-xs">
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground">Showing</span>
                   <Badge variant="outline">{filteredCombos.length} of {allCombinations.length} scenarios</Badge>
-                  {(fSale.length + fClass.length + fPayment.length + fCar.length) > 0 && (
-                    <Button size="sm" variant="ghost" className="h-6 px-2 text-xs" onClick={() => { setFSale([]); setFClass([]); setFPayment([]); setFCar([]); }}>Clear filters</Button>
+                  {(fSale.length + fClass.length + fPayment.length) > 0 && (
+                    <Button size="sm" variant="ghost" className="h-6 px-2 text-xs" onClick={() => { setFSale([]); setFClass([]); setFPayment([]); }}>Clear filters</Button>
                   )}
                 </div>
                 <div className="flex items-center gap-1 rounded-md border border-border p-0.5 bg-muted/40">
