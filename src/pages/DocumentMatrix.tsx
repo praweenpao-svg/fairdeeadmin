@@ -252,7 +252,7 @@ export default function DocumentMatrix() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="flex items-center justify-between gap-2">
             <TabsList>
-              <TabsTrigger value="library" className="gap-2"><Library className="w-4 h-4" />Manage Library</TabsTrigger>
+              <TabsTrigger value="library" className="gap-2"><Library className="w-4 h-4" />Library</TabsTrigger>
               <TabsTrigger value="matrix" className="gap-2"><FileStack className="w-4 h-4" />Matrix</TabsTrigger>
             </TabsList>
             {activeTab === 'library' && isSuperAdmin && (
@@ -287,7 +287,7 @@ export default function DocumentMatrix() {
             <div className="rounded-lg border border-border bg-card overflow-hidden">
               <Table>
                 <TableHeader className="bg-muted/50">
-                  <TableRow>
+                  <TableRow className="hover:bg-transparent">
                     <TableHead className="w-8" />
                     <TableHead>Sale Type</TableHead>
                     <TableHead>Class</TableHead>
@@ -1053,9 +1053,10 @@ function LibraryPanel({ library, usageCount, onEditDoc, onToggleActive, onAddDoc
                     </SelectContent>
                   </Select>
                 </div>
-                <div>
+                <div className="col-span-2">
                   <label className="text-xs text-muted-foreground">Default Condition Note</label>
-                  <Input value={newNote} onChange={(e) => setNewNote(e.target.value)} className="h-9 text-sm" />
+                  <Input value={newNote} onChange={(e) => setNewNote(e.target.value)} className="h-9 text-sm" placeholder="e.g. Required when vehicle age &gt; 7 years" />
+                  <p className="text-[11px] text-muted-foreground mt-1">Shown under the document name in scenario rules whenever this doc is set to Conditional. Pre-fills the note field — editable per scenario.</p>
                 </div>
               </div>
               {addError && <p className="text-xs text-destructive">{addError}</p>}
@@ -1069,7 +1070,7 @@ function LibraryPanel({ library, usageCount, onEditDoc, onToggleActive, onAddDoc
           <div className="rounded-lg border border-border bg-card overflow-hidden">
             <Table>
               <TableHeader className="bg-muted/50">
-                <TableRow>
+                <TableRow className="hover:bg-transparent">
                   <TableHead>Name (EN)</TableHead>
                   <TableHead>Name (TH)</TableHead>
                   <TableHead className="w-32">Default Tier</TableHead>
