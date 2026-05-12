@@ -155,10 +155,6 @@ export default function DocumentMatrix() {
   const [fClass, setFClass] = useState<string[]>([]);
   const [fPayment, setFPayment] = useState<string[]>([]);
 
-  // View toggle
-  const [view, setView] = useState<'flat' | 'grouped'>('flat');
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
-
   const [expanded, setExpanded] = useState<string | null>(null);
   const [editing, setEditing] = useState<Combination | null>(null);
   const [activeTab, setActiveTab] = useState<string>('library');
@@ -179,12 +175,10 @@ export default function DocumentMatrix() {
   ), [fSale, fClass, fPayment]);
 
   // Reset to page 1 when filters change
-  useEffect(() => { setPage(1); }, [fSale, fClass, fPayment, view, rowsPerPage]);
+  useEffect(() => { setPage(1); }, [fSale, fClass, fPayment, rowsPerPage]);
 
   const totalPages = Math.max(1, Math.ceil(filteredCombos.length / rowsPerPage));
-  const pagedCombos = view === 'flat'
-    ? filteredCombos.slice((page - 1) * rowsPerPage, page * rowsPerPage)
-    : filteredCombos;
+  const pagedCombos = filteredCombos.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
   const rulesFor = (c: Combination) => rules.filter(r =>
     r.is_active &&
