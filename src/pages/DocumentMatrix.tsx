@@ -285,7 +285,7 @@ export default function DocumentMatrix() {
             </div>
 
             <div className="rounded-lg border border-border bg-card overflow-hidden">
-              <Table>
+              <Table className="[&_tbody_tr]:hover:bg-primary/10">
                 <TableHeader className="bg-muted/50">
                   <TableRow>
                     <TableHead className="w-8" />
