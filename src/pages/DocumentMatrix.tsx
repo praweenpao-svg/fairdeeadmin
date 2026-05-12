@@ -477,7 +477,7 @@ function ExpandedRowDetail({ rules, docById }: { rules: DocMatrixRule[]; docById
                     <li key={r.id} className="text-xs">
                       <div className="font-medium">{d?.name_en}</div>
                       <div className="text-muted-foreground">{d?.name_th}</div>
-                      {r.condition_note && <div className="text-[11px] text-muted-foreground italic mt-0.5">{r.condition_note}{r.min_count > 1 && ` · min ${r.min_count}`}</div>}
+                      {r.min_count > 1 && <div className="text-[11px] text-muted-foreground italic mt-0.5">min {r.min_count}</div>}
                       <ConditionChips rule={r} />
                     </li>
                   );
@@ -592,9 +592,6 @@ function EditScenarioModal({ combination, onClose, rules, docById, library, onSa
     visible.forEach(r => {
       const docName = docById[r.document_id]?.name_en ?? `#${r.document_id}`;
       if (!Number.isFinite(r.min_count) || r.min_count < 1) errs.push(`"${docName}" has invalid min_count (must be ≥ 1).`);
-      if (normalizeTier(r.tier) === 'Conditional' && !r.condition_note.trim()) {
-        errs.push(`"${docName}" is Conditional but has no condition note.`);
-      }
       if (r.conditions && r.conditions.children.length > 0) {
         validateTree(r.conditions, errs, docName);
       }
@@ -650,17 +647,9 @@ function EditScenarioModal({ combination, onClose, rules, docById, library, onSa
                     return (
                       <div key={r.id} className="px-3 py-2.5 space-y-2">
                         <div className="grid grid-cols-12 gap-2 items-start">
-                          <div className="col-span-4">
+                          <div className="col-span-9">
                             <div className="text-sm font-medium">{d?.name_en}</div>
                             <div className="text-xs text-muted-foreground">{d?.name_th}</div>
-                          </div>
-                          <div className="col-span-5">
-                            <Input
-                              value={r.condition_note}
-                              onChange={(e) => updateRule(r.id, { condition_note: e.target.value })}
-                              placeholder="Condition note"
-                              className="h-8 text-xs"
-                            />
                           </div>
                           <div className="col-span-2">
                             <Input
