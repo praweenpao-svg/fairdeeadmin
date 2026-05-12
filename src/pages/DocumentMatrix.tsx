@@ -17,11 +17,11 @@ import {
   mockMatrixRules,
   mockAuditLog,
   mockInsurers,
+  mockVehicleCodes,
   type DocTier,
   type SaleType,
   type InsuranceClass,
   type PaymentType,
-  type CarType,
   type DocMatrixRule,
   type DocLibraryRow,
   type SumInsuredOp,
@@ -30,16 +30,34 @@ import {
 const SUM_OPS: SumInsuredOp[] = ['<', '<=', '=', '>=', '>'];
 const formatThb = (n: number) => new Intl.NumberFormat('en-US').format(n);
 const insurerName = (id: string) => mockInsurers.find(i => i.id === id)?.name ?? id;
+const vehicleName = (id: string) => mockVehicleCodes.find(v => v.id === id)?.name ?? id;
 
 function ConditionChips({ rule }: { rule: DocMatrixRule }) {
   const hasInsurers = rule.insurer_ids && rule.insurer_ids.length > 0;
+  const hasVehicles = rule.vehicle_codes && rule.vehicle_codes.length > 0;
   const hasSI = rule.sum_insured_op && rule.sum_insured_value != null;
-  if (!hasInsurers && !hasSI) return null;
+  if (!hasInsurers && !hasVehicles && !hasSI) return null;
+
+  const vehicleSummary = (() => {
+    if (!hasVehicles) return '';
+    const ids = rule.vehicle_codes!;
+    const evIds = mockVehicleCodes.filter(v => v.is_ev).map(v => v.id);
+    const allEv = ids.length > 0 && ids.every(id => evIds.includes(id)) && evIds.every(id => ids.includes(id));
+    if (allEv) return 'All EV models';
+    if (ids.length <= 2) return ids.map(vehicleName).join(', ');
+    return `${ids.length} models`;
+  })();
+
   return (
     <div className="flex flex-wrap gap-1 mt-1">
       {hasInsurers && (
         <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-[10px] font-normal">
           Insurer: {rule.insurer_ids!.map(insurerName).join(', ')}
+        </Badge>
+      )}
+      {hasVehicles && (
+        <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] font-normal">
+          Vehicle: {vehicleSummary}
         </Badge>
       )}
       {hasSI && (
