@@ -236,3 +236,63 @@ export const mockAuditLog: DocAuditLog[] = [
   { id: 1006, matrix_rule_id: 104, action: 'Added', field_changed: '—', old_value: '—', new_value: 'Instalment NID rule added', actor_email: 'admin@fairdee.com', created_at: '2026-01-16 11:20' },
   { id: 1007, matrix_rule_id: 103, action: 'Updated', field_changed: 'condition_note', old_value: 'Always required', new_value: 'Type1 always inspects (8 angles)', actor_email: 'pao@fairdee.com', created_at: '2026-03-01 10:09' },
 ];
+
+// ---------- Condition-tree helpers ----------
+
+let __cidSeed = 1;
+export const newConditionId = () => `c${Date.now().toString(36)}_${(__cidSeed++).toString(36)}`;
+
+export const emptyGroup = (op: LogicOp = 'AND'): ConditionGroup => ({
+  kind: 'group', id: newConditionId(), op, children: [],
+});
+
+export const newLeaf = (field: ConditionFieldKey = 'insurer'): ConditionLeaf => {
+  const def = CONDITION_FIELDS.find(f => f.key === field)!;
+  const op = OPERATORS_FOR_TYPE[def.type][0];
+  let value: ConditionLeaf['value'];
+  if (def.type === 'multi-select') value = [];
+  else if (def.type === 'select') value = def.options?.[0]?.value;
+  else if (def.type === 'number') value = 0;
+  return { kind: 'leaf', id: newConditionId(), field, operator: op, value };
+};
+
+/** Promote legacy flat fields on a rule to a `conditions` tree (idempotent, non-destructive). */
+export function migrateLegacyConditions(rule: DocMatrixRule): ConditionGroup | undefined {
+  if (rule.conditions && rule.conditions.children.length > 0) return rule.conditions;
+  const children: ConditionNode[] = [];
+  if (rule.insurer_ids && rule.insurer_ids.length > 0) {
+    children.push({ kind: 'leaf', id: newConditionId(), field: 'insurer', operator: 'in', value: rule.insurer_ids });
+  }
+  if (rule.vehicle_codes && rule.vehicle_codes.length > 0) {
+    children.push({ kind: 'leaf', id: newConditionId(), field: 'vehicle_code', operator: 'in', value: rule.vehicle_codes });
+  }
+  if (rule.sum_insured_op && rule.sum_insured_value != null) {
+    children.push({ kind: 'leaf', id: newConditionId(), field: 'sum_insured', operator: rule.sum_insured_op as ConditionOperator, value: rule.sum_insured_value });
+  }
+  if (children.length === 0) return undefined;
+  return { kind: 'group', id: newConditionId(), op: 'AND', children };
+}
+
+/** A demo rule using nested AND/OR tree to showcase the editor. */
+mockMatrixRules.push({
+  id: 117,
+  sale_type: 'New', insurance_class: 'Type1', payment_type: 'Instalment',
+  document_id: 9, tier: 'Conditional',
+  condition_note: 'Corp cert required when (Viriyah AND SI ≥ 5M) OR (MSIG/Bangkok AND Corporate)',
+  min_count: 1, is_active: true,
+  conditions: {
+    kind: 'group', id: 'demo_root', op: 'OR',
+    children: [
+      { kind: 'group', id: 'demo_g1', op: 'AND', children: [
+        { kind: 'leaf', id: 'demo_l1', field: 'insurer', operator: 'in', value: ['viriyah'] },
+        { kind: 'leaf', id: 'demo_l2', field: 'sum_insured', operator: '>=', value: 5000000 },
+      ]},
+      { kind: 'group', id: 'demo_g2', op: 'AND', children: [
+        { kind: 'leaf', id: 'demo_l3', field: 'insurer', operator: 'in', value: ['msig', 'bangkok'] },
+        { kind: 'leaf', id: 'demo_l4', field: 'customer_type', operator: 'equals', value: 'Corporate' },
+      ]},
+    ],
+  },
+  created_at: '2026-05-01 09:00', updated_at: '2026-05-01 09:00',
+  created_by: 'pao@fairdee.com', updated_by: 'pao@fairdee.com',
+});
