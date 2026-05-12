@@ -265,13 +265,6 @@ export default function DocumentMatrix() {
                 <MultiSelectFilter label="Class" selected={fClass} onChange={setFClass} options={CLASSES.map(c => ({ v: c, l: CLASS_LABEL[c] }))} />
                 <MultiSelectFilter label="Payment Type" selected={fPayment} onChange={setFPayment} options={PAYMENTS.map(p => ({ v: p, l: p }))} />
               </div>
-              <div className="mt-3 flex items-center justify-end gap-2 text-xs">
-                <div className="flex items-center gap-2">
-                  {(fSale.length + fClass.length + fPayment.length) > 0 && (
-                    <Button size="sm" variant="ghost" className="h-6 px-2 text-xs" onClick={() => { setFSale([]); setFClass([]); setFPayment([]); }}>Clear filters</Button>
-                  )}
-                </div>
-              </div>
             </div>
 
             <div className="rounded-lg border border-border bg-card overflow-hidden">
