@@ -853,12 +853,12 @@ function RuleConditionEditor({ rule, onChange }: { rule: DocMatrixRule; onChange
           <span className="text-xs text-muted-foreground">Baht</span>
         </div>
 
-        {(insurers.length > 0 || hasSI) && (
+        {(insurers.length > 0 || vehicles.length > 0 || hasSI) && (
           <Button
             size="sm"
             variant="ghost"
             className="h-6 px-2 text-[11px] text-muted-foreground"
-            onClick={() => onChange({ insurer_ids: undefined, sum_insured_op: undefined, sum_insured_value: undefined })}
+            onClick={() => onChange({ insurer_ids: undefined, vehicle_codes: undefined, sum_insured_op: undefined, sum_insured_value: undefined })}
           >
             Reset to default
           </Button>
