@@ -579,8 +579,9 @@ function EditScenarioModal({ combination, onClose, rules, docById, library, onSa
 
   const ruleScopeKey = (r: DocMatrixRule) => {
     const ins = (r.insurer_ids ?? []).slice().sort().join(',');
+    const veh = (r.vehicle_codes ?? []).slice().sort().join(',');
     const si = r.sum_insured_op && r.sum_insured_value != null ? `${r.sum_insured_op}${r.sum_insured_value}` : '';
-    return `${r.document_id}|${ins}|${si}`;
+    return `${r.document_id}|${ins}|${veh}|${si}`;
   };
 
   const validate = (): string[] => {
