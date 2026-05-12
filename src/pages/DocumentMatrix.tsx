@@ -16,6 +16,7 @@ import {
   mockDocLibrary,
   mockMatrixRules,
   mockAuditLog,
+  mockInsurers,
   type DocTier,
   type SaleType,
   type InsuranceClass,
@@ -23,7 +24,32 @@ import {
   type CarType,
   type DocMatrixRule,
   type DocLibraryRow,
+  type SumInsuredOp,
 } from '@/data/mockDocumentMatrix';
+
+const SUM_OPS: SumInsuredOp[] = ['<', '<=', '=', '>=', '>'];
+const formatThb = (n: number) => new Intl.NumberFormat('en-US').format(n);
+const insurerName = (id: string) => mockInsurers.find(i => i.id === id)?.name ?? id;
+
+function ConditionChips({ rule }: { rule: DocMatrixRule }) {
+  const hasInsurers = rule.insurer_ids && rule.insurer_ids.length > 0;
+  const hasSI = rule.sum_insured_op && rule.sum_insured_value != null;
+  if (!hasInsurers && !hasSI) return null;
+  return (
+    <div className="flex flex-wrap gap-1 mt-1">
+      {hasInsurers && (
+        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-[10px] font-normal">
+          Insurer: {rule.insurer_ids!.map(insurerName).join(', ')}
+        </Badge>
+      )}
+      {hasSI && (
+        <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200 text-[10px] font-normal">
+          Sum insured {rule.sum_insured_op} {formatThb(rule.sum_insured_value!)} Baht
+        </Badge>
+      )}
+    </div>
+  );
+}
 
 type UITier = 'Required' | 'Conditional' | 'Optional';
 const normalizeTier = (t: DocTier): UITier => {
