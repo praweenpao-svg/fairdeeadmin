@@ -1127,9 +1127,8 @@ function LibraryPanel({ library, usageCount, onEditDoc, onDeleteDoc, onAddDoc, i
                               </div>
                             </div>
                             <div className="mt-2 flex items-center justify-end gap-2">
-                                <Button size="sm" variant="outline" onClick={() => setEditingId(null)}>Cancel</Button>
-                                <Button size="sm" onClick={saveEdit}>Save</Button>
-                              </div>
+                              <Button size="sm" variant="outline" onClick={() => setEditingId(null)}>Cancel</Button>
+                              <Button size="sm" onClick={saveEdit}>Save</Button>
                             </div>
                           </TableCell>
                         </TableRow>
