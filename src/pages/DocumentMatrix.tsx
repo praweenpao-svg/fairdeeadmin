@@ -610,16 +610,52 @@ function EditScenarioModal({ combination, onClose, rules, docById, library, onSa
 
   const availableDocs = library.filter(d => d.is_active);
 
+  const treeKey = (n?: ConditionGroup): string => {
+    if (!n || n.children.length === 0) return '';
+    const stringify = (node: ConditionNode): string => {
+      if (node.kind === 'leaf') {
+        const v = Array.isArray(node.value) ? [...node.value].map(String).sort().join(',') : String(node.value ?? '');
+        return `${node.field}:${node.operator}:${v}`;
+      }
+      const kids = node.children.map(stringify).sort().join('|');
+      return `${node.op}(${kids})`;
+    };
+    return stringify(n);
+  };
+
   const ruleScopeKey = (r: DocMatrixRule) => {
-    const ins = (r.insurer_ids ?? []).slice().sort().join(',');
-    const veh = (r.vehicle_codes ?? []).slice().sort().join(',');
-    const si = r.sum_insured_op && r.sum_insured_value != null ? `${r.sum_insured_op}${r.sum_insured_value}` : '';
-    return `${r.document_id}|${ins}|${veh}|${si}`;
+    const tree = r.conditions ?? migrateLegacyConditions(r);
+    return `${r.document_id}|${treeKey(tree)}`;
+  };
+
+  const validateTree = (node: ConditionNode, errs: string[], docName: string) => {
+    if (node.kind === 'group') {
+      if (node.children.length === 0) errs.push(`"${docName}" has an empty condition group.`);
+      node.children.forEach(c => validateTree(c, errs, docName));
+      return;
+    }
+    const def = CONDITION_FIELDS.find(f => f.key === node.field);
+    if (!def) return;
+    const v = node.value;
+    if (def.type === 'multi-select' && (!Array.isArray(v) || v.length === 0)) {
+      errs.push(`"${docName}" condition ${def.label} ${OP_LABEL[node.operator]} needs at least one value.`);
+    }
+    if (def.type === 'select' && (v === undefined || v === '' || v === null)) {
+      errs.push(`"${docName}" condition ${def.label} needs a value.`);
+    }
+    if (def.type === 'number') {
+      if (node.operator === 'between') {
+        if (!Array.isArray(v) || v.length !== 2 || Number(v[0]) > Number(v[1])) {
+          errs.push(`"${docName}" between range is invalid.`);
+        }
+      } else if (v === undefined || v === '' || Number.isNaN(Number(v)) || Number(v) < 0) {
+        errs.push(`"${docName}" ${def.label} value must be ≥ 0.`);
+      }
+    }
   };
 
   const validate = (): string[] => {
     const errs: string[] = [];
-    // Duplicate doc with identical scope (same insurers + same SI threshold) is invalid.
     const seen = new Map<string, number>();
     visible.forEach(r => {
       const k = ruleScopeKey(r);
@@ -628,22 +664,17 @@ function EditScenarioModal({ combination, onClose, rules, docById, library, onSa
     seen.forEach((count, k) => {
       if (count > 1) {
         const docId = Number(k.split('|')[0]);
-        errs.push(`"${docById[docId]?.name_en}" has duplicate rules with the same insurer/sum-insured scope. Differentiate them or remove duplicates.`);
+        errs.push(`"${docById[docId]?.name_en}" has duplicate rules with identical conditions. Differentiate or remove duplicates.`);
       }
     });
     visible.forEach(r => {
-      if (!Number.isFinite(r.min_count) || r.min_count < 1) errs.push(`"${docById[r.document_id]?.name_en}" has invalid min_count (must be ≥ 1).`);
+      const docName = docById[r.document_id]?.name_en ?? `#${r.document_id}`;
+      if (!Number.isFinite(r.min_count) || r.min_count < 1) errs.push(`"${docName}" has invalid min_count (must be ≥ 1).`);
       if (normalizeTier(r.tier) === 'Conditional' && !r.condition_note.trim()) {
-        errs.push(`"${docById[r.document_id]?.name_en}" is Conditional but has no condition note.`);
+        errs.push(`"${docName}" is Conditional but has no condition note.`);
       }
-      // SI op + value must be paired
-      const opSet = !!r.sum_insured_op;
-      const valSet = r.sum_insured_value != null && !Number.isNaN(r.sum_insured_value);
-      if (opSet !== valSet) {
-        errs.push(`"${docById[r.document_id]?.name_en}" sum-insured condition is incomplete (operator and value must both be set).`);
-      }
-      if (valSet && (r.sum_insured_value as number) < 0) {
-        errs.push(`"${docById[r.document_id]?.name_en}" sum-insured value must be ≥ 0.`);
+      if (r.conditions && r.conditions.children.length > 0) {
+        validateTree(r.conditions, errs, docName);
       }
     });
     return errs;
