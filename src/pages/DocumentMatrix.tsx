@@ -209,12 +209,14 @@ export default function DocumentMatrix() {
   const handleEditDoc = (id: number, patch: Partial<DocLibraryRow>) => {
     setLibrary(prev => prev.map(d => d.id === id ? { ...d, ...patch, updated_at: new Date().toISOString().slice(0, 16).replace('T', ' ') } : d));
   };
-  const handleToggleActive = (doc: DocLibraryRow) => {
-    if (doc.is_active && usageCount(doc.id) > 0) {
-      toast({ title: 'Cannot deactivate', description: `${doc.name_en} is referenced by ${usageCount(doc.id)} active matrix rule(s). Remove it from those scenarios first.`, variant: 'destructive' });
+  const handleDeleteDoc = (doc: DocLibraryRow) => {
+    if (usageCount(doc.id) > 0) {
+      toast({ title: 'Cannot delete', description: `${doc.name_en} is referenced by ${usageCount(doc.id)} active matrix rule(s). Remove it from those scenarios first.`, variant: 'destructive' });
       return;
     }
-    handleEditDoc(doc.id, { is_active: !doc.is_active });
+    if (!window.confirm(`Delete "${doc.name_en}"? This cannot be undone.`)) return;
+    setLibrary(prev => prev.filter(d => d.id !== doc.id));
+    toast({ title: 'Document deleted', description: doc.name_en });
   };
   const handleAddDoc = (row: Omit<DocLibraryRow, 'id' | 'created_at' | 'updated_at'>) => {
     const dup = library.find(d => d.name_en.toLowerCase() === row.name_en.toLowerCase().trim() || d.name_th === row.name_th.trim());
@@ -347,7 +349,7 @@ export default function DocumentMatrix() {
               library={library}
               usageCount={usageCount}
               onEditDoc={handleEditDoc}
-              onToggleActive={handleToggleActive}
+              onDeleteDoc={handleDeleteDoc}
               onAddDoc={handleAddDoc}
               isSuperAdmin={isSuperAdmin}
               showAdd={showAddDoc}
@@ -981,11 +983,11 @@ function LeafValueEditor({ leaf, onChange }: { leaf: ConditionLeaf; onChange: (l
   );
 }
 
-function LibraryPanel({ library, usageCount, onEditDoc, onToggleActive, onAddDoc, isSuperAdmin, showAdd, setShowAdd }: {
+function LibraryPanel({ library, usageCount, onEditDoc, onDeleteDoc, onAddDoc, isSuperAdmin, showAdd, setShowAdd }: {
   library: DocLibraryRow[];
   usageCount: (id: number) => number;
   onEditDoc: (id: number, patch: Partial<DocLibraryRow>) => void;
-  onToggleActive: (d: DocLibraryRow) => void;
+  onDeleteDoc: (d: DocLibraryRow) => void;
   onAddDoc: (row: Omit<DocLibraryRow, 'id' | 'created_at' | 'updated_at'>) => string | null;
   isSuperAdmin: boolean;
   showAdd: boolean;
@@ -1102,11 +1104,11 @@ function LibraryPanel({ library, usageCount, onEditDoc, onToggleActive, onAddDoc
                             <Button
                               size="sm"
                               variant="ghost"
-                              className="h-7 text-xs"
-                              onClick={() => onToggleActive(d)}
-                              title={d.is_active && usage > 0 ? `Cannot deactivate — used by ${usage} active rule(s)` : ''}
+                              className="h-7 text-xs text-destructive hover:text-destructive"
+                              onClick={() => onDeleteDoc(d)}
+                              title={usage > 0 ? `Cannot delete — used by ${usage} active rule(s)` : ''}
                             >
-                              {d.is_active ? 'Deactivate' : 'Reactivate'}
+                              Delete
                             </Button>
                           </div>
                         </TableCell>
