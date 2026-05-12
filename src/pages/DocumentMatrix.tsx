@@ -175,10 +175,10 @@ export default function DocumentMatrix() {
   // Saving from edit modal
   const handleSaveScenario = (combo: Combination, nextRules: DocMatrixRule[]) => {
     setRules(prev => {
-      const others = prev.filter(r => !(r.sale_type === combo.sale_type && r.insurance_class === combo.insurance_class && r.payment_type === combo.payment_type && r.car_type === combo.car_type));
+      const others = prev.filter(r => !(r.sale_type === combo.sale_type && r.insurance_class === combo.insurance_class && r.payment_type === combo.payment_type));
       return [...others, ...nextRules];
     });
-    toast({ title: 'Scenario updated', description: `${combo.sale_type} · ${CLASS_LABEL[combo.insurance_class]} · ${combo.payment_type} · ${combo.car_type}` });
+    toast({ title: 'Scenario updated', description: `${combo.sale_type} · ${CLASS_LABEL[combo.insurance_class]} · ${combo.payment_type}` });
   };
 
   // Library mutations
