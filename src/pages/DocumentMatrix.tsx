@@ -1038,25 +1038,20 @@ function LibraryPanel({ library, usageCount, onEditDoc, onToggleActive, onAddDoc
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs text-muted-foreground">Name (EN)</label>
-                  <Input value={newEN} onChange={(e) => setNewEN(e.target.value)} className="h-9 text-sm" />
+                  <Input value={newEN} onChange={(e) => setNewEN(e.target.value)} className="h-9 text-sm bg-background" />
                 </div>
                 <div>
                   <label className="text-xs text-muted-foreground">Name (TH)</label>
-                  <Input value={newTH} onChange={(e) => setNewTH(e.target.value)} className="h-9 text-sm" />
+                  <Input value={newTH} onChange={(e) => setNewTH(e.target.value)} className="h-9 text-sm bg-background" />
                 </div>
                 <div>
                   <label className="text-xs text-muted-foreground">Default Tier</label>
                   <Select value={newTier} onValueChange={(v) => setNewTier(v as UITier)}>
-                    <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="h-9 text-sm bg-background"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {(['Required', 'Conditional', 'Optional'] as UITier[]).map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                     </SelectContent>
                   </Select>
-                </div>
-                <div className="col-span-2">
-                  <label className="text-xs text-muted-foreground">Default Condition Note</label>
-                  <Input value={newNote} onChange={(e) => setNewNote(e.target.value)} className="h-9 text-sm" placeholder="e.g. Required when vehicle age &gt; 7 years" />
-                  <p className="text-[11px] text-muted-foreground mt-1">Shown under the document name in scenario rules whenever this doc is set to Conditional. Pre-fills the note field — editable per scenario.</p>
                 </div>
               </div>
               {addError && <p className="text-xs text-destructive">{addError}</p>}
