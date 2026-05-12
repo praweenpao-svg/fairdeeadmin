@@ -103,6 +103,12 @@ export const mockMatrixRules: DocMatrixRule[] = [
   { id: 111, sale_type: 'New', insurance_class: 'Type3', payment_type: 'Full', car_type: 'Normally', document_id: 10, tier: 'Optional', condition_note: 'Type3 generally skips inspection', min_count: 8, is_active: false, created_at: '2026-01-15 09:30', updated_at: '2026-03-05 13:00', created_by: 'admin@fairdee.com', updated_by: 'pao@fairdee.com' },
   { id: 112, sale_type: 'New', insurance_class: 'Type2Plus', payment_type: 'Full', car_type: 'Normally', document_id: 10, tier: 'Conditional', condition_note: '2+ requires inspection', min_count: 8, is_active: true, created_at: '2026-01-15 09:35', updated_at: '2026-01-15 09:35', created_by: 'admin@fairdee.com', updated_by: 'admin@fairdee.com' },
   { id: 113, sale_type: 'New', insurance_class: 'Type3Plus', payment_type: 'Full', car_type: 'Normally', document_id: 10, tier: 'Conditional', condition_note: '3+ requires inspection', min_count: 8, is_active: true, created_at: '2026-01-15 09:36', updated_at: '2026-01-15 09:36', created_by: 'admin@fairdee.com', updated_by: 'admin@fairdee.com' },
+  // Insurer-specific extra
+  { id: 114, sale_type: 'New', insurance_class: 'Type1', payment_type: 'Full', car_type: 'Normally', document_id: 13, tier: 'Conditional', condition_note: 'Viriyah requires extra approval letter', min_count: 1, is_active: true, insurer_ids: ['viriyah'], created_at: '2026-04-02 10:00', updated_at: '2026-04-02 10:00', created_by: 'pao@fairdee.com', updated_by: 'pao@fairdee.com' },
+  // Sum-insured threshold extra
+  { id: 115, sale_type: 'New', insurance_class: 'Type1', payment_type: 'Full', car_type: 'Normally', document_id: 13, tier: 'Conditional', condition_note: 'Sum insured ≥ 2,000,000 Baht needs approval', min_count: 1, is_active: true, sum_insured_op: '>=', sum_insured_value: 2000000, created_at: '2026-04-04 09:30', updated_at: '2026-04-04 09:30', created_by: 'pao@fairdee.com', updated_by: 'pao@fairdee.com' },
+  // Combined insurer + threshold
+  { id: 116, sale_type: 'New', insurance_class: 'Type1', payment_type: 'Instalment', car_type: 'Normally', document_id: 9, tier: 'Conditional', condition_note: 'MSIG / Bangkok require corp cert when SI > 3M', min_count: 1, is_active: true, insurer_ids: ['msig', 'bangkok'], sum_insured_op: '>', sum_insured_value: 3000000, created_at: '2026-04-10 14:00', updated_at: '2026-04-10 14:00', created_by: 'pao@fairdee.com', updated_by: 'pao@fairdee.com' },
 ];
 
 export const mockAuditLog: DocAuditLog[] = [
