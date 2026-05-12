@@ -338,10 +338,6 @@ export default function DocumentMatrix() {
                 />
               )}
             </div>
-
-            <div className="text-xs text-muted-foreground px-1">
-              Schema dimensions: <code>sale_type × class × payment_type</code> = <strong>3 × 5 × 2 = 30</strong> scenarios. Audit log is captured server-side.
-            </div>
           </TabsContent>
 
           <TabsContent value="library" className="mt-4">
