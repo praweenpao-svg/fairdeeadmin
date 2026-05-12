@@ -269,7 +269,6 @@ export default function DocumentMatrix() {
                     <TableHead>Sale Type</TableHead>
                     <TableHead>Class</TableHead>
                     <TableHead>Payment Type</TableHead>
-                    <TableHead>Car Type</TableHead>
                     <TableHead className="text-center">Required</TableHead>
                     <TableHead className="text-center">Conditional</TableHead>
                     <TableHead className="text-center">Optional</TableHead>
