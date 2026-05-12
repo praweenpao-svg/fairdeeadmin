@@ -285,7 +285,7 @@ export default function DocumentMatrix() {
             </div>
 
             <div className="rounded-lg border border-border bg-card overflow-hidden">
-              <Table className="[&_tbody_tr]:hover:bg-primary/10">
+              <Table>
                 <TableHeader className="bg-muted/50">
                   <TableRow>
                     <TableHead className="w-8" />
@@ -1030,21 +1030,24 @@ function LibraryPanel({ library, usageCount, onEditDoc, onToggleActive, onAddDoc
 
   return (
     <div className="space-y-3">
-          {showAdd && (
-            <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-2">
-              <div className="grid grid-cols-2 gap-2">
+          <Dialog open={showAdd} onOpenChange={(o) => { setShowAdd(o); if (!o) setAddError(null); }}>
+            <DialogContent className="max-w-lg">
+              <DialogHeader>
+                <DialogTitle>Add Document</DialogTitle>
+              </DialogHeader>
+              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs text-muted-foreground">Name (EN)</label>
-                  <Input value={newEN} onChange={(e) => setNewEN(e.target.value)} className="h-8 text-sm" />
+                  <Input value={newEN} onChange={(e) => setNewEN(e.target.value)} className="h-9 text-sm" />
                 </div>
                 <div>
                   <label className="text-xs text-muted-foreground">Name (TH)</label>
-                  <Input value={newTH} onChange={(e) => setNewTH(e.target.value)} className="h-8 text-sm" />
+                  <Input value={newTH} onChange={(e) => setNewTH(e.target.value)} className="h-9 text-sm" />
                 </div>
                 <div>
                   <label className="text-xs text-muted-foreground">Default Tier</label>
                   <Select value={newTier} onValueChange={(v) => setNewTier(v as UITier)}>
-                    <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {(['Required', 'Conditional', 'Optional'] as UITier[]).map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                     </SelectContent>
@@ -1052,19 +1055,19 @@ function LibraryPanel({ library, usageCount, onEditDoc, onToggleActive, onAddDoc
                 </div>
                 <div>
                   <label className="text-xs text-muted-foreground">Default Condition Note</label>
-                  <Input value={newNote} onChange={(e) => setNewNote(e.target.value)} className="h-8 text-sm" />
+                  <Input value={newNote} onChange={(e) => setNewNote(e.target.value)} className="h-9 text-sm" />
                 </div>
               </div>
               {addError && <p className="text-xs text-destructive">{addError}</p>}
-              <div className="flex justify-end gap-2">
+              <DialogFooter>
                 <Button size="sm" variant="outline" onClick={() => { setShowAdd(false); setAddError(null); }}>Cancel</Button>
                 <Button size="sm" onClick={handleAdd}>Save</Button>
-              </div>
-            </div>
-          )}
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
 
           <div className="rounded-lg border border-border bg-card overflow-hidden">
-            <Table className="[&_tbody_tr]:hover:bg-primary/10">
+            <Table>
               <TableHeader className="bg-muted/50">
                 <TableRow>
                   <TableHead>Name (EN)</TableHead>
