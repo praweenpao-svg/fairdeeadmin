@@ -1155,5 +1155,6 @@ function LibraryPanel({ library, usageCount, onEditDoc, onToggleActive, onAddDoc
             </Table>
           </div>
         </div>
+      </div>
   );
 }
