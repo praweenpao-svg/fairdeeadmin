@@ -421,7 +421,7 @@ function renderRow(
 }
 
 function MultiSelectFilter({ label, selected, onChange, options }: { label: string; selected: string[]; onChange: (v: string[]) => void; options: { v: string; l: string }[] }) {
-  const summary = selected.length === 0 ? 'All' : selected.length === 1 ? options.find(o => o.v === selected[0])?.l : `${selected.length} selected`;
+  const summary = selected.length === 0 ? 'All' : selected.map(v => options.find(o => o.v === v)?.l ?? v).join(', ');
   return (
     <div className="flex flex-col">
       <label className="text-xs text-muted-foreground mb-1">{label}</label>
