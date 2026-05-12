@@ -248,10 +248,10 @@ export default function DocumentMatrix() {
       </header>
 
       <div className="px-6 py-5">
-        <Tabs defaultValue="matrix" className="w-full">
+        <Tabs defaultValue="library" className="w-full">
           <TabsList>
-            <TabsTrigger value="matrix" className="gap-2"><FileStack className="w-4 h-4" />Matrix</TabsTrigger>
             <TabsTrigger value="library" className="gap-2"><Library className="w-4 h-4" />Manage Library</TabsTrigger>
+            <TabsTrigger value="matrix" className="gap-2"><FileStack className="w-4 h-4" />Matrix</TabsTrigger>
           </TabsList>
 
           <TabsContent value="matrix" className="mt-4 space-y-4">
@@ -979,7 +979,8 @@ function LibraryPanel({ library, usageCount, onEditDoc, onToggleActive, onAddDoc
   onAddDoc: (row: Omit<DocLibraryRow, 'id' | 'created_at' | 'updated_at'>) => string | null;
   isSuperAdmin: boolean;
 }) {
-  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [showAdd, setShowAdd] = useState(false);
   const [newEN, setNewEN] = useState('');
   const [newTH, setNewTH] = useState('');
@@ -989,10 +990,9 @@ function LibraryPanel({ library, usageCount, onEditDoc, onToggleActive, onAddDoc
   const [editingId, setEditingId] = useState<number | null>(null);
   const [draft, setDraft] = useState<{ name_en: string; name_th: string; default_condition_note: string; default_tier: UITier }>({ name_en: '', name_th: '', default_condition_note: '', default_tier: 'Required' });
 
-  const filtered = library.filter(d => {
-    const q = search.toLowerCase();
-    return !q || d.name_en.toLowerCase().includes(q) || d.name_th.includes(search);
-  });
+  const totalPages = Math.max(1, Math.ceil(library.length / rowsPerPage));
+  const safePage = Math.min(page, totalPages);
+  const paged = library.slice((safePage - 1) * rowsPerPage, safePage * rowsPerPage);
 
   const handleAdd = () => {
     if (!newEN.trim() || !newTH.trim()) { setAddError('Both EN and TH names are required'); return; }
@@ -1019,16 +1019,9 @@ function LibraryPanel({ library, usageCount, onEditDoc, onToggleActive, onAddDoc
 
   return (
     <div className="space-y-3">
-      <p className="text-xs text-muted-foreground">Master list. Editing names or notes here updates every scenario that references the document.</p>
-
-        <div className="mt-4 space-y-3">
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-2.5 top-2.5 w-4 h-4 text-muted-foreground" />
-              <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by EN / TH name..." className="pl-8 h-9" />
-            </div>
-            <Button size="sm" onClick={() => setShowAdd(s => !s)} className="gap-1"><Plus className="w-4 h-4" /> Add Document</Button>
-          </div>
+      <div className="flex items-center justify-end">
+        <Button size="sm" onClick={() => setShowAdd(s => !s)} className="gap-1"><Plus className="w-4 h-4" /> Add Document</Button>
+      </div>
 
           {showAdd && (
             <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-2">
@@ -1076,7 +1069,7 @@ function LibraryPanel({ library, usageCount, onEditDoc, onToggleActive, onAddDoc
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filtered.map(d => {
+                {paged.map(d => {
                   const usage = usageCount(d.id);
                   const isEditing = editingId === d.id;
                   return (
@@ -1153,8 +1146,17 @@ function LibraryPanel({ library, usageCount, onEditDoc, onToggleActive, onAddDoc
                 })}
               </TableBody>
             </Table>
+        {library.length > 0 && (
+          <TablePagination
+            currentPage={safePage}
+            totalPages={totalPages}
+            totalItems={library.length}
+            rowsPerPage={rowsPerPage}
+            onPageChange={setPage}
+            onRowsPerPageChange={(n) => { setRowsPerPage(n); setPage(1); }}
+          />
+        )}
           </div>
-        </div>
-      </div>
+    </div>
   );
 }
