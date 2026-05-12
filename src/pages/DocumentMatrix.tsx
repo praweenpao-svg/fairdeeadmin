@@ -193,18 +193,6 @@ export default function DocumentMatrix() {
 
   const comboKey = (c: Combination) => `${c.sale_type}-${c.insurance_class}-${c.payment_type}`;
 
-  // Audit filters
-  const [auditAction, setAuditAction] = useState<string>('all');
-  const [auditActor, setAuditActor] = useState<string>('all');
-  const [auditField, setAuditField] = useState<string>('all');
-  const auditActors = useMemo(() => Array.from(new Set(mockAuditLog.map(a => a.actor_email))), []);
-  const auditFields = useMemo(() => Array.from(new Set(mockAuditLog.map(a => a.field_changed))), []);
-  const filteredAudit = useMemo(() => mockAuditLog.filter(a =>
-    (auditAction === 'all' || a.action === auditAction) &&
-    (auditActor === 'all' || a.actor_email === auditActor) &&
-    (auditField === 'all' || a.field_changed === auditField)
-  ).sort((a, b) => b.created_at.localeCompare(a.created_at)), [auditAction, auditActor, auditField]);
-
   // Saving from edit modal
   const handleSaveScenario = (combo: Combination, nextRules: DocMatrixRule[]) => {
     setRules(prev => {
