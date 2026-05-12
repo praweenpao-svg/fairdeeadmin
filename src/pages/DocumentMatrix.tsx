@@ -350,6 +350,8 @@ export default function DocumentMatrix() {
               onToggleActive={handleToggleActive}
               onAddDoc={handleAddDoc}
               isSuperAdmin={isSuperAdmin}
+              showAdd={showAddDoc}
+              setShowAdd={setShowAddDoc}
             />
           </TabsContent>
         </Tabs>
