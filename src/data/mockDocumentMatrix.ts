@@ -6,7 +6,6 @@ export type DocTier = 'Required Base' | 'Conditional' | 'Sale-Type Specific' | '
 export type SaleType = 'New' | 'Renew' | 'COA';
 export type InsuranceClass = 'Type1' | 'Type2' | 'Type2Plus' | 'Type3' | 'Type3Plus';
 export type PaymentType = 'Full' | 'Instalment';
-export type CarType = 'Normally' | 'EV' | 'High Sum';
 
 export interface DocLibraryRow {
   id: number;
@@ -38,12 +37,37 @@ export const mockInsurers: InsurerRow[] = [
   { id: 'lmg', name: 'LMG Insurance' },
 ];
 
+export interface VehicleCodeRow {
+  id: string;
+  name: string;
+  /** Convenience flag for grouping (e.g. EV models). */
+  is_ev?: boolean;
+}
+
+export const mockVehicleCodes: VehicleCodeRow[] = [
+  { id: 'tesla-model-3', name: 'Tesla Model 3', is_ev: true },
+  { id: 'tesla-model-y', name: 'Tesla Model Y', is_ev: true },
+  { id: 'byd-atto-3', name: 'BYD Atto 3', is_ev: true },
+  { id: 'byd-dolphin', name: 'BYD Dolphin', is_ev: true },
+  { id: 'byd-seal', name: 'BYD Seal', is_ev: true },
+  { id: 'mg-ep', name: 'MG EP', is_ev: true },
+  { id: 'mg-zs-ev', name: 'MG ZS EV', is_ev: true },
+  { id: 'neta-v', name: 'Neta V', is_ev: true },
+  { id: 'ora-good-cat', name: 'Ora Good Cat', is_ev: true },
+  { id: 'volvo-xc40-recharge', name: 'Volvo XC40 Recharge', is_ev: true },
+  { id: 'toyota-corolla', name: 'Toyota Corolla' },
+  { id: 'toyota-camry', name: 'Toyota Camry' },
+  { id: 'honda-civic', name: 'Honda Civic' },
+  { id: 'honda-cr-v', name: 'Honda CR-V' },
+  { id: 'isuzu-d-max', name: 'Isuzu D-Max' },
+  { id: 'mazda-cx-5', name: 'Mazda CX-5' },
+];
+
 export interface DocMatrixRule {
   id: number;
   sale_type: SaleType;
   insurance_class: InsuranceClass;
   payment_type: PaymentType;
-  car_type: CarType;
   document_id: number;
   tier: DocTier;
   condition_note: string;
@@ -51,6 +75,8 @@ export interface DocMatrixRule {
   is_active: boolean;
   /** Optional. Empty/undefined = applies to all insurers. */
   insurer_ids?: string[];
+  /** Optional. Empty/undefined = applies to all vehicle codes. */
+  vehicle_codes?: string[];
   /** Optional sum-insured threshold. Both fields required together. */
   sum_insured_op?: SumInsuredOp;
   sum_insured_value?: number;
@@ -83,32 +109,36 @@ export const mockDocLibrary: DocLibraryRow[] = [
   { id: 9, name_en: 'Certificate of Business Registration', name_th: 'หนังสือรับรองบริษัท', category: 'D', default_tier: 'Conditional', default_condition_note: 'Required when customer is Corporate', is_active: true, created_at: '2026-01-15 09:08', updated_at: '2026-01-15 09:08' },
   { id: 10, name_en: 'Car Inspection Photos (8 Angles + Timestamp)', name_th: 'ภาพถ่ายตรวจสภาพรถ 8 มุม', category: 'E', default_tier: 'Conditional', default_condition_note: 'Required when insurance_class is Type1/2+/3+ and not Today', is_active: true, created_at: '2026-01-15 09:09', updated_at: '2026-03-01 10:10' },
   { id: 11, name_en: 'Car Inspection Form', name_th: 'แบบฟอร์มตรวจสภาพรถ', category: 'E', default_tier: 'Conditional', default_condition_note: 'Same as inspection photos', is_active: true, created_at: '2026-01-15 09:10', updated_at: '2026-01-15 09:10' },
-  { id: 12, name_en: 'EV Battery Inspection Report', name_th: 'รายงานตรวจสภาพแบตเตอรี่ EV', category: 'E', default_tier: 'Conditional', default_condition_note: 'Required when car_type = EV', is_active: true, created_at: '2026-02-20 09:00', updated_at: '2026-02-20 09:00' },
-  { id: 13, name_en: 'High Sum Insured Approval', name_th: 'หนังสืออนุมัติทุนประกันสูง', category: 'F', default_tier: 'Conditional', default_condition_note: 'Required when car_type = High Sum', is_active: true, created_at: '2026-01-15 09:12', updated_at: '2026-01-15 09:12' },
+  { id: 12, name_en: 'EV Battery Inspection Report', name_th: 'รายงานตรวจสภาพแบตเตอรี่ EV', category: 'E', default_tier: 'Conditional', default_condition_note: 'Required for EV vehicle codes', is_active: true, created_at: '2026-02-20 09:00', updated_at: '2026-02-20 09:00' },
+  { id: 13, name_en: 'High Sum Insured Approval', name_th: 'หนังสืออนุมัติทุนประกันสูง', category: 'F', default_tier: 'Conditional', default_condition_note: 'Required when sum insured exceeds threshold', is_active: true, created_at: '2026-01-15 09:12', updated_at: '2026-01-15 09:12' },
   { id: 14, name_en: 'Named Driver Declaration', name_th: 'ใบแจ้งผู้ขับขี่ระบุชื่อ', category: 'G', default_tier: 'Optional', default_condition_note: 'Collect when named-driver discount applied', is_active: true, created_at: '2026-01-15 09:13', updated_at: '2026-01-15 09:13' },
   { id: 15, name_en: 'Installment Consent Form (DEPRECATED)', name_th: 'หนังสือยินยอมผ่อนชำระ', category: 'C', default_tier: 'Optional', default_condition_note: 'Deprecated — not used in any scenario', is_active: false, created_at: '2025-11-01 09:00', updated_at: '2026-01-30 16:00' },
 ];
 
+const EV_CODES = mockVehicleCodes.filter(v => v.is_ev).map(v => v.id);
+
 export const mockMatrixRules: DocMatrixRule[] = [
-  { id: 101, sale_type: 'New', insurance_class: 'Type1', payment_type: 'Full', car_type: 'Normally', document_id: 1, tier: 'Required Base', condition_note: 'Always required', min_count: 1, is_active: true, created_at: '2026-01-15 09:00', updated_at: '2026-01-15 09:00', created_by: 'admin@fairdee.com', updated_by: 'admin@fairdee.com' },
-  { id: 102, sale_type: 'New', insurance_class: 'Type1', payment_type: 'Full', car_type: 'Normally', document_id: 4, tier: 'Required Base', condition_note: 'Always required', min_count: 1, is_active: true, created_at: '2026-01-15 09:01', updated_at: '2026-01-15 09:01', created_by: 'admin@fairdee.com', updated_by: 'admin@fairdee.com' },
-  { id: 103, sale_type: 'New', insurance_class: 'Type1', payment_type: 'Full', car_type: 'Normally', document_id: 10, tier: 'Conditional', condition_note: 'Type1 always inspects (8 angles)', min_count: 8, is_active: true, created_at: '2026-01-15 09:02', updated_at: '2026-03-01 10:10', created_by: 'admin@fairdee.com', updated_by: 'pao@fairdee.com' },
-  { id: 104, sale_type: 'New', insurance_class: 'Type1', payment_type: 'Instalment', car_type: 'Normally', document_id: 2, tier: 'Conditional', condition_note: 'Instalment requires signed NID', min_count: 1, is_active: true, created_at: '2026-01-16 11:20', updated_at: '2026-01-16 11:20', created_by: 'admin@fairdee.com', updated_by: 'admin@fairdee.com' },
-  { id: 105, sale_type: 'New', insurance_class: 'Type1', payment_type: 'Instalment', car_type: 'Normally', document_id: 3, tier: 'Conditional', condition_note: 'Instalment requires selfie', min_count: 1, is_active: true, created_at: '2026-01-16 11:21', updated_at: '2026-01-16 11:21', created_by: 'admin@fairdee.com', updated_by: 'admin@fairdee.com' },
-  { id: 106, sale_type: 'New', insurance_class: 'Type1', payment_type: 'Instalment', car_type: 'Normally', document_id: 7, tier: 'Conditional', condition_note: 'Required for credit card instalment', min_count: 1, is_active: true, created_at: '2026-01-16 11:22', updated_at: '2026-01-16 11:22', created_by: 'admin@fairdee.com', updated_by: 'admin@fairdee.com' },
-  { id: 107, sale_type: 'Renew', insurance_class: 'Type1', payment_type: 'Full', car_type: 'Normally', document_id: 5, tier: 'Sale-Type Specific', condition_note: 'Renew requires existing policy', min_count: 1, is_active: true, created_at: '2026-01-17 14:00', updated_at: '2026-02-08 11:00', created_by: 'admin@fairdee.com', updated_by: 'rachel@fairdee.com' },
-  { id: 108, sale_type: 'COA', insurance_class: 'Type1', payment_type: 'Full', car_type: 'Normally', document_id: 5, tier: 'Sale-Type Specific', condition_note: 'COA requires existing policy', min_count: 1, is_active: true, created_at: '2026-01-17 14:05', updated_at: '2026-01-17 14:05', created_by: 'admin@fairdee.com', updated_by: 'admin@fairdee.com' },
-  { id: 109, sale_type: 'New', insurance_class: 'Type1', payment_type: 'Full', car_type: 'EV', document_id: 12, tier: 'Conditional', condition_note: 'EV battery report required', min_count: 1, is_active: true, created_at: '2026-02-20 09:30', updated_at: '2026-02-20 09:30', created_by: 'admin@fairdee.com', updated_by: 'admin@fairdee.com' },
-  { id: 110, sale_type: 'New', insurance_class: 'Type1', payment_type: 'Full', car_type: 'High Sum', document_id: 13, tier: 'Conditional', condition_note: 'High Sum requires approval letter', min_count: 1, is_active: true, created_at: '2026-01-18 10:00', updated_at: '2026-01-18 10:00', created_by: 'admin@fairdee.com', updated_by: 'admin@fairdee.com' },
-  { id: 111, sale_type: 'New', insurance_class: 'Type3', payment_type: 'Full', car_type: 'Normally', document_id: 10, tier: 'Optional', condition_note: 'Type3 generally skips inspection', min_count: 8, is_active: false, created_at: '2026-01-15 09:30', updated_at: '2026-03-05 13:00', created_by: 'admin@fairdee.com', updated_by: 'pao@fairdee.com' },
-  { id: 112, sale_type: 'New', insurance_class: 'Type2Plus', payment_type: 'Full', car_type: 'Normally', document_id: 10, tier: 'Conditional', condition_note: '2+ requires inspection', min_count: 8, is_active: true, created_at: '2026-01-15 09:35', updated_at: '2026-01-15 09:35', created_by: 'admin@fairdee.com', updated_by: 'admin@fairdee.com' },
-  { id: 113, sale_type: 'New', insurance_class: 'Type3Plus', payment_type: 'Full', car_type: 'Normally', document_id: 10, tier: 'Conditional', condition_note: '3+ requires inspection', min_count: 8, is_active: true, created_at: '2026-01-15 09:36', updated_at: '2026-01-15 09:36', created_by: 'admin@fairdee.com', updated_by: 'admin@fairdee.com' },
+  { id: 101, sale_type: 'New', insurance_class: 'Type1', payment_type: 'Full', document_id: 1, tier: 'Required Base', condition_note: 'Always required', min_count: 1, is_active: true, created_at: '2026-01-15 09:00', updated_at: '2026-01-15 09:00', created_by: 'admin@fairdee.com', updated_by: 'admin@fairdee.com' },
+  { id: 102, sale_type: 'New', insurance_class: 'Type1', payment_type: 'Full', document_id: 4, tier: 'Required Base', condition_note: 'Always required', min_count: 1, is_active: true, created_at: '2026-01-15 09:01', updated_at: '2026-01-15 09:01', created_by: 'admin@fairdee.com', updated_by: 'admin@fairdee.com' },
+  { id: 103, sale_type: 'New', insurance_class: 'Type1', payment_type: 'Full', document_id: 10, tier: 'Conditional', condition_note: 'Type1 always inspects (8 angles)', min_count: 8, is_active: true, created_at: '2026-01-15 09:02', updated_at: '2026-03-01 10:10', created_by: 'admin@fairdee.com', updated_by: 'pao@fairdee.com' },
+  { id: 104, sale_type: 'New', insurance_class: 'Type1', payment_type: 'Instalment', document_id: 2, tier: 'Conditional', condition_note: 'Instalment requires signed NID', min_count: 1, is_active: true, created_at: '2026-01-16 11:20', updated_at: '2026-01-16 11:20', created_by: 'admin@fairdee.com', updated_by: 'admin@fairdee.com' },
+  { id: 105, sale_type: 'New', insurance_class: 'Type1', payment_type: 'Instalment', document_id: 3, tier: 'Conditional', condition_note: 'Instalment requires selfie', min_count: 1, is_active: true, created_at: '2026-01-16 11:21', updated_at: '2026-01-16 11:21', created_by: 'admin@fairdee.com', updated_by: 'admin@fairdee.com' },
+  { id: 106, sale_type: 'New', insurance_class: 'Type1', payment_type: 'Instalment', document_id: 7, tier: 'Conditional', condition_note: 'Required for credit card instalment', min_count: 1, is_active: true, created_at: '2026-01-16 11:22', updated_at: '2026-01-16 11:22', created_by: 'admin@fairdee.com', updated_by: 'admin@fairdee.com' },
+  { id: 107, sale_type: 'Renew', insurance_class: 'Type1', payment_type: 'Full', document_id: 5, tier: 'Sale-Type Specific', condition_note: 'Renew requires existing policy', min_count: 1, is_active: true, created_at: '2026-01-17 14:00', updated_at: '2026-02-08 11:00', created_by: 'admin@fairdee.com', updated_by: 'rachel@fairdee.com' },
+  { id: 108, sale_type: 'COA', insurance_class: 'Type1', payment_type: 'Full', document_id: 5, tier: 'Sale-Type Specific', condition_note: 'COA requires existing policy', min_count: 1, is_active: true, created_at: '2026-01-17 14:05', updated_at: '2026-01-17 14:05', created_by: 'admin@fairdee.com', updated_by: 'admin@fairdee.com' },
+  // EV vehicle-code extra (formerly car_type = EV)
+  { id: 109, sale_type: 'New', insurance_class: 'Type1', payment_type: 'Full', document_id: 12, tier: 'Conditional', condition_note: 'EV battery report required', min_count: 1, is_active: true, vehicle_codes: EV_CODES, created_at: '2026-02-20 09:30', updated_at: '2026-02-20 09:30', created_by: 'admin@fairdee.com', updated_by: 'admin@fairdee.com' },
+  // High Sum extra (formerly car_type = High Sum) → SI threshold
+  { id: 110, sale_type: 'New', insurance_class: 'Type1', payment_type: 'Full', document_id: 13, tier: 'Conditional', condition_note: 'Sum insured ≥ 3,000,000 Baht needs approval', min_count: 1, is_active: true, sum_insured_op: '>=', sum_insured_value: 3000000, created_at: '2026-01-18 10:00', updated_at: '2026-01-18 10:00', created_by: 'admin@fairdee.com', updated_by: 'admin@fairdee.com' },
+  { id: 111, sale_type: 'New', insurance_class: 'Type3', payment_type: 'Full', document_id: 10, tier: 'Optional', condition_note: 'Type3 generally skips inspection', min_count: 8, is_active: false, created_at: '2026-01-15 09:30', updated_at: '2026-03-05 13:00', created_by: 'admin@fairdee.com', updated_by: 'pao@fairdee.com' },
+  { id: 112, sale_type: 'New', insurance_class: 'Type2Plus', payment_type: 'Full', document_id: 10, tier: 'Conditional', condition_note: '2+ requires inspection', min_count: 8, is_active: true, created_at: '2026-01-15 09:35', updated_at: '2026-01-15 09:35', created_by: 'admin@fairdee.com', updated_by: 'admin@fairdee.com' },
+  { id: 113, sale_type: 'New', insurance_class: 'Type3Plus', payment_type: 'Full', document_id: 10, tier: 'Conditional', condition_note: '3+ requires inspection', min_count: 8, is_active: true, created_at: '2026-01-15 09:36', updated_at: '2026-01-15 09:36', created_by: 'admin@fairdee.com', updated_by: 'admin@fairdee.com' },
   // Insurer-specific extra
-  { id: 114, sale_type: 'New', insurance_class: 'Type1', payment_type: 'Full', car_type: 'Normally', document_id: 13, tier: 'Conditional', condition_note: 'Viriyah requires extra approval letter', min_count: 1, is_active: true, insurer_ids: ['viriyah'], created_at: '2026-04-02 10:00', updated_at: '2026-04-02 10:00', created_by: 'pao@fairdee.com', updated_by: 'pao@fairdee.com' },
+  { id: 114, sale_type: 'New', insurance_class: 'Type1', payment_type: 'Full', document_id: 13, tier: 'Conditional', condition_note: 'Viriyah requires extra approval letter', min_count: 1, is_active: true, insurer_ids: ['viriyah'], created_at: '2026-04-02 10:00', updated_at: '2026-04-02 10:00', created_by: 'pao@fairdee.com', updated_by: 'pao@fairdee.com' },
   // Sum-insured threshold extra
-  { id: 115, sale_type: 'New', insurance_class: 'Type1', payment_type: 'Full', car_type: 'Normally', document_id: 13, tier: 'Conditional', condition_note: 'Sum insured ≥ 2,000,000 Baht needs approval', min_count: 1, is_active: true, sum_insured_op: '>=', sum_insured_value: 2000000, created_at: '2026-04-04 09:30', updated_at: '2026-04-04 09:30', created_by: 'pao@fairdee.com', updated_by: 'pao@fairdee.com' },
+  { id: 115, sale_type: 'New', insurance_class: 'Type1', payment_type: 'Full', document_id: 13, tier: 'Conditional', condition_note: 'Sum insured ≥ 2,000,000 Baht needs approval', min_count: 1, is_active: true, sum_insured_op: '>=', sum_insured_value: 2000000, created_at: '2026-04-04 09:30', updated_at: '2026-04-04 09:30', created_by: 'pao@fairdee.com', updated_by: 'pao@fairdee.com' },
   // Combined insurer + threshold
-  { id: 116, sale_type: 'New', insurance_class: 'Type1', payment_type: 'Instalment', car_type: 'Normally', document_id: 9, tier: 'Conditional', condition_note: 'MSIG / Bangkok require corp cert when SI > 3M', min_count: 1, is_active: true, insurer_ids: ['msig', 'bangkok'], sum_insured_op: '>', sum_insured_value: 3000000, created_at: '2026-04-10 14:00', updated_at: '2026-04-10 14:00', created_by: 'pao@fairdee.com', updated_by: 'pao@fairdee.com' },
+  { id: 116, sale_type: 'New', insurance_class: 'Type1', payment_type: 'Instalment', document_id: 9, tier: 'Conditional', condition_note: 'MSIG / Bangkok require corp cert when SI > 3M', min_count: 1, is_active: true, insurer_ids: ['msig', 'bangkok'], sum_insured_op: '>', sum_insured_value: 3000000, created_at: '2026-04-10 14:00', updated_at: '2026-04-10 14:00', created_by: 'pao@fairdee.com', updated_by: 'pao@fairdee.com' },
 ];
 
 export const mockAuditLog: DocAuditLog[] = [
