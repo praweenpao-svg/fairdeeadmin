@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { FileStack, History, Search, Pencil, Plus, X, Library, ChevronDown, ChevronRight, Shield, ShieldCheck, AlertCircle, LayoutGrid, List } from 'lucide-react';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { FileStack, Search, Pencil, Plus, X, Library, ChevronDown, ChevronRight, Shield, ShieldCheck, AlertCircle, LayoutGrid, List } from 'lucide-react';
+
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
