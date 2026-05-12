@@ -297,25 +297,7 @@ export default function DocumentMatrix() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {view === 'grouped'
-                    ? SALE_TYPES.flatMap(st => {
-                        const inGroup = filteredCombos.filter(c => c.sale_type === st);
-                        if (inGroup.length === 0) return [];
-                        const isOpen = openGroups[st] ?? true;
-                        return [
-                          <TableRow key={`g-${st}`} className="bg-muted/30 hover:bg-muted/30 cursor-pointer" onClick={() => setOpenGroups(p => ({ ...p, [st]: !isOpen }))}>
-                            <TableCell colSpan={isSuperAdmin ? 10 : 9} className="font-semibold text-sm py-2">
-                              <span className="inline-flex items-center gap-2">
-                                {isOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                                {st}
-                                <Badge variant="outline" className="ml-1">{inGroup.length}</Badge>
-                              </span>
-                            </TableCell>
-                          </TableRow>,
-                          ...(isOpen ? inGroup.map(c => renderRow(c, expanded, setExpanded, rulesFor, comboKey, isSuperAdmin, setEditing, docById)) : []),
-                        ];
-                      })
-                    : pagedCombos.map(c => renderRow(c, expanded, setExpanded, rulesFor, comboKey, isSuperAdmin, setEditing, docById))}
+                  {pagedCombos.map(c => renderRow(c, expanded, setExpanded, rulesFor, comboKey, isSuperAdmin, setEditing, docById))}
                   {filteredCombos.length === 0 && (
                     <TableRow><TableCell colSpan={isSuperAdmin ? 10 : 9} className="text-center text-sm text-muted-foreground py-8">No scenarios match the filters.</TableCell></TableRow>
                   )}
