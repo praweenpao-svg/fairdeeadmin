@@ -39,7 +39,7 @@ import {
   type LogicOp,
 } from '@/data/mockDocumentMatrix';
 
-const SUM_OPS: SumInsuredOp[] = ['<', '<=', '=', '>=', '>'];
+
 const formatThb = (n: number) => new Intl.NumberFormat('en-US').format(n);
 const insurerName = (id: string) => mockInsurers.find(i => i.id === id)?.name ?? id;
 const vehicleName = (id: string) => mockVehicleCodes.find(v => v.id === id)?.name ?? id;
