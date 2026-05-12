@@ -1035,7 +1035,7 @@ function LibraryPanel({ library, usageCount, onEditDoc, onToggleActive, onAddDoc
               <DialogHeader>
                 <DialogTitle>Add Document</DialogTitle>
               </DialogHeader>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-3">
                 <div>
                   <label className="text-xs text-muted-foreground">Name (EN)</label>
                   <Input value={newEN} onChange={(e) => setNewEN(e.target.value)} className="h-9 text-sm bg-background" />
