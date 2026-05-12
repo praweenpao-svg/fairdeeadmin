@@ -18,6 +18,12 @@ import {
   mockAuditLog,
   mockInsurers,
   mockVehicleCodes,
+  CONDITION_FIELDS,
+  OPERATORS_FOR_TYPE,
+  emptyGroup,
+  newLeaf,
+  newConditionId,
+  migrateLegacyConditions,
   type DocTier,
   type SaleType,
   type InsuranceClass,
@@ -25,6 +31,12 @@ import {
   type DocMatrixRule,
   type DocLibraryRow,
   type SumInsuredOp,
+  type ConditionGroup,
+  type ConditionLeaf,
+  type ConditionNode,
+  type ConditionFieldKey,
+  type ConditionOperator,
+  type LogicOp,
 } from '@/data/mockDocumentMatrix';
 
 const SUM_OPS: SumInsuredOp[] = ['<', '<=', '=', '>=', '>'];
