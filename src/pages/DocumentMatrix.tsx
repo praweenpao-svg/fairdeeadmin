@@ -990,10 +990,9 @@ function LibraryPanel({ library, usageCount, onEditDoc, onToggleActive, onAddDoc
   const [editingId, setEditingId] = useState<number | null>(null);
   const [draft, setDraft] = useState<{ name_en: string; name_th: string; default_condition_note: string; default_tier: UITier }>({ name_en: '', name_th: '', default_condition_note: '', default_tier: 'Required' });
 
-  const filtered = library.filter(d => {
-    const q = search.toLowerCase();
-    return !q || d.name_en.toLowerCase().includes(q) || d.name_th.includes(search);
-  });
+  const totalPages = Math.max(1, Math.ceil(library.length / rowsPerPage));
+  const safePage = Math.min(page, totalPages);
+  const paged = library.slice((safePage - 1) * rowsPerPage, safePage * rowsPerPage);
 
   const handleAdd = () => {
     if (!newEN.trim() || !newTH.trim()) { setAddError('Both EN and TH names are required'); return; }
