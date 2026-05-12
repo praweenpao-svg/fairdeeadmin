@@ -30,7 +30,7 @@ import {
   type PaymentType,
   type DocMatrixRule,
   type DocLibraryRow,
-  type SumInsuredOp,
+  
   type ConditionGroup,
   type ConditionLeaf,
   type ConditionNode,
