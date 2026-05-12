@@ -737,8 +737,16 @@ function EditScenarioModal({ combination, onClose, rules, docById, library, onSa
 
 function RuleConditionEditor({ rule, onChange }: { rule: DocMatrixRule; onChange: (patch: Partial<DocMatrixRule>) => void }) {
   const insurers = rule.insurer_ids ?? [];
+  const vehicles = rule.vehicle_codes ?? [];
   const hasSI = !!rule.sum_insured_op;
   const insurerSummary = insurers.length === 0 ? 'All insurers' : insurers.length === 1 ? insurerName(insurers[0]) : `${insurers.length} insurers`;
+  const evIds = mockVehicleCodes.filter(v => v.is_ev).map(v => v.id);
+  const allEvSelected = vehicles.length > 0 && vehicles.every(id => evIds.includes(id)) && evIds.every(id => vehicles.includes(id));
+  const vehicleSummary = vehicles.length === 0
+    ? 'All vehicles'
+    : allEvSelected
+      ? 'All EV models'
+      : vehicles.length === 1 ? vehicleName(vehicles[0]) : `${vehicles.length} models`;
 
   return (
     <div className="rounded-md border border-dashed border-border bg-muted/20 px-2.5 py-2">
