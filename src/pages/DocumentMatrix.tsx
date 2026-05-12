@@ -1001,7 +1001,7 @@ function LibraryPanel({ library, usageCount, onEditDoc, onDeleteDoc, onAddDoc, i
   const [newNote, setNewNote] = useState('');
   const [addError, setAddError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [draft, setDraft] = useState<{ name_en: string; name_th: string; default_condition_note: string; default_tier: UITier }>({ name_en: '', name_th: '', default_condition_note: '', default_tier: 'Required' });
+  const [draft, setDraft] = useState<{ name_en: string; name_th: string; default_tier: UITier }>({ name_en: '', name_th: '', default_tier: 'Required' });
 
   const totalPages = Math.max(1, Math.ceil(library.length / rowsPerPage));
   const safePage = Math.min(page, totalPages);
@@ -1019,13 +1019,13 @@ function LibraryPanel({ library, usageCount, onEditDoc, onDeleteDoc, onAddDoc, i
 
   const startEdit = (d: DocLibraryRow) => {
     setEditingId(d.id);
-    setDraft({ name_en: d.name_en, name_th: d.name_th, default_condition_note: d.default_condition_note, default_tier: normalizeTier(d.default_tier) });
+    setDraft({ name_en: d.name_en, name_th: d.name_th, default_tier: normalizeTier(d.default_tier) });
   };
 
   const saveEdit = () => {
     if (editingId == null) return;
     const tierMap: Record<UITier, DocTier> = { Required: 'Required Base', Conditional: 'Conditional', Optional: 'Optional' };
-    onEditDoc(editingId, { name_en: draft.name_en.trim(), name_th: draft.name_th.trim(), default_condition_note: draft.default_condition_note, default_tier: tierMap[draft.default_tier] });
+    onEditDoc(editingId, { name_en: draft.name_en.trim(), name_th: draft.name_th.trim(), default_tier: tierMap[draft.default_tier] });
     toast({ title: 'Document updated', description: 'Changes apply to all scenarios that reference this document.' });
     setEditingId(null);
   };
@@ -1107,7 +1107,7 @@ function LibraryPanel({ library, usageCount, onEditDoc, onDeleteDoc, onAddDoc, i
                       {isEditing && (
                         <TableRow key={d.id + '-edit'} className="bg-muted/20 hover:bg-muted/20">
                           <TableCell colSpan={6} className="p-3">
-                            <div className="grid grid-cols-2 gap-2">
+                            <div className="grid grid-cols-3 gap-2">
                               <div>
                                 <label className="text-xs text-muted-foreground">Name (EN)</label>
                                 <Input value={draft.name_en} onChange={e => setDraft(p => ({ ...p, name_en: e.target.value }))} className="h-8 text-sm" />
@@ -1124,10 +1124,6 @@ function LibraryPanel({ library, usageCount, onEditDoc, onDeleteDoc, onAddDoc, i
                                     {(['Required', 'Conditional', 'Optional'] as UITier[]).map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                                   </SelectContent>
                                 </Select>
-                              </div>
-                              <div>
-                                <label className="text-xs text-muted-foreground">Default Condition Note</label>
-                                <Input value={draft.default_condition_note} onChange={e => setDraft(p => ({ ...p, default_condition_note: e.target.value }))} className="h-8 text-sm" />
                               </div>
                             </div>
                             <div className="mt-2 flex items-center justify-between">
