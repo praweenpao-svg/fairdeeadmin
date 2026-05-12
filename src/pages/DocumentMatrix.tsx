@@ -723,6 +723,92 @@ function EditScenarioModal({ combination, onClose, rules, docById, library, onSa
   );
 }
 
+function RuleConditionEditor({ rule, onChange }: { rule: DocMatrixRule; onChange: (patch: Partial<DocMatrixRule>) => void }) {
+  const insurers = rule.insurer_ids ?? [];
+  const hasSI = !!rule.sum_insured_op;
+  const insurerSummary = insurers.length === 0 ? 'All insurers' : insurers.length === 1 ? insurerName(insurers[0]) : `${insurers.length} insurers`;
+
+  return (
+    <div className="rounded-md border border-dashed border-border bg-muted/20 px-2.5 py-2">
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="text-[10px] uppercase tracking-wide text-muted-foreground">Apply when</span>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className="h-7 text-xs font-normal gap-1">
+              <span>Insurer:</span><span className="text-foreground">{insurerSummary}</span>
+              <ChevronDown className="w-3 h-3 opacity-60" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent align="start" className="w-60 p-2">
+            <div className="text-[10px] uppercase tracking-wide text-muted-foreground px-1 pb-1">Insurer scope</div>
+            <label className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted cursor-pointer">
+              <Checkbox checked={insurers.length === 0} onCheckedChange={() => onChange({ insurer_ids: undefined })} />
+              <span className="text-sm">All insurers (default)</span>
+            </label>
+            <div className="border-t border-border my-1" />
+            <div className="max-h-56 overflow-y-auto">
+              {mockInsurers.map(i => {
+                const on = insurers.includes(i.id);
+                return (
+                  <label key={i.id} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted cursor-pointer">
+                    <Checkbox
+                      checked={on}
+                      onCheckedChange={(checked) => {
+                        const next = checked ? [...insurers, i.id] : insurers.filter(x => x !== i.id);
+                        onChange({ insurer_ids: next.length === 0 ? undefined : next });
+                      }}
+                    />
+                    <span className="text-sm">{i.name}</span>
+                  </label>
+                );
+              })}
+            </div>
+          </PopoverContent>
+        </Popover>
+
+        <div className="flex items-center gap-1">
+          <span className="text-xs text-muted-foreground">Sum insured</span>
+          <Select
+            value={rule.sum_insured_op ?? 'none'}
+            onValueChange={(v) => {
+              if (v === 'none') onChange({ sum_insured_op: undefined, sum_insured_value: undefined });
+              else onChange({ sum_insured_op: v as SumInsuredOp, sum_insured_value: rule.sum_insured_value ?? 0 });
+            }}
+          >
+            <SelectTrigger className="h-7 w-16 text-xs"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">any</SelectItem>
+              {SUM_OPS.map(op => <SelectItem key={op} value={op}>{op}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Input
+            type="number"
+            min={0}
+            step={50000}
+            disabled={!hasSI}
+            value={rule.sum_insured_value ?? ''}
+            onChange={(e) => onChange({ sum_insured_value: e.target.value === '' ? undefined : Number(e.target.value) })}
+            className="h-7 w-32 text-xs"
+            placeholder="Value"
+          />
+          <span className="text-xs text-muted-foreground">Baht</span>
+        </div>
+
+        {(insurers.length > 0 || hasSI) && (
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-6 px-2 text-[11px] text-muted-foreground"
+            onClick={() => onChange({ insurer_ids: undefined, sum_insured_op: undefined, sum_insured_value: undefined })}
+          >
+            Reset to default
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function ManageLibrarySheet({ open, onOpenChange, library, usageCount, onEditDoc, onToggleActive, onAddDoc }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
