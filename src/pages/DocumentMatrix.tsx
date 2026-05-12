@@ -667,12 +667,8 @@ function EditScenarioModal({ combination, onClose, rules, docById, library, onSa
                             </Button>
                           </div>
                         </div>
-                        {tier === 'Conditional' ? (
+                        {tier === 'Conditional' && (
                           <RuleConditionEditor rule={r} onChange={(patch) => updateRule(r.id, patch)} />
-                        ) : (
-                          <div className="rounded-md bg-muted/40 border border-border px-2.5 py-1.5 text-[11px] text-muted-foreground italic">
-                            Always applies — no conditions needed for {tier.toLowerCase()} documents.
-                          </div>
                         )}
                       </div>
                     );
