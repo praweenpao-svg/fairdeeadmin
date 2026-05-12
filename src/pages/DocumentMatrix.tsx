@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { FileStack, Search, Pencil, Plus, X, Library, ChevronDown, ChevronRight, Shield, ShieldCheck, AlertCircle, LayoutGrid, List } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -7,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
 import { TablePagination } from '@/components/ui/table-pagination';
@@ -160,7 +161,7 @@ export default function DocumentMatrix() {
 
   const [expanded, setExpanded] = useState<string | null>(null);
   const [editing, setEditing] = useState<Combination | null>(null);
-  const [libraryOpen, setLibraryOpen] = useState(false);
+  
 
   // Pagination
   const [page, setPage] = useState(1);
@@ -242,94 +243,108 @@ export default function DocumentMatrix() {
                 <Shield className="w-3.5 h-3.5" /> Admin
               </button>
             </div>
-            {isSuperAdmin && (
-              <Button variant="outline" size="sm" onClick={() => setLibraryOpen(true)} className="gap-1.5">
-                <Library className="w-4 h-4" /> Manage Library
-              </Button>
-            )}
           </div>
         </div>
       </header>
 
-      <div className="px-6 py-5 space-y-4">
-        <div className="rounded-lg border border-border bg-card p-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <MultiSelectFilter label="Sale Type" selected={fSale} onChange={setFSale} options={SALE_TYPES.map(s => ({ v: s, l: s }))} />
-            <MultiSelectFilter label="Class" selected={fClass} onChange={setFClass} options={CLASSES.map(c => ({ v: c, l: CLASS_LABEL[c] }))} />
-            <MultiSelectFilter label="Payment Type" selected={fPayment} onChange={setFPayment} options={PAYMENTS.map(p => ({ v: p, l: p }))} />
-          </div>
-          <div className="mt-3 flex items-center justify-between gap-2 text-xs">
-            <div className="flex items-center gap-2">
-              <span className="text-muted-foreground">Showing</span>
-              <Badge variant="outline">{filteredCombos.length} of {allCombinations.length} scenarios</Badge>
-              {(fSale.length + fClass.length + fPayment.length) > 0 && (
-                <Button size="sm" variant="ghost" className="h-6 px-2 text-xs" onClick={() => { setFSale([]); setFClass([]); setFPayment([]); }}>Clear filters</Button>
-              )}
-            </div>
-            <div className="flex items-center gap-1 rounded-md border border-border p-0.5 bg-muted/40">
-              <button onClick={() => setView('flat')} className={`text-xs px-2 py-1 rounded flex items-center gap-1 ${view === 'flat' ? 'bg-card shadow-sm' : 'text-muted-foreground'}`}><List className="w-3.5 h-3.5" /> Flat</button>
-              <button onClick={() => setView('grouped')} className={`text-xs px-2 py-1 rounded flex items-center gap-1 ${view === 'grouped' ? 'bg-card shadow-sm' : 'text-muted-foreground'}`}><LayoutGrid className="w-3.5 h-3.5" /> Group by Sale Type</button>
-            </div>
-          </div>
-        </div>
+      <div className="px-6 py-5">
+        <Tabs defaultValue="matrix" className="w-full">
+          <TabsList>
+            <TabsTrigger value="matrix" className="gap-2"><FileStack className="w-4 h-4" />Matrix</TabsTrigger>
+            <TabsTrigger value="library" className="gap-2"><Library className="w-4 h-4" />Manage Library</TabsTrigger>
+          </TabsList>
 
-        {/* Matrix table */}
-        <div className="rounded-lg border border-border bg-card overflow-hidden">
-          <Table>
-            <TableHeader className="bg-muted/50">
-              <TableRow>
-                <TableHead className="w-8" />
-                <TableHead>Sale Type</TableHead>
-                <TableHead>Class</TableHead>
-                <TableHead>Payment Type</TableHead>
-                <TableHead className="text-center">Required</TableHead>
-                <TableHead className="text-center">Conditional</TableHead>
-                <TableHead className="text-center">Optional</TableHead>
-                <TableHead>Last Updated</TableHead>
-                <TableHead>Last Updated By</TableHead>
-                {isSuperAdmin && <TableHead className="text-right w-24">Action</TableHead>}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {view === 'grouped'
-                ? SALE_TYPES.flatMap(st => {
-                    const inGroup = filteredCombos.filter(c => c.sale_type === st);
-                    if (inGroup.length === 0) return [];
-                    const isOpen = openGroups[st] ?? true;
-                    return [
-                      <TableRow key={`g-${st}`} className="bg-muted/30 hover:bg-muted/30 cursor-pointer" onClick={() => setOpenGroups(p => ({ ...p, [st]: !isOpen }))}>
-                        <TableCell colSpan={isSuperAdmin ? 10 : 9} className="font-semibold text-sm py-2">
-                          <span className="inline-flex items-center gap-2">
-                            {isOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                            {st}
-                            <Badge variant="outline" className="ml-1">{inGroup.length}</Badge>
-                          </span>
-                        </TableCell>
-                      </TableRow>,
-                      ...(isOpen ? inGroup.map(c => renderRow(c, expanded, setExpanded, rulesFor, comboKey, isSuperAdmin, setEditing, docById)) : []),
-                    ];
-                  })
-                : pagedCombos.map(c => renderRow(c, expanded, setExpanded, rulesFor, comboKey, isSuperAdmin, setEditing, docById))}
-              {filteredCombos.length === 0 && (
-                <TableRow><TableCell colSpan={isSuperAdmin ? 10 : 9} className="text-center text-sm text-muted-foreground py-8">No scenarios match the filters.</TableCell></TableRow>
+          <TabsContent value="matrix" className="mt-4 space-y-4">
+            <div className="rounded-lg border border-border bg-card p-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <MultiSelectFilter label="Sale Type" selected={fSale} onChange={setFSale} options={SALE_TYPES.map(s => ({ v: s, l: s }))} />
+                <MultiSelectFilter label="Class" selected={fClass} onChange={setFClass} options={CLASSES.map(c => ({ v: c, l: CLASS_LABEL[c] }))} />
+                <MultiSelectFilter label="Payment Type" selected={fPayment} onChange={setFPayment} options={PAYMENTS.map(p => ({ v: p, l: p }))} />
+              </div>
+              <div className="mt-3 flex items-center justify-between gap-2 text-xs">
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground">Showing</span>
+                  <Badge variant="outline">{filteredCombos.length} of {allCombinations.length} scenarios</Badge>
+                  {(fSale.length + fClass.length + fPayment.length) > 0 && (
+                    <Button size="sm" variant="ghost" className="h-6 px-2 text-xs" onClick={() => { setFSale([]); setFClass([]); setFPayment([]); }}>Clear filters</Button>
+                  )}
+                </div>
+                <div className="flex items-center gap-1 rounded-md border border-border p-0.5 bg-muted/40">
+                  <button onClick={() => setView('flat')} className={`text-xs px-2 py-1 rounded flex items-center gap-1 ${view === 'flat' ? 'bg-card shadow-sm' : 'text-muted-foreground'}`}><List className="w-3.5 h-3.5" /> Flat</button>
+                  <button onClick={() => setView('grouped')} className={`text-xs px-2 py-1 rounded flex items-center gap-1 ${view === 'grouped' ? 'bg-card shadow-sm' : 'text-muted-foreground'}`}><LayoutGrid className="w-3.5 h-3.5" /> Group by Sale Type</button>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-border bg-card overflow-hidden">
+              <Table>
+                <TableHeader className="bg-muted/50">
+                  <TableRow>
+                    <TableHead className="w-8" />
+                    <TableHead>Sale Type</TableHead>
+                    <TableHead>Class</TableHead>
+                    <TableHead>Payment Type</TableHead>
+                    <TableHead className="text-center">Required</TableHead>
+                    <TableHead className="text-center">Conditional</TableHead>
+                    <TableHead className="text-center">Optional</TableHead>
+                    <TableHead>Last Updated</TableHead>
+                    <TableHead>Last Updated By</TableHead>
+                    {isSuperAdmin && <TableHead className="text-right w-24">Action</TableHead>}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {view === 'grouped'
+                    ? SALE_TYPES.flatMap(st => {
+                        const inGroup = filteredCombos.filter(c => c.sale_type === st);
+                        if (inGroup.length === 0) return [];
+                        const isOpen = openGroups[st] ?? true;
+                        return [
+                          <TableRow key={`g-${st}`} className="bg-muted/30 hover:bg-muted/30 cursor-pointer" onClick={() => setOpenGroups(p => ({ ...p, [st]: !isOpen }))}>
+                            <TableCell colSpan={isSuperAdmin ? 10 : 9} className="font-semibold text-sm py-2">
+                              <span className="inline-flex items-center gap-2">
+                                {isOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                                {st}
+                                <Badge variant="outline" className="ml-1">{inGroup.length}</Badge>
+                              </span>
+                            </TableCell>
+                          </TableRow>,
+                          ...(isOpen ? inGroup.map(c => renderRow(c, expanded, setExpanded, rulesFor, comboKey, isSuperAdmin, setEditing, docById)) : []),
+                        ];
+                      })
+                    : pagedCombos.map(c => renderRow(c, expanded, setExpanded, rulesFor, comboKey, isSuperAdmin, setEditing, docById))}
+                  {filteredCombos.length === 0 && (
+                    <TableRow><TableCell colSpan={isSuperAdmin ? 10 : 9} className="text-center text-sm text-muted-foreground py-8">No scenarios match the filters.</TableCell></TableRow>
+                  )}
+                </TableBody>
+              </Table>
+              {view === 'flat' && filteredCombos.length > 0 && (
+                <TablePagination
+                  currentPage={page}
+                  totalPages={totalPages}
+                  totalItems={filteredCombos.length}
+                  rowsPerPage={rowsPerPage}
+                  onPageChange={setPage}
+                  onRowsPerPageChange={setRowsPerPage}
+                />
               )}
-            </TableBody>
-          </Table>
-          {view === 'flat' && filteredCombos.length > 0 && (
-            <TablePagination
-              currentPage={page}
-              totalPages={totalPages}
-              totalItems={filteredCombos.length}
-              rowsPerPage={rowsPerPage}
-              onPageChange={setPage}
-              onRowsPerPageChange={setRowsPerPage}
+            </div>
+
+            <div className="text-xs text-muted-foreground px-1">
+              Schema dimensions: <code>sale_type × class × payment_type</code> = <strong>3 × 5 × 2 = 30</strong> scenarios. Audit log is captured server-side.
+            </div>
+          </TabsContent>
+
+          <TabsContent value="library" className="mt-4">
+            <LibraryPanel
+              library={library}
+              usageCount={usageCount}
+              onEditDoc={handleEditDoc}
+              onToggleActive={handleToggleActive}
+              onAddDoc={handleAddDoc}
+              isSuperAdmin={isSuperAdmin}
             />
-          )}
-        </div>
-
-        <div className="text-xs text-muted-foreground px-1">
-          Schema dimensions: <code>sale_type × class × payment_type</code> = <strong>3 × 5 × 2 = 30</strong> scenarios. Audit log is captured server-side.
-        </div>
+          </TabsContent>
+        </Tabs>
       </div>
 
       <EditScenarioModal
@@ -339,16 +354,6 @@ export default function DocumentMatrix() {
         docById={docById}
         library={library}
         onSave={handleSaveScenario}
-      />
-
-      <ManageLibrarySheet
-        open={libraryOpen}
-        onOpenChange={setLibraryOpen}
-        library={library}
-        usageCount={usageCount}
-        onEditDoc={handleEditDoc}
-        onToggleActive={handleToggleActive}
-        onAddDoc={handleAddDoc}
       />
     </div>
   );
@@ -966,14 +971,13 @@ function LeafValueEditor({ leaf, onChange }: { leaf: ConditionLeaf; onChange: (l
   );
 }
 
-function ManageLibrarySheet({ open, onOpenChange, library, usageCount, onEditDoc, onToggleActive, onAddDoc }: {
-  open: boolean;
-  onOpenChange: (o: boolean) => void;
+function LibraryPanel({ library, usageCount, onEditDoc, onToggleActive, onAddDoc, isSuperAdmin }: {
   library: DocLibraryRow[];
   usageCount: (id: number) => number;
   onEditDoc: (id: number, patch: Partial<DocLibraryRow>) => void;
   onToggleActive: (d: DocLibraryRow) => void;
   onAddDoc: (row: Omit<DocLibraryRow, 'id' | 'created_at' | 'updated_at'>) => string | null;
+  isSuperAdmin: boolean;
 }) {
   const [search, setSearch] = useState('');
   const [showAdd, setShowAdd] = useState(false);
@@ -1014,12 +1018,8 @@ function ManageLibrarySheet({ open, onOpenChange, library, usageCount, onEditDoc
   };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-3xl overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle className="flex items-center gap-2"><Library className="w-4 h-4" /> Document Library</SheetTitle>
-          <p className="text-xs text-muted-foreground mt-1">Master list. Editing names or notes here updates every scenario that references the document.</p>
-        </SheetHeader>
+    <div className="space-y-3">
+      <p className="text-xs text-muted-foreground">Master list. Editing names or notes here updates every scenario that references the document.</p>
 
         <div className="mt-4 space-y-3">
           <div className="flex items-center gap-2">
@@ -1155,7 +1155,6 @@ function ManageLibrarySheet({ open, onOpenChange, library, usageCount, onEditDoc
             </Table>
           </div>
         </div>
-      </SheetContent>
-    </Sheet>
+      </div>
   );
 }
