@@ -321,7 +321,7 @@ export default function DocumentMatrix() {
                   )}
                 </TableBody>
               </Table>
-              {view === 'flat' && filteredCombos.length > 0 && (
+              {filteredCombos.length > 0 && (
                 <TablePagination
                   currentPage={page}
                   totalPages={totalPages}
