@@ -248,10 +248,10 @@ export default function DocumentMatrix() {
       </header>
 
       <div className="px-6 py-5">
-        <Tabs defaultValue="matrix" className="w-full">
+        <Tabs defaultValue="library" className="w-full">
           <TabsList>
-            <TabsTrigger value="matrix" className="gap-2"><FileStack className="w-4 h-4" />Matrix</TabsTrigger>
             <TabsTrigger value="library" className="gap-2"><Library className="w-4 h-4" />Manage Library</TabsTrigger>
+            <TabsTrigger value="matrix" className="gap-2"><FileStack className="w-4 h-4" />Matrix</TabsTrigger>
           </TabsList>
 
           <TabsContent value="matrix" className="mt-4 space-y-4">
