@@ -512,6 +512,7 @@ function ExpandedRowDetail({ rules, docById }: { rules: DocMatrixRule[]; docById
                       <div className="font-medium">{d?.name_en}</div>
                       <div className="text-muted-foreground">{d?.name_th}</div>
                       {r.condition_note && <div className="text-[11px] text-muted-foreground italic mt-0.5">{r.condition_note}{r.min_count > 1 && ` · min ${r.min_count}`}</div>}
+                      <ConditionChips rule={r} />
                     </li>
                   );
                 })}
