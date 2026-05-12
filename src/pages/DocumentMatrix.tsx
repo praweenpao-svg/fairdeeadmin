@@ -93,19 +93,17 @@ const SALE_TYPES: SaleType[] = ['New', 'Renew', 'COA'];
 const CLASSES: InsuranceClass[] = ['Type1', 'Type2', 'Type2Plus', 'Type3', 'Type3Plus'];
 const CLASS_LABEL: Record<InsuranceClass, string> = { Type1: 'Type 1', Type2: 'Type 2', Type2Plus: 'Type 2+', Type3: 'Type 3', Type3Plus: 'Type 3+' };
 const PAYMENTS: PaymentType[] = ['Full', 'Instalment'];
-const CAR_TYPES: CarType[] = ['Normally', 'EV', 'High Sum'];
 
 interface Combination {
   sale_type: SaleType;
   insurance_class: InsuranceClass;
   payment_type: PaymentType;
-  car_type: CarType;
 }
 
 const allCombinations: Combination[] = (() => {
   const out: Combination[] = [];
-  for (const s of SALE_TYPES) for (const c of CLASSES) for (const p of PAYMENTS) for (const ct of CAR_TYPES) {
-    out.push({ sale_type: s, insurance_class: c, payment_type: p, car_type: ct });
+  for (const s of SALE_TYPES) for (const c of CLASSES) for (const p of PAYMENTS) {
+    out.push({ sale_type: s, insurance_class: c, payment_type: p });
   }
   return out;
 })();
@@ -122,7 +120,6 @@ export default function DocumentMatrix() {
   const [fSale, setFSale] = useState<string[]>([]);
   const [fClass, setFClass] = useState<string[]>([]);
   const [fPayment, setFPayment] = useState<string[]>([]);
-  const [fCar, setFCar] = useState<string[]>([]);
 
   // View toggle
   const [view, setView] = useState<'flat' | 'grouped'>('flat');
@@ -143,12 +140,11 @@ export default function DocumentMatrix() {
   const filteredCombos = useMemo(() => allCombinations.filter(c =>
     matchAll(fSale, c.sale_type) &&
     matchAll(fClass, c.insurance_class) &&
-    matchAll(fPayment, c.payment_type) &&
-    matchAll(fCar, c.car_type)
-  ), [fSale, fClass, fPayment, fCar]);
+    matchAll(fPayment, c.payment_type)
+  ), [fSale, fClass, fPayment]);
 
   // Reset to page 1 when filters change
-  useEffect(() => { setPage(1); }, [fSale, fClass, fPayment, fCar, view, rowsPerPage]);
+  useEffect(() => { setPage(1); }, [fSale, fClass, fPayment, view, rowsPerPage]);
 
   const totalPages = Math.max(1, Math.ceil(filteredCombos.length / rowsPerPage));
   const pagedCombos = view === 'flat'
@@ -159,11 +155,10 @@ export default function DocumentMatrix() {
     r.is_active &&
     r.sale_type === c.sale_type &&
     r.insurance_class === c.insurance_class &&
-    r.payment_type === c.payment_type &&
-    r.car_type === c.car_type
+    r.payment_type === c.payment_type
   );
 
-  const comboKey = (c: Combination) => `${c.sale_type}-${c.insurance_class}-${c.payment_type}-${c.car_type}`;
+  const comboKey = (c: Combination) => `${c.sale_type}-${c.insurance_class}-${c.payment_type}`;
 
   // Audit filters
   const [auditAction, setAuditAction] = useState<string>('all');
