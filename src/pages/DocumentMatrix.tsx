@@ -161,7 +161,8 @@ export default function DocumentMatrix() {
 
   const [expanded, setExpanded] = useState<string | null>(null);
   const [editing, setEditing] = useState<Combination | null>(null);
-  
+  const [activeTab, setActiveTab] = useState<string>('library');
+  const [showAddDoc, setShowAddDoc] = useState(false);
 
   // Pagination
   const [page, setPage] = useState(1);
