@@ -20,6 +20,24 @@ export interface DocLibraryRow {
   updated_at: string;
 }
 
+export type SumInsuredOp = '<' | '<=' | '=' | '>=' | '>';
+
+export interface InsurerRow {
+  id: string;
+  name: string;
+}
+
+export const mockInsurers: InsurerRow[] = [
+  { id: 'viriyah', name: 'Viriyah' },
+  { id: 'bangkok', name: 'Bangkok Insurance' },
+  { id: 'tip', name: 'Thai Insurance Public (TIP)' },
+  { id: 'msig', name: 'MSIG' },
+  { id: 'dhipaya', name: 'Dhipaya' },
+  { id: 'axa', name: 'AXA' },
+  { id: 'allianz', name: 'Allianz Ayudhya' },
+  { id: 'lmg', name: 'LMG Insurance' },
+];
+
 export interface DocMatrixRule {
   id: number;
   sale_type: SaleType;
@@ -31,6 +49,11 @@ export interface DocMatrixRule {
   condition_note: string;
   min_count: number;
   is_active: boolean;
+  /** Optional. Empty/undefined = applies to all insurers. */
+  insurer_ids?: string[];
+  /** Optional sum-insured threshold. Both fields required together. */
+  sum_insured_op?: SumInsuredOp;
+  sum_insured_value?: number;
   created_at: string;
   updated_at: string;
   created_by: string;
