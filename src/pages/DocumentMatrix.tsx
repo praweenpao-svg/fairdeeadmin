@@ -262,7 +262,7 @@ export default function DocumentMatrix() {
             <div className="rounded-lg border border-border bg-card p-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <MultiSelectFilter label="Sale Type" selected={fSale} onChange={setFSale} options={SALE_TYPES.map(s => ({ v: s, l: s }))} />
-                <MultiSelectFilter label="Class" selected={fClass} onChange={setFClass} options={CLASSES.map(c => ({ v: c, l: CLASS_LABEL[c] }))} />
+                <MultiSelectFilter label="Insurance Class" selected={fClass} onChange={setFClass} options={CLASSES.map(c => ({ v: c, l: CLASS_LABEL[c] }))} />
                 <MultiSelectFilter label="Payment Type" selected={fPayment} onChange={setFPayment} options={PAYMENTS.map(p => ({ v: p, l: p }))} />
               </div>
             </div>
@@ -402,11 +402,6 @@ function MultiSelectFilter({ label, selected, onChange, options }: { label: stri
                 </label>
               );
             })}
-            {selected.length > 0 && (
-              <div className="pt-1 border-t border-border mt-1">
-                <Button size="sm" variant="ghost" className="w-full h-7 text-xs" onClick={() => onChange([])}>Clear</Button>
-              </div>
-            )}
           </div>
         </PopoverContent>
       </Popover>
