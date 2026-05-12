@@ -63,6 +63,92 @@ export const mockVehicleCodes: VehicleCodeRow[] = [
   { id: 'mazda-cx-5', name: 'Mazda CX-5' },
 ];
 
+// ---------- Flexible condition tree (CleverTap-style) ----------
+
+export type LogicOp = 'AND' | 'OR';
+
+export type ConditionFieldKey =
+  | 'insurer'
+  | 'vehicle_code'
+  | 'vehicle_is_ev'
+  | 'sum_insured'
+  | 'customer_type'
+  | 'payment_method'
+  | 'policy_start'
+  | 'named_driver'
+  | 'coverage_addon';
+
+export type ConditionOperator =
+  | 'in' | 'not_in'
+  | 'equals' | 'not_equals'
+  | 'is_true' | 'is_false'
+  | '<' | '<=' | '=' | '>=' | '>' | 'between';
+
+export interface ConditionLeaf {
+  kind: 'leaf';
+  id: string;
+  field: ConditionFieldKey;
+  operator: ConditionOperator;
+  /** Single value, list, or [min,max] for between. */
+  value?: string | number | boolean | Array<string | number>;
+}
+
+export interface ConditionGroup {
+  kind: 'group';
+  id: string;
+  op: LogicOp;
+  children: ConditionNode[];
+}
+
+export type ConditionNode = ConditionLeaf | ConditionGroup;
+
+export interface ConditionFieldDef {
+  key: ConditionFieldKey;
+  label: string;
+  /** Drives operator list and value editor. */
+  type: 'multi-select' | 'select' | 'boolean' | 'number';
+  /** For select / multi-select. */
+  options?: { value: string; label: string }[];
+  /** For number type, e.g. 'Baht'. */
+  unit?: string;
+}
+
+export const CONDITION_FIELDS: ConditionFieldDef[] = [
+  { key: 'insurer', label: 'Insurer', type: 'multi-select' },
+  { key: 'vehicle_code', label: 'Vehicle code', type: 'multi-select' },
+  { key: 'vehicle_is_ev', label: 'Vehicle is EV', type: 'boolean' },
+  { key: 'sum_insured', label: 'Sum insured', type: 'number', unit: 'Baht' },
+  { key: 'customer_type', label: 'Customer type', type: 'select', options: [
+    { value: 'Individual', label: 'Individual' },
+    { value: 'Corporate', label: 'Corporate' },
+  ]},
+  { key: 'payment_method', label: 'Payment method', type: 'multi-select', options: [
+    { value: 'BankTransfer', label: 'Bank Transfer' },
+    { value: 'CreditCard', label: 'Credit Card' },
+    { value: 'Cash', label: 'Cash' },
+    { value: 'QR', label: 'QR / PromptPay' },
+  ]},
+  { key: 'policy_start', label: 'Policy start', type: 'select', options: [
+    { value: 'Today', label: 'Today' },
+    { value: 'Future', label: 'Future-dated' },
+    { value: 'Backdated', label: 'Back-dated' },
+  ]},
+  { key: 'named_driver', label: 'Named-driver applied', type: 'boolean' },
+  { key: 'coverage_addon', label: 'Coverage add-on', type: 'multi-select', options: [
+    { value: 'Flood', label: 'Flood' },
+    { value: 'Theft', label: 'Theft' },
+    { value: 'PersonalAccident', label: 'Personal Accident' },
+    { value: 'BailBond', label: 'Bail Bond' },
+  ]},
+];
+
+export const OPERATORS_FOR_TYPE: Record<ConditionFieldDef['type'], ConditionOperator[]> = {
+  'multi-select': ['in', 'not_in'],
+  'select': ['equals', 'not_equals'],
+  'boolean': ['is_true', 'is_false'],
+  'number': ['<', '<=', '=', '>=', '>', 'between'],
+};
+
 export interface DocMatrixRule {
   id: number;
   sale_type: SaleType;
@@ -73,11 +159,11 @@ export interface DocMatrixRule {
   condition_note: string;
   min_count: number;
   is_active: boolean;
-  /** Optional. Empty/undefined = applies to all insurers. */
+  /** Flexible condition tree (CleverTap-style). Undefined or empty group = default rule. */
+  conditions?: ConditionGroup;
+  // ---- Legacy convenience fields (still supported, auto-migrated to `conditions`) ----
   insurer_ids?: string[];
-  /** Optional. Empty/undefined = applies to all vehicle codes. */
   vehicle_codes?: string[];
-  /** Optional sum-insured threshold. Both fields required together. */
   sum_insured_op?: SumInsuredOp;
   sum_insured_value?: number;
   created_at: string;
