@@ -1017,11 +1017,11 @@ function LibraryPanel({ library, usageCount, onEditDoc, onDeleteDoc, onAddDoc, i
             <Table>
               <TableHeader className="bg-muted/50">
                 <TableRow className="hover:bg-transparent">
-                  <TableHead>Name (EN)</TableHead>
-                  <TableHead>Name (TH)</TableHead>
-                  <TableHead className="w-32">Default Tier</TableHead>
-                  <TableHead className="w-24 text-center">Usage</TableHead>
-                  {isSuperAdmin && <TableHead className="w-40 text-right">Action</TableHead>}
+                  <TableHead className="w-[32%]">Name (EN)</TableHead>
+                  <TableHead className="w-[32%]">Name (TH)</TableHead>
+                  <TableHead className="w-[14%]">Default Tier</TableHead>
+                  <TableHead className="w-[12%] text-center">Usage</TableHead>
+                  {isSuperAdmin && <TableHead className="w-[10%] text-right">Action</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
