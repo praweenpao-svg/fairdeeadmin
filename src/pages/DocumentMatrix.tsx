@@ -285,7 +285,7 @@ export default function DocumentMatrix() {
                         const isOpen = openGroups[st] ?? true;
                         return [
                           <TableRow key={`g-${st}`} className="bg-muted/30 hover:bg-muted/30 cursor-pointer" onClick={() => setOpenGroups(p => ({ ...p, [st]: !isOpen }))}>
-                            <TableCell colSpan={isSuperAdmin ? 11 : 10} className="font-semibold text-sm py-2">
+                            <TableCell colSpan={isSuperAdmin ? 10 : 9} className="font-semibold text-sm py-2">
                               <span className="inline-flex items-center gap-2">
                                 {isOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                                 {st}
@@ -298,7 +298,7 @@ export default function DocumentMatrix() {
                       })
                     : pagedCombos.map(c => renderRow(c, expanded, setExpanded, rulesFor, comboKey, isSuperAdmin, setEditing, docById))}
                   {filteredCombos.length === 0 && (
-                    <TableRow><TableCell colSpan={isSuperAdmin ? 11 : 10} className="text-center text-sm text-muted-foreground py-8">No scenarios match the filters.</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={isSuperAdmin ? 10 : 9} className="text-center text-sm text-muted-foreground py-8">No scenarios match the filters.</TableCell></TableRow>
                   )}
                 </TableBody>
               </Table>
@@ -315,7 +315,7 @@ export default function DocumentMatrix() {
             </div>
 
             <div className="text-xs text-muted-foreground px-1">
-              Schema dimensions: <code>sale_type × class × payment_type × car_type</code> = <strong>3 × 5 × 2 × 3 = 90</strong> scenarios.
+              Schema dimensions: <code>sale_type × class × payment_type</code> = <strong>3 × 5 × 2 = 30</strong> scenarios.
             </div>
           </TabsContent>
 
@@ -456,7 +456,7 @@ function renderRow(
       </TableRow>
       {isOpen && (
         <TableRow key={key + '-exp'} className="bg-muted/20 hover:bg-muted/20">
-          <TableCell colSpan={isSuperAdmin ? 11 : 10} className="p-4">
+          <TableCell colSpan={isSuperAdmin ? 10 : 9} className="p-4">
             <ExpandedRowDetail rules={rs} docById={docById} />
           </TableCell>
         </TableRow>
