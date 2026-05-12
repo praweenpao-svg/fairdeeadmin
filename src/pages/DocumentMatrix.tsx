@@ -1049,10 +1049,9 @@ function LibraryPanel({ library, usageCount, onEditDoc, onDeleteDoc, onAddDoc, i
                           </TableCell>
                         )}
                       </TableRow>
-                      </TableRow>
                       {isEditing && (
                         <TableRow key={d.id + '-edit'} className="bg-muted/20 hover:bg-muted/20">
-                          <TableCell colSpan={5} className="p-3">
+                          <TableCell colSpan={isSuperAdmin ? 5 : 4} className="p-3">
                             <div className="grid grid-cols-3 gap-2">
                               <div>
                                 <label className="text-xs text-muted-foreground">Name (EN)</label>
