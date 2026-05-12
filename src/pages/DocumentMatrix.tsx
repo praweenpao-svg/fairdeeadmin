@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { FileStack, Search, Pencil, Plus, X, Library, ChevronDown, ChevronRight, Shield, ShieldCheck, AlertCircle, LayoutGrid, List } from 'lucide-react';
+import { FileStack, Search, Pencil, Plus, X, Library, ChevronDown, ChevronRight, Shield, ShieldCheck, AlertCircle } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
 import { Input } from '@/components/ui/input';
@@ -155,10 +155,6 @@ export default function DocumentMatrix() {
   const [fClass, setFClass] = useState<string[]>([]);
   const [fPayment, setFPayment] = useState<string[]>([]);
 
-  // View toggle
-  const [view, setView] = useState<'flat' | 'grouped'>('flat');
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
-
   const [expanded, setExpanded] = useState<string | null>(null);
   const [editing, setEditing] = useState<Combination | null>(null);
   const [activeTab, setActiveTab] = useState<string>('library');
@@ -179,12 +175,10 @@ export default function DocumentMatrix() {
   ), [fSale, fClass, fPayment]);
 
   // Reset to page 1 when filters change
-  useEffect(() => { setPage(1); }, [fSale, fClass, fPayment, view, rowsPerPage]);
+  useEffect(() => { setPage(1); }, [fSale, fClass, fPayment, rowsPerPage]);
 
   const totalPages = Math.max(1, Math.ceil(filteredCombos.length / rowsPerPage));
-  const pagedCombos = view === 'flat'
-    ? filteredCombos.slice((page - 1) * rowsPerPage, page * rowsPerPage)
-    : filteredCombos;
+  const pagedCombos = filteredCombos.slice((page - 1) * rowsPerPage, page * rowsPerPage);
 
   const rulesFor = (c: Combination) => rules.filter(r =>
     r.is_active &&
@@ -271,17 +265,11 @@ export default function DocumentMatrix() {
                 <MultiSelectFilter label="Class" selected={fClass} onChange={setFClass} options={CLASSES.map(c => ({ v: c, l: CLASS_LABEL[c] }))} />
                 <MultiSelectFilter label="Payment Type" selected={fPayment} onChange={setFPayment} options={PAYMENTS.map(p => ({ v: p, l: p }))} />
               </div>
-              <div className="mt-3 flex items-center justify-between gap-2 text-xs">
+              <div className="mt-3 flex items-center justify-end gap-2 text-xs">
                 <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground">Showing</span>
-                  <Badge variant="outline">{filteredCombos.length} of {allCombinations.length} scenarios</Badge>
                   {(fSale.length + fClass.length + fPayment.length) > 0 && (
                     <Button size="sm" variant="ghost" className="h-6 px-2 text-xs" onClick={() => { setFSale([]); setFClass([]); setFPayment([]); }}>Clear filters</Button>
                   )}
-                </div>
-                <div className="flex items-center gap-1 rounded-md border border-border p-0.5 bg-muted/40">
-                  <button onClick={() => setView('flat')} className={`text-xs px-2 py-1 rounded flex items-center gap-1 ${view === 'flat' ? 'bg-card shadow-sm' : 'text-muted-foreground'}`}><List className="w-3.5 h-3.5" /> Flat</button>
-                  <button onClick={() => setView('grouped')} className={`text-xs px-2 py-1 rounded flex items-center gap-1 ${view === 'grouped' ? 'bg-card shadow-sm' : 'text-muted-foreground'}`}><LayoutGrid className="w-3.5 h-3.5" /> Group by Sale Type</button>
                 </div>
               </div>
             </div>
@@ -303,31 +291,13 @@ export default function DocumentMatrix() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {view === 'grouped'
-                    ? SALE_TYPES.flatMap(st => {
-                        const inGroup = filteredCombos.filter(c => c.sale_type === st);
-                        if (inGroup.length === 0) return [];
-                        const isOpen = openGroups[st] ?? true;
-                        return [
-                          <TableRow key={`g-${st}`} className="bg-muted/30 hover:bg-muted/30 cursor-pointer" onClick={() => setOpenGroups(p => ({ ...p, [st]: !isOpen }))}>
-                            <TableCell colSpan={isSuperAdmin ? 10 : 9} className="font-semibold text-sm py-2">
-                              <span className="inline-flex items-center gap-2">
-                                {isOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                                {st}
-                                <Badge variant="outline" className="ml-1">{inGroup.length}</Badge>
-                              </span>
-                            </TableCell>
-                          </TableRow>,
-                          ...(isOpen ? inGroup.map(c => renderRow(c, expanded, setExpanded, rulesFor, comboKey, isSuperAdmin, setEditing, docById)) : []),
-                        ];
-                      })
-                    : pagedCombos.map(c => renderRow(c, expanded, setExpanded, rulesFor, comboKey, isSuperAdmin, setEditing, docById))}
+                  {pagedCombos.map(c => renderRow(c, expanded, setExpanded, rulesFor, comboKey, isSuperAdmin, setEditing, docById))}
                   {filteredCombos.length === 0 && (
                     <TableRow><TableCell colSpan={isSuperAdmin ? 10 : 9} className="text-center text-sm text-muted-foreground py-8">No scenarios match the filters.</TableCell></TableRow>
                   )}
                 </TableBody>
               </Table>
-              {view === 'flat' && filteredCombos.length > 0 && (
+              {filteredCombos.length > 0 && (
                 <TablePagination
                   currentPage={page}
                   totalPages={totalPages}
