@@ -17,11 +17,11 @@ import {
   mockMatrixRules,
   mockAuditLog,
   mockInsurers,
+  mockVehicleCodes,
   type DocTier,
   type SaleType,
   type InsuranceClass,
   type PaymentType,
-  type CarType,
   type DocMatrixRule,
   type DocLibraryRow,
   type SumInsuredOp,
@@ -30,16 +30,34 @@ import {
 const SUM_OPS: SumInsuredOp[] = ['<', '<=', '=', '>=', '>'];
 const formatThb = (n: number) => new Intl.NumberFormat('en-US').format(n);
 const insurerName = (id: string) => mockInsurers.find(i => i.id === id)?.name ?? id;
+const vehicleName = (id: string) => mockVehicleCodes.find(v => v.id === id)?.name ?? id;
 
 function ConditionChips({ rule }: { rule: DocMatrixRule }) {
   const hasInsurers = rule.insurer_ids && rule.insurer_ids.length > 0;
+  const hasVehicles = rule.vehicle_codes && rule.vehicle_codes.length > 0;
   const hasSI = rule.sum_insured_op && rule.sum_insured_value != null;
-  if (!hasInsurers && !hasSI) return null;
+  if (!hasInsurers && !hasVehicles && !hasSI) return null;
+
+  const vehicleSummary = (() => {
+    if (!hasVehicles) return '';
+    const ids = rule.vehicle_codes!;
+    const evIds = mockVehicleCodes.filter(v => v.is_ev).map(v => v.id);
+    const allEv = ids.length > 0 && ids.every(id => evIds.includes(id)) && evIds.every(id => ids.includes(id));
+    if (allEv) return 'All EV models';
+    if (ids.length <= 2) return ids.map(vehicleName).join(', ');
+    return `${ids.length} models`;
+  })();
+
   return (
     <div className="flex flex-wrap gap-1 mt-1">
       {hasInsurers && (
         <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-[10px] font-normal">
           Insurer: {rule.insurer_ids!.map(insurerName).join(', ')}
+        </Badge>
+      )}
+      {hasVehicles && (
+        <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] font-normal">
+          Vehicle: {vehicleSummary}
         </Badge>
       )}
       {hasSI && (
@@ -75,19 +93,17 @@ const SALE_TYPES: SaleType[] = ['New', 'Renew', 'COA'];
 const CLASSES: InsuranceClass[] = ['Type1', 'Type2', 'Type2Plus', 'Type3', 'Type3Plus'];
 const CLASS_LABEL: Record<InsuranceClass, string> = { Type1: 'Type 1', Type2: 'Type 2', Type2Plus: 'Type 2+', Type3: 'Type 3', Type3Plus: 'Type 3+' };
 const PAYMENTS: PaymentType[] = ['Full', 'Instalment'];
-const CAR_TYPES: CarType[] = ['Normally', 'EV', 'High Sum'];
 
 interface Combination {
   sale_type: SaleType;
   insurance_class: InsuranceClass;
   payment_type: PaymentType;
-  car_type: CarType;
 }
 
 const allCombinations: Combination[] = (() => {
   const out: Combination[] = [];
-  for (const s of SALE_TYPES) for (const c of CLASSES) for (const p of PAYMENTS) for (const ct of CAR_TYPES) {
-    out.push({ sale_type: s, insurance_class: c, payment_type: p, car_type: ct });
+  for (const s of SALE_TYPES) for (const c of CLASSES) for (const p of PAYMENTS) {
+    out.push({ sale_type: s, insurance_class: c, payment_type: p });
   }
   return out;
 })();
@@ -104,7 +120,6 @@ export default function DocumentMatrix() {
   const [fSale, setFSale] = useState<string[]>([]);
   const [fClass, setFClass] = useState<string[]>([]);
   const [fPayment, setFPayment] = useState<string[]>([]);
-  const [fCar, setFCar] = useState<string[]>([]);
 
   // View toggle
   const [view, setView] = useState<'flat' | 'grouped'>('flat');
@@ -125,12 +140,11 @@ export default function DocumentMatrix() {
   const filteredCombos = useMemo(() => allCombinations.filter(c =>
     matchAll(fSale, c.sale_type) &&
     matchAll(fClass, c.insurance_class) &&
-    matchAll(fPayment, c.payment_type) &&
-    matchAll(fCar, c.car_type)
-  ), [fSale, fClass, fPayment, fCar]);
+    matchAll(fPayment, c.payment_type)
+  ), [fSale, fClass, fPayment]);
 
   // Reset to page 1 when filters change
-  useEffect(() => { setPage(1); }, [fSale, fClass, fPayment, fCar, view, rowsPerPage]);
+  useEffect(() => { setPage(1); }, [fSale, fClass, fPayment, view, rowsPerPage]);
 
   const totalPages = Math.max(1, Math.ceil(filteredCombos.length / rowsPerPage));
   const pagedCombos = view === 'flat'
@@ -141,11 +155,10 @@ export default function DocumentMatrix() {
     r.is_active &&
     r.sale_type === c.sale_type &&
     r.insurance_class === c.insurance_class &&
-    r.payment_type === c.payment_type &&
-    r.car_type === c.car_type
+    r.payment_type === c.payment_type
   );
 
-  const comboKey = (c: Combination) => `${c.sale_type}-${c.insurance_class}-${c.payment_type}-${c.car_type}`;
+  const comboKey = (c: Combination) => `${c.sale_type}-${c.insurance_class}-${c.payment_type}`;
 
   // Audit filters
   const [auditAction, setAuditAction] = useState<string>('all');
@@ -162,10 +175,10 @@ export default function DocumentMatrix() {
   // Saving from edit modal
   const handleSaveScenario = (combo: Combination, nextRules: DocMatrixRule[]) => {
     setRules(prev => {
-      const others = prev.filter(r => !(r.sale_type === combo.sale_type && r.insurance_class === combo.insurance_class && r.payment_type === combo.payment_type && r.car_type === combo.car_type));
+      const others = prev.filter(r => !(r.sale_type === combo.sale_type && r.insurance_class === combo.insurance_class && r.payment_type === combo.payment_type));
       return [...others, ...nextRules];
     });
-    toast({ title: 'Scenario updated', description: `${combo.sale_type} · ${CLASS_LABEL[combo.insurance_class]} · ${combo.payment_type} · ${combo.car_type}` });
+    toast({ title: 'Scenario updated', description: `${combo.sale_type} · ${CLASS_LABEL[combo.insurance_class]} · ${combo.payment_type}` });
   };
 
   // Library mutations
@@ -227,18 +240,17 @@ export default function DocumentMatrix() {
           {/* ---------------- MATRIX ---------------- */}
           <TabsContent value="matrix" className="mt-4 space-y-4">
             <div className="rounded-lg border border-border bg-card p-4">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <MultiSelectFilter label="Sale Type" selected={fSale} onChange={setFSale} options={SALE_TYPES.map(s => ({ v: s, l: s }))} />
                 <MultiSelectFilter label="Class" selected={fClass} onChange={setFClass} options={CLASSES.map(c => ({ v: c, l: CLASS_LABEL[c] }))} />
                 <MultiSelectFilter label="Payment Type" selected={fPayment} onChange={setFPayment} options={PAYMENTS.map(p => ({ v: p, l: p }))} />
-                <MultiSelectFilter label="Car Type" selected={fCar} onChange={setFCar} options={CAR_TYPES.map(c => ({ v: c, l: c }))} />
               </div>
               <div className="mt-3 flex items-center justify-between gap-2 text-xs">
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground">Showing</span>
                   <Badge variant="outline">{filteredCombos.length} of {allCombinations.length} scenarios</Badge>
-                  {(fSale.length + fClass.length + fPayment.length + fCar.length) > 0 && (
-                    <Button size="sm" variant="ghost" className="h-6 px-2 text-xs" onClick={() => { setFSale([]); setFClass([]); setFPayment([]); setFCar([]); }}>Clear filters</Button>
+                  {(fSale.length + fClass.length + fPayment.length) > 0 && (
+                    <Button size="sm" variant="ghost" className="h-6 px-2 text-xs" onClick={() => { setFSale([]); setFClass([]); setFPayment([]); }}>Clear filters</Button>
                   )}
                 </div>
                 <div className="flex items-center gap-1 rounded-md border border-border p-0.5 bg-muted/40">
@@ -257,7 +269,6 @@ export default function DocumentMatrix() {
                     <TableHead>Sale Type</TableHead>
                     <TableHead>Class</TableHead>
                     <TableHead>Payment Type</TableHead>
-                    <TableHead>Car Type</TableHead>
                     <TableHead className="text-center">Required</TableHead>
                     <TableHead className="text-center">Conditional</TableHead>
                     <TableHead className="text-center">Optional</TableHead>
@@ -274,7 +285,7 @@ export default function DocumentMatrix() {
                         const isOpen = openGroups[st] ?? true;
                         return [
                           <TableRow key={`g-${st}`} className="bg-muted/30 hover:bg-muted/30 cursor-pointer" onClick={() => setOpenGroups(p => ({ ...p, [st]: !isOpen }))}>
-                            <TableCell colSpan={isSuperAdmin ? 11 : 10} className="font-semibold text-sm py-2">
+                            <TableCell colSpan={isSuperAdmin ? 10 : 9} className="font-semibold text-sm py-2">
                               <span className="inline-flex items-center gap-2">
                                 {isOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                                 {st}
@@ -287,7 +298,7 @@ export default function DocumentMatrix() {
                       })
                     : pagedCombos.map(c => renderRow(c, expanded, setExpanded, rulesFor, comboKey, isSuperAdmin, setEditing, docById))}
                   {filteredCombos.length === 0 && (
-                    <TableRow><TableCell colSpan={isSuperAdmin ? 11 : 10} className="text-center text-sm text-muted-foreground py-8">No scenarios match the filters.</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={isSuperAdmin ? 10 : 9} className="text-center text-sm text-muted-foreground py-8">No scenarios match the filters.</TableCell></TableRow>
                   )}
                 </TableBody>
               </Table>
@@ -304,7 +315,7 @@ export default function DocumentMatrix() {
             </div>
 
             <div className="text-xs text-muted-foreground px-1">
-              Schema dimensions: <code>sale_type × class × payment_type × car_type</code> = <strong>3 × 5 × 2 × 3 = 90</strong> scenarios.
+              Schema dimensions: <code>sale_type × class × payment_type</code> = <strong>3 × 5 × 2 = 30</strong> scenarios.
             </div>
           </TabsContent>
 
@@ -429,7 +440,7 @@ function renderRow(
         <TableCell className="font-medium">{c.sale_type}</TableCell>
         <TableCell>{CLASS_LABEL[c.insurance_class]}</TableCell>
         <TableCell>{c.payment_type}</TableCell>
-        <TableCell>{c.car_type}</TableCell>
+        
         <TableCell className="text-center"><Badge variant="outline" className={tierColor.Required}>{counts.Required}</Badge></TableCell>
         <TableCell className="text-center"><Badge variant="outline" className={tierColor.Conditional}>{counts.Conditional}</Badge></TableCell>
         <TableCell className="text-center"><Badge variant="outline" className={tierColor.Optional}>{counts.Optional}</Badge></TableCell>
@@ -445,7 +456,7 @@ function renderRow(
       </TableRow>
       {isOpen && (
         <TableRow key={key + '-exp'} className="bg-muted/20 hover:bg-muted/20">
-          <TableCell colSpan={isSuperAdmin ? 11 : 10} className="p-4">
+          <TableCell colSpan={isSuperAdmin ? 10 : 9} className="p-4">
             <ExpandedRowDetail rules={rs} docById={docById} />
           </TableCell>
         </TableRow>
@@ -531,7 +542,7 @@ function EditScenarioModal({ combination, onClose, rules, docById, library, onSa
   const [addingTier, setAddingTier] = useState<UITier | null>(null);
   const [errors, setErrors] = useState<string[]>([]);
 
-  useEffect(() => { setStaged(rules); setRemoved(new Set()); setAddingTier(null); setErrors([]); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [combination?.sale_type, combination?.insurance_class, combination?.payment_type, combination?.car_type]);
+  useEffect(() => { setStaged(rules); setRemoved(new Set()); setAddingTier(null); setErrors([]); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [combination?.sale_type, combination?.insurance_class, combination?.payment_type]);
 
   if (!combination) return null;
 
@@ -549,7 +560,7 @@ function EditScenarioModal({ combination, onClose, rules, docById, library, onSa
       sale_type: combination.sale_type,
       insurance_class: combination.insurance_class,
       payment_type: combination.payment_type,
-      car_type: combination.car_type,
+
       document_id: docId,
       tier: tier as DocTier,
       condition_note: d?.default_condition_note ?? '',
@@ -568,8 +579,9 @@ function EditScenarioModal({ combination, onClose, rules, docById, library, onSa
 
   const ruleScopeKey = (r: DocMatrixRule) => {
     const ins = (r.insurer_ids ?? []).slice().sort().join(',');
+    const veh = (r.vehicle_codes ?? []).slice().sort().join(',');
     const si = r.sum_insured_op && r.sum_insured_value != null ? `${r.sum_insured_op}${r.sum_insured_value}` : '';
-    return `${r.document_id}|${ins}|${si}`;
+    return `${r.document_id}|${ins}|${veh}|${si}`;
   };
 
   const validate = (): string[] => {
@@ -621,7 +633,7 @@ function EditScenarioModal({ combination, onClose, rules, docById, library, onSa
             <Badge variant="outline">{combination.sale_type}</Badge>
             <Badge variant="outline">{CLASS_LABEL[combination.insurance_class]}</Badge>
             <Badge variant="outline">{combination.payment_type}</Badge>
-            <Badge variant="outline">{combination.car_type}</Badge>
+            
           </div>
         </DialogHeader>
 
@@ -725,8 +737,16 @@ function EditScenarioModal({ combination, onClose, rules, docById, library, onSa
 
 function RuleConditionEditor({ rule, onChange }: { rule: DocMatrixRule; onChange: (patch: Partial<DocMatrixRule>) => void }) {
   const insurers = rule.insurer_ids ?? [];
+  const vehicles = rule.vehicle_codes ?? [];
   const hasSI = !!rule.sum_insured_op;
   const insurerSummary = insurers.length === 0 ? 'All insurers' : insurers.length === 1 ? insurerName(insurers[0]) : `${insurers.length} insurers`;
+  const evIds = mockVehicleCodes.filter(v => v.is_ev).map(v => v.id);
+  const allEvSelected = vehicles.length > 0 && vehicles.every(id => evIds.includes(id)) && evIds.every(id => vehicles.includes(id));
+  const vehicleSummary = vehicles.length === 0
+    ? 'All vehicles'
+    : allEvSelected
+      ? 'All EV models'
+      : vehicles.length === 1 ? vehicleName(vehicles[0]) : `${vehicles.length} models`;
 
   return (
     <div className="rounded-md border border-dashed border-border bg-muted/20 px-2.5 py-2">
@@ -766,6 +786,45 @@ function RuleConditionEditor({ rule, onChange }: { rule: DocMatrixRule; onChange
           </PopoverContent>
         </Popover>
 
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className="h-7 text-xs font-normal gap-1">
+              <span>Vehicle:</span><span className="text-foreground">{vehicleSummary}</span>
+              <ChevronDown className="w-3 h-3 opacity-60" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent align="start" className="w-72 p-2">
+            <div className="text-[10px] uppercase tracking-wide text-muted-foreground px-1 pb-1">Vehicle code scope</div>
+            <label className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted cursor-pointer">
+              <Checkbox checked={vehicles.length === 0} onCheckedChange={() => onChange({ vehicle_codes: undefined })} />
+              <span className="text-sm">All vehicles (default)</span>
+            </label>
+            <label className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted cursor-pointer">
+              <Checkbox checked={allEvSelected} onCheckedChange={(checked) => onChange({ vehicle_codes: checked ? evIds : undefined })} />
+              <span className="text-sm">All EV models (preset)</span>
+            </label>
+            <div className="border-t border-border my-1" />
+            <div className="max-h-56 overflow-y-auto">
+              {mockVehicleCodes.map(v => {
+                const on = vehicles.includes(v.id);
+                return (
+                  <label key={v.id} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted cursor-pointer">
+                    <Checkbox
+                      checked={on}
+                      onCheckedChange={(checked) => {
+                        const next = checked ? [...vehicles, v.id] : vehicles.filter(x => x !== v.id);
+                        onChange({ vehicle_codes: next.length === 0 ? undefined : next });
+                      }}
+                    />
+                    <span className="text-sm flex-1">{v.name}</span>
+                    {v.is_ev && <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] font-normal">EV</Badge>}
+                  </label>
+                );
+              })}
+            </div>
+          </PopoverContent>
+        </Popover>
+
         <div className="flex items-center gap-1">
           <span className="text-xs text-muted-foreground">Sum insured</span>
           <Select
@@ -794,12 +853,12 @@ function RuleConditionEditor({ rule, onChange }: { rule: DocMatrixRule; onChange
           <span className="text-xs text-muted-foreground">Baht</span>
         </div>
 
-        {(insurers.length > 0 || hasSI) && (
+        {(insurers.length > 0 || vehicles.length > 0 || hasSI) && (
           <Button
             size="sm"
             variant="ghost"
             className="h-6 px-2 text-[11px] text-muted-foreground"
-            onClick={() => onChange({ insurer_ids: undefined, sum_insured_op: undefined, sum_insured_value: undefined })}
+            onClick={() => onChange({ insurer_ids: undefined, vehicle_codes: undefined, sum_insured_op: undefined, sum_insured_value: undefined })}
           >
             Reset to default
           </Button>
