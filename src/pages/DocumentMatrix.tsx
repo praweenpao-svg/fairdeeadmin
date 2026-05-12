@@ -971,14 +971,13 @@ function LeafValueEditor({ leaf, onChange }: { leaf: ConditionLeaf; onChange: (l
   );
 }
 
-function ManageLibrarySheet({ open, onOpenChange, library, usageCount, onEditDoc, onToggleActive, onAddDoc }: {
-  open: boolean;
-  onOpenChange: (o: boolean) => void;
+function LibraryPanel({ library, usageCount, onEditDoc, onToggleActive, onAddDoc, isSuperAdmin }: {
   library: DocLibraryRow[];
   usageCount: (id: number) => number;
   onEditDoc: (id: number, patch: Partial<DocLibraryRow>) => void;
   onToggleActive: (d: DocLibraryRow) => void;
   onAddDoc: (row: Omit<DocLibraryRow, 'id' | 'created_at' | 'updated_at'>) => string | null;
+  isSuperAdmin: boolean;
 }) {
   const [search, setSearch] = useState('');
   const [showAdd, setShowAdd] = useState(false);
