@@ -542,7 +542,7 @@ function EditScenarioModal({ combination, onClose, rules, docById, library, onSa
   const [addingTier, setAddingTier] = useState<UITier | null>(null);
   const [errors, setErrors] = useState<string[]>([]);
 
-  useEffect(() => { setStaged(rules); setRemoved(new Set()); setAddingTier(null); setErrors([]); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [combination?.sale_type, combination?.insurance_class, combination?.payment_type, combination?.car_type]);
+  useEffect(() => { setStaged(rules); setRemoved(new Set()); setAddingTier(null); setErrors([]); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [combination?.sale_type, combination?.insurance_class, combination?.payment_type]);
 
   if (!combination) return null;
 
@@ -560,7 +560,7 @@ function EditScenarioModal({ combination, onClose, rules, docById, library, onSa
       sale_type: combination.sale_type,
       insurance_class: combination.insurance_class,
       payment_type: combination.payment_type,
-      car_type: combination.car_type,
+
       document_id: docId,
       tier: tier as DocTier,
       condition_note: d?.default_condition_note ?? '',
@@ -632,7 +632,7 @@ function EditScenarioModal({ combination, onClose, rules, docById, library, onSa
             <Badge variant="outline">{combination.sale_type}</Badge>
             <Badge variant="outline">{CLASS_LABEL[combination.insurance_class]}</Badge>
             <Badge variant="outline">{combination.payment_type}</Badge>
-            <Badge variant="outline">{combination.car_type}</Badge>
+            
           </div>
         </DialogHeader>
 
