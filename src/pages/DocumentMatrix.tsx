@@ -564,25 +564,41 @@ function EditScenarioModal({ combination, onClose, rules, docById, library, onSa
     setAddingTier(null);
   };
 
-  const usedDocIds = new Set(visible.map(r => r.document_id));
-  const availableDocs = library.filter(d => d.is_active && !usedDocIds.has(d.id));
+  const availableDocs = library.filter(d => d.is_active);
+
+  const ruleScopeKey = (r: DocMatrixRule) => {
+    const ins = (r.insurer_ids ?? []).slice().sort().join(',');
+    const si = r.sum_insured_op && r.sum_insured_value != null ? `${r.sum_insured_op}${r.sum_insured_value}` : '';
+    return `${r.document_id}|${ins}|${si}`;
+  };
 
   const validate = (): string[] => {
     const errs: string[] = [];
-    // Duplicate doc across tiers
-    const seen = new Map<number, number>();
-    visible.forEach(r => seen.set(r.document_id, (seen.get(r.document_id) ?? 0) + 1));
-    seen.forEach((count, docId) => {
-      if (count > 1) errs.push(`"${docById[docId]?.name_en}" appears more than once. A document may only be assigned to one tier.`);
+    // Duplicate doc with identical scope (same insurers + same SI threshold) is invalid.
+    const seen = new Map<string, number>();
+    visible.forEach(r => {
+      const k = ruleScopeKey(r);
+      seen.set(k, (seen.get(k) ?? 0) + 1);
     });
-    // min_count
+    seen.forEach((count, k) => {
+      if (count > 1) {
+        const docId = Number(k.split('|')[0]);
+        errs.push(`"${docById[docId]?.name_en}" has duplicate rules with the same insurer/sum-insured scope. Differentiate them or remove duplicates.`);
+      }
+    });
     visible.forEach(r => {
       if (!Number.isFinite(r.min_count) || r.min_count < 1) errs.push(`"${docById[r.document_id]?.name_en}" has invalid min_count (must be ≥ 1).`);
-    });
-    // Required tier with empty condition_note is OK; conditional should have a note
-    visible.forEach(r => {
       if (normalizeTier(r.tier) === 'Conditional' && !r.condition_note.trim()) {
         errs.push(`"${docById[r.document_id]?.name_en}" is Conditional but has no condition note.`);
+      }
+      // SI op + value must be paired
+      const opSet = !!r.sum_insured_op;
+      const valSet = r.sum_insured_value != null && !Number.isNaN(r.sum_insured_value);
+      if (opSet !== valSet) {
+        errs.push(`"${docById[r.document_id]?.name_en}" sum-insured condition is incomplete (operator and value must both be set).`);
+      }
+      if (valSet && (r.sum_insured_value as number) < 0) {
+        errs.push(`"${docById[r.document_id]?.name_en}" sum-insured value must be ≥ 0.`);
       }
     });
     return errs;
