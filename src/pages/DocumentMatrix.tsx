@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { FileStack, History, Search, Pencil, Plus, X, Library, ChevronDown, ChevronRight, Shield, ShieldCheck, AlertCircle, LayoutGrid, List } from 'lucide-react';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { FileStack, Search, Pencil, Plus, X, Library, ChevronDown, ChevronRight, Shield, ShieldCheck, AlertCircle, LayoutGrid, List } from 'lucide-react';
+
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -15,7 +15,7 @@ import { toast } from '@/hooks/use-toast';
 import {
   mockDocLibrary,
   mockMatrixRules,
-  mockAuditLog,
+  
   mockInsurers,
   mockVehicleCodes,
   CONDITION_FIELDS,
@@ -193,18 +193,6 @@ export default function DocumentMatrix() {
 
   const comboKey = (c: Combination) => `${c.sale_type}-${c.insurance_class}-${c.payment_type}`;
 
-  // Audit filters
-  const [auditAction, setAuditAction] = useState<string>('all');
-  const [auditActor, setAuditActor] = useState<string>('all');
-  const [auditField, setAuditField] = useState<string>('all');
-  const auditActors = useMemo(() => Array.from(new Set(mockAuditLog.map(a => a.actor_email))), []);
-  const auditFields = useMemo(() => Array.from(new Set(mockAuditLog.map(a => a.field_changed))), []);
-  const filteredAudit = useMemo(() => mockAuditLog.filter(a =>
-    (auditAction === 'all' || a.action === auditAction) &&
-    (auditActor === 'all' || a.actor_email === auditActor) &&
-    (auditField === 'all' || a.field_changed === auditField)
-  ).sort((a, b) => b.created_at.localeCompare(a.created_at)), [auditAction, auditActor, auditField]);
-
   // Saving from edit modal
   const handleSaveScenario = (combo: Combination, nextRules: DocMatrixRule[]) => {
     setRules(prev => {
@@ -263,168 +251,85 @@ export default function DocumentMatrix() {
         </div>
       </header>
 
-      <div className="px-6 py-5">
-        <Tabs defaultValue="matrix" className="w-full">
-          <TabsList>
-            <TabsTrigger value="matrix" className="gap-2"><FileStack className="w-4 h-4" />Matrix <Badge variant="secondary" className="ml-1">{allCombinations.length}</Badge></TabsTrigger>
-            <TabsTrigger value="audit" className="gap-2"><History className="w-4 h-4" />Audit Log <Badge variant="secondary" className="ml-1">{mockAuditLog.length}</Badge></TabsTrigger>
-          </TabsList>
-
-          {/* ---------------- MATRIX ---------------- */}
-          <TabsContent value="matrix" className="mt-4 space-y-4">
-            <div className="rounded-lg border border-border bg-card p-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <MultiSelectFilter label="Sale Type" selected={fSale} onChange={setFSale} options={SALE_TYPES.map(s => ({ v: s, l: s }))} />
-                <MultiSelectFilter label="Class" selected={fClass} onChange={setFClass} options={CLASSES.map(c => ({ v: c, l: CLASS_LABEL[c] }))} />
-                <MultiSelectFilter label="Payment Type" selected={fPayment} onChange={setFPayment} options={PAYMENTS.map(p => ({ v: p, l: p }))} />
-              </div>
-              <div className="mt-3 flex items-center justify-between gap-2 text-xs">
-                <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground">Showing</span>
-                  <Badge variant="outline">{filteredCombos.length} of {allCombinations.length} scenarios</Badge>
-                  {(fSale.length + fClass.length + fPayment.length) > 0 && (
-                    <Button size="sm" variant="ghost" className="h-6 px-2 text-xs" onClick={() => { setFSale([]); setFClass([]); setFPayment([]); }}>Clear filters</Button>
-                  )}
-                </div>
-                <div className="flex items-center gap-1 rounded-md border border-border p-0.5 bg-muted/40">
-                  <button onClick={() => setView('flat')} className={`text-xs px-2 py-1 rounded flex items-center gap-1 ${view === 'flat' ? 'bg-card shadow-sm' : 'text-muted-foreground'}`}><List className="w-3.5 h-3.5" /> Flat</button>
-                  <button onClick={() => setView('grouped')} className={`text-xs px-2 py-1 rounded flex items-center gap-1 ${view === 'grouped' ? 'bg-card shadow-sm' : 'text-muted-foreground'}`}><LayoutGrid className="w-3.5 h-3.5" /> Group by Sale Type</button>
-                </div>
-              </div>
-            </div>
-
-            {/* Matrix table */}
-            <div className="rounded-lg border border-border bg-card overflow-hidden">
-              <Table>
-                <TableHeader className="bg-muted/50">
-                  <TableRow>
-                    <TableHead className="w-8" />
-                    <TableHead>Sale Type</TableHead>
-                    <TableHead>Class</TableHead>
-                    <TableHead>Payment Type</TableHead>
-                    <TableHead className="text-center">Required</TableHead>
-                    <TableHead className="text-center">Conditional</TableHead>
-                    <TableHead className="text-center">Optional</TableHead>
-                    <TableHead>Last Updated</TableHead>
-                    <TableHead>Last Updated By</TableHead>
-                    {isSuperAdmin && <TableHead className="text-right w-24">Action</TableHead>}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {view === 'grouped'
-                    ? SALE_TYPES.flatMap(st => {
-                        const inGroup = filteredCombos.filter(c => c.sale_type === st);
-                        if (inGroup.length === 0) return [];
-                        const isOpen = openGroups[st] ?? true;
-                        return [
-                          <TableRow key={`g-${st}`} className="bg-muted/30 hover:bg-muted/30 cursor-pointer" onClick={() => setOpenGroups(p => ({ ...p, [st]: !isOpen }))}>
-                            <TableCell colSpan={isSuperAdmin ? 10 : 9} className="font-semibold text-sm py-2">
-                              <span className="inline-flex items-center gap-2">
-                                {isOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                                {st}
-                                <Badge variant="outline" className="ml-1">{inGroup.length}</Badge>
-                              </span>
-                            </TableCell>
-                          </TableRow>,
-                          ...(isOpen ? inGroup.map(c => renderRow(c, expanded, setExpanded, rulesFor, comboKey, isSuperAdmin, setEditing, docById)) : []),
-                        ];
-                      })
-                    : pagedCombos.map(c => renderRow(c, expanded, setExpanded, rulesFor, comboKey, isSuperAdmin, setEditing, docById))}
-                  {filteredCombos.length === 0 && (
-                    <TableRow><TableCell colSpan={isSuperAdmin ? 10 : 9} className="text-center text-sm text-muted-foreground py-8">No scenarios match the filters.</TableCell></TableRow>
-                  )}
-                </TableBody>
-              </Table>
-              {view === 'flat' && filteredCombos.length > 0 && (
-                <TablePagination
-                  currentPage={page}
-                  totalPages={totalPages}
-                  totalItems={filteredCombos.length}
-                  rowsPerPage={rowsPerPage}
-                  onPageChange={setPage}
-                  onRowsPerPageChange={setRowsPerPage}
-                />
+      <div className="px-6 py-5 space-y-4">
+        <div className="rounded-lg border border-border bg-card p-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <MultiSelectFilter label="Sale Type" selected={fSale} onChange={setFSale} options={SALE_TYPES.map(s => ({ v: s, l: s }))} />
+            <MultiSelectFilter label="Class" selected={fClass} onChange={setFClass} options={CLASSES.map(c => ({ v: c, l: CLASS_LABEL[c] }))} />
+            <MultiSelectFilter label="Payment Type" selected={fPayment} onChange={setFPayment} options={PAYMENTS.map(p => ({ v: p, l: p }))} />
+          </div>
+          <div className="mt-3 flex items-center justify-between gap-2 text-xs">
+            <div className="flex items-center gap-2">
+              <span className="text-muted-foreground">Showing</span>
+              <Badge variant="outline">{filteredCombos.length} of {allCombinations.length} scenarios</Badge>
+              {(fSale.length + fClass.length + fPayment.length) > 0 && (
+                <Button size="sm" variant="ghost" className="h-6 px-2 text-xs" onClick={() => { setFSale([]); setFClass([]); setFPayment([]); }}>Clear filters</Button>
               )}
             </div>
-
-            <div className="text-xs text-muted-foreground px-1">
-              Schema dimensions: <code>sale_type × class × payment_type</code> = <strong>3 × 5 × 2 = 30</strong> scenarios.
+            <div className="flex items-center gap-1 rounded-md border border-border p-0.5 bg-muted/40">
+              <button onClick={() => setView('flat')} className={`text-xs px-2 py-1 rounded flex items-center gap-1 ${view === 'flat' ? 'bg-card shadow-sm' : 'text-muted-foreground'}`}><List className="w-3.5 h-3.5" /> Flat</button>
+              <button onClick={() => setView('grouped')} className={`text-xs px-2 py-1 rounded flex items-center gap-1 ${view === 'grouped' ? 'bg-card shadow-sm' : 'text-muted-foreground'}`}><LayoutGrid className="w-3.5 h-3.5" /> Group by Sale Type</button>
             </div>
-          </TabsContent>
+          </div>
+        </div>
 
-          {/* ---------------- AUDIT ---------------- */}
-          <TabsContent value="audit" className="mt-4 space-y-4">
-            <div className="rounded-lg border border-border bg-card p-4 grid grid-cols-2 md:grid-cols-4 gap-3">
-              <div className="flex flex-col">
-                <label className="text-xs text-muted-foreground mb-1">Action</label>
-                <Select value={auditAction} onValueChange={setAuditAction}>
-                  <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All</SelectItem>
-                    {['Added', 'Updated', 'Removed'].map(a => <SelectItem key={a} value={a}>{a}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex flex-col">
-                <label className="text-xs text-muted-foreground mb-1">Actor</label>
-                <Select value={auditActor} onValueChange={setAuditActor}>
-                  <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All</SelectItem>
-                    {auditActors.map(a => <SelectItem key={a} value={a}>{a}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex flex-col">
-                <label className="text-xs text-muted-foreground mb-1">Field Changed</label>
-                <Select value={auditField} onValueChange={setAuditField}>
-                  <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All</SelectItem>
-                    {auditFields.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex items-end">
-                <Button variant="ghost" size="sm" onClick={() => { setAuditAction('all'); setAuditActor('all'); setAuditField('all'); }}>Clear filters</Button>
-              </div>
-            </div>
+        {/* Matrix table */}
+        <div className="rounded-lg border border-border bg-card overflow-hidden">
+          <Table>
+            <TableHeader className="bg-muted/50">
+              <TableRow>
+                <TableHead className="w-8" />
+                <TableHead>Sale Type</TableHead>
+                <TableHead>Class</TableHead>
+                <TableHead>Payment Type</TableHead>
+                <TableHead className="text-center">Required</TableHead>
+                <TableHead className="text-center">Conditional</TableHead>
+                <TableHead className="text-center">Optional</TableHead>
+                <TableHead>Last Updated</TableHead>
+                <TableHead>Last Updated By</TableHead>
+                {isSuperAdmin && <TableHead className="text-right w-24">Action</TableHead>}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {view === 'grouped'
+                ? SALE_TYPES.flatMap(st => {
+                    const inGroup = filteredCombos.filter(c => c.sale_type === st);
+                    if (inGroup.length === 0) return [];
+                    const isOpen = openGroups[st] ?? true;
+                    return [
+                      <TableRow key={`g-${st}`} className="bg-muted/30 hover:bg-muted/30 cursor-pointer" onClick={() => setOpenGroups(p => ({ ...p, [st]: !isOpen }))}>
+                        <TableCell colSpan={isSuperAdmin ? 10 : 9} className="font-semibold text-sm py-2">
+                          <span className="inline-flex items-center gap-2">
+                            {isOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                            {st}
+                            <Badge variant="outline" className="ml-1">{inGroup.length}</Badge>
+                          </span>
+                        </TableCell>
+                      </TableRow>,
+                      ...(isOpen ? inGroup.map(c => renderRow(c, expanded, setExpanded, rulesFor, comboKey, isSuperAdmin, setEditing, docById)) : []),
+                    ];
+                  })
+                : pagedCombos.map(c => renderRow(c, expanded, setExpanded, rulesFor, comboKey, isSuperAdmin, setEditing, docById))}
+              {filteredCombos.length === 0 && (
+                <TableRow><TableCell colSpan={isSuperAdmin ? 10 : 9} className="text-center text-sm text-muted-foreground py-8">No scenarios match the filters.</TableCell></TableRow>
+              )}
+            </TableBody>
+          </Table>
+          {view === 'flat' && filteredCombos.length > 0 && (
+            <TablePagination
+              currentPage={page}
+              totalPages={totalPages}
+              totalItems={filteredCombos.length}
+              rowsPerPage={rowsPerPage}
+              onPageChange={setPage}
+              onRowsPerPageChange={setRowsPerPage}
+            />
+          )}
+        </div>
 
-            <div className="rounded-lg border border-border bg-card overflow-hidden">
-              <Table>
-                <TableHeader className="bg-muted/50">
-                  <TableRow>
-                    <TableHead className="w-16">ID</TableHead>
-                    <TableHead className="w-24">Rule ID</TableHead>
-                    <TableHead className="w-28">Action</TableHead>
-                    <TableHead className="w-40">Field Changed</TableHead>
-                    <TableHead>Old Value</TableHead>
-                    <TableHead>New Value</TableHead>
-                    <TableHead className="w-48">Actor</TableHead>
-                    <TableHead className="w-40">When</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredAudit.map(log => (
-                    <TableRow key={log.id}>
-                      <TableCell className="font-mono text-xs">{log.id}</TableCell>
-                      <TableCell className="font-mono text-xs">#{log.matrix_rule_id}</TableCell>
-                      <TableCell><Badge variant="outline" className={actionColor[log.action]}>{log.action}</Badge></TableCell>
-                      <TableCell className="text-xs font-mono">{log.field_changed}</TableCell>
-                      <TableCell className="text-xs text-muted-foreground line-through">{log.old_value}</TableCell>
-                      <TableCell className="text-xs">{log.new_value}</TableCell>
-                      <TableCell className="text-xs">{log.actor_email}</TableCell>
-                      <TableCell className="text-xs text-muted-foreground">{log.created_at}</TableCell>
-                    </TableRow>
-                  ))}
-                  {filteredAudit.length === 0 && (
-                    <TableRow><TableCell colSpan={8} className="text-center text-sm text-muted-foreground py-8">No audit entries match the filters.</TableCell></TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </TabsContent>
-        </Tabs>
+        <div className="text-xs text-muted-foreground px-1">
+          Schema dimensions: <code>sale_type × class × payment_type</code> = <strong>3 × 5 × 2 = 30</strong> scenarios. Audit log is captured server-side.
+        </div>
       </div>
 
       <EditScenarioModal
