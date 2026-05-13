@@ -95,6 +95,9 @@ const seedMentions: MentionNotification[] = [
     read: false,
     reworkRecordId: 'rw-1',
     commentId: null,
+    attachmentCount: 3,
+    entryType: 'rework',
+    sourceKind: 'quotation',
     // Deep-link data
     leadId: '22',
     policyId: 'pol-22-vmi',
