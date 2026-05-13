@@ -199,6 +199,19 @@ const seedAssignments: AssignmentNotification[] = [
     policyId: 'pol-22-vmi',
     targetStage: 'to_issue' as const,
   },
+  {
+    id: 'a4',
+    assigneeUserId: 'Pao',
+    quotationId: '#10012',
+    sourceKind: 'lead',
+    assignedAt: new Date(now.getTime() - 2 * 3600000).toISOString(),
+    saleStage: 'New Lead',
+    status: 'New',
+    triggeredBy: 'System',
+    isActive: true,
+    read: false,
+    leadId: '15',
+  },
 ];
 
 export const useMentionNotificationsStore = create<MentionNotificationsState>((set) => ({
