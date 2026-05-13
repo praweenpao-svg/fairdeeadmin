@@ -19,6 +19,12 @@ export interface MentionNotification {
   mentionedByUserId: string;
   mentionedAt: string; // ISO datetime
   read: boolean;
+  /** Number of attachments on the source entry. 0 = no indicator. */
+  attachmentCount?: number;
+  /** Source entry kind — drives row label "Remarks on …" / "Reply on …". */
+  entryType?: 'rework' | 'remark' | 'reply';
+  /** Source label kind — Lead vs Quotation. Defaults to quotation. */
+  sourceKind?: 'lead' | 'quotation';
   // Deep-link data
   leadId?: string;
   policyId?: string;
@@ -29,7 +35,10 @@ export interface AssignmentNotification {
   id: string;
   assigneeUserId: string;
   quotationId: string;
-  policyType: 'vmi' | 'cmi';
+  /** Policy type. Null/undefined for Lead-level assignments (no VMI/CMI badge). */
+  policyType?: 'vmi' | 'cmi';
+  /** Source kind — Lead rows render "Lead 000000", Quotation rows render "Quotation 000000". */
+  sourceKind?: 'lead' | 'quotation';
   assignedAt: string;
   saleStage: string;
   /** Latest status of the policy when assigned (e.g. 'Pending', 'Submitted'). */
