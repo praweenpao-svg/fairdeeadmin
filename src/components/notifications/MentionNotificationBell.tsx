@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Bell, AtSign, ClipboardList } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Bell, Paperclip, ArrowDownUp, Inbox, AtSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -8,118 +8,159 @@ import {
 } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
-import { useMentionNotificationsStore, MentionNotification, AssignmentNotification, getMentionSourceType } from '@/stores/mentionNotificationsStore';
+import {
+  useMentionNotificationsStore,
+  MentionNotification,
+  AssignmentNotification,
+} from '@/stores/mentionNotificationsStore';
 import { useLanguageStore } from '@/stores/languageStore';
 import { useCurrentUserStore } from '@/stores/currentUserStore';
 import { useNotificationNavigationStore } from '@/stores/notificationNavigationStore';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 
-function getFullDateTime(timestamp: string): string {
+function formatDateTime(timestamp: string): string {
   try {
-    return new Date(timestamp).toLocaleString('en-US', {
-      day: 'numeric', month: 'short', year: 'numeric',
-      hour: '2-digit', minute: '2-digit',
-    });
+    const d = new Date(timestamp);
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = d.toLocaleString('en-US', { month: 'short' });
+    const year = d.getFullYear();
+    const hh = String(d.getHours()).padStart(2, '0');
+    const mm = String(d.getMinutes()).padStart(2, '0');
+    return `${day} ${month} ${year} ${hh}:${mm}`;
   } catch {
     return timestamp;
   }
 }
 
-function getInitials(name: string): string {
-  return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+function stripHash(id: string): string {
+  return id.startsWith('#') ? id.slice(1) : id;
 }
+
+type SortDir = 'desc' | 'asc';
 
 export function MentionNotificationBell() {
   const { language } = useLanguageStore();
+  const t = (en: string, th: string) => (language === 'th' ? th : en);
   const currentUser = useCurrentUserStore();
   const {
     notifications, assignments, markAsRead, markAllAsRead,
     unreadOnlyFilter, setUnreadOnlyFilter,
-    markAssignmentAsRead, markAllAssignmentsAsRead,
+    markAssignmentAsRead,
   } = useMentionNotificationsStore();
   const [open, setOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'mentioned' | 'assigned'>('mentioned');
+  const [activeTab, setActiveTab] = useState<'assignment' | 'mention'>('assignment');
+  const [assignmentSort, setAssignmentSort] = useState<SortDir>('desc');
+  const [mentionSort, setMentionSort] = useState<SortDir>('desc');
 
-  // 30-day window for mentions
+  // 30-day window for mentions (R-25)
   const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000);
-  const myMentions = notifications.filter((n) => {
+  const myMentions = useMemo(() => notifications.filter((n) => {
     if (n.recipientUserId !== currentUser.name) return false;
     try {
-      if (new Date(n.mentionedAt) < thirtyDaysAgo) return false;
-    } catch { return true; }
+      // Unread retained indefinitely; read auto-cleared after 30 days
+      if (n.read && new Date(n.mentionedAt) < thirtyDaysAgo) return false;
+    } catch { /* keep */ }
     return true;
-  });
+  }), [notifications, currentUser.name]);
 
-  const visibleMentions = unreadOnlyFilter
-    ? myMentions.filter((n) => !n.read)
-    : myMentions;
-
-  // Sort: unread first, then by timestamp desc
+  const visibleMentions = unreadOnlyFilter ? myMentions.filter((n) => !n.read) : myMentions;
   const sortedMentions = [...visibleMentions].sort((a, b) => {
-    if (a.read !== b.read) return a.read ? 1 : -1;
-    return new Date(b.mentionedAt).getTime() - new Date(a.mentionedAt).getTime();
+    const diff = new Date(b.mentionedAt).getTime() - new Date(a.mentionedAt).getTime();
+    return mentionSort === 'desc' ? diff : -diff;
   });
 
-  // Assigned to me: active only
-  const myAssignments = assignments
+  // R-10: Assignment badge = ALL active assignments (not unread-only)
+  const myAssignments = useMemo(() => assignments
     .filter((a) => a.assigneeUserId === currentUser.name && a.isActive)
     .sort((a, b) => {
-      const ar = a.read ?? false, br = b.read ?? false;
-      if (ar !== br) return ar ? 1 : -1;
-      return new Date(b.assignedAt).getTime() - new Date(a.assignedAt).getTime();
-    });
+      const diff = new Date(b.assignedAt).getTime() - new Date(a.assignedAt).getTime();
+      return assignmentSort === 'desc' ? diff : -diff;
+    }), [assignments, currentUser.name, assignmentSort]);
 
+  const assignmentCount = myAssignments.length;
   const unreadMentionCount = myMentions.filter((n) => !n.read).length;
-  const unreadAssignmentCount = myAssignments.filter((a) => !a.read).length;
-  const hasUnread = unreadMentionCount > 0 || unreadAssignmentCount > 0;
+  // R-03: combined count
+  const totalCount = assignmentCount + unreadMentionCount;
+  const badgeLabel = totalCount === 0 ? '' : totalCount > 9 ? '9+' : String(totalCount);
 
   const setNavTarget = useNotificationNavigationStore(s => s.setTarget);
 
-  const handleMentionClick = (notification: MentionNotification) => {
-    markAsRead(notification.id);
+  const handleMentionClick = (n: MentionNotification) => {
+    markAsRead(n.id);
     setOpen(false);
-    if (notification.leadId && notification.policyId && notification.targetStage) {
+    if (n.leadId && n.policyId && n.targetStage) {
       setNavTarget({
-        leadId: notification.leadId,
-        policyId: notification.policyId,
-        policyKind: notification.policyType || 'vmi',
-        targetStage: notification.targetStage,
+        leadId: n.leadId,
+        policyId: n.policyId,
+        policyKind: n.policyType || 'vmi',
+        targetStage: n.targetStage,
       });
     } else {
-      toast.info(`Opening ${notification.quotationId}...`);
+      toast.info(`Opening ${n.quotationId}...`);
     }
   };
 
-  const handleAssignmentClick = (assignment: AssignmentNotification) => {
-    markAssignmentAsRead(assignment.id);
+  const handleAssignmentClick = (a: AssignmentNotification) => {
+    markAssignmentAsRead(a.id);
     setOpen(false);
-    if (assignment.leadId && assignment.policyId && assignment.targetStage) {
+    // Lead row → listing pre-searched; Quotation row → H&A log
+    if (a.sourceKind === 'lead') {
+      toast.info(t(`Opening lead ${stripHash(a.quotationId)}...`, `กำลังเปิด lead ${stripHash(a.quotationId)}...`));
+      return;
+    }
+    if (a.leadId && a.policyId && a.targetStage && a.policyType) {
       setNavTarget({
-        leadId: assignment.leadId,
-        policyId: assignment.policyId,
-        policyKind: assignment.policyType,
-        targetStage: assignment.targetStage,
+        leadId: a.leadId,
+        policyId: a.policyId,
+        policyKind: a.policyType,
+        targetStage: a.targetStage,
       });
     } else {
-      toast.info(`Opening ${assignment.quotationId}...`);
+      toast.info(`Opening ${a.quotationId}...`);
     }
   };
 
   const highlightMentions = (text: string) => {
     const parts = text.split(/(@[\w]+)/g);
-    return parts.map((part, index) => {
-      if (part.startsWith('@')) {
-        return (
-          <span key={index} className="text-primary font-medium bg-primary/10 rounded px-0.5">
-            {part}
-          </span>
-        );
-      }
-      return part;
-    });
+    return parts.map((part, i) =>
+      part.startsWith('@') ? (
+        <span key={i} className="text-primary font-medium bg-primary/10 rounded px-0.5">{part}</span>
+      ) : part
+    );
+  };
+
+  const toggleSort = () => {
+    if (activeTab === 'assignment') {
+      setAssignmentSort((s) => (s === 'desc' ? 'asc' : 'desc'));
+    } else {
+      setMentionSort((s) => (s === 'desc' ? 'asc' : 'desc'));
+    }
+  };
+  const currentSort = activeTab === 'assignment' ? assignmentSort : mentionSort;
+
+  const policyBadge = (kind: 'vmi' | 'cmi') => (
+    <Badge
+      className={cn(
+        'text-[10px] h-5 px-1.5',
+        kind === 'vmi'
+          ? 'bg-blue-500/20 text-blue-600 border-blue-500/30'
+          : 'bg-purple-500/20 text-purple-600 border-purple-500/30'
+      )}
+    >
+      {kind.toUpperCase()}
+    </Badge>
+  );
+
+  const entryLabel = (n: MentionNotification) => {
+    const kind = n.entryType ?? (n.commentId ? 'reply' : 'remark');
+    const sourceWord = n.sourceKind === 'lead' ? t('Lead', 'Lead') : t('Policy', 'กรมธรรม์');
+    const verb =
+      kind === 'reply' ? t('Reply on', 'ตอบกลับใน')
+      : kind === 'rework' ? t('Rework on', 'แก้ไขใน')
+      : t('Remarks on', 'หมายเหตุใน');
+    return `${verb} ${sourceWord} ${stripHash(n.quotationId)}`;
   };
 
   return (
@@ -127,54 +168,131 @@ export function MentionNotificationBell() {
       <PopoverTrigger asChild>
         <Button variant="ghost" size="sm" className="relative h-9 w-9 p-0">
           <Bell className="h-5 w-5" />
-          {hasUnread && (
-            <span className="absolute top-1 right-1.5 h-2 w-2 rounded-full bg-destructive" />
+          {totalCount > 0 && (
+            <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-semibold flex items-center justify-center">
+              {badgeLabel}
+            </span>
           )}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[420px] p-0 bg-popover z-50" align="end">
-        {/* Tabs */}
-        <div className="border-b border-border">
-          <div className="flex">
+        {/* Header: tabs + sort icon */}
+        <div className="flex items-stretch border-b border-border">
+          <div className="flex flex-1">
             <button
-              onClick={() => setActiveTab('mentioned')}
+              onClick={() => setActiveTab('assignment')}
               className={cn(
                 'flex-1 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors flex items-center justify-center gap-1.5',
-                activeTab === 'mentioned'
+                activeTab === 'assignment'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
+              )}
+            >
+              <Inbox className="w-3.5 h-3.5" />
+              {t('Assignment', 'งานที่ได้รับ')}
+              {assignmentCount > 0 && (
+                <span className="ml-0.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-muted text-foreground text-[10px] font-semibold">
+                  {assignmentCount > 99 ? '99+' : assignmentCount}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => setActiveTab('mention')}
+              className={cn(
+                'flex-1 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors flex items-center justify-center gap-1.5',
+                activeTab === 'mention'
                   ? 'border-primary text-primary'
                   : 'border-transparent text-muted-foreground hover:text-foreground'
               )}
             >
               <AtSign className="w-3.5 h-3.5" />
-              {language === 'th' ? 'ถูกกล่าวถึง' : 'Mentioned'}
+              {t('Mention', 'การกล่าวถึง')}
               {unreadMentionCount > 0 && (
                 <span className="ml-0.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-semibold">
                   {unreadMentionCount > 99 ? '99+' : unreadMentionCount}
                 </span>
               )}
             </button>
-            <button
-              onClick={() => setActiveTab('assigned')}
-              className={cn(
-                'flex-1 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors flex items-center justify-center gap-1.5',
-                activeTab === 'assigned'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-muted-foreground hover:text-foreground'
-              )}
-            >
-              <ClipboardList className="w-3.5 h-3.5" />
-              {language === 'th' ? 'มอบหมายให้ฉัน' : 'Assigned to me'}
-              {unreadAssignmentCount > 0 && (
-                <span className="ml-0.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-semibold">
-                  {unreadAssignmentCount > 99 ? '99+' : unreadAssignmentCount}
-                </span>
-              )}
-            </button>
           </div>
+          {/* R-07: fixed sort icon */}
+          <button
+            onClick={toggleSort}
+            title={t(
+              currentSort === 'desc' ? 'Newest first' : 'Oldest first',
+              currentSort === 'desc' ? 'ใหม่สุดก่อน' : 'เก่าสุดก่อน'
+            )}
+            className="px-3 border-l border-border text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors flex items-center"
+          >
+            <ArrowDownUp className={cn('w-3.5 h-3.5 transition-transform', currentSort === 'asc' && 'rotate-180')} />
+          </button>
         </div>
 
-        {/* Mentioned Tab */}
-        {activeTab === 'mentioned' && (
+        {/* Assignment Tab */}
+        {activeTab === 'assignment' && (
+          <ScrollArea className="h-[480px]">
+            {myAssignments.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-[300px] text-center px-6">
+                <Inbox className="w-10 h-10 mb-3 opacity-30" />
+                <p className="text-sm font-medium text-foreground mb-1">
+                  {t('No Assignments Yet', 'ยังไม่มีงานที่ได้รับ')}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {t(
+                    "You'll see notifications here when a lead or policy is assigned to you.",
+                    'คุณจะเห็นการแจ้งเตือนที่นี่เมื่อมีลีดหรือกรมธรรม์ถูกมอบหมายให้คุณ'
+                  )}
+                </p>
+              </div>
+            ) : (
+              <div className="divide-y divide-border">
+                {myAssignments.map((a) => {
+                  const isUnread = !a.read;
+                  const isLead = a.sourceKind === 'lead';
+                  const sourceLabel = isLead
+                    ? `${t('Lead', 'Lead')} ${stripHash(a.quotationId)}`
+                    : `${t('Quotation', 'ใบเสนอราคา')} ${stripHash(a.quotationId)}`;
+                  return (
+                    <button
+                      key={a.id}
+                      onClick={() => handleAssignmentClick(a)}
+                      className={cn(
+                        'w-full px-4 py-3 hover:bg-muted/50 transition-colors text-left',
+                        isUnread && 'bg-primary/5'
+                      )}
+                    >
+                      <div className="flex items-start gap-2.5">
+                        <span className={cn(
+                          'h-2 w-2 rounded-full flex-shrink-0 mt-1.5',
+                          isUnread ? 'bg-primary' : 'bg-transparent'
+                        )} />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            <span className="text-sm font-semibold text-foreground">{sourceLabel}</span>
+                            {!isLead && a.policyType && policyBadge(a.policyType)}
+                            {a.status && (
+                              <Badge variant="outline" className="text-[10px] h-5 px-1.5">
+                                {a.status}
+                              </Badge>
+                            )}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {t('by', 'โดย')}{' '}
+                            <span className="font-medium text-foreground">{a.triggeredBy || 'System'}</span>
+                            {' · '}
+                            <span>{formatDateTime(a.assignedAt)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </ScrollArea>
+        )}
+
+        {/* Mention Tab */}
+        {activeTab === 'mention' && (
           <>
             <div className="flex items-center justify-between px-4 py-2 border-b border-border">
               <div className="flex items-center gap-2">
@@ -184,7 +302,7 @@ export function MentionNotificationBell() {
                   className="h-4 w-7 [&>span]:h-3 [&>span]:w-3"
                 />
                 <span className="text-xs text-muted-foreground">
-                  {language === 'th' ? 'ยังไม่อ่าน' : 'Unread only'}
+                  {t('Unread only', 'ยังไม่อ่าน')}
                 </span>
               </div>
               {myMentions.some((n) => !n.read) && (
@@ -194,167 +312,69 @@ export function MentionNotificationBell() {
                   className="text-xs h-7"
                   onClick={() => markAllAsRead()}
                 >
-                  {language === 'th' ? 'อ่านทั้งหมด' : 'Mark all read'}
+                  {t('Mark all as read', 'อ่านทั้งหมด')}
                 </Button>
               )}
             </div>
-            <ScrollArea className="h-[360px]">
+            <ScrollArea className="h-[438px]">
               {sortedMentions.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-[200px] text-muted-foreground text-sm">
-                  <Bell className="w-8 h-8 mb-2 opacity-30" />
-                  {language === 'th' ? 'ไม่มีการแจ้งเตือน' : 'No notifications'}
+                <div className="flex flex-col items-center justify-center h-[300px] text-center px-6">
+                  <AtSign className="w-10 h-10 mb-3 opacity-30" />
+                  <p className="text-sm font-medium text-foreground mb-1">
+                    {t('No Mentions Yet', 'ยังไม่มีการกล่าวถึง')}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {t(
+                      "You'll see notifications here when someone mentions you in remarks or replies.",
+                      'คุณจะเห็นการแจ้งเตือนที่นี่เมื่อมีคนกล่าวถึงคุณในหมายเหตุหรือการตอบกลับ'
+                    )}
+                  </p>
                 </div>
               ) : (
                 <div className="divide-y divide-border">
-                  {sortedMentions.map((notification) => (
+                  {sortedMentions.map((n) => (
                     <button
-                      key={notification.id}
-                      onClick={() => handleMentionClick(notification)}
+                      key={n.id}
+                      onClick={() => handleMentionClick(n)}
                       className={cn(
                         'w-full px-4 py-3 hover:bg-muted/50 transition-colors text-left',
-                        !notification.read && 'bg-primary/5'
+                        !n.read && 'bg-primary/5'
                       )}
                     >
-                      <div className="flex items-start gap-3">
-                        <Avatar className="h-8 w-8 flex-shrink-0 mt-0.5">
-                          <AvatarFallback className="text-xs bg-muted">
-                            {getInitials(notification.mentionedBy)}
-                          </AvatarFallback>
-                        </Avatar>
+                      <div className="flex items-start gap-2.5">
+                        <span className={cn(
+                          'h-2 w-2 rounded-full flex-shrink-0 mt-1.5',
+                          !n.read ? 'bg-primary' : 'bg-transparent'
+                        )} />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1 flex-wrap">
-                            <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-mono">
-                              {notification.quotationId}
-                            </Badge>
-                            {notification.policyType && (
-                              <Badge
-                                className={cn(
-                                  "text-[10px] h-5 px-1.5",
-                                  notification.policyType === 'vmi'
-                                    ? "bg-blue-500/20 text-blue-600 border-blue-500/30"
-                                    : "bg-purple-500/20 text-purple-600 border-purple-500/30"
-                                )}
-                              >
-                                {notification.policyType.toUpperCase()}
-                              </Badge>
+                            <span className="text-sm font-semibold text-foreground">
+                              {entryLabel(n)}
+                            </span>
+                            {n.policyType && policyBadge(n.policyType)}
+                            {(n.attachmentCount ?? 0) > 0 && (
+                              <span className="inline-flex items-center gap-0.5 text-[11px] text-muted-foreground">
+                                <Paperclip className="w-3 h-3" />
+                                {n.attachmentCount}
+                              </span>
                             )}
-                            {(() => {
-                              const src = getMentionSourceType(notification);
-                              const label =
-                                language === 'th'
-                                  ? src === 'remark' ? 'หมายเหตุ' : src === 'reply' ? 'ตอบกลับ' : 'สลักหลัง'
-                                  : src === 'remark' ? 'Remark' : src === 'reply' ? 'Reply' : 'Endorsement';
-                              return (
-                                <Badge
-                                  variant="outline"
-                                  className="text-[10px] h-5 px-1.5 bg-muted/60 text-muted-foreground border-border"
-                                >
-                                  {label}
-                                </Badge>
-                              );
-                            })()}
                           </div>
                           <p className={cn(
-                            "text-sm line-clamp-2",
-                            !notification.read ? "text-foreground font-medium" : "text-muted-foreground"
+                            'text-sm line-clamp-2',
+                            !n.read ? 'text-foreground' : 'text-muted-foreground'
                           )}>
-                            {highlightMentions(notification.mentionTextPreview)}
+                            {highlightMentions(n.mentionTextPreview)}
                           </p>
-                          <div className="flex items-center gap-1.5 mt-1.5 text-xs text-muted-foreground">
-                            <span className="font-medium">{notification.mentionedBy}</span>
-                            <span>•</span>
-                            <span>{getFullDateTime(notification.mentionedAt)}</span>
+                          <div className="text-xs text-muted-foreground mt-1.5">
+                            {t('by', 'โดย')}{' '}
+                            <span className="font-medium text-foreground">{n.mentionedBy}</span>
+                            {' · '}
+                            <span>{formatDateTime(n.mentionedAt)}</span>
                           </div>
                         </div>
-                        {!notification.read && (
-                          <span className="h-2 w-2 rounded-full bg-primary flex-shrink-0 mt-2" />
-                        )}
                       </div>
                     </button>
                   ))}
-                </div>
-              )}
-            </ScrollArea>
-          </>
-        )}
-
-        {/* Assigned to me Tab */}
-        {activeTab === 'assigned' && (
-          <>
-            {myAssignments.length > 0 && unreadAssignmentCount > 0 && (
-              <div className="flex items-center justify-end px-4 py-2 border-b border-border">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-xs h-7"
-                  onClick={() => markAllAssignmentsAsRead()}
-                >
-                  {language === 'th' ? 'อ่านทั้งหมด' : 'Mark all read'}
-                </Button>
-              </div>
-            )}
-            <ScrollArea className={cn(myAssignments.length > 0 && unreadAssignmentCount > 0 ? 'h-[348px]' : 'h-[390px]')}>
-              {myAssignments.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-[200px] text-muted-foreground text-sm">
-                  <ClipboardList className="w-8 h-8 mb-2 opacity-30" />
-                  {language === 'th' ? 'ไม่มีงานที่มอบหมาย' : 'No active assignments'}
-                </div>
-              ) : (
-                <div className="divide-y divide-border">
-                  {myAssignments.map((assignment) => {
-                    const isUnread = !assignment.read;
-                    const trigger = assignment.triggeredBy || 'System';
-                    const isSystem = trigger === 'System';
-                    return (
-                      <button
-                        key={assignment.id}
-                        onClick={() => handleAssignmentClick(assignment)}
-                        className={cn(
-                          'w-full px-4 py-3 hover:bg-muted/50 transition-colors text-left',
-                          isUnread && 'bg-primary/5'
-                        )}
-                      >
-                        <div className="flex items-start gap-3">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1 flex-wrap">
-                              <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-mono">
-                                {assignment.quotationId}
-                              </Badge>
-                              <Badge
-                                className={cn(
-                                  "text-[10px] h-5 px-1.5",
-                                  assignment.policyType === 'vmi'
-                                    ? "bg-blue-500/20 text-blue-600 border-blue-500/30"
-                                    : "bg-purple-500/20 text-purple-600 border-purple-500/30"
-                                )}
-                              >
-                                {assignment.policyType.toUpperCase()}
-                              </Badge>
-                              <Badge className="text-[10px] h-5 px-1.5 bg-muted text-muted-foreground">
-                                {assignment.saleStage}
-                              </Badge>
-                              {assignment.status && (
-                                <Badge variant="outline" className="text-[10px] h-5 px-1.5">
-                                  {assignment.status}
-                                </Badge>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                              <span>{language === 'th' ? 'โดย' : 'By'}</span>
-                              <span className={cn('font-medium', isSystem ? 'text-muted-foreground' : 'text-foreground')}>
-                                {trigger}
-                              </span>
-                              <span>•</span>
-                              <span>{getFullDateTime(assignment.assignedAt)}</span>
-                            </div>
-                          </div>
-                          {isUnread && (
-                            <span className="h-2 w-2 rounded-full bg-primary flex-shrink-0 mt-2" />
-                          )}
-                        </div>
-                      </button>
-                    );
-                  })}
                 </div>
               )}
             </ScrollArea>
