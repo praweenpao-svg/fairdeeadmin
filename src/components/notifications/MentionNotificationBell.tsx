@@ -140,18 +140,21 @@ export function MentionNotificationBell() {
   };
   const currentSort = activeTab === 'assignment' ? assignmentSort : mentionSort;
 
-  const policyBadge = (kind: 'vmi' | 'cmi') => (
-    <Badge
-      className={cn(
-        'text-[10px] h-5 px-1.5',
-        kind === 'vmi'
-          ? 'bg-blue-500/20 text-blue-600 border-blue-500/30'
-          : 'bg-purple-500/20 text-purple-600 border-purple-500/30'
-      )}
-    >
-      {kind.toUpperCase()}
-    </Badge>
-  );
+  const policyBadge = (kind?: 'vmi' | 'cmi') => {
+    if (!kind) return null;
+    return (
+      <Badge
+        className={cn(
+          'text-[10px] h-5 px-1.5',
+          kind === 'vmi'
+            ? 'bg-blue-500/20 text-blue-600 border-blue-500/30'
+            : 'bg-purple-500/20 text-purple-600 border-purple-500/30'
+        )}
+      >
+        {kind.toUpperCase()}
+      </Badge>
+    );
+  };
 
   const entryLabel = (n: MentionNotification) => {
     const kind = n.entryType ?? (n.commentId ? 'reply' : 'remark');
