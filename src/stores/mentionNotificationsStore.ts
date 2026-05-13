@@ -19,6 +19,12 @@ export interface MentionNotification {
   mentionedByUserId: string;
   mentionedAt: string; // ISO datetime
   read: boolean;
+  /** Number of attachments on the source entry. 0 = no indicator. */
+  attachmentCount?: number;
+  /** Source entry kind — drives row label "Remarks on …" / "Reply on …". */
+  entryType?: 'rework' | 'remark' | 'reply';
+  /** Source label kind — Lead vs Quotation. Defaults to quotation. */
+  sourceKind?: 'lead' | 'quotation';
   // Deep-link data
   leadId?: string;
   policyId?: string;
@@ -29,7 +35,10 @@ export interface AssignmentNotification {
   id: string;
   assigneeUserId: string;
   quotationId: string;
-  policyType: 'vmi' | 'cmi';
+  /** Policy type. Null/undefined for Lead-level assignments (no VMI/CMI badge). */
+  policyType?: 'vmi' | 'cmi';
+  /** Source kind — Lead rows render "Lead 000000", Quotation rows render "Quotation 000000". */
+  sourceKind?: 'lead' | 'quotation';
   assignedAt: string;
   saleStage: string;
   /** Latest status of the policy when assigned (e.g. 'Pending', 'Submitted'). */
@@ -86,6 +95,9 @@ const seedMentions: MentionNotification[] = [
     read: false,
     reworkRecordId: 'rw-1',
     commentId: null,
+    attachmentCount: 3,
+    entryType: 'rework',
+    sourceKind: 'quotation',
     // Deep-link data
     leadId: '22',
     policyId: 'pol-22-vmi',
@@ -186,6 +198,19 @@ const seedAssignments: AssignmentNotification[] = [
     leadId: '22',
     policyId: 'pol-22-vmi',
     targetStage: 'to_issue' as const,
+  },
+  {
+    id: 'a4',
+    assigneeUserId: 'Pao',
+    quotationId: '#10012',
+    sourceKind: 'lead',
+    assignedAt: new Date(now.getTime() - 2 * 3600000).toISOString(),
+    saleStage: 'New Lead',
+    status: 'New',
+    triggeredBy: 'System',
+    isActive: true,
+    read: false,
+    leadId: '15',
   },
 ];
 
