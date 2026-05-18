@@ -844,6 +844,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
               <tr className="border-b border-border">
                 <th className="data-table-header px-4 py-3 text-center">Type</th>
                 <th className="data-table-header px-4 py-3 text-left min-w-[220px]">Status / Reason</th>
+                <th className="data-table-header px-4 py-3 text-center">Channel</th>
                 <th className="data-table-header px-4 py-3 text-left">Sticky</th>
                 <th className="data-table-header px-4 py-3 text-left">Assignment Logic</th>
                 <th className="data-table-header px-4 py-3 text-left">Teams</th>
