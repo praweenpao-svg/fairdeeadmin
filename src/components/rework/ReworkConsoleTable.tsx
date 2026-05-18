@@ -200,6 +200,7 @@ const defaultFormData: FormData = {
   deliveryMethod: undefined,
   stickyEnabled: false,
   stickyColumns: [],
+  salesChannel: 'both',
 };
 
 export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTableProps) {
