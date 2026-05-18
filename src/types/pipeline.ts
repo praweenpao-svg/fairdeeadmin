@@ -349,7 +349,14 @@ export interface ReworkConfig {
   // (descriptions, party, scope, stages, automation) are mirrored from the
   // referenced reason at save time so existing consumers keep working.
   reasonId?: string;
+  // Sales channel scope — distinguishes SS (Self-Service, quotation created by
+  // User/Agent) vs NSS (Non-Self-Service, quotation created by Admin). Only
+  // applies to lead/policy/renewal config types so routing can differ between
+  // the two creation paths. 'both' (default) ignores the distinction.
+  salesChannel?: SalesChannelScope;
 }
+
+export type SalesChannelScope = 'ss' | 'nss' | 'both';
 
 // Standalone Rework Reason entity. Reasons are managed independently from
 // assignment configuration so multiple assignment rows can reference the

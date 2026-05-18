@@ -4,7 +4,7 @@ import { toast } from '@/hooks/use-toast';
 import {
   ReworkConfig, AssignmentType, PipelineStage, ReworkPartyType, PolicyScopeType,
   ReworkConfigType, EndorsementType, EndorsementStatus, AutomationType,
-  IssuanceMethod, DeliveryMethodType, StickyColumnType,
+  IssuanceMethod, DeliveryMethodType, StickyColumnType, SalesChannelScope,
 } from '@/types/pipeline';
 import { useTeamsStore } from '@/stores/teamsStore';
 import { useReworkReasonsStore } from '@/stores/reworkReasonsStore';
@@ -160,6 +160,22 @@ export function isCancellationReworkReason(reasonId: string, reworkConfigs: Rewo
 
 const typesWithStatus: ReworkConfigType[] = ['policy', 'lead', 'renewal'];
 const typesWithMinimalForm: ReworkConfigType[] = ['endorsement', 'policy', 'lead', 'renewal'];
+// Lead/Policy/Renewal can split assignment by sales channel (SS vs NSS).
+// SS  = Self-Service (quotation_created_by = User/Agent)
+// NSS = Non-Self-Service (quotation_created_by = Admin)
+const typesWithSalesChannel: ReworkConfigType[] = ['lead', 'policy', 'renewal'];
+
+const salesChannelOptions: { value: SalesChannelScope; label: string; desc: string }[] = [
+  { value: 'both', label: 'Both (SS + NSS)', desc: 'Applies regardless of who created the quotation' },
+  { value: 'ss', label: 'SS only', desc: 'Self-Service — quotation created by Agent/User' },
+  { value: 'nss', label: 'NSS only', desc: 'Non-Self-Service — quotation created by Admin' },
+];
+
+const salesChannelBadgeCls: Record<SalesChannelScope, string> = {
+  ss: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+  nss: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+  both: 'bg-muted text-muted-foreground',
+};
 
 type FormData = Partial<ReworkConfig>;
 
@@ -184,6 +200,7 @@ const defaultFormData: FormData = {
   deliveryMethod: undefined,
   stickyEnabled: false,
   stickyColumns: [],
+  salesChannel: 'both',
 };
 
 export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTableProps) {
@@ -303,6 +320,8 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
       const dup = reworkConfigs.some(c => {
         if (c.id === editingConfig?.id) return false;
         if (c.configType !== ct || c.statusFilter !== formData.statusFilter) return false;
+        // Sales channel must also match for the dup check (SS vs NSS vs Both)
+        if ((c.salesChannel || 'both') !== (formData.salesChannel || 'both')) return false;
         if (hasMethod) {
           if (statusesWithIssuanceMethod.includes(formData.statusFilter!)) return c.issuanceMethod === formData.issuanceMethod;
           if (statusesWithDeliveryMethod.includes(formData.statusFilter!)) return c.deliveryMethod === formData.deliveryMethod;
@@ -369,6 +388,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
           stickyEnabled: formData.stickyEnabled || false,
           stickyColumns: formData.stickyEnabled ? (formData.stickyColumns || []) : [],
           reasonId: isRework ? formData.reasonId : undefined,
+          salesChannel: typesWithSalesChannel.includes(ct) ? (formData.salesChannel || 'both') : undefined,
         } : c
       ));
     } else {
@@ -396,6 +416,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
         stickyEnabled: formData.stickyEnabled || false,
         stickyColumns: formData.stickyEnabled ? (formData.stickyColumns || []) : [],
         reasonId: isRework ? formData.reasonId : undefined,
+        salesChannel: typesWithSalesChannel.includes(ct) ? (formData.salesChannel || 'both') : undefined,
       };
       onUpdate([...reworkConfigs, newConfig]);
     }
@@ -491,7 +512,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
       const key = c.configType === 'endorsement'
         ? `endorsement|${c.endorsementConfigType}|${c.endorsementConfigStatus}`
         : typesWithStatus.includes(c.configType as ReworkConfigType)
-        ? `${c.configType}|${c.statusFilter}|${c.issuanceMethod || ''}|${c.deliveryMethod || ''}`
+        ? `${c.configType}|${c.statusFilter}|${c.issuanceMethod || ''}|${c.deliveryMethod || ''}|${c.salesChannel || 'both'}`
         : `rework|${(c.descriptionTh || '').trim().toLowerCase()}|${(c.descriptionEn || '').trim().toLowerCase()}`;
       if (seen.has(key)) continue;
       seen.add(key);
@@ -671,7 +692,32 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                 </div>
               )}
 
-              {/* Sticky Check */}
+              {/* Sales Channel — Lead / Policy / Renewal only (SS vs NSS) */}
+              {typesWithSalesChannel.includes(formData.configType as ReworkConfigType) && (
+                <div className="grid gap-2">
+                  <Label>Sales Channel</Label>
+                  <Select
+                    value={formData.salesChannel || 'both'}
+                    onValueChange={(v) => setFormData({ ...formData, salesChannel: v as SalesChannelScope })}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {salesChannelOptions.map(o => (
+                        <SelectItem key={o.value} value={o.value}>
+                          <div className="flex flex-col">
+                            <span>{o.label}</span>
+                            <span className="text-xs text-muted-foreground">{o.desc}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    SS = quotation created by Agent · NSS = quotation created by Admin
+                  </p>
+                </div>
+              )}
+
               {formData.configType && (
                 <div className="border-t pt-4 mt-2">
                   <div className="flex items-center justify-between mb-3">
@@ -798,6 +844,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
               <tr className="border-b border-border">
                 <th className="data-table-header px-4 py-3 text-center">Type</th>
                 <th className="data-table-header px-4 py-3 text-left min-w-[220px]">Status / Reason</th>
+                <th className="data-table-header px-4 py-3 text-center">Channel</th>
                 <th className="data-table-header px-4 py-3 text-left">Sticky</th>
                 <th className="data-table-header px-4 py-3 text-left">Assignment Logic</th>
                 <th className="data-table-header px-4 py-3 text-left">Teams</th>
@@ -823,6 +870,16 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                         <div className="font-medium text-foreground truncate" title={reason.primary}>{reason.primary}</div>
                         {reason.secondary && <div className="text-xs text-muted-foreground truncate" title={reason.secondary}>{reason.secondary}</div>}
                       </div>
+                    </td>
+                    {/* CHANNEL (SS/NSS/Both) — only for lead/policy/renewal */}
+                    <td className="px-4 py-3 text-sm text-center">
+                      {typesWithSalesChannel.includes(config.configType as ReworkConfigType) ? (
+                        (() => {
+                          const sc = (config.salesChannel || 'both') as SalesChannelScope;
+                          const label = sc === 'both' ? 'Both' : sc.toUpperCase();
+                          return <span className={`px-2 py-0.5 rounded text-xs font-medium ${salesChannelBadgeCls[sc]}`}>{label}</span>;
+                        })()
+                      ) : '—'}
                     </td>
                     {/* STICKY */}
                     <td className="px-4 py-3 text-sm">{getStickyDisplay(config)}</td>
