@@ -4,7 +4,7 @@ import { toast } from '@/hooks/use-toast';
 import {
   ReworkConfig, AssignmentType, PipelineStage, ReworkPartyType, PolicyScopeType,
   ReworkConfigType, EndorsementType, EndorsementStatus, AutomationType,
-  IssuanceMethod, DeliveryMethodType, StickyColumnType,
+  IssuanceMethod, DeliveryMethodType, StickyColumnType, SalesChannelScope,
 } from '@/types/pipeline';
 import { useTeamsStore } from '@/stores/teamsStore';
 import { useReworkReasonsStore } from '@/stores/reworkReasonsStore';
