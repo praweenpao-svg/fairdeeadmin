@@ -514,7 +514,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
       const key = c.configType === 'endorsement'
         ? `endorsement|${c.endorsementConfigType}|${c.endorsementConfigStatus}`
         : typesWithStatus.includes(c.configType as ReworkConfigType)
-        ? `${c.configType}|${c.statusFilter}|${c.issuanceMethod || ''}|${c.deliveryMethod || ''}|${c.salesChannel || 'both'}`
+        ? `${c.configType}|${c.statusFilter}|${c.issuanceMethod || ''}|${c.deliveryMethod || ''}|${c.salesChannel || ''}`
         : `rework|${(c.descriptionTh || '').trim().toLowerCase()}|${(c.descriptionEn || '').trim().toLowerCase()}`;
       if (seen.has(key)) continue;
       seen.add(key);
@@ -875,12 +875,10 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                     </td>
                     {/* CHANNEL (SS/NSS/Both) — only for lead/policy/renewal */}
                     <td className="px-4 py-3 text-sm text-center">
-                      {typesWithSalesChannel.includes(config.configType as ReworkConfigType) ? (
-                        (() => {
-                          const sc = (config.salesChannel || 'both') as SalesChannelScope;
-                          const label = sc === 'both' ? 'Both' : sc.toUpperCase();
-                          return <span className={`px-2 py-0.5 rounded text-xs font-medium ${salesChannelBadgeCls[sc]}`}>{label}</span>;
-                        })()
+                      {typesWithSalesChannel.includes(config.configType as ReworkConfigType) && config.salesChannel && config.salesChannel !== 'both' ? (
+                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${salesChannelBadgeCls[config.salesChannel]}`}>
+                          {config.salesChannel.toUpperCase()}
+                        </span>
                       ) : '—'}
                     </td>
                     {/* STICKY */}
