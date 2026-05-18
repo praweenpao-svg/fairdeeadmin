@@ -388,6 +388,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
           stickyEnabled: formData.stickyEnabled || false,
           stickyColumns: formData.stickyEnabled ? (formData.stickyColumns || []) : [],
           reasonId: isRework ? formData.reasonId : undefined,
+          salesChannel: typesWithSalesChannel.includes(ct) ? (formData.salesChannel || 'both') : undefined,
         } : c
       ));
     } else {
