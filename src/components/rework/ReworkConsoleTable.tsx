@@ -697,7 +697,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
               {/* Sales Channel — Lead / Policy / Renewal only (SS or NSS, required) */}
               {typesWithSalesChannel.includes(formData.configType as ReworkConfigType) && (
                 <div className="grid gap-2">
-                  <Label>Sales Channel <span className="text-destructive">*</span></Label>
+                  <Label>Sales Channel</Label>
                   <Select
                     value={formData.salesChannel ?? ''}
                     onValueChange={(v) => setFormData({ ...formData, salesChannel: v as SalesChannelScope })}
