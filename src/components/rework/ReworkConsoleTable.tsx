@@ -165,10 +165,9 @@ const typesWithMinimalForm: ReworkConfigType[] = ['endorsement', 'policy', 'lead
 // NSS = Non-Self-Service (quotation_created_by = Admin)
 const typesWithSalesChannel: ReworkConfigType[] = ['lead', 'policy', 'renewal'];
 
-const salesChannelOptions: { value: SalesChannelScope; label: string; desc: string }[] = [
-  { value: 'both', label: 'Both (SS + NSS)', desc: 'Applies regardless of who created the quotation' },
-  { value: 'ss', label: 'SS only', desc: 'Self-Service — quotation created by Agent/User' },
-  { value: 'nss', label: 'NSS only', desc: 'Non-Self-Service — quotation created by Admin' },
+const salesChannelOptions: { value: Exclude<SalesChannelScope, 'both'>; label: string; desc: string }[] = [
+  { value: 'ss', label: 'SS', desc: 'Self-Service — quotation created by Agent/User' },
+  { value: 'nss', label: 'NSS', desc: 'Non-Self-Service — quotation created by Admin' },
 ];
 
 const salesChannelBadgeCls: Record<SalesChannelScope, string> = {
@@ -200,7 +199,7 @@ const defaultFormData: FormData = {
   deliveryMethod: undefined,
   stickyEnabled: false,
   stickyColumns: [],
-  salesChannel: 'both',
+  salesChannel: undefined,
 };
 
 export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTableProps) {
@@ -307,6 +306,10 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
         toast({ title: 'Validation Error', description: 'Status selection is required.', variant: 'destructive' });
         return;
       }
+      if (typesWithSalesChannel.includes(ct) && (formData.salesChannel !== 'ss' && formData.salesChannel !== 'nss')) {
+        toast({ title: 'Validation Error', description: 'Sales Channel (SS or NSS) is required.', variant: 'destructive' });
+        return;
+      }
       if (ct === 'policy' && statusesWithIssuanceMethod.includes(formData.statusFilter) && !formData.issuanceMethod) {
         toast({ title: 'Validation Error', description: 'Issuance Method is required.', variant: 'destructive' });
         return;
@@ -315,13 +318,12 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
         toast({ title: 'Validation Error', description: 'Delivery Method is required.', variant: 'destructive' });
         return;
       }
-      // Uniqueness check
+      // Uniqueness check — (configType + statusFilter + salesChannel [+ method]) must be unique.
       const hasMethod = ct === 'policy' && (statusesWithIssuanceMethod.includes(formData.statusFilter) || statusesWithDeliveryMethod.includes(formData.statusFilter));
       const dup = reworkConfigs.some(c => {
         if (c.id === editingConfig?.id) return false;
         if (c.configType !== ct || c.statusFilter !== formData.statusFilter) return false;
-        // Sales channel must also match for the dup check (SS vs NSS vs Both)
-        if ((c.salesChannel || 'both') !== (formData.salesChannel || 'both')) return false;
+        if (c.salesChannel !== formData.salesChannel) return false;
         if (hasMethod) {
           if (statusesWithIssuanceMethod.includes(formData.statusFilter!)) return c.issuanceMethod === formData.issuanceMethod;
           if (statusesWithDeliveryMethod.includes(formData.statusFilter!)) return c.deliveryMethod === formData.deliveryMethod;
@@ -329,7 +331,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
         return true;
       });
       if (dup) {
-        toast({ title: 'Already exists', description: `This ${ct} status configuration already exists.`, variant: 'destructive' });
+        toast({ title: 'Already exists', description: `This ${ct} status + channel configuration already exists.`, variant: 'destructive' });
         return;
       }
     }
@@ -388,7 +390,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
           stickyEnabled: formData.stickyEnabled || false,
           stickyColumns: formData.stickyEnabled ? (formData.stickyColumns || []) : [],
           reasonId: isRework ? formData.reasonId : undefined,
-          salesChannel: typesWithSalesChannel.includes(ct) ? (formData.salesChannel || 'both') : undefined,
+          salesChannel: typesWithSalesChannel.includes(ct) ? formData.salesChannel : undefined,
         } : c
       ));
     } else {
@@ -416,7 +418,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
         stickyEnabled: formData.stickyEnabled || false,
         stickyColumns: formData.stickyEnabled ? (formData.stickyColumns || []) : [],
         reasonId: isRework ? formData.reasonId : undefined,
-        salesChannel: typesWithSalesChannel.includes(ct) ? (formData.salesChannel || 'both') : undefined,
+        salesChannel: typesWithSalesChannel.includes(ct) ? formData.salesChannel : undefined,
       };
       onUpdate([...reworkConfigs, newConfig]);
     }
@@ -692,15 +694,15 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                 </div>
               )}
 
-              {/* Sales Channel — Lead / Policy / Renewal only (SS vs NSS) */}
+              {/* Sales Channel — Lead / Policy / Renewal only (SS or NSS, required) */}
               {typesWithSalesChannel.includes(formData.configType as ReworkConfigType) && (
                 <div className="grid gap-2">
-                  <Label>Sales Channel</Label>
+                  <Label>Sales Channel <span className="text-destructive">*</span></Label>
                   <Select
-                    value={formData.salesChannel || 'both'}
+                    value={formData.salesChannel ?? ''}
                     onValueChange={(v) => setFormData({ ...formData, salesChannel: v as SalesChannelScope })}
                   >
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder="Select SS or NSS" /></SelectTrigger>
                     <SelectContent>
                       {salesChannelOptions.map(o => (
                         <SelectItem key={o.value} value={o.value}>
