@@ -692,7 +692,32 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                 </div>
               )}
 
-              {/* Sticky Check */}
+              {/* Sales Channel — Lead / Policy / Renewal only (SS vs NSS) */}
+              {typesWithSalesChannel.includes(formData.configType as ReworkConfigType) && (
+                <div className="grid gap-2">
+                  <Label>Sales Channel</Label>
+                  <Select
+                    value={formData.salesChannel || 'both'}
+                    onValueChange={(v) => setFormData({ ...formData, salesChannel: v as SalesChannelScope })}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {salesChannelOptions.map(o => (
+                        <SelectItem key={o.value} value={o.value}>
+                          <div className="flex flex-col">
+                            <span>{o.label}</span>
+                            <span className="text-xs text-muted-foreground">{o.desc}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    SS = quotation created by Agent · NSS = quotation created by Admin
+                  </p>
+                </div>
+              )}
+
               {formData.configType && (
                 <div className="border-t pt-4 mt-2">
                   <div className="flex items-center justify-between mb-3">
