@@ -705,18 +705,10 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                     <SelectTrigger><SelectValue placeholder="Select SS or NSS" /></SelectTrigger>
                     <SelectContent>
                       {salesChannelOptions.map(o => (
-                        <SelectItem key={o.value} value={o.value}>
-                          <div className="flex flex-col">
-                            <span>{o.label}</span>
-                            <span className="text-xs text-muted-foreground">{o.desc}</span>
-                          </div>
-                        </SelectItem>
+                        <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  <p className="text-xs text-muted-foreground">
-                    SS = quotation created by Agent · NSS = quotation created by Admin
-                  </p>
                 </div>
               )}
 
