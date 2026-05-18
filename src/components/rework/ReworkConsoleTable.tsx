@@ -160,6 +160,22 @@ export function isCancellationReworkReason(reasonId: string, reworkConfigs: Rewo
 
 const typesWithStatus: ReworkConfigType[] = ['policy', 'lead', 'renewal'];
 const typesWithMinimalForm: ReworkConfigType[] = ['endorsement', 'policy', 'lead', 'renewal'];
+// Lead/Policy/Renewal can split assignment by sales channel (SS vs NSS).
+// SS  = Self-Service (quotation_created_by = User/Agent)
+// NSS = Non-Self-Service (quotation_created_by = Admin)
+const typesWithSalesChannel: ReworkConfigType[] = ['lead', 'policy', 'renewal'];
+
+const salesChannelOptions: { value: SalesChannelScope; label: string; desc: string }[] = [
+  { value: 'both', label: 'Both (SS + NSS)', desc: 'Applies regardless of who created the quotation' },
+  { value: 'ss', label: 'SS only', desc: 'Self-Service — quotation created by Agent/User' },
+  { value: 'nss', label: 'NSS only', desc: 'Non-Self-Service — quotation created by Admin' },
+];
+
+const salesChannelBadgeCls: Record<SalesChannelScope, string> = {
+  ss: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+  nss: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+  both: 'bg-muted text-muted-foreground',
+};
 
 type FormData = Partial<ReworkConfig>;
 
