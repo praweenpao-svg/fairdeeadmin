@@ -320,6 +320,8 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
       const dup = reworkConfigs.some(c => {
         if (c.id === editingConfig?.id) return false;
         if (c.configType !== ct || c.statusFilter !== formData.statusFilter) return false;
+        // Sales channel must also match for the dup check (SS vs NSS vs Both)
+        if ((c.salesChannel || 'both') !== (formData.salesChannel || 'both')) return false;
         if (hasMethod) {
           if (statusesWithIssuanceMethod.includes(formData.statusFilter!)) return c.issuanceMethod === formData.issuanceMethod;
           if (statusesWithDeliveryMethod.includes(formData.statusFilter!)) return c.deliveryMethod === formData.deliveryMethod;
