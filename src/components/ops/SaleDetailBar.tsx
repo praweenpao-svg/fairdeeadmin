@@ -230,23 +230,25 @@ export function SaleDetailBar({
   const [apiPurchased, setApiPurchased] = useState(false);
 
   const handlePrimaryClick = (action: PrimaryAction) => {
+    const label = action.label;
     if (action.group === 'G4') { onOpenHistoryLog?.(); return; }
-    if (action.label === 'Upload Policy' || action.label === 'อัปโหลดกรมธรรม์') { onOpenUploadPolicy?.(); return; }
-    if (action.label === 'Manual KYC Approval' || action.label === 'อนุมัติ KYC ด้วยตนเอง') { setKycOpen(true); return; }
-    if (action.label === 'Send Billing Report' || action.label === 'ส่งใบแจ้งหนี้') { setBillingOpen(true); return; }
-    // Map CTA → next VMI status (only when VMI is the bottleneck)
+    if (action.group === 'G5') { onOpenEndorsement?.(); return; }
+    if (/^Upload Policy|^อัปโหลดกรมธรรม์/.test(label)) { onOpenUploadPolicy?.(); return; }
+    if (/Manual KYC Approval|อนุมัติ KYC/.test(label)) { setKycOpen(true); return; }
+    if (/Send Billing Report|ส่งใบแจ้งหนี้/.test(label)) { setBillingOpen(true); return; }
+    // Map CTA → next VMI status when VMI is the driver
     const current = vmiPolicy?.status;
     let next: string | null = null;
-    if (action.label === 'API' || action.label === 'Purchase Policy' || action.label === 'ซื้อกรมธรรม์' || action.label === 'Email' || action.label === 'อีเมล') {
+    if (/Purchase Policy|ซื้อกรมธรรม์|Send Email to Insurer|ส่งอีเมลถึง บ.ประกัน/.test(label)) {
       if (current === 'pending_review') next = 'pending_issuance';
-      if (action.label === 'Purchase Policy' || action.label === 'ซื้อกรมธรรม์') setApiPurchased(true);
+      if (/Purchase Policy|ซื้อกรมธรรม์/.test(label)) setApiPurchased(true);
     }
-    if (action.label === 'Fetch Policy' || action.label === 'ดึงกรมธรรม์') { handleAction(action.label); return; }
+    if (/Fetch Policy|ดึงกรมธรรม์/.test(label)) { handleAction(label); return; }
     if (next && onAdvanceVmiStatus) {
-      onAdvanceVmiStatus(next, action.label);
+      onAdvanceVmiStatus(next, label);
       return;
     }
-    handleAction(action.label);
+    handleAction(label);
   };
 
   const confirmBillingReport = () => {
