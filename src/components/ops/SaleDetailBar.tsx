@@ -134,22 +134,17 @@ function ctaForLevel(
     case 2:
       return [
         { label: language === 'th' ? 'ส่งอีเมลถึง บ.ประกัน' : 'Send Email to Insurer', icon: Mail, group: 'G2' },
-        { label: language === 'th' ? 'ซื้อกรมธรรม์ (ถ้ามี API)' : 'Purchase Policy (if API)', icon: ShoppingCart, group: 'G2' },
+        { label: language === 'th' ? 'ซื้อกรมธรรม์' : 'Purchase Policy', icon: ShoppingCart, group: 'G2' },
       ];
     case 3: {
-      const scope = vmiAtIssuance && cmiAtIssuance
-        ? (language === 'th' ? 'VMI + CMI' : 'VMI + CMI tabs')
-        : vmiAtIssuance
-        ? (language === 'th' ? 'VMI' : 'VMI tab')
-        : (language === 'th' ? 'CMI' : 'CMI tab');
       return [
-        { label: language === 'th' ? `อัปโหลดกรมธรรม์ (${scope})` : `Upload Policy (${scope})`, icon: FileUp, group: 'G2' },
-        { label: language === 'th' ? 'ดึงกรมธรรม์ (ถ้ามี API)' : 'Fetch Policy (if API)', icon: Download, group: 'G2' },
+        { label: language === 'th' ? 'อัปโหลดกรมธรรม์' : 'Upload Policy', icon: FileUp, group: 'G2' },
+        { label: language === 'th' ? 'ดึงกรมธรรม์' : 'Fetch Policy', icon: Download, group: 'G2' },
       ];
     }
     case 4:
       return [{
-        label: language === 'th' ? 'อัปโหลดกรมธรรม์ (ถ้าพิมพ์โดยแฟร์ดี)' : 'Upload Policy (if Print by FairDee)',
+        label: language === 'th' ? 'อัปโหลดกรมธรรม์' : 'Upload Policy',
         icon: FileUp,
         group: 'G2',
       }];
