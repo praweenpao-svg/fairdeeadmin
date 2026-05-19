@@ -197,6 +197,7 @@ function getPrimaryActions(
 export function SaleDetailBar({
   sale,
   hasActiveRework = false,
+  hasActiveEndorsement = false,
   onOpenUploadPolicy,
   onOpenHistoryLog,
   onOpenEndorsement,
@@ -210,7 +211,7 @@ export function SaleDetailBar({
   const currentStage = 'to_issue';
   const stageLabel = stageLabels[currentStage] || stageLabels.to_issue;
   const isInstalment = logic.paymentType === 'Instalment' || /install?ment|ผ่อน/i.test(sale.paymentMethod || '');
-  const primaryActions = getPrimaryActions(vmiPolicy, cmiPolicy, language, isInstalment);
+  const primaryActions = getPrimaryActions(vmiPolicy, cmiPolicy, language, isInstalment, hasActiveEndorsement);
 
   // Derive display values from Logic Controller (single source of truth for prototype)
   const classDisplay = (logic.insuranceClass || '').replace(/^Type/, '').trim() || (vmiPolicy?.coverage.insuranceClass ?? '—');
