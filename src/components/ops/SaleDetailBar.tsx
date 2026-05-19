@@ -38,6 +38,7 @@ import {
 interface SaleDetailBarProps {
   sale: SaleDetail;
   hasActiveRework?: boolean;
+  hasActiveEndorsement?: boolean;
   onOpenUploadPolicy?: () => void;
   onOpenHistoryLog?: () => void;
   onOpenEndorsement?: () => void;
