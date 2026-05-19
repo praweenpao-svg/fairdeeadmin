@@ -83,42 +83,27 @@ const paymentStatusColors: Record<string, string> = {
   partial: 'border-orange-500 text-orange-600 bg-orange-500/10',
 };
 
-// Status progression order (lower index = less progressed)
-const statusProgression: string[] = [
-  'pending_payment',
-  'pending_review',
-  'pending_issuance',
-  'policy_issued',    // aka "Policy Uploaded"
-  'policy_shipped',
-  'policy_delivered',
-];
+// ---------------------------------------------------------------------------
+// Primary CTA matrix — driven by VMI (col A) × CMI (col B) per sheet
+// https://docs.google.com/spreadsheets/d/1maifFY0tLr999hGppfWsxVpMcyPzzwpudVmzjo-f2eU
+//
+// Override columns:
+//   - Active Rework  → "History & Activity Log"
+//   - Active Endorse → "Update Sale"
+// Otherwise (col E) — derived from VMI/CMI status pair below.
+// ---------------------------------------------------------------------------
 
-function getLeastProgressedStatus(vmiStatus?: string, cmiStatus?: string): string | null {
-  const vmi = vmiStatus || null;
-  const cmi = cmiStatus || null;
-
-  // Filter out cancelled and rework — treat as "ignore"
-  const activeStatuses = [vmi, cmi].filter(
-    s => s && s !== 'policy_cancelled' && s !== 'rework_required'
-  ) as string[];
-
-  if (activeStatuses.length === 0) return null;
-
-  // Return the one with the lowest progression index
-  let least = activeStatuses[0];
-  let leastIdx = statusProgression.indexOf(least);
-  if (leastIdx === -1) leastIdx = 999;
-
-  for (let i = 1; i < activeStatuses.length; i++) {
-    let idx = statusProgression.indexOf(activeStatuses[i]);
-    if (idx === -1) idx = 999;
-    if (idx < leastIdx) {
-      least = activeStatuses[i];
-      leastIdx = idx;
-    }
-  }
-  return least;
-}
+// Action level per non-terminal status. Higher = further along.
+// Pending = 1 is treated as a sale-level "shared" state — see resolver.
+const STATUS_LEVEL: Record<string, number> = {
+  pending_payment: 1,    // "Pending"
+  pending_review: 2,     // "Pending Review"
+  pending_issuance: 3,   // "Pending Issuance"
+  policy_uploaded: 4,    // "Policy Uploaded"
+  policy_issued: 4,      // treated as Uploaded for CTA purposes
+  policy_shipped: 4,     // shipped/delivered share FairDee print-by-myself CTA
+  policy_delivered: 4,
+};
 
 interface PrimaryAction {
   label: string;
@@ -126,31 +111,18 @@ interface PrimaryAction {
   group: string;
 }
 
-function getPrimaryActions(
-  vmiPolicy: SalePolicy | undefined,
-  cmiPolicy: SalePolicy | undefined,
+function ctaForLevel(
+  level: number,
+  vmiAtIssuance: boolean,
+  cmiAtIssuance: boolean,
   language: string,
-  isInstalment: boolean = false,
+  isInstalment: boolean,
 ): PrimaryAction[] {
-  const vmiStatus = vmiPolicy?.status;
-  const cmiStatus = cmiPolicy?.status;
-
-  // Priority override: either policy in rework_required
-  if (vmiStatus === 'rework_required' || cmiStatus === 'rework_required') {
-    return [{ label: language === 'th' ? 'ประวัติและกิจกรรม' : 'History & Activity Log', icon: History, group: 'G4' }];
-  }
-
-  // Both cancelled → no primary
-  const vmiCancelled = !vmiPolicy || vmiStatus === 'policy_cancelled';
-  const cmiCancelled = !cmiPolicy || cmiStatus === 'policy_cancelled';
-  if (vmiCancelled && cmiCancelled) return [];
-
-  const least = getLeastProgressedStatus(vmiStatus, cmiStatus);
-  if (!least) return [];
-
-  switch (least) {
-    case 'pending_payment': {
+  switch (level) {
+    case 1: {
+      // Pending — sale-level
       const actions: PrimaryAction[] = [
+        { label: language === 'th' ? 'ส่งสรุปให้ตัวแทน' : 'Send Summary to Agent', icon: MailCheck, group: 'G1' },
         { label: language === 'th' ? 'ส่งใบแจ้งหนี้' : 'Send Billing Report', icon: CreditCard, group: 'G1' },
       ];
       if (isInstalment) {
@@ -158,19 +130,67 @@ function getPrimaryActions(
       }
       return actions;
     }
-    case 'pending_review':
+    case 2:
       return [
-        { label: language === 'th' ? 'ซื้อกรมธรรม์' : 'Purchase Policy', icon: Send, group: 'G2' },
-        { label: language === 'th' ? 'อีเมล' : 'Email', icon: Mail, group: 'G2' },
+        { label: language === 'th' ? 'ส่งอีเมลถึง บ.ประกัน' : 'Send Email to Insurer', icon: Mail, group: 'G2' },
+        { label: language === 'th' ? 'ซื้อกรมธรรม์ (ถ้ามี API)' : 'Purchase Policy (if API)', icon: ShoppingCart, group: 'G2' },
       ];
-    case 'pending_issuance':
-    case 'policy_issued':
-    case 'policy_shipped':
-    case 'policy_delivered':
-      return [{ label: language === 'th' ? 'อัปโหลดกรมธรรม์' : 'Upload Policy', icon: FileUp, group: 'G2' }];
+    case 3: {
+      const scope = vmiAtIssuance && cmiAtIssuance
+        ? (language === 'th' ? 'VMI + CMI' : 'VMI + CMI tabs')
+        : vmiAtIssuance
+        ? (language === 'th' ? 'VMI' : 'VMI tab')
+        : (language === 'th' ? 'CMI' : 'CMI tab');
+      return [
+        { label: language === 'th' ? `อัปโหลดกรมธรรม์ (${scope})` : `Upload Policy (${scope})`, icon: FileUp, group: 'G2' },
+        { label: language === 'th' ? 'ดึงกรมธรรม์ (ถ้ามี API)' : 'Fetch Policy (if API)', icon: Download, group: 'G2' },
+      ];
+    }
+    case 4:
+      return [{
+        label: language === 'th' ? 'อัปโหลดกรมธรรม์ (ถ้าพิมพ์โดยแฟร์ดี)' : 'Upload Policy (if Print by FairDee)',
+        icon: FileUp,
+        group: 'G2',
+      }];
     default:
       return [];
   }
+}
+
+function getPrimaryActions(
+  vmiPolicy: SalePolicy | undefined,
+  cmiPolicy: SalePolicy | undefined,
+  language: string,
+  isInstalment: boolean = false,
+  hasActiveEndorsement: boolean = false,
+): PrimaryAction[] {
+  const vmiStatus = vmiPolicy?.status;
+  const cmiStatus = cmiPolicy?.status;
+
+  // Override 1: Active Rework (col C)
+  if (vmiStatus === 'rework_required' || cmiStatus === 'rework_required') {
+    return [{ label: language === 'th' ? 'ประวัติและกิจกรรม' : 'History & Activity Log', icon: History, group: 'G4' }];
+  }
+  // Override 2: Active Endorsement (col D)
+  if (hasActiveEndorsement) {
+    return [{ label: language === 'th' ? 'อัปเดตการขาย' : 'Update Sale', icon: Pencil, group: 'G5' }];
+  }
+
+  // Collect non-terminal levels per policy
+  const vmiLevel = vmiStatus && vmiStatus !== 'policy_cancelled' ? STATUS_LEVEL[vmiStatus] : undefined;
+  const cmiLevel = cmiStatus && cmiStatus !== 'policy_cancelled' ? STATUS_LEVEL[cmiStatus] : undefined;
+  const activeLevels = [vmiLevel, cmiLevel].filter((l): l is number => typeof l === 'number');
+  if (activeLevels.length === 0) return [];
+
+  // If every active policy is at Pending (level 1), use sale-level Pending CTAs
+  const nonPendingLevels = activeLevels.filter(l => l > 1);
+  const driverLevel = nonPendingLevels.length > 0
+    ? Math.min(...nonPendingLevels)          // least-progressed beyond Pending drives
+    : 1;                                      // all Pending → sale-level summary CTAs
+
+  const vmiAtIssuance = vmiLevel === 3;
+  const cmiAtIssuance = cmiLevel === 3;
+  return ctaForLevel(driverLevel, vmiAtIssuance, cmiAtIssuance, language, isInstalment);
 }
 
 export function SaleDetailBar({
