@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, FileUp, XCircle, Mail, Upload, History, CreditCard, FileText, Send, UserCheck, Percent, Tag, FilePen, FilePlus, ClipboardList, Wallet, ClipboardCheck, Download, Receipt, FileDown } from 'lucide-react';
+import { ChevronDown, FileUp, XCircle, Mail, Upload, History, CreditCard, FileText, Send, UserCheck, Percent, Tag, FilePen, FilePlus, ClipboardList, Wallet, ClipboardCheck, Download, Receipt, FileDown, MailCheck, ShoppingCart, RefreshCw, Pencil } from 'lucide-react';
 import insurerLogo from '@/assets/insurer-generic.png';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
