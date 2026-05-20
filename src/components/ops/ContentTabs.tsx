@@ -622,11 +622,11 @@ function VerifyInformationTab({ sale, onReadinessChange }: VerifyTabProps) {
   }, [coverageStartDate]);
 
   const [zoom, setZoom] = React.useState<Record<string, number>>({ national_id: 100, car_reg: 100, payment: 100 });
-  // OCR sim status per source
+  // OCR runs automatically in the background after Step 1 → Step 2 transition.
   const [ocrStatus, setOcrStatus] = React.useState<Record<OcrKey, OcrStatus>>({
-    national_id: 'pending',
-    car_reg: 'pending',
-    payment: 'pending',
+    national_id: 'done',
+    car_reg: 'done',
+    payment: 'done',
   });
 
   // Insurance / shipping editable state (drives address propagation + gating)
