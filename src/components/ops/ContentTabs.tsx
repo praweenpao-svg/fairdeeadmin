@@ -1445,35 +1445,26 @@ export function ContentTabs({ sale }: ContentTabsProps) {
 
   const NextButton = ({ tabKey }: { tabKey: string }) => {
     const done = completedSteps.has(tabKey);
-    const isVerify = tabKey === 'verify';
-    const isProcessPayment = tabKey === 'process-payment';
-    const isLast = tabOrder.indexOf(tabKey) === tabOrder.length - 1;
-    const nextDisabled = done || (isVerify && verifySendCount === 0);
+    const idx = tabOrder.indexOf(tabKey);
+    const isLast = idx === tabOrder.length - 1;
+    const showBack = idx > 0;
     return (
       <div className="flex items-center justify-end gap-2 mt-4 pt-3 border-t border-border">
-        {isVerify && verifySendCount > 0 && (
-          <span className="text-[11px] text-muted-foreground mr-2">
-            {language === 'th'
-              ? `ส่งให้ตัวแทนแล้ว ${verifySendCount} ครั้ง`
-              : `Sent to agent ${verifySendCount} time${verifySendCount > 1 ? 's' : ''}`}
-          </span>
-        )}
-        {!isProcessPayment && (
+        {showBack && (
           <Button
             size="sm"
             variant="outline"
             className="text-xs"
-            onClick={() => setSendToAgentOpen(true)}
+            onClick={() => handleBack(tabKey)}
           >
-            {language === 'th' ? 'ส่งให้ตัวแทน' : 'Send to Agent'}
-            {verifySendCount > 0 && ` (${verifySendCount})`}
+            {language === 'th' ? 'ย้อนกลับ' : 'Back'}
           </Button>
         )}
         {!isLast && (
           <Button
             size="sm"
             className="text-xs"
-            disabled={nextDisabled}
+            disabled={done}
             onClick={() => handleNext(tabKey)}
           >
             {done
@@ -1490,6 +1481,14 @@ export function ContentTabs({ sale }: ContentTabsProps) {
     setVerifySendCount((c) => c + 1);
     toast.success(language === 'th' ? 'ส่งข้อมูลให้ตัวแทนเรียบร้อย' : 'Information sent to agent successfully');
   };
+
+  // Listen for top-bar Send Summary trigger
+  React.useEffect(() => {
+    const handler = () => setSendToAgentOpen(true);
+    window.addEventListener('ops:openSendSummary', handler);
+    return () => window.removeEventListener('ops:openSendSummary', handler);
+  }, []);
+
 
   return (
     <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
