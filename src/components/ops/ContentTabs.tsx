@@ -1418,6 +1418,12 @@ export function ContentTabs({ sale }: ContentTabsProps) {
     }
   };
 
+  const handleBack = (currentTab: string) => {
+    const idx = tabOrder.indexOf(currentTab);
+    if (idx > 0) setActiveTab(tabOrder[idx - 1]);
+  };
+
+
   const tabLabel = (key: string, thLabel: string, enLabel: string) => {
     const locked = !isTabUnlocked(key);
     return (
@@ -1439,35 +1445,26 @@ export function ContentTabs({ sale }: ContentTabsProps) {
 
   const NextButton = ({ tabKey }: { tabKey: string }) => {
     const done = completedSteps.has(tabKey);
-    const isVerify = tabKey === 'verify';
-    const isProcessPayment = tabKey === 'process-payment';
-    const isLast = tabOrder.indexOf(tabKey) === tabOrder.length - 1;
-    const nextDisabled = done || (isVerify && verifySendCount === 0);
+    const idx = tabOrder.indexOf(tabKey);
+    const isLast = idx === tabOrder.length - 1;
+    const showBack = idx > 0;
     return (
       <div className="flex items-center justify-end gap-2 mt-4 pt-3 border-t border-border">
-        {isVerify && verifySendCount > 0 && (
-          <span className="text-[11px] text-muted-foreground mr-2">
-            {language === 'th'
-              ? `ส่งให้ตัวแทนแล้ว ${verifySendCount} ครั้ง`
-              : `Sent to agent ${verifySendCount} time${verifySendCount > 1 ? 's' : ''}`}
-          </span>
-        )}
-        {!isProcessPayment && (
+        {showBack && (
           <Button
             size="sm"
             variant="outline"
             className="text-xs"
-            onClick={() => setSendToAgentOpen(true)}
+            onClick={() => handleBack(tabKey)}
           >
-            {language === 'th' ? 'ส่งให้ตัวแทน' : 'Send to Agent'}
-            {verifySendCount > 0 && ` (${verifySendCount})`}
+            {language === 'th' ? 'ย้อนกลับ' : 'Back'}
           </Button>
         )}
         {!isLast && (
           <Button
             size="sm"
             className="text-xs"
-            disabled={nextDisabled}
+            disabled={done}
             onClick={() => handleNext(tabKey)}
           >
             {done
@@ -1485,19 +1482,38 @@ export function ContentTabs({ sale }: ContentTabsProps) {
     toast.success(language === 'th' ? 'ส่งข้อมูลให้ตัวแทนเรียบร้อย' : 'Information sent to agent successfully');
   };
 
+  // Listen for top-bar Send Summary trigger
+  React.useEffect(() => {
+    const handler = () => setSendToAgentOpen(true);
+    window.addEventListener('ops:openSendSummary', handler);
+    return () => window.removeEventListener('ops:openSendSummary', handler);
+  }, []);
+
+
   return (
     <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-      <TabsList className="w-full justify-start bg-card border border-border rounded-lg p-1">
-        <TabsTrigger value="package-docs" className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
-          <Package className="w-3.5 h-3.5" />
+      <TabsList className="grid w-full grid-cols-3 h-12 bg-muted/40 border border-border rounded-full p-1">
+        <TabsTrigger
+          value="package-docs"
+          className="text-sm gap-2 h-full rounded-full data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=inactive]:text-muted-foreground"
+        >
+          <Package className="w-4 h-4" />
           {tabLabel('package-docs', 'ขั้นตอนที่ 1', 'Step 1')}
         </TabsTrigger>
-        <TabsTrigger value="verify" disabled={!isTabUnlocked('verify')} className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
-          <ShieldCheck className="w-3.5 h-3.5" />
+        <TabsTrigger
+          value="verify"
+          disabled={!isTabUnlocked('verify')}
+          className="text-sm gap-2 h-full rounded-full data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=inactive]:text-muted-foreground"
+        >
+          <ShieldCheck className="w-4 h-4" />
           {tabLabel('verify', 'ขั้นตอนที่ 2', 'Step 2')}
         </TabsTrigger>
-        <TabsTrigger value="process-payment" disabled={!isTabUnlocked('process-payment')} className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
-          <CreditCard className="w-3.5 h-3.5" />
+        <TabsTrigger
+          value="process-payment"
+          disabled={!isTabUnlocked('process-payment')}
+          className="text-sm gap-2 h-full rounded-full data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=inactive]:text-muted-foreground"
+        >
+          <CreditCard className="w-4 h-4" />
           {tabLabel('process-payment', 'ขั้นตอนที่ 3', 'Step 3')}
         </TabsTrigger>
       </TabsList>
