@@ -234,6 +234,10 @@ export function SaleDetailBar({
   const garageTh = vmiPolicy?.garageType === 'Dealership' ? 'ซ่อมห้าง' : 'ซ่อมอู่';
 
   const handleAction = (actionName: string) => {
+    if (/Send Summary to Agent|ส่งสรุปให้ตัวแทน/.test(actionName)) {
+      window.dispatchEvent(new Event('ops:openSendSummary'));
+      return;
+    }
     toast.success(actionName, {
       description: language === 'th' ? 'ฟีเจอร์นี้จะเชื่อมต่อกับระบบจริงในอนาคต' : 'This will connect to the real system.',
     });
@@ -295,15 +299,6 @@ export function SaleDetailBar({
 
         <div className="flex-1" />
 
-        <Button
-          variant="outline"
-          size="sm"
-          className="text-xs gap-1.5"
-          onClick={() => window.dispatchEvent(new Event('ops:openSendSummary'))}
-        >
-          <MailCheck className="w-3.5 h-3.5" />
-          {language === 'th' ? 'ส่งสรุปให้ตัวแทน' : 'Send Summary to Agent'}
-        </Button>
 
         {primaryActions.map((action, idx) => (
           <Button
