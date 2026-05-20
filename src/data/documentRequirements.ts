@@ -298,9 +298,9 @@ export const TIER_LABELS: Record<DocumentTier, { th: string; en: string }> = {
 };
 
 export const TIER_BADGE_CLASS: Record<DocumentTier, string> = {
-  required: 'bg-blue-100 text-blue-800 border-blue-200',
-  conditional: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  optional: 'bg-muted text-muted-foreground border-border',
+  required: 'bg-red-100 text-red-700 border-red-200',
+  conditional: 'bg-amber-100 text-amber-700 border-amber-200',
+  optional: 'bg-slate-100 text-slate-600 border-slate-200',
 };
 
 // Group order for display
