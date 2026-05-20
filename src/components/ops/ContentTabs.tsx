@@ -36,6 +36,35 @@ interface ContentTabsProps {
   sale: SaleDetail;
 }
 
+function LockedBanner({ language }: { language: string }) {
+  return (
+    <div className="flex items-center gap-2 rounded-md border border-primary/30 bg-primary/5 px-3 py-2 text-xs">
+      <Lock className="w-3.5 h-3.5 text-primary" />
+      <span className="font-medium">
+        {language === 'th'
+          ? 'ขั้นตอนนี้ถูกล็อก — Sale ID ออกแล้ว ข้อมูลเป็นแบบอ่านอย่างเดียว ใช้ "Update Sale" เพื่อแก้ไข'
+          : 'Locked — Sale ID issued. Fields are read-only. Use "Update Sale" to edit.'}
+      </span>
+    </div>
+  );
+}
+
+function BlockerList({ title, items }: { title: string; items: string[] }) {
+  return (
+    <div className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2.5">
+      <div className="flex items-center gap-1.5 mb-1.5">
+        <AlertCircle className="w-3.5 h-3.5 text-destructive" />
+        <span className="text-xs font-semibold text-destructive">{title}</span>
+        <span className="text-[10px] text-destructive/80">({items.length})</span>
+      </div>
+      <ul className="list-disc pl-5 space-y-0.5 text-[11px] text-destructive/90">
+        {items.map((it, i) => <li key={i}>{it}</li>)}
+      </ul>
+    </div>
+  );
+}
+
+
 function InvoiceTab({ sale }: { sale: SaleDetail }) {
   const { language } = useLanguageStore();
 
