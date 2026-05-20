@@ -301,7 +301,7 @@ export function UpdateSaleDialog({ sale, onSaleChange }: UpdateSaleDialogProps) 
     // Log to history (one entry per change)
     diffs.forEach(d => {
       useHistoryStore.getState().add({
-        type: 'sale_update',
+        type: 'field_update',
         description: `${d.label}: ${fmt(d.from)} → ${fmt(d.to)}`,
       });
     });
