@@ -28,6 +28,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { FileText, Image, CreditCard, User, Package, Link2, Plus, X, RefreshCw, Upload, ShieldCheck, Check, Lock, AlertCircle } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
