@@ -1418,12 +1418,10 @@ export function ContentTabs({ sale }: ContentTabsProps) {
   };
 
   const tabLabel = (key: string, thLabel: string, enLabel: string) => {
-    const done = completedSteps.has(key);
     const locked = !isTabUnlocked(key);
     return (
       <span className={cn('flex items-center gap-1', locked && 'opacity-50')}>
         {language === 'th' ? thLabel : enLabel}
-        {done && <Check className="w-3.5 h-3.5 text-green-600" />}
       </span>
     );
   };
