@@ -220,13 +220,13 @@ export function SaleDetailBar({
   onAdvanceVmiStatus,
 }: SaleDetailBarProps) {
   const { language } = useLanguageStore();
-  const { logic } = useOpsLogic();
+  const { logic, voluntaryShippingFormat } = useOpsLogic();
   const vmiPolicy = sale.policies.find(p => p.kind === 'vmi');
   const cmiPolicy = sale.policies.find(p => p.kind === 'cmi');
   const currentStage = 'to_issue';
   const stageLabel = stageLabels[currentStage] || stageLabels.to_issue;
   const isInstalment = logic.paymentType === 'Instalment' || /install?ment|ผ่อน/i.test(sale.paymentMethod || '');
-  const primaryActions = getPrimaryActions(vmiPolicy, cmiPolicy, language, isInstalment, hasActiveEndorsement);
+  const primaryActions = getPrimaryActions(vmiPolicy, cmiPolicy, language, isInstalment, hasActiveEndorsement, hasActiveRework, voluntaryShippingFormat);
 
   // Derive display values from Logic Controller (single source of truth for prototype)
   const classDisplay = (logic.insuranceClass || '').replace(/^Type/, '').trim() || (vmiPolicy?.coverage.insuranceClass ?? '—');
