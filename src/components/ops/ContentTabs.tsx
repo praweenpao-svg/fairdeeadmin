@@ -1376,14 +1376,56 @@ function PackageBoxOnly({ sale }: { sale: SaleDetail }) {
 
 export function ContentTabs({ sale }: ContentTabsProps) {
   const { language } = useLanguageStore();
-  const { logic, phone, addCompulsory, coverageStartDate } = useOpsLogic();
+  const {
+    logic,
+    phone,
+    addCompulsory,
+    coverageStartDate,
+    compulsoryStartDate,
+    voluntaryShippingFormat,
+    compulsoryShippingFormat,
+    fieldDocCounts,
+    locked,
+    setLocked,
+  } = useOpsLogic();
   const [activeTab, setActiveTab] = React.useState('package-docs');
   const [completedSteps, setCompletedSteps] = React.useState<Set<string>>(new Set());
+  const [step1Blockers, setStep1Blockers] = React.useState<string[]>([]);
 
   const tabOrder = ['package-docs', 'verify', 'process-payment'];
 
+  // Step 1 validation: required basic-info fields + required-tier doc slots
+  const validateStep1 = React.useCallback((): string[] => {
+    const b: string[] = [];
+    if (!coverageStartDate) b.push(language === 'th' ? 'วันเริ่มความคุ้มครอง (Voluntary)' : 'Voluntary start date');
+    if (!phone || phone.length < 9) b.push(language === 'th' ? 'เบอร์โทรศัพท์ลูกค้า (10 หลัก)' : 'Customer phone (10 digits)');
+    if (!logic.paymentMethodValue) b.push(language === 'th' ? 'วิธีการชำระเงิน' : 'Payment method');
+    if (!voluntaryShippingFormat) b.push(language === 'th' ? 'รูปแบบการจัดส่ง (Voluntary)' : 'Voluntary shipping format');
+    if (addCompulsory) {
+      if (!compulsoryStartDate) b.push(language === 'th' ? 'วันเริ่มต้น พ.ร.บ.' : 'Compulsory start date');
+      if (!compulsoryShippingFormat) b.push(language === 'th' ? 'รูปแบบการจัดส่ง พ.ร.บ.' : 'Compulsory shipping format');
+    }
+    // Required-tier doc slots: any required field in current scenario must have ≥1 doc
+    const docs = getRequiredDocuments(
+      logic.saleType, logic.insuranceClass, logic.paymentType, logic.carType,
+      logic.customerType, logic.paymentMethodValue, logic.driverLicenseCount, logic.carInspectionMethod,
+    );
+    const missing = docs.filter(d => d.required && !(fieldDocCounts[d.fieldId] > 0));
+    missing.slice(0, 8).forEach(m => {
+      const def = DOCUMENT_FIELDS[m.fieldId];
+      const label = def ? (language === 'th' ? def.th : def.en) : m.fieldId;
+      b.push(`${language === 'th' ? 'เอกสาร' : 'Document'}: ${label}`);
+    });
+    if (missing.length > 8) b.push(`+${missing.length - 8} ${language === 'th' ? 'เอกสารอื่น' : 'more docs'}`);
+    return b;
+  }, [coverageStartDate, phone, logic, addCompulsory, compulsoryStartDate, voluntaryShippingFormat, compulsoryShippingFormat, fieldDocCounts, language]);
+
+  // Live re-evaluation so the error list disappears as the user fixes things
+  React.useEffect(() => {
+    if (step1Blockers.length > 0) setStep1Blockers(validateStep1());
+  }, [validateStep1, step1Blockers.length]);
+
   // Step gating (R-04): a step is unlocked only when every previous step is completed.
-  // Once a step is completed it remains unlocked even if the user revisits earlier steps.
   const isTabUnlocked = React.useCallback((tabKey: string) => {
     const idx = tabOrder.indexOf(tabKey);
     if (idx <= 0) return true;
@@ -1406,10 +1448,21 @@ export function ContentTabs({ sale }: ContentTabsProps) {
   };
 
   const handleNext = (currentTab: string) => {
-    const hasErrors = false; // Replace with real validation
-    if (hasErrors) {
-      toast.error(language === 'th' ? 'กรุณากรอกข้อมูลที่จำเป็นให้ครบ' : 'Please fill in all required fields');
-      return;
+    if (currentTab === 'package-docs') {
+      const b = validateStep1();
+      setStep1Blockers(b);
+      if (b.length > 0) {
+        toast.error(language === 'th' ? 'กรุณากรอกข้อมูลที่จำเป็นให้ครบ' : 'Please complete all required fields');
+        return;
+      }
+    }
+    if (currentTab === 'verify') {
+      if (!verifyReady) {
+        toast.error(language === 'th' ? 'กรุณาแก้ไขรายการที่ค้างก่อน' : 'Please resolve outstanding items');
+        return;
+      }
+      // Step 2 completed → lock Steps 1 & 2 (Sale ID issued)
+      setLocked(true);
     }
     setCompletedSteps(prev => new Set(prev).add(currentTab));
     const idx = tabOrder.indexOf(currentTab);
@@ -1425,9 +1478,9 @@ export function ContentTabs({ sale }: ContentTabsProps) {
 
 
   const tabLabel = (key: string, thLabel: string, enLabel: string) => {
-    const locked = !isTabUnlocked(key);
+    const isLocked = !isTabUnlocked(key);
     return (
-      <span className={cn('flex items-center gap-1', locked && 'opacity-50')}>
+      <span className={cn('flex items-center gap-1', isLocked && 'opacity-50')}>
         {language === 'th' ? thLabel : enLabel}
       </span>
     );
@@ -1442,6 +1495,7 @@ export function ContentTabs({ sale }: ContentTabsProps) {
     setVerifyReady(ready);
     setVerifyBlockers(blockers);
   }, []);
+
 
   const NextButton = ({ tabKey }: { tabKey: string }) => {
     const done = completedSteps.has(tabKey);
