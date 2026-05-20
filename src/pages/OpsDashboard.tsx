@@ -253,6 +253,9 @@ export default function OpsDashboard() {
       {/* Update Sale dialog (Pass 3) — opens via 'ops:openUpdateSale' event */}
       <UpdateSaleDialog sale={sale} onSaleChange={setSale} />
 
+      {/* Upload Documents modal (Pass 5) — Internal vs External split */}
+      <UploadDocumentsModal open={uploadDocumentsOpen} onOpenChange={setUploadDocumentsOpen} />
+
       {/* Dev-only Logic Controller (prototype tool) */}
       <DevLogicControllerFab />
     </div>
