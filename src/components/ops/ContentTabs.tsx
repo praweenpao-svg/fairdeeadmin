@@ -1492,28 +1492,17 @@ export function ContentTabs({ sale }: ContentTabsProps) {
 
   return (
     <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-      <TabsList className="grid w-full grid-cols-3 h-12 bg-muted/40 border border-border rounded-full p-1">
-        <TabsTrigger
-          value="package-docs"
-          className="text-sm gap-2 h-full rounded-full data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=inactive]:text-muted-foreground"
-        >
-          <Package className="w-4 h-4" />
+      <TabsList className="grid w-full grid-cols-3 bg-card border border-border rounded-lg p-1">
+        <TabsTrigger value="package-docs" className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
+          <Package className="w-3.5 h-3.5" />
           {tabLabel('package-docs', 'ขั้นตอนที่ 1', 'Step 1')}
         </TabsTrigger>
-        <TabsTrigger
-          value="verify"
-          disabled={!isTabUnlocked('verify')}
-          className="text-sm gap-2 h-full rounded-full data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=inactive]:text-muted-foreground"
-        >
-          <ShieldCheck className="w-4 h-4" />
+        <TabsTrigger value="verify" disabled={!isTabUnlocked('verify')} className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
+          <ShieldCheck className="w-3.5 h-3.5" />
           {tabLabel('verify', 'ขั้นตอนที่ 2', 'Step 2')}
         </TabsTrigger>
-        <TabsTrigger
-          value="process-payment"
-          disabled={!isTabUnlocked('process-payment')}
-          className="text-sm gap-2 h-full rounded-full data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=inactive]:text-muted-foreground"
-        >
-          <CreditCard className="w-4 h-4" />
+        <TabsTrigger value="process-payment" disabled={!isTabUnlocked('process-payment')} className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
+          <CreditCard className="w-3.5 h-3.5" />
           {tabLabel('process-payment', 'ขั้นตอนที่ 3', 'Step 3')}
         </TabsTrigger>
       </TabsList>
