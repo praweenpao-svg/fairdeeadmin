@@ -1533,6 +1533,8 @@ export function ContentTabs({ sale }: ContentTabsProps) {
       }
       // Step 2 completed → lock Steps 1 & 2 (Sale ID issued)
       setLocked(true);
+      // Auto-advance VMI + CMI from "pending" → "pending_review"
+      window.dispatchEvent(new Event('ops:step2Completed'));
     }
     setCompletedSteps(prev => new Set(prev).add(currentTab));
     const idx = tabOrder.indexOf(currentTab);
