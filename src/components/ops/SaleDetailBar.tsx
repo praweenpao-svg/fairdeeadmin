@@ -234,6 +234,10 @@ export function SaleDetailBar({
   const garageTh = vmiPolicy?.garageType === 'Dealership' ? 'ซ่อมห้าง' : 'ซ่อมอู่';
 
   const handleAction = (actionName: string) => {
+    if (/Send Summary to Agent|ส่งสรุปให้ตัวแทน/.test(actionName)) {
+      window.dispatchEvent(new Event('ops:openSendSummary'));
+      return;
+    }
     toast.success(actionName, {
       description: language === 'th' ? 'ฟีเจอร์นี้จะเชื่อมต่อกับระบบจริงในอนาคต' : 'This will connect to the real system.',
     });
