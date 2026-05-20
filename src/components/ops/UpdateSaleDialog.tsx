@@ -768,7 +768,10 @@ export function UpdateSaleDialog({ sale, onSaleChange }: UpdateSaleDialogProps) 
         <DialogHeader className="px-6 py-4 border-b border-border shrink-0">
           <DialogTitle className="flex items-center gap-2 text-base">
             <Pencil className="w-4 h-4 text-primary" />
-            {lang === 'th' ? 'อัปเดตการขาย' : 'Update Sale'}
+            <span>{lang === 'th' ? 'อัปเดตการขาย' : 'Update Sale'}</span>
+            <span className="text-muted-foreground">&gt;</span>
+            <span>{lang === 'th' ? 'อัปเดตข้อมูลภายใน' : 'Internal Information Update'}</span>
+
             {totalDirty > 0 && !reviewing && (
               <Badge variant="outline" className="bg-amber-100 text-amber-700 border-amber-200 text-[10px] h-5">
                 {totalDirty} {lang === 'th' ? 'การเปลี่ยนแปลง' : `change${totalDirty === 1 ? '' : 's'}`}
