@@ -114,10 +114,10 @@ interface PrimaryAction {
 
 function ctaForLevel(
   level: number,
-  vmiAtIssuance: boolean,
-  cmiAtIssuance: boolean,
   language: string,
   isInstalment: boolean,
+  shippingFormat: 'fairdee' | 'self' | 'epolicy' | string | undefined,
+  driverStatus: string | undefined,
 ): PrimaryAction[] {
   switch (level) {
     case 1: {
@@ -142,12 +142,19 @@ function ctaForLevel(
         { label: language === 'th' ? 'ดึงกรมธรรม์' : 'Fetch Policy', icon: Download, group: 'G2' },
       ];
     }
-    case 4:
+    case 4: {
+      // Per spec sheet col E:
+      //  - Uploaded/Shipped with Print-by-FairDee → Upload Policy
+      //  - Uploaded with e-Policy → No Primary CTA
+      //  - Delivered → No Primary CTA
+      if (driverStatus === 'policy_delivered') return [];
+      if (shippingFormat === 'epolicy') return [];
       return [{
         label: language === 'th' ? 'อัปโหลดกรมธรรม์' : 'Upload Policy',
         icon: FileUp,
         group: 'G2',
       }];
+    }
     default:
       return [];
   }
@@ -159,18 +166,23 @@ function getPrimaryActions(
   language: string,
   isInstalment: boolean = false,
   hasActiveEndorsement: boolean = false,
+  hasActiveRework: boolean = false,
+  shippingFormat: 'fairdee' | 'self' | 'epolicy' | string | undefined = undefined,
 ): PrimaryAction[] {
   const vmiStatus = vmiPolicy?.status;
   const cmiStatus = cmiPolicy?.status;
 
-  // Override 1: Active Rework (col C)
-  if (vmiStatus === 'rework_required' || cmiStatus === 'rework_required') {
-    return [{ label: language === 'th' ? 'ประวัติและกิจกรรม' : 'History & Activity Log', icon: History, group: 'G4' }];
+  // Overrides (R-05/06/07/08): Active Rework and Active Endorsement evaluated
+  // independently and combined as co-primary when both are active.
+  const overrides: PrimaryAction[] = [];
+  const reworkActive = hasActiveRework || vmiStatus === 'rework_required' || cmiStatus === 'rework_required';
+  if (reworkActive) {
+    overrides.push({ label: language === 'th' ? 'ประวัติและกิจกรรม' : 'History & Activity Log', icon: History, group: 'G4' });
   }
-  // Override 2: Active Endorsement (col D)
   if (hasActiveEndorsement) {
-    return [{ label: language === 'th' ? 'อัปเดตการขาย' : 'Update Sale', icon: Pencil, group: 'G5' }];
+    overrides.push({ label: language === 'th' ? 'อัปเดตการขาย' : 'Update Sale', icon: Pencil, group: 'G5' });
   }
+  if (overrides.length > 0) return overrides;
 
   // Collect non-terminal levels per policy
   const vmiLevel = vmiStatus && vmiStatus !== 'policy_cancelled' ? STATUS_LEVEL[vmiStatus] : undefined;
@@ -184,9 +196,17 @@ function getPrimaryActions(
     ? Math.min(...nonPendingLevels)          // least-progressed beyond Pending drives
     : 1;                                      // all Pending → sale-level summary CTAs
 
-  const vmiAtIssuance = vmiLevel === 3;
-  const cmiAtIssuance = cmiLevel === 3;
-  return ctaForLevel(driverLevel, vmiAtIssuance, cmiAtIssuance, language, isInstalment);
+  // Find the driver policy's status (for shipping-format/no-CTA decisions)
+  const driverStatus = (() => {
+    const candidates: Array<[number | undefined, string | undefined]> = [
+      [vmiLevel, vmiStatus],
+      [cmiLevel, cmiStatus],
+    ];
+    const match = candidates.find(([lvl]) => lvl === driverLevel);
+    return match?.[1];
+  })();
+
+  return ctaForLevel(driverLevel, language, isInstalment, shippingFormat, driverStatus);
 }
 
 export function SaleDetailBar({
@@ -200,13 +220,13 @@ export function SaleDetailBar({
   onAdvanceVmiStatus,
 }: SaleDetailBarProps) {
   const { language } = useLanguageStore();
-  const { logic } = useOpsLogic();
+  const { logic, voluntaryShippingFormat } = useOpsLogic();
   const vmiPolicy = sale.policies.find(p => p.kind === 'vmi');
   const cmiPolicy = sale.policies.find(p => p.kind === 'cmi');
   const currentStage = 'to_issue';
   const stageLabel = stageLabels[currentStage] || stageLabels.to_issue;
   const isInstalment = logic.paymentType === 'Instalment' || /install?ment|ผ่อน/i.test(sale.paymentMethod || '');
-  const primaryActions = getPrimaryActions(vmiPolicy, cmiPolicy, language, isInstalment, hasActiveEndorsement);
+  const primaryActions = getPrimaryActions(vmiPolicy, cmiPolicy, language, isInstalment, hasActiveEndorsement, hasActiveRework, voluntaryShippingFormat);
 
   // Derive display values from Logic Controller (single source of truth for prototype)
   const classDisplay = (logic.insuranceClass || '').replace(/^Type/, '').trim() || (vmiPolicy?.coverage.insuranceClass ?? '—');

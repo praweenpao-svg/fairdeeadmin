@@ -1381,8 +1381,30 @@ export function ContentTabs({ sale }: ContentTabsProps) {
 
   const tabOrder = ['package-docs', 'verify', 'process-payment', 'invoice'];
 
+  // Step gating (R-04): a step is unlocked only when every previous step is completed.
+  // Once a step is completed it remains unlocked even if the user revisits earlier steps.
+  const isTabUnlocked = React.useCallback((tabKey: string) => {
+    const idx = tabOrder.indexOf(tabKey);
+    if (idx <= 0) return true;
+    for (let i = 0; i < idx; i++) {
+      if (!completedSteps.has(tabOrder[i])) return false;
+    }
+    return true;
+  }, [completedSteps]);
+
+  const handleTabChange = (val: string) => {
+    if (!isTabUnlocked(val)) {
+      toast.error(language === 'th' ? 'ยังไม่ปลดล็อกขั้นตอนนี้' : 'Step not unlocked yet', {
+        description: language === 'th'
+          ? 'กรุณาทำขั้นตอนก่อนหน้าให้เสร็จก่อน'
+          : 'Complete the previous step first.',
+      });
+      return;
+    }
+    setActiveTab(val);
+  };
+
   const handleNext = (currentTab: string) => {
-    // Mock validation: for demo, always pass
     const hasErrors = false; // Replace with real validation
     if (hasErrors) {
       toast.error(language === 'th' ? 'กรุณากรอกข้อมูลที่จำเป็นให้ครบ' : 'Please fill in all required fields');
@@ -1397,8 +1419,9 @@ export function ContentTabs({ sale }: ContentTabsProps) {
 
   const tabLabel = (key: string, thLabel: string, enLabel: string) => {
     const done = completedSteps.has(key);
+    const locked = !isTabUnlocked(key);
     return (
-      <span className="flex items-center gap-1">
+      <span className={cn('flex items-center gap-1', locked && 'opacity-50')}>
         {language === 'th' ? thLabel : enLabel}
         {done && <Check className="w-3.5 h-3.5 text-green-600" />}
       </span>
@@ -1464,21 +1487,21 @@ export function ContentTabs({ sale }: ContentTabsProps) {
   };
 
   return (
-    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+    <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
       <TabsList className="w-full justify-start bg-card border border-border rounded-lg p-1">
         <TabsTrigger value="package-docs" className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
           <Package className="w-3.5 h-3.5" />
           {tabLabel('package-docs', 'ขั้นตอนที่ 1', 'Step 1')}
         </TabsTrigger>
-        <TabsTrigger value="verify" className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
+        <TabsTrigger value="verify" disabled={!isTabUnlocked('verify')} className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
           <ShieldCheck className="w-3.5 h-3.5" />
           {tabLabel('verify', 'ขั้นตอนที่ 2', 'Step 2')}
         </TabsTrigger>
-        <TabsTrigger value="process-payment" className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
+        <TabsTrigger value="process-payment" disabled={!isTabUnlocked('process-payment')} className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
           <CreditCard className="w-3.5 h-3.5" />
           {tabLabel('process-payment', 'ขั้นตอนที่ 3', 'Step 3')}
         </TabsTrigger>
-        <TabsTrigger value="invoice" className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
+        <TabsTrigger value="invoice" disabled={!isTabUnlocked('invoice')} className="text-xs gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
           <FileText className="w-3.5 h-3.5" />
           {language === 'th' ? 'ขั้นตอนที่ 4' : 'Step 4'}
         </TabsTrigger>

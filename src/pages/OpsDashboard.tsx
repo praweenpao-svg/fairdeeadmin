@@ -150,7 +150,8 @@ export default function OpsDashboard() {
       <div className="flex-1 overflow-y-auto px-6 py-4 w-full">
         <SaleDetailBar
           sale={sale}
-          hasActiveRework={false}
+          hasActiveRework={opsReworkHistory.some(e => !e.resolved)}
+          hasActiveEndorsement={false}
           onOpenUploadPolicy={() => setUploadPolicyOpen(true)}
           onOpenHistoryLog={() => setHistorySidebarOpen(true)}
           onOpenEndorsement={() => handleToast(language === 'th' ? 'เปิดอัปเดตการขาย' : 'Open Update Sale')}
