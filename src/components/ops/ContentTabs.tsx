@@ -747,9 +747,8 @@ function VerifyInformationTab({ sale, onReadinessChange }: VerifyTabProps) {
   // Compute readiness for "Send to Agent"
   React.useEffect(() => {
     const blockers: string[] = [];
-    // Today-start scenario: relax OCR + start-date gating; only formal docs required.
+    // Today-start scenario: relax start-date gating; only formal docs required.
     if (!isStartToday) {
-      if (ocrStatus.national_id !== 'done') blockers.push(language === 'th' ? 'OCR บัตรประชาชนยังไม่เสร็จ' : 'National ID OCR not run');
       if (!policyStartDate) blockers.push(language === 'th' ? 'กรุณาระบุวันเริ่มต้นกรมธรรม์' : 'Policy start date required');
     }
     if (!insurancePhone.trim()) blockers.push(language === 'th' ? 'กรุณาระบุเบอร์โทรศัพท์' : 'Phone number required');
