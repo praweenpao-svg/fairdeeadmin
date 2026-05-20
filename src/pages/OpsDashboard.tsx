@@ -190,7 +190,7 @@ export default function OpsDashboard() {
           onOpenUploadPolicy={() => setUploadPolicyOpen(true)}
           onOpenHistoryLog={() => setHistorySidebarOpen(true)}
           onOpenEndorsement={() => window.dispatchEvent(new Event('ops:openUpdateSale'))}
-          onOpenUploadDoc={() => handleToast(language === 'th' ? 'เปิด Upload Document' : 'Open Upload Document')}
+          onOpenUploadDoc={() => setUploadDocumentsOpen(true)}
           onAdvanceVmiStatus={(next, actionLabel) => {
             handlePolicyStatusChange('vmi', next);
             const labelMap: Record<string, string> = {
