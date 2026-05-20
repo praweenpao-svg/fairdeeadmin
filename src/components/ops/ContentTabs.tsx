@@ -9,9 +9,10 @@ import {
   getRequiredDocuments,
   DOCUMENT_FIELDS,
   getPaymentProofName,
-  CATEGORY_LABELS,
-  CATEGORY_BADGE_CLASS,
-  GROUP_ORDER,
+  getDocumentTier,
+  TIER_ORDER,
+  TIER_LABELS,
+  TIER_BADGE_CLASS,
   type DocumentGroup,
 } from '@/data/documentRequirements';
 import { CoveragePanel } from './CoveragePanel';
