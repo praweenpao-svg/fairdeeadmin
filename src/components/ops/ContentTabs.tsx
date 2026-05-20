@@ -1376,6 +1376,13 @@ function PackageBoxOnly({ sale }: { sale: SaleDetail }) {
 
 export function ContentTabs({ sale }: ContentTabsProps) {
   const { language } = useLanguageStore();
+  const {
+    logic,
+    phone,
+    addCompulsory,
+    coverageStartDate,
+    garageType: _gt, // not in ctx; keep using logic.garageType
+  } = useOpsLogic() as any;
   const [activeTab, setActiveTab] = React.useState('package-docs');
   const [completedSteps, setCompletedSteps] = React.useState<Set<string>>(new Set());
 
