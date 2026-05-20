@@ -398,7 +398,7 @@ export function SaleDetailBar({
             <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">
               {language === 'th' ? 'ประวัติและกิจกรรม' : 'History & Activity Log'}
             </DropdownMenuLabel>
-            <DropdownMenuItem className={cn('text-xs gap-2', hasActiveRework && 'text-orange-600')} onClick={() => { if (onOpenHistoryLog) onOpenHistoryLog(); else handleAction('History & Activity Log'); }}>
+            <DropdownMenuItem className="text-xs gap-2" onClick={() => { if (onOpenHistoryLog) onOpenHistoryLog(); else handleAction('History & Activity Log'); }}>
               <History className={cn('w-3.5 h-3.5', hasActiveRework && 'text-orange-500')} />
               {language === 'th' ? 'ประวัติและกิจกรรม' : 'History & Activity Log'}
             </DropdownMenuItem>
