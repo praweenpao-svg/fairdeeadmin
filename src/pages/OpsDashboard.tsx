@@ -10,6 +10,7 @@ import { SaleDetailBar } from '@/components/ops/SaleDetailBar';
 import { UploadPolicyModal } from '@/components/ops/UploadPolicyModal';
 import { OpsLogicProvider } from '@/components/ops/OpsLogicContext';
 import { DevLogicControllerFab } from '@/components/ops/DevLogicControllerFab';
+import { UpdateSaleDialog } from '@/components/ops/UpdateSaleDialog';
 import { PolicyRemarksReworkDialog } from '@/components/pipeline/PolicyRemarksReworkDialog';
 import { useHistoryStore } from '@/stores/historyStore';
 import { toast } from 'sonner';
