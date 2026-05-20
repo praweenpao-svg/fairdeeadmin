@@ -268,15 +268,39 @@ export function getPaymentProofName(paymentMethod: string): { th: string; en: st
 export const CATEGORY_LABELS: Record<DocumentCategory, { th: string; en: string }> = {
   required_base: { th: 'จำเป็น', en: 'Required' },
   conditional: { th: 'ตามเงื่อนไข', en: 'Conditional' },
-  sale_type_specific: { th: 'ตามประเภทงาน', en: 'Sale Type' },
-  optional_if_available: { th: 'ถ้ามี', en: 'If Available' },
+  sale_type_specific: { th: 'ตามเงื่อนไข', en: 'Conditional' },
+  optional_if_available: { th: 'เพิ่มเติม', en: 'Optional' },
 };
 
 export const CATEGORY_BADGE_CLASS: Record<DocumentCategory, string> = {
   required_base: 'bg-blue-100 text-blue-800 border-blue-200',
   conditional: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  sale_type_specific: 'bg-red-100 text-red-800 border-red-200',
-  optional_if_available: 'bg-green-100 text-green-800 border-green-200',
+  sale_type_specific: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+  optional_if_available: 'bg-muted text-muted-foreground border-border',
+};
+
+// Tier — collapsed 3-level model used by Link Documents UI
+export type DocumentTier = 'required' | 'conditional' | 'optional';
+
+export function getDocumentTier(group: DocumentGroup): DocumentTier {
+  if (group.category === 'required_base') return 'required';
+  if (group.category === 'optional_if_available') return 'optional';
+  // conditional + sale_type_specific
+  return group.required ? 'conditional' : 'optional';
+}
+
+export const TIER_ORDER: DocumentTier[] = ['required', 'conditional', 'optional'];
+
+export const TIER_LABELS: Record<DocumentTier, { th: string; en: string }> = {
+  required: { th: 'จำเป็น', en: 'Required' },
+  conditional: { th: 'ตามเงื่อนไข', en: 'Conditional' },
+  optional: { th: 'เพิ่มเติม', en: 'Optional' },
+};
+
+export const TIER_BADGE_CLASS: Record<DocumentTier, string> = {
+  required: 'bg-blue-100 text-blue-800 border-blue-200',
+  conditional: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+  optional: 'bg-muted text-muted-foreground border-border',
 };
 
 // Group order for display
