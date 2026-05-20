@@ -10,6 +10,7 @@ import { SaleDetailBar } from '@/components/ops/SaleDetailBar';
 import { UploadPolicyModal } from '@/components/ops/UploadPolicyModal';
 import { OpsLogicProvider } from '@/components/ops/OpsLogicContext';
 import { DevLogicControllerFab } from '@/components/ops/DevLogicControllerFab';
+import { UpdateSaleDialog } from '@/components/ops/UpdateSaleDialog';
 import { PolicyRemarksReworkDialog } from '@/components/pipeline/PolicyRemarksReworkDialog';
 import { useHistoryStore } from '@/stores/historyStore';
 import { toast } from 'sonner';
@@ -181,7 +182,7 @@ export default function OpsDashboard() {
           hasActiveEndorsement={false}
           onOpenUploadPolicy={() => setUploadPolicyOpen(true)}
           onOpenHistoryLog={() => setHistorySidebarOpen(true)}
-          onOpenEndorsement={() => handleToast(language === 'th' ? 'เปิดอัปเดตการขาย' : 'Open Update Sale')}
+          onOpenEndorsement={() => window.dispatchEvent(new Event('ops:openUpdateSale'))}
           onOpenUploadDoc={() => handleToast(language === 'th' ? 'เปิด Upload Document' : 'Open Upload Document')}
           onAdvanceVmiStatus={(next, actionLabel) => {
             handlePolicyStatusChange('vmi', next);
@@ -241,6 +242,9 @@ export default function OpsDashboard() {
         onReworkReassign={handleReworkReassign}
         onAddRework={handleAddRework}
       />
+
+      {/* Update Sale dialog (Pass 3) — opens via 'ops:openUpdateSale' event */}
+      <UpdateSaleDialog sale={sale} onSaleChange={setSale} />
 
       {/* Dev-only Logic Controller (prototype tool) */}
       <DevLogicControllerFab />
