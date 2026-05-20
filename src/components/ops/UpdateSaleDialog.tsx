@@ -12,7 +12,7 @@
  */
 import React from 'react';
 import { ChevronDown, ChevronRight, Plus, Trash2, Pencil, ArrowRight } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -20,7 +20,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 import { useLanguageStore } from '@/stores/languageStore';
 import { useHistoryStore } from '@/stores/historyStore';
@@ -764,7 +763,7 @@ export function UpdateSaleDialog({ sale, onSaleChange }: UpdateSaleDialogProps) 
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="max-w-4xl w-[92vw] p-0 gap-0 flex flex-col max-h-[88vh]">
+      <DialogContent className="max-w-4xl w-[92vw] h-[88vh] max-h-[88vh] p-0 gap-0 flex flex-col overflow-hidden">
         <DialogHeader className="px-6 py-4 border-b border-border shrink-0">
           <DialogTitle className="flex items-center gap-2 text-base">
             <Pencil className="w-4 h-4 text-primary" />
@@ -778,14 +777,9 @@ export function UpdateSaleDialog({ sale, onSaleChange }: UpdateSaleDialogProps) 
               </Badge>
             )}
           </DialogTitle>
-          <DialogDescription className="text-xs">
-            {reviewing
-              ? (lang === 'th' ? 'ตรวจสอบการเปลี่ยนแปลงก่อนยืนยัน' : 'Review the changes before applying. Apply will write back to Step 1 & Step 2.')
-              : (lang === 'th' ? 'แก้ไขข้อมูลของ Step 1 และ Step 2 หลังจาก Sale ID ออกแล้ว' : 'Edit any field from Step 1 & Step 2 after Sale ID has been issued.')}
-          </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 min-h-0 max-h-[calc(88vh-9rem)]">
+        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
           <div className="p-4 space-y-2">
             {!reviewing ? (
               <>
@@ -839,7 +833,7 @@ export function UpdateSaleDialog({ sale, onSaleChange }: UpdateSaleDialogProps) 
               </div>
             )}
           </div>
-        </ScrollArea>
+        </div>
 
         <DialogFooter className="px-6 py-3 border-t border-border shrink-0 flex-row items-center justify-between gap-2">
           <div className="text-[11px] text-muted-foreground">
