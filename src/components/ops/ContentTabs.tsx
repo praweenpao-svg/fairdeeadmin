@@ -622,11 +622,11 @@ function VerifyInformationTab({ sale, onReadinessChange }: VerifyTabProps) {
   }, [coverageStartDate]);
 
   const [zoom, setZoom] = React.useState<Record<string, number>>({ national_id: 100, car_reg: 100, payment: 100 });
-  // OCR sim status per source
+  // OCR runs automatically in the background after Step 1 → Step 2 transition.
   const [ocrStatus, setOcrStatus] = React.useState<Record<OcrKey, OcrStatus>>({
-    national_id: 'pending',
-    car_reg: 'pending',
-    payment: 'pending',
+    national_id: 'done',
+    car_reg: 'done',
+    payment: 'done',
   });
 
   // Insurance / shipping editable state (drives address propagation + gating)
@@ -747,9 +747,8 @@ function VerifyInformationTab({ sale, onReadinessChange }: VerifyTabProps) {
   // Compute readiness for "Send to Agent"
   React.useEffect(() => {
     const blockers: string[] = [];
-    // Today-start scenario: relax OCR + start-date gating; only formal docs required.
+    // Today-start scenario: relax start-date gating; only formal docs required.
     if (!isStartToday) {
-      if (ocrStatus.national_id !== 'done') blockers.push(language === 'th' ? 'OCR บัตรประชาชนยังไม่เสร็จ' : 'National ID OCR not run');
       if (!policyStartDate) blockers.push(language === 'th' ? 'กรุณาระบุวันเริ่มต้นกรมธรรม์' : 'Policy start date required');
     }
     if (!insurancePhone.trim()) blockers.push(language === 'th' ? 'กรุณาระบุเบอร์โทรศัพท์' : 'Phone number required');
@@ -859,10 +858,6 @@ function VerifyInformationTab({ sale, onReadinessChange }: VerifyTabProps) {
         <CardContent className="p-0">
           <div className="px-4 py-2 border-b border-border flex items-center justify-between">
             <span className="text-sm font-semibold">National ID</span>
-            <div className="flex items-center gap-2">
-              {ocrPill(ocrStatus.national_id)}
-              {ocrButton('national_id')}
-            </div>
           </div>
           <div className="grid grid-cols-3">
             <div className="col-span-1 border-r border-border p-3 flex flex-col">
@@ -907,10 +902,6 @@ function VerifyInformationTab({ sale, onReadinessChange }: VerifyTabProps) {
         <CardContent className="p-0">
           <div className="px-4 py-2 border-b border-border flex items-center justify-between">
             <span className="text-sm font-semibold">Car Registration</span>
-            <div className="flex items-center gap-2">
-              {ocrPill(ocrStatus.car_reg)}
-              {ocrButton('car_reg')}
-            </div>
           </div>
           <div className="grid grid-cols-3">
             <div className="col-span-1 border-r border-border p-3 flex flex-col">
@@ -947,10 +938,6 @@ function VerifyInformationTab({ sale, onReadinessChange }: VerifyTabProps) {
         <CardContent className="p-0">
           <div className="px-4 py-2 border-b border-border flex items-center justify-between">
             <span className="text-sm font-semibold">{language === 'th' ? 'หลักฐานการชำระเงิน' : 'Payment proof to FairDee'}</span>
-            <div className="flex items-center gap-2">
-              {ocrPill(ocrStatus.payment)}
-              {ocrButton('payment')}
-            </div>
           </div>
           <div className="grid grid-cols-3">
             <div className="col-span-1 border-r border-border p-3 flex flex-col">
