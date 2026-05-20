@@ -1562,12 +1562,30 @@ export function ContentTabs({ sale }: ContentTabsProps) {
       </TabsList>
 
       <TabsContent value="package-docs" className="mt-4 space-y-6">
-        <PackageBoxOnly sale={sale} />
-        <LinkDocumentsTab sale={sale} />
+        {locked && <LockedBanner language={language} />}
+        <fieldset disabled={locked} className={cn('space-y-6', locked && 'opacity-80')}>
+          <PackageBoxOnly sale={sale} />
+          <LinkDocumentsTab sale={sale} />
+        </fieldset>
+        {step1Blockers.length > 0 && !locked && (
+          <BlockerList
+            title={language === 'th' ? 'ต้องแก้ไขก่อนไปขั้นตอนถัดไป' : 'Resolve before continuing'}
+            items={step1Blockers}
+          />
+        )}
         <NextButton tabKey="package-docs" />
       </TabsContent>
-      <TabsContent value="verify" className="mt-4">
-        <VerifyInformationTab sale={sale} onReadinessChange={handleVerifyReadiness} />
+      <TabsContent value="verify" className="mt-4 space-y-4">
+        {locked && <LockedBanner language={language} />}
+        <fieldset disabled={locked} className={cn('space-y-4', locked && 'opacity-80')}>
+          <VerifyInformationTab sale={sale} onReadinessChange={handleVerifyReadiness} />
+        </fieldset>
+        {!verifyReady && verifyBlockers.length > 0 && !locked && (
+          <BlockerList
+            title={language === 'th' ? 'ต้องแก้ไขก่อนไปขั้นตอนถัดไป' : 'Resolve before continuing'}
+            items={verifyBlockers}
+          />
+        )}
         <NextButton tabKey="verify" />
       </TabsContent>
       <TabsContent value="process-payment" className="mt-4 space-y-6">
