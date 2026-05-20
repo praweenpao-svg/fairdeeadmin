@@ -13,6 +13,7 @@ import { UploadPolicyModal } from '@/components/ops/UploadPolicyModal';
 import { OpsLogicProvider } from '@/components/ops/OpsLogicContext';
 import { DevLogicControllerFab } from '@/components/ops/DevLogicControllerFab';
 import { UpdateSaleDialog } from '@/components/ops/UpdateSaleDialog';
+import { UploadDocumentsModal } from '@/components/ops/UploadDocumentsModal';
 import { PolicyRemarksReworkDialog } from '@/components/pipeline/PolicyRemarksReworkDialog';
 import { useHistoryStore } from '@/stores/historyStore';
 import { toast } from 'sonner';
@@ -66,6 +67,7 @@ export default function OpsDashboard() {
 
   // Modal / sidebar states
   const [uploadPolicyOpen, setUploadPolicyOpen] = useState(false);
+  const [uploadDocumentsOpen, setUploadDocumentsOpen] = useState(false);
   const [historySidebarOpen, setHistorySidebarOpen] = useState(false);
   const [historySidebarPolicyKind, setHistorySidebarPolicyKind] = useState<'vmi' | 'cmi'>('vmi');
 
@@ -188,7 +190,7 @@ export default function OpsDashboard() {
           onOpenUploadPolicy={() => setUploadPolicyOpen(true)}
           onOpenHistoryLog={() => setHistorySidebarOpen(true)}
           onOpenEndorsement={() => window.dispatchEvent(new Event('ops:openUpdateSale'))}
-          onOpenUploadDoc={() => handleToast(language === 'th' ? 'เปิด Upload Document' : 'Open Upload Document')}
+          onOpenUploadDoc={() => setUploadDocumentsOpen(true)}
           onAdvanceVmiStatus={(next, actionLabel) => {
             handlePolicyStatusChange('vmi', next);
             const labelMap: Record<string, string> = {
@@ -250,6 +252,9 @@ export default function OpsDashboard() {
 
       {/* Update Sale dialog (Pass 3) — opens via 'ops:openUpdateSale' event */}
       <UpdateSaleDialog sale={sale} onSaleChange={setSale} />
+
+      {/* Upload Documents modal (Pass 5) — Internal vs External split */}
+      <UploadDocumentsModal open={uploadDocumentsOpen} onOpenChange={setUploadDocumentsOpen} />
 
       {/* Dev-only Logic Controller (prototype tool) */}
       <DevLogicControllerFab />
