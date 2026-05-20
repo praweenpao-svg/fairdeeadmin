@@ -295,15 +295,6 @@ export function SaleDetailBar({
 
         <div className="flex-1" />
 
-        <Button
-          variant="outline"
-          size="sm"
-          className="text-xs gap-1.5"
-          onClick={() => window.dispatchEvent(new Event('ops:openSendSummary'))}
-        >
-          <MailCheck className="w-3.5 h-3.5" />
-          {language === 'th' ? 'ส่งสรุปให้ตัวแทน' : 'Send Summary to Agent'}
-        </Button>
 
         {primaryActions.map((action, idx) => (
           <Button
