@@ -1418,6 +1418,12 @@ export function ContentTabs({ sale }: ContentTabsProps) {
     }
   };
 
+  const handleBack = (currentTab: string) => {
+    const idx = tabOrder.indexOf(currentTab);
+    if (idx > 0) setActiveTab(tabOrder[idx - 1]);
+  };
+
+
   const tabLabel = (key: string, thLabel: string, enLabel: string) => {
     const locked = !isTabUnlocked(key);
     return (
