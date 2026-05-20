@@ -170,6 +170,8 @@ export function OpsLogicProvider({ sale, children }: { sale: SaleDetail; childre
     setInspectionAppointmentDate,
     fieldDocCounts,
     setFieldDocCounts,
+    locked,
+    setLocked,
   };
 
   return <OpsLogicContext.Provider value={value}>{children}</OpsLogicContext.Provider>;
