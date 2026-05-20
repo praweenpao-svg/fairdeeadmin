@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { RefreshCw } from 'lucide-react';
+import { ChatwootQuotationTabs } from '@/components/ops/ChatwootQuotationTabs';
 import { useLanguageStore } from '@/stores/languageStore';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { MentionNotificationBell } from '@/components/notifications/MentionNotificationBell';
@@ -21,6 +23,8 @@ import { PolicyRemark, PolicyReworkEntry, ReworkAttachment } from '@/types/pipel
 
 export default function OpsDashboard() {
   const { language } = useLanguageStore();
+  const [searchParams] = useSearchParams();
+  const isChatwoot = searchParams.get('mode') === 'chatwoot';
   // Live sale state so policy status changes propagate to primary button
   const [sale, setSale] = useState(() => ({ ...mockSaleDetail, policies: mockSaleDetail.policies.map(p => ({ ...p })) }));
 
@@ -176,6 +180,7 @@ export default function OpsDashboard() {
 
       {/* Two-column layout */}
       <div className="flex-1 overflow-y-auto px-6 py-4 w-full">
+        {isChatwoot && <ChatwootQuotationTabs activeQuotationId={`q-${sale.qqId}`} />}
         <SaleDetailBar
           sale={sale}
           hasActiveRework={opsReworkHistory.some(e => !e.resolved)}
