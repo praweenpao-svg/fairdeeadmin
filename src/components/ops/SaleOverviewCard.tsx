@@ -497,6 +497,13 @@ export function ActionStatusCard({ sale, onPolicyStatusChange }: SaleOverviewCar
           defaultValue="payment_verified"
           language={language}
         />
+
+        <StatusDropdown
+          label={language === 'th' ? 'สถานะ KYC' : 'KYC Status'}
+          options={kycStatuses}
+          defaultValue="not_verified"
+          language={language}
+        />
       </CardContent>
     </Card>
   );
