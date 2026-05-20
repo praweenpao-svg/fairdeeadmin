@@ -50,6 +50,9 @@ interface OpsLogicContextValue {
   // Uploaded docs map (fieldId -> count) — shared so Verify tab can flag missing items
   fieldDocCounts: Record<string, number>;
   setFieldDocCounts: React.Dispatch<React.SetStateAction<Record<string, number>>>;
+  // Read-only lock applied once Step 2 is completed (Sale ID issued)
+  locked: boolean;
+  setLocked: (v: boolean) => void;
 }
 
 const OpsLogicContext = React.createContext<OpsLogicContextValue | null>(null);
