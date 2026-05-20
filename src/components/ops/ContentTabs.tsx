@@ -1223,23 +1223,62 @@ interface VerifyFieldProps {
   onChange?: (value: string) => void;
 }
 
+// Source tag map: short label + tooltip explanation, color-coded by provenance
+const SOURCE_META: Record<string, { label: { en: string; th: string }; tooltip: { en: string; th: string }; cls: string }> = {
+  'National Id': { label: { en: 'NID', th: 'NID' }, tooltip: { en: 'Extracted from National ID via OCR', th: 'ดึงจากบัตรประชาชนผ่าน OCR' }, cls: 'bg-blue-500/10 text-blue-700 border-blue-500/30' },
+  'Car Registration': { label: { en: 'Car Reg', th: 'ทะเบียนรถ' }, tooltip: { en: 'Extracted from Car Registration via OCR', th: 'ดึงจากเล่มทะเบียนรถผ่าน OCR' }, cls: 'bg-emerald-500/10 text-emerald-700 border-emerald-500/30' },
+  'Payment': { label: { en: 'Payment', th: 'ชำระเงิน' }, tooltip: { en: 'Extracted from payment proof via OCR', th: 'ดึงจากหลักฐานการชำระเงินผ่าน OCR' }, cls: 'bg-violet-500/10 text-violet-700 border-violet-500/30' },
+  'Portal': { label: { en: 'Portal', th: 'พอร์ทัล' }, tooltip: { en: 'Pulled from agent portal record', th: 'ดึงจากระบบพอร์ทัลตัวแทน' }, cls: 'bg-slate-500/10 text-slate-700 border-slate-500/30' },
+  'Custom': { label: { en: 'Custom', th: 'กำหนดเอง' }, tooltip: { en: 'Captured as a custom lead', th: 'บันทึกจากลีดที่กำหนดเอง' }, cls: 'bg-amber-500/10 text-amber-700 border-amber-500/30' },
+  'Chatwoot': { label: { en: 'Chatwoot', th: 'Chatwoot' }, tooltip: { en: 'Pulled from Chatwoot quotation', th: 'ดึงจากใบเสนอราคา Chatwoot' }, cls: 'bg-sky-500/10 text-sky-700 border-sky-500/30' },
+  'Business Registration': { label: { en: 'Biz Reg', th: 'ทะเบียนนิติบุคคล' }, tooltip: { en: 'Captured from business registration document', th: 'ดึงจากหนังสือรับรองนิติบุคคล' }, cls: 'bg-indigo-500/10 text-indigo-700 border-indigo-500/30' },
+  manual_saved: { label: { en: 'Manual', th: 'แก้ไขเอง' }, tooltip: { en: 'Manually edited and saved', th: 'แก้ไขด้วยตนเองและบันทึก' }, cls: 'bg-orange-500/10 text-orange-700 border-orange-500/30' },
+};
+
+function SourceTag({ source, language }: { source: string; language: string }) {
+  const meta = SOURCE_META[source] || { label: { en: source, th: source }, tooltip: { en: source, th: source }, cls: 'bg-muted text-muted-foreground border-border' };
+  return (
+    <TooltipProvider delayDuration={150}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className={cn('inline-flex items-center gap-0.5 h-4 px-1.5 rounded text-[9px] font-medium border cursor-help', meta.cls)}>
+            ⓘ {language === 'th' ? meta.label.th : meta.label.en}
+          </span>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="text-[11px] max-w-[200px]">
+          {language === 'th' ? meta.tooltip.th : meta.tooltip.en}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
 function VerifyField({ label, value, source, isDate, isSelect, options, required, onChange }: VerifyFieldProps) {
+  const { language } = useLanguageStore();
   const isEmpty = required && !value?.trim();
+  // Track the original source-provided value so a manual edit flips the tag to manual_saved
+  const originalRef = React.useRef(value);
+  const [manualEdited, setManualEdited] = React.useState(false);
+  const effectiveSource = manualEdited ? 'manual_saved' : source;
+  const handleChange = (v: string) => {
+    if (!manualEdited && v !== originalRef.current) setManualEdited(true);
+    onChange?.(v);
+  };
   return (
     <div className="space-y-1">
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-medium">{label}</span>
-        {source && <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">ⓘ {source}</span>}
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-xs font-medium truncate">{label}</span>
+        {effectiveSource && <SourceTag source={effectiveSource} language={language} />}
       </div>
       {isDate ? (
         <Input
           type="datetime-local"
           value={value}
-          onChange={(e) => onChange?.(e.target.value)}
+          onChange={(e) => handleChange(e.target.value)}
           className={cn('text-xs h-9 bg-card', isEmpty && 'border-destructive')}
         />
       ) : isSelect && options ? (
-        <Select value={value} onValueChange={(v) => onChange?.(v)}>
+        <Select value={value} onValueChange={(v) => handleChange(v)}>
           <SelectTrigger className={cn('text-xs h-9 bg-card', isEmpty && 'border-destructive')}>
             <SelectValue />
           </SelectTrigger>
@@ -1250,7 +1289,7 @@ function VerifyField({ label, value, source, isDate, isSelect, options, required
       ) : (
         <Input
           value={value}
-          onChange={(e) => onChange?.(e.target.value)}
+          onChange={(e) => handleChange(e.target.value)}
           className={cn('text-xs h-9 bg-card', isEmpty && 'border-destructive')}
           placeholder={label}
         />
@@ -1258,6 +1297,7 @@ function VerifyField({ label, value, source, isDate, isSelect, options, required
     </div>
   );
 }
+
 
 function PolicyBenefitsTab({ sale }: { sale: SaleDetail }) {
   return (
