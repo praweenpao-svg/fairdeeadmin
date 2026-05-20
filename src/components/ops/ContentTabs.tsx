@@ -1379,7 +1379,7 @@ export function ContentTabs({ sale }: ContentTabsProps) {
   const [activeTab, setActiveTab] = React.useState('package-docs');
   const [completedSteps, setCompletedSteps] = React.useState<Set<string>>(new Set());
 
-  const tabOrder = ['package-docs', 'verify', 'process-payment', 'invoice'];
+  const tabOrder = ['package-docs', 'verify', 'process-payment'];
 
   // Step gating (R-04): a step is unlocked only when every previous step is completed.
   // Once a step is completed it remains unlocked even if the user revisits earlier steps.
