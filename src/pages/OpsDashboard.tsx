@@ -67,6 +67,7 @@ export default function OpsDashboard() {
 
   // Modal / sidebar states
   const [uploadPolicyOpen, setUploadPolicyOpen] = useState(false);
+  const [uploadDocumentsOpen, setUploadDocumentsOpen] = useState(false);
   const [historySidebarOpen, setHistorySidebarOpen] = useState(false);
   const [historySidebarPolicyKind, setHistorySidebarPolicyKind] = useState<'vmi' | 'cmi'>('vmi');
 
