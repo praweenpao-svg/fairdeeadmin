@@ -181,7 +181,7 @@ export default function OpsDashboard() {
           hasActiveEndorsement={false}
           onOpenUploadPolicy={() => setUploadPolicyOpen(true)}
           onOpenHistoryLog={() => setHistorySidebarOpen(true)}
-          onOpenEndorsement={() => handleToast(language === 'th' ? 'เปิดอัปเดตการขาย' : 'Open Update Sale')}
+          onOpenEndorsement={() => window.dispatchEvent(new Event('ops:openUpdateSale'))}
           onOpenUploadDoc={() => handleToast(language === 'th' ? 'เปิด Upload Document' : 'Open Upload Document')}
           onAdvanceVmiStatus={(next, actionLabel) => {
             handlePolicyStatusChange('vmi', next);
