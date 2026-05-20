@@ -50,6 +50,9 @@ interface OpsLogicContextValue {
   // Uploaded docs map (fieldId -> count) — shared so Verify tab can flag missing items
   fieldDocCounts: Record<string, number>;
   setFieldDocCounts: React.Dispatch<React.SetStateAction<Record<string, number>>>;
+  // Read-only lock applied once Step 2 is completed (Sale ID issued)
+  locked: boolean;
+  setLocked: (v: boolean) => void;
 }
 
 const OpsLogicContext = React.createContext<OpsLogicContextValue | null>(null);
@@ -106,6 +109,7 @@ export function OpsLogicProvider({ sale, children }: { sale: SaleDetail; childre
   const [compulsoryShippingFormat, setCompulsoryShippingFormat] = React.useState<ShippingFormat>('');
   const [inspectionAppointmentDate, setInspectionAppointmentDate] = React.useState<string>('');
   const [fieldDocCounts, setFieldDocCounts] = React.useState<Record<string, number>>({});
+  const [locked, setLocked] = React.useState(false);
 
   // Auto-extend end-dates when start changes (only if end was the prior auto-default or empty)
   const prevAutoEnd = React.useRef(addOneYear(initialStart));
@@ -166,6 +170,8 @@ export function OpsLogicProvider({ sale, children }: { sale: SaleDetail; childre
     setInspectionAppointmentDate,
     fieldDocCounts,
     setFieldDocCounts,
+    locked,
+    setLocked,
   };
 
   return <OpsLogicContext.Provider value={value}>{children}</OpsLogicContext.Provider>;

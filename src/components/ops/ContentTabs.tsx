@@ -26,8 +26,9 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { FileText, Image, CreditCard, User, Package, Link2, Plus, X, RefreshCw, Upload, ShieldCheck, Check } from 'lucide-react';
+import { FileText, Image, CreditCard, User, Package, Link2, Plus, X, RefreshCw, Upload, ShieldCheck, Check, Lock, AlertCircle } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -35,6 +36,35 @@ import { cn } from '@/lib/utils';
 interface ContentTabsProps {
   sale: SaleDetail;
 }
+
+function LockedBanner({ language }: { language: string }) {
+  return (
+    <div className="flex items-center gap-2 rounded-md border border-primary/30 bg-primary/5 px-3 py-2 text-xs">
+      <Lock className="w-3.5 h-3.5 text-primary" />
+      <span className="font-medium">
+        {language === 'th'
+          ? 'ขั้นตอนนี้ถูกล็อก — Sale ID ออกแล้ว ข้อมูลเป็นแบบอ่านอย่างเดียว ใช้ "Update Sale" เพื่อแก้ไข'
+          : 'Locked — Sale ID issued. Fields are read-only. Use "Update Sale" to edit.'}
+      </span>
+    </div>
+  );
+}
+
+function BlockerList({ title, items }: { title: string; items: string[] }) {
+  return (
+    <div className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2.5">
+      <div className="flex items-center gap-1.5 mb-1.5">
+        <AlertCircle className="w-3.5 h-3.5 text-destructive" />
+        <span className="text-xs font-semibold text-destructive">{title}</span>
+        <span className="text-[10px] text-destructive/80">({items.length})</span>
+      </div>
+      <ul className="list-disc pl-5 space-y-0.5 text-[11px] text-destructive/90">
+        {items.map((it, i) => <li key={i}>{it}</li>)}
+      </ul>
+    </div>
+  );
+}
+
 
 function InvoiceTab({ sale }: { sale: SaleDetail }) {
   const { language } = useLanguageStore();
@@ -1194,23 +1224,62 @@ interface VerifyFieldProps {
   onChange?: (value: string) => void;
 }
 
+// Source tag map: short label + tooltip explanation, color-coded by provenance
+const SOURCE_META: Record<string, { label: { en: string; th: string }; tooltip: { en: string; th: string }; cls: string }> = {
+  'National Id': { label: { en: 'NID', th: 'NID' }, tooltip: { en: 'Extracted from National ID via OCR', th: 'ดึงจากบัตรประชาชนผ่าน OCR' }, cls: 'bg-blue-500/10 text-blue-700 border-blue-500/30' },
+  'Car Registration': { label: { en: 'Car Reg', th: 'ทะเบียนรถ' }, tooltip: { en: 'Extracted from Car Registration via OCR', th: 'ดึงจากเล่มทะเบียนรถผ่าน OCR' }, cls: 'bg-emerald-500/10 text-emerald-700 border-emerald-500/30' },
+  'Payment': { label: { en: 'Payment', th: 'ชำระเงิน' }, tooltip: { en: 'Extracted from payment proof via OCR', th: 'ดึงจากหลักฐานการชำระเงินผ่าน OCR' }, cls: 'bg-violet-500/10 text-violet-700 border-violet-500/30' },
+  'Portal': { label: { en: 'Portal', th: 'พอร์ทัล' }, tooltip: { en: 'Pulled from agent portal record', th: 'ดึงจากระบบพอร์ทัลตัวแทน' }, cls: 'bg-slate-500/10 text-slate-700 border-slate-500/30' },
+  'Custom': { label: { en: 'Custom', th: 'กำหนดเอง' }, tooltip: { en: 'Captured as a custom lead', th: 'บันทึกจากลีดที่กำหนดเอง' }, cls: 'bg-amber-500/10 text-amber-700 border-amber-500/30' },
+  'Chatwoot': { label: { en: 'Chatwoot', th: 'Chatwoot' }, tooltip: { en: 'Pulled from Chatwoot quotation', th: 'ดึงจากใบเสนอราคา Chatwoot' }, cls: 'bg-sky-500/10 text-sky-700 border-sky-500/30' },
+  'Business Registration': { label: { en: 'Biz Reg', th: 'ทะเบียนนิติบุคคล' }, tooltip: { en: 'Captured from business registration document', th: 'ดึงจากหนังสือรับรองนิติบุคคล' }, cls: 'bg-indigo-500/10 text-indigo-700 border-indigo-500/30' },
+  manual_saved: { label: { en: 'Manual', th: 'แก้ไขเอง' }, tooltip: { en: 'Manually edited and saved', th: 'แก้ไขด้วยตนเองและบันทึก' }, cls: 'bg-orange-500/10 text-orange-700 border-orange-500/30' },
+};
+
+function SourceTag({ source, language }: { source: string; language: string }) {
+  const meta = SOURCE_META[source] || { label: { en: source, th: source }, tooltip: { en: source, th: source }, cls: 'bg-muted text-muted-foreground border-border' };
+  return (
+    <TooltipProvider delayDuration={150}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className={cn('inline-flex items-center gap-0.5 h-4 px-1.5 rounded text-[9px] font-medium border cursor-help', meta.cls)}>
+            ⓘ {language === 'th' ? meta.label.th : meta.label.en}
+          </span>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="text-[11px] max-w-[200px]">
+          {language === 'th' ? meta.tooltip.th : meta.tooltip.en}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
 function VerifyField({ label, value, source, isDate, isSelect, options, required, onChange }: VerifyFieldProps) {
+  const { language } = useLanguageStore();
   const isEmpty = required && !value?.trim();
+  // Track the original source-provided value so a manual edit flips the tag to manual_saved
+  const originalRef = React.useRef(value);
+  const [manualEdited, setManualEdited] = React.useState(false);
+  const effectiveSource = manualEdited ? 'manual_saved' : source;
+  const handleChange = (v: string) => {
+    if (!manualEdited && v !== originalRef.current) setManualEdited(true);
+    onChange?.(v);
+  };
   return (
     <div className="space-y-1">
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-medium">{label}</span>
-        {source && <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">ⓘ {source}</span>}
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-xs font-medium truncate">{label}</span>
+        {effectiveSource && <SourceTag source={effectiveSource} language={language} />}
       </div>
       {isDate ? (
         <Input
           type="datetime-local"
           value={value}
-          onChange={(e) => onChange?.(e.target.value)}
+          onChange={(e) => handleChange(e.target.value)}
           className={cn('text-xs h-9 bg-card', isEmpty && 'border-destructive')}
         />
       ) : isSelect && options ? (
-        <Select value={value} onValueChange={(v) => onChange?.(v)}>
+        <Select value={value} onValueChange={(v) => handleChange(v)}>
           <SelectTrigger className={cn('text-xs h-9 bg-card', isEmpty && 'border-destructive')}>
             <SelectValue />
           </SelectTrigger>
@@ -1221,7 +1290,7 @@ function VerifyField({ label, value, source, isDate, isSelect, options, required
       ) : (
         <Input
           value={value}
-          onChange={(e) => onChange?.(e.target.value)}
+          onChange={(e) => handleChange(e.target.value)}
           className={cn('text-xs h-9 bg-card', isEmpty && 'border-destructive')}
           placeholder={label}
         />
@@ -1229,6 +1298,7 @@ function VerifyField({ label, value, source, isDate, isSelect, options, required
     </div>
   );
 }
+
 
 function PolicyBenefitsTab({ sale }: { sale: SaleDetail }) {
   return (
@@ -1376,14 +1446,56 @@ function PackageBoxOnly({ sale }: { sale: SaleDetail }) {
 
 export function ContentTabs({ sale }: ContentTabsProps) {
   const { language } = useLanguageStore();
-  const { logic, phone, addCompulsory, coverageStartDate } = useOpsLogic();
+  const {
+    logic,
+    phone,
+    addCompulsory,
+    coverageStartDate,
+    compulsoryStartDate,
+    voluntaryShippingFormat,
+    compulsoryShippingFormat,
+    fieldDocCounts,
+    locked,
+    setLocked,
+  } = useOpsLogic();
   const [activeTab, setActiveTab] = React.useState('package-docs');
   const [completedSteps, setCompletedSteps] = React.useState<Set<string>>(new Set());
+  const [step1Blockers, setStep1Blockers] = React.useState<string[]>([]);
 
   const tabOrder = ['package-docs', 'verify', 'process-payment'];
 
+  // Step 1 validation: required basic-info fields + required-tier doc slots
+  const validateStep1 = React.useCallback((): string[] => {
+    const b: string[] = [];
+    if (!coverageStartDate) b.push(language === 'th' ? 'วันเริ่มความคุ้มครอง (Voluntary)' : 'Voluntary start date');
+    if (!phone || phone.length < 9) b.push(language === 'th' ? 'เบอร์โทรศัพท์ลูกค้า (10 หลัก)' : 'Customer phone (10 digits)');
+    if (!logic.paymentMethodValue) b.push(language === 'th' ? 'วิธีการชำระเงิน' : 'Payment method');
+    if (!voluntaryShippingFormat) b.push(language === 'th' ? 'รูปแบบการจัดส่ง (Voluntary)' : 'Voluntary shipping format');
+    if (addCompulsory) {
+      if (!compulsoryStartDate) b.push(language === 'th' ? 'วันเริ่มต้น พ.ร.บ.' : 'Compulsory start date');
+      if (!compulsoryShippingFormat) b.push(language === 'th' ? 'รูปแบบการจัดส่ง พ.ร.บ.' : 'Compulsory shipping format');
+    }
+    // Required-tier doc slots: any required field in current scenario must have ≥1 doc
+    const docs = getRequiredDocuments(
+      logic.saleType, logic.insuranceClass, logic.paymentType, logic.carType,
+      logic.customerType, logic.paymentMethodValue, logic.driverLicenseCount, logic.carInspectionMethod,
+    );
+    const missing = docs.filter(d => d.required && !(fieldDocCounts[d.fieldId] > 0));
+    missing.slice(0, 8).forEach(m => {
+      const def = DOCUMENT_FIELDS[m.fieldId];
+      const label = def ? (language === 'th' ? def.th : def.en) : m.fieldId;
+      b.push(`${language === 'th' ? 'เอกสาร' : 'Document'}: ${label}`);
+    });
+    if (missing.length > 8) b.push(`+${missing.length - 8} ${language === 'th' ? 'เอกสารอื่น' : 'more docs'}`);
+    return b;
+  }, [coverageStartDate, phone, logic, addCompulsory, compulsoryStartDate, voluntaryShippingFormat, compulsoryShippingFormat, fieldDocCounts, language]);
+
+  // Live re-evaluation so the error list disappears as the user fixes things
+  React.useEffect(() => {
+    if (step1Blockers.length > 0) setStep1Blockers(validateStep1());
+  }, [validateStep1, step1Blockers.length]);
+
   // Step gating (R-04): a step is unlocked only when every previous step is completed.
-  // Once a step is completed it remains unlocked even if the user revisits earlier steps.
   const isTabUnlocked = React.useCallback((tabKey: string) => {
     const idx = tabOrder.indexOf(tabKey);
     if (idx <= 0) return true;
@@ -1406,10 +1518,21 @@ export function ContentTabs({ sale }: ContentTabsProps) {
   };
 
   const handleNext = (currentTab: string) => {
-    const hasErrors = false; // Replace with real validation
-    if (hasErrors) {
-      toast.error(language === 'th' ? 'กรุณากรอกข้อมูลที่จำเป็นให้ครบ' : 'Please fill in all required fields');
-      return;
+    if (currentTab === 'package-docs') {
+      const b = validateStep1();
+      setStep1Blockers(b);
+      if (b.length > 0) {
+        toast.error(language === 'th' ? 'กรุณากรอกข้อมูลที่จำเป็นให้ครบ' : 'Please complete all required fields');
+        return;
+      }
+    }
+    if (currentTab === 'verify') {
+      if (!verifyReady) {
+        toast.error(language === 'th' ? 'กรุณาแก้ไขรายการที่ค้างก่อน' : 'Please resolve outstanding items');
+        return;
+      }
+      // Step 2 completed → lock Steps 1 & 2 (Sale ID issued)
+      setLocked(true);
     }
     setCompletedSteps(prev => new Set(prev).add(currentTab));
     const idx = tabOrder.indexOf(currentTab);
@@ -1425,9 +1548,9 @@ export function ContentTabs({ sale }: ContentTabsProps) {
 
 
   const tabLabel = (key: string, thLabel: string, enLabel: string) => {
-    const locked = !isTabUnlocked(key);
+    const isLocked = !isTabUnlocked(key);
     return (
-      <span className={cn('flex items-center gap-1', locked && 'opacity-50')}>
+      <span className={cn('flex items-center gap-1', isLocked && 'opacity-50')}>
         {language === 'th' ? thLabel : enLabel}
       </span>
     );
@@ -1442,6 +1565,7 @@ export function ContentTabs({ sale }: ContentTabsProps) {
     setVerifyReady(ready);
     setVerifyBlockers(blockers);
   }, []);
+
 
   const NextButton = ({ tabKey }: { tabKey: string }) => {
     const done = completedSteps.has(tabKey);
@@ -1508,12 +1632,30 @@ export function ContentTabs({ sale }: ContentTabsProps) {
       </TabsList>
 
       <TabsContent value="package-docs" className="mt-4 space-y-6">
-        <PackageBoxOnly sale={sale} />
-        <LinkDocumentsTab sale={sale} />
+        {locked && <LockedBanner language={language} />}
+        <fieldset disabled={locked} className={cn('space-y-6', locked && 'opacity-80')}>
+          <PackageBoxOnly sale={sale} />
+          <LinkDocumentsTab sale={sale} />
+        </fieldset>
+        {step1Blockers.length > 0 && !locked && (
+          <BlockerList
+            title={language === 'th' ? 'ต้องแก้ไขก่อนไปขั้นตอนถัดไป' : 'Resolve before continuing'}
+            items={step1Blockers}
+          />
+        )}
         <NextButton tabKey="package-docs" />
       </TabsContent>
-      <TabsContent value="verify" className="mt-4">
-        <VerifyInformationTab sale={sale} onReadinessChange={handleVerifyReadiness} />
+      <TabsContent value="verify" className="mt-4 space-y-4">
+        {locked && <LockedBanner language={language} />}
+        <fieldset disabled={locked} className={cn('space-y-4', locked && 'opacity-80')}>
+          <VerifyInformationTab sale={sale} onReadinessChange={handleVerifyReadiness} />
+        </fieldset>
+        {!verifyReady && verifyBlockers.length > 0 && !locked && (
+          <BlockerList
+            title={language === 'th' ? 'ต้องแก้ไขก่อนไปขั้นตอนถัดไป' : 'Resolve before continuing'}
+            items={verifyBlockers}
+          />
+        )}
         <NextButton tabKey="verify" />
       </TabsContent>
       <TabsContent value="process-payment" className="mt-4 space-y-6">
