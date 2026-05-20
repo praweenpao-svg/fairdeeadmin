@@ -32,6 +32,33 @@ export default function OpsDashboard() {
     }));
   };
 
+  // Step 2 completion → auto-advance VMI & CMI from "pending" to "pending_review"
+  React.useEffect(() => {
+    const handler = () => {
+      setSale(prev => ({
+        ...prev,
+        policies: prev.policies.map(p =>
+          p.status === 'pending' ? { ...p, status: 'pending_review' } : p
+        ),
+      }));
+      const labelMap: Record<string, string> = { vmi: 'VMI', cmi: 'CMI' };
+      sale.policies.forEach(p => {
+        if (p.status === 'pending') {
+          useHistoryStore.getState().add({
+            type: 'status_change',
+            policyKind: p.kind as 'vmi' | 'cmi',
+            description: `${labelMap[p.kind]} → Pending Review (Step 2 completed)`,
+          });
+        }
+      });
+      toast.success(language === 'th' ? 'ส่งสรุปให้ตัวแทนแล้ว' : 'Summary sent to agent', {
+        description: language === 'th' ? 'VMI / CMI → รอตรวจสอบ' : 'VMI / CMI advanced to Pending Review',
+      });
+    };
+    window.addEventListener('ops:step2Completed', handler);
+    return () => window.removeEventListener('ops:step2Completed', handler);
+  }, [sale.policies, language]);
+
   // Modal / sidebar states
   const [uploadPolicyOpen, setUploadPolicyOpen] = useState(false);
   const [historySidebarOpen, setHistorySidebarOpen] = useState(false);
