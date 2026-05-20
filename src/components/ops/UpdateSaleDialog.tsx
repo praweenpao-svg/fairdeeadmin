@@ -782,7 +782,7 @@ export function UpdateSaleDialog({ sale, onSaleChange }: UpdateSaleDialogProps) 
           </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="flex-1">
+        <ScrollArea className="flex-1 min-h-0 max-h-[calc(88vh-9rem)]">
           <div className="p-4 space-y-2">
             {!reviewing ? (
               <>
