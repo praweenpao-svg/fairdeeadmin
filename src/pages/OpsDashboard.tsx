@@ -243,6 +243,9 @@ export default function OpsDashboard() {
         onAddRework={handleAddRework}
       />
 
+      {/* Update Sale dialog (Pass 3) — opens via 'ops:openUpdateSale' event */}
+      <UpdateSaleDialog sale={sale} onSaleChange={setSale} />
+
       {/* Dev-only Logic Controller (prototype tool) */}
       <DevLogicControllerFab />
     </div>
