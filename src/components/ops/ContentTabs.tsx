@@ -405,19 +405,19 @@ function LinkDocumentsTab({ sale }: { sale: SaleDetail }) {
 
   const uploadFieldLabel = uploadTarget ? fieldLabel(uploadTarget) : '';
 
-  // Group fields by section letter (A–G)
-  const groupedDocs = React.useMemo(() => {
-    const groups = new Map<string, DocumentGroup[]>();
-    docGroups.forEach(d => {
-      const def = DOCUMENT_FIELDS[d.fieldId];
-      if (!def?.group) return;
-      if (!groups.has(def.group)) groups.set(def.group, []);
-      groups.get(def.group)!.push(d);
+  // Flatten + sort by tier (Required → Conditional → Optional). No group headers.
+  const sortedDocs = React.useMemo(() => {
+    const withTier = docGroups.map(d => ({ doc: d, tier: getDocumentTier(d) }));
+    withTier.sort((a, b) => {
+      const ti = TIER_ORDER.indexOf(a.tier) - TIER_ORDER.indexOf(b.tier);
+      if (ti !== 0) return ti;
+      // Within same tier, keep formal-required first then required, fallback alpha
+      const aReq = a.doc.required ? 0 : 1;
+      const bReq = b.doc.required ? 0 : 1;
+      if (aReq !== bReq) return aReq - bReq;
+      return a.doc.fieldId.localeCompare(b.doc.fieldId);
     });
-    // Order according to GROUP_ORDER, only include groups present
-    return GROUP_ORDER
-      .filter(g => groups.has(g))
-      .map(g => ({ group: g, items: groups.get(g)! }));
+    return withTier;
   }, [docGroups]);
 
   return (
@@ -428,83 +428,77 @@ function LinkDocumentsTab({ sale }: { sale: SaleDetail }) {
           <h4 className="text-sm font-bold pb-2 border-b border-border">
             {language === 'th' ? 'แนบเอกสาร' : 'Link Documents'}
           </h4>
-        {groupedDocs.map(({ group, items }) => (
-          <div key={group} className="space-y-2">
-            <h6 className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground px-1">
-              {group}
-            </h6>
-            <div className="space-y-2">
-              {items.map(item => {
-                const docs = fieldDocs[item.fieldId] || [];
-                const labelText = fieldLabel(item.fieldId);
-                const def = DOCUMENT_FIELDS[item.fieldId];
-                return (
-                  <div
-                    key={item.fieldId}
-                    className="border border-border rounded-lg p-3 bg-card"
-                    onDrop={(e) => handleDrop(e, item.fieldId)}
-                    onDragOver={handleDragOver}
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="text-xs font-medium">
-                            {labelText}
-                            {item.required && <span className="text-destructive ml-0.5">*</span>}
-                          </span>
-                          <Badge
-                            variant="outline"
-                            className={`text-[9px] px-1.5 py-0 h-4 ${CATEGORY_BADGE_CLASS[item.category]}`}
-                          >
-                            {language === 'th' ? CATEGORY_LABELS[item.category].th : CATEGORY_LABELS[item.category].en}
+          <div className="space-y-2">
+            {sortedDocs.map(({ doc: item, tier }) => {
+              const docs = fieldDocs[item.fieldId] || [];
+              const labelText = fieldLabel(item.fieldId);
+              const def = DOCUMENT_FIELDS[item.fieldId];
+              return (
+                <div
+                  key={item.fieldId}
+                  className="border border-border rounded-lg p-3 bg-card"
+                  onDrop={(e) => handleDrop(e, item.fieldId)}
+                  onDragOver={handleDragOver}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-xs font-medium">
+                          {labelText}
+                          {item.required && <span className="text-destructive ml-0.5">*</span>}
+                        </span>
+                        <Badge
+                          variant="outline"
+                          className={`text-[9px] px-1.5 py-0 h-4 ${TIER_BADGE_CLASS[tier]}`}
+                        >
+                          {language === 'th' ? TIER_LABELS[tier].th : TIER_LABELS[tier].en}
+                        </Badge>
+                        {def?.isOcr && (
+                          <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 border-primary/40 text-primary">
+                            OCR
                           </Badge>
-                          {def?.isOcr && (
-                            <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 border-primary/40 text-primary">
-                              OCR
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="text-[10px] text-muted-foreground mt-0.5">
-                          {docs.length} {language === 'th' ? 'เอกสาร' : 'Documents'}
-                          {item.requiredCount ? ` / ${item.requiredCount} ${language === 'th' ? 'จำเป็น' : 'required'}` : ''}
-                          {item.conditionNote && <span className="ml-1.5 italic">· {item.conditionNote}</span>}
-                        </p>
+                        )}
                       </div>
-                      <button
-                        onClick={() => handleOpenUploadForField(item.fieldId)}
-                        className="w-7 h-7 rounded-md border border-border flex items-center justify-center hover:bg-accent transition-colors shrink-0"
-                      >
-                        <Plus className="w-3.5 h-3.5 text-muted-foreground" />
-                      </button>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                        {docs.length} {language === 'th' ? 'เอกสาร' : 'Documents'}
+                        {item.requiredCount ? ` / ${item.requiredCount} ${language === 'th' ? 'จำเป็น' : 'required'}` : ''}
+                        {item.conditionNote && <span className="ml-1.5 italic">· {item.conditionNote}</span>}
+                      </p>
                     </div>
-                    {docs.length > 0 && (
-                      <div className="mt-2 grid grid-cols-4 gap-2">
-                        {docs.map(doc => (
-                          <div key={doc.id} className="relative border border-border rounded-lg overflow-hidden bg-muted/30">
-                            {doc.preview ? (
-                              <img src={doc.preview} alt={doc.name} className="w-full h-16 object-cover" />
-                            ) : (
-                              <div className="w-full h-16 flex items-center justify-center">
-                                <FileText className="w-6 h-6 text-muted-foreground" />
-                              </div>
-                            )}
-                            <div className="px-1.5 py-1">
-                              <p className="text-[9px] font-medium truncate">{doc.name}</p>
-                            </div>
-                            <button onClick={() => handleRemoveDoc(item.fieldId, doc.id)} className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-background/80 flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground transition-colors">
-                              <X className="w-2.5 h-2.5" />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                    <button
+                      onClick={() => handleOpenUploadForField(item.fieldId)}
+                      className="w-7 h-7 rounded-md border border-border flex items-center justify-center hover:bg-accent transition-colors shrink-0"
+                    >
+                      <Plus className="w-3.5 h-3.5 text-muted-foreground" />
+                    </button>
                   </div>
-                );
-              })}
-            </div>
+                  {docs.length > 0 && (
+                    <div className="mt-2 grid grid-cols-4 gap-2">
+                      {docs.map(doc => (
+                        <div key={doc.id} className="relative border border-border rounded-lg overflow-hidden bg-muted/30">
+                          {doc.preview ? (
+                            <img src={doc.preview} alt={doc.name} className="w-full h-16 object-cover" />
+                          ) : (
+                            <div className="w-full h-16 flex items-center justify-center">
+                              <FileText className="w-6 h-6 text-muted-foreground" />
+                            </div>
+                          )}
+                          <div className="px-1.5 py-1">
+                            <p className="text-[9px] font-medium truncate">{doc.name}</p>
+                          </div>
+                          <button onClick={() => handleRemoveDoc(item.fieldId, doc.id)} className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-background/80 flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground transition-colors">
+                            <X className="w-2.5 h-2.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
-        ))}
-      </div>
+        </div>
+
 
       {/* Right: unlinked documents */}
       <div className="lg:col-span-2">
