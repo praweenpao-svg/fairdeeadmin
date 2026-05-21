@@ -627,7 +627,7 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
 
       {/* ════════ Card 4: Shipping ════════ */}
       <SectionCard title={t('การจัดส่งกรมธรรม์', 'Shipping')}>
-        <FormRow label={t('รูปแบบกรมธรรม์ภาคสมัครใจ', 'Voluntary Shipping Format')} hint="ⓘ Chat Saved">
+        <FormRow label={t('รูปแบบกรมธรรม์ภาคสมัครใจ', 'Voluntary Shipping Format')}>
           <Select value={voluntaryShippingFormat} onValueChange={(v) => setVoluntaryShippingFormat(v as ShippingFormat)}>
             <SelectTrigger className="h-9 text-sm">
               <SelectValue placeholder={t('เลือกรูปแบบ...', 'Select format...')} />
@@ -641,7 +641,7 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
         </FormRow>
 
         {addCompulsory && (
-          <FormRow label={t('รูปแบบกรมธรรม์ พ.ร.บ.', 'Compulsory Shipping Format')} hint="ⓘ Chat Saved">
+          <FormRow label={t('รูปแบบกรมธรรม์ พ.ร.บ.', 'Compulsory Shipping Format')}>
             <Select value={compulsoryShippingFormat} onValueChange={(v) => setCompulsoryShippingFormat(v as ShippingFormat)}>
               <SelectTrigger className="h-9 text-sm">
                 <SelectValue placeholder={t('เลือกรูปแบบ...', 'Select format...')} />
