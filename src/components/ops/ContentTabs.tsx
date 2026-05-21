@@ -425,11 +425,11 @@ function LinkDocumentsTab({ sale }: { sale: SaleDetail }) {
   return (
     <div className="space-y-6">
       <Step1FormSection sale={sale} />
+      <h4 className="text-sm font-bold pb-2 border-b border-border">
+        {language === 'th' ? 'แนบเอกสาร' : 'Link Documents'}
+      </h4>
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         <div className="lg:col-span-3 space-y-4">
-          <h4 className="text-sm font-bold pb-2 border-b border-border">
-            {language === 'th' ? 'แนบเอกสาร' : 'Link Documents'}
-          </h4>
           <div className="space-y-2">
             {sortedDocs.map(({ doc: item, tier }) => {
               const docs = fieldDocs[item.fieldId] || [];
