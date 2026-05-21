@@ -249,6 +249,13 @@ export function SaleDetailBar({
   const [billingMethod, setBillingMethod] = useState<string>('');
   const [billingPayable, setBillingPayable] = useState<string>('');
   const [apiPurchased, setApiPurchased] = useState(false);
+  const [summarySent, setSummarySent] = useState(false);
+
+  React.useEffect(() => {
+    const handler = () => setSummarySent(true);
+    window.addEventListener('ops:summarySent', handler);
+    return () => window.removeEventListener('ops:summarySent', handler);
+  }, []);
 
   const handlePrimaryClick = (action: PrimaryAction) => {
     const label = action.label;
