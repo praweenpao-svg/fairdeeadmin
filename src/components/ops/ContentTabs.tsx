@@ -1680,7 +1680,7 @@ export function ContentTabs({ sale }: ContentTabsProps) {
 
       {/* Send to Agent Modal */}
       <Dialog open={sendToAgentOpen} onOpenChange={setSendToAgentOpen}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[92vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-base font-bold">
               {language === 'th' ? 'ตรวจสอบข้อมูล' : 'Verify Information'}
