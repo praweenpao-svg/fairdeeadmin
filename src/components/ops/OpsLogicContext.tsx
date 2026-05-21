@@ -50,6 +50,11 @@ interface OpsLogicContextValue {
   // Uploaded docs map (fieldId -> count) — shared so Verify tab can flag missing items
   fieldDocCounts: Record<string, number>;
   setFieldDocCounts: React.Dispatch<React.SetStateAction<Record<string, number>>>;
+  // Actual uploaded doc records — lifted to context so they persist across tab switches
+  fieldDocs: Record<string, Array<{ id: string; name: string; preview?: string; type?: string }>>;
+  setFieldDocs: React.Dispatch<React.SetStateAction<Record<string, Array<{ id: string; name: string; preview?: string; type?: string }>>>>;
+  unlinkedDocs: Array<{ id: string; name: string; size?: string; preview?: string }>;
+  setUnlinkedDocs: React.Dispatch<React.SetStateAction<Array<{ id: string; name: string; size?: string; preview?: string }>>>;
   // Read-only lock applied once Step 2 is completed (Sale ID issued)
   locked: boolean;
   setLocked: (v: boolean) => void;
@@ -109,6 +114,8 @@ export function OpsLogicProvider({ sale, children }: { sale: SaleDetail; childre
   const [compulsoryShippingFormat, setCompulsoryShippingFormat] = React.useState<ShippingFormat>('');
   const [inspectionAppointmentDate, setInspectionAppointmentDate] = React.useState<string>('');
   const [fieldDocCounts, setFieldDocCounts] = React.useState<Record<string, number>>({});
+  const [fieldDocs, setFieldDocs] = React.useState<Record<string, Array<{ id: string; name: string; preview?: string; type?: string }>>>({});
+  const [unlinkedDocs, setUnlinkedDocs] = React.useState<Array<{ id: string; name: string; size?: string; preview?: string }>>([]);
   const [locked, setLocked] = React.useState(false);
 
   // Auto-extend end-dates when start changes (only if end was the prior auto-default or empty)
@@ -170,6 +177,10 @@ export function OpsLogicProvider({ sale, children }: { sale: SaleDetail; childre
     setInspectionAppointmentDate,
     fieldDocCounts,
     setFieldDocCounts,
+    fieldDocs,
+    setFieldDocs,
+    unlinkedDocs,
+    setUnlinkedDocs,
     locked,
     setLocked,
   };

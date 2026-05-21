@@ -317,7 +317,7 @@ function LinkDocumentsTab({ sale }: { sale: SaleDetail }) {
   const { language } = useLanguageStore();
 
   // Pull live logic state from context (driven by Step1FormSection + dev FAB).
-  const { logic, setFieldDocCounts } = useOpsLogic();
+  const { logic, setFieldDocCounts, fieldDocs, setFieldDocs, unlinkedDocs, setUnlinkedDocs } = useOpsLogic();
   const { saleType, insuranceClass, paymentType, carType, customerType, paymentMethodValue: paymentMethod, driverLicenseCount, carInspectionMethod } = logic;
 
   const docGroups = React.useMemo(
@@ -328,9 +328,7 @@ function LinkDocumentsTab({ sale }: { sale: SaleDetail }) {
     [saleType, insuranceClass, paymentType, carType, customerType, paymentMethod, driverLicenseCount, carInspectionMethod]
   );
 
-  // Field-level upload state: fieldId -> docs
-  const [fieldDocs, setFieldDocs] = React.useState<Record<string, DocFile[]>>({});
-  const [unlinkedDocs, setUnlinkedDocs] = React.useState<{ id: string; name: string; size?: string; preview?: string }[]>([]);
+  // fieldDocs and unlinkedDocs are lifted to OpsLogicContext so uploads persist across tab switches.
 
   // Mirror upload counts up to context so VerifyInformationTab can flag missing required docs
   React.useEffect(() => {
