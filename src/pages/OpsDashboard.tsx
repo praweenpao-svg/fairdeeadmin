@@ -57,13 +57,13 @@ export default function OpsDashboard() {
           });
         }
       });
-      toast.success(language === 'th' ? 'ส่งสรุปให้ตัวแทนแล้ว' : 'Summary sent to agent', {
+      toast.success(language === 'th' ? `Sale ID ${sale.qqId} ถูกสร้างเรียบร้อย` : `Sale ID ${sale.qqId} has been created`, {
         description: language === 'th' ? 'VMI / CMI → รอตรวจสอบ' : 'VMI / CMI advanced to Pending Review',
       });
     };
     window.addEventListener('ops:step2Completed', handler);
     return () => window.removeEventListener('ops:step2Completed', handler);
-  }, [sale.policies, language]);
+  }, [sale.policies, sale.qqId, language]);
 
   // Modal / sidebar states
   const [uploadPolicyOpen, setUploadPolicyOpen] = useState(false);
