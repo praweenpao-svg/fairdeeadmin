@@ -1709,9 +1709,18 @@ export function ContentTabs({ sale }: ContentTabsProps) {
               const m = map[logic.saleType];
               return m ? (language === 'th' ? m.th : m.en) : dash(logic.saleType);
             })();
-            const garageLabel = logic.garageType
-              ? (language === 'th' ? (logic.garageType === 'Dealership' ? 'ศูนย์' : 'อู่') : logic.garageType)
-              : '-';
+            const garageLabel = (() => {
+              const g = logic.garageType || vmi?.garageType;
+              if (!g) return '-';
+              if (language !== 'th') return g;
+              if (g === 'Dealership') return 'ซ่อมห้าง';
+              if (g === 'Garage') return 'ซ่อมอู่';
+              return g;
+            })();
+            const insuranceClassLabel = (() => {
+              const raw = (logic.insuranceClass || vmi?.coverage?.insuranceClass || '').replace(/^Type\s*/i, '').trim();
+              return raw || '-';
+            })();
             const paymentMethodLabel = (() => {
               const map: Record<string, { th: string; en: string }> = {
                 bank_account_full: { th: 'บัญชีธนาคาร (จ่ายเต็ม)', en: 'Bank Transfer (Full)' },
@@ -1758,7 +1767,7 @@ export function ContentTabs({ sale }: ContentTabsProps) {
               { label: language === 'th' ? 'ประเภทงาน' : 'Type of Sale', value: saleTypeLabel },
               { label: language === 'th' ? 'ชื่อผู้เอาประกัน' : 'Insured Name', value: dash(insuredName) },
               { label: language === 'th' ? 'บริษัทประกัน' : 'Insurer Name', value: dash(vmi?.insurer) },
-              { label: language === 'th' ? 'ชั้นประกัน' : 'Insurance Class', value: dash(logic.insuranceClass || vmi?.coverage?.insuranceClass) },
+              { label: language === 'th' ? 'ชั้นประกัน' : 'Insurance Class', value: insuranceClassLabel },
               { label: language === 'th' ? 'ค่าเสียหายส่วนแรก (ถ้ามี)' : 'Deductible (if any)', value: deductible },
               { label: language === 'th' ? 'ประเภทที่ซ่อม' : 'Garage Type', value: garageLabel },
               { label: language === 'th' ? 'เบอร์โทรติดต่อ' : 'Phone Number', value: dash(phone || customer.phoneNumber) },
