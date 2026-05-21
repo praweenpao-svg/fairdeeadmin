@@ -1143,27 +1143,32 @@ function VerifyInformationTab({ sale, onReadinessChange }: VerifyTabProps) {
                 value={shippingForm.addressLine}
                 onChange={(v) => setShippingForm(p => ({ ...p, addressLine: v, addressSource: 'manual' }))}
                 required
+                inSummary
               />
               <VerifyField
                 label={language === 'th' ? 'จังหวัด *' : 'Province *'}
                 value={shippingForm.province}
                 onChange={(v) => setShippingForm(p => ({ ...p, province: v, addressSource: 'manual' }))}
                 required
+                inSummary
               />
               <VerifyField
                 label={language === 'th' ? 'เขต/อำเภอ *' : 'District *'}
                 value={shippingForm.district}
                 onChange={(v) => setShippingForm(p => ({ ...p, district: v, addressSource: 'manual' }))}
+                inSummary
               />
               <VerifyField
                 label={language === 'th' ? 'แขวง/ตำบล *' : 'Sub District *'}
                 value={shippingForm.subDistrict}
                 onChange={(v) => setShippingForm(p => ({ ...p, subDistrict: v, addressSource: 'manual' }))}
+                inSummary
               />
               <VerifyField
                 label={language === 'th' ? 'รหัสไปรษณีย์ *' : 'Postal Code *'}
                 value={shippingForm.postalCode}
                 onChange={(v) => setShippingForm(p => ({ ...p, postalCode: v, addressSource: 'manual' }))}
+                inSummary
               />
               <VerifyField
                 label={language === 'th' ? 'เบอร์โทรศัพท์ *' : 'Phone Number *'}
