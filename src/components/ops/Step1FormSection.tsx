@@ -125,7 +125,7 @@ function DatePickerField({ value, onChange, placeholder, lang }: { value: string
         <Button
           type="button"
           variant="outline"
-          className={cn('w-full justify-between font-normal h-9 text-sm bg-card hover:bg-card', !value && 'text-muted-foreground')}
+          className={cn('w-full justify-between font-normal h-9 text-sm bg-card hover:bg-card', value ? 'text-foreground hover:text-foreground' : 'text-muted-foreground hover:text-muted-foreground')}
         >
           <span>{dateValue ? format(dateValue, 'dd MMM yyyy', { locale }) : (placeholder || (lang === 'th' ? 'เลือกวันที่' : 'Pick a date'))}</span>
           <CalendarIcon className="h-4 w-4 opacity-50" />
