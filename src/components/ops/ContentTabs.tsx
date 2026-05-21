@@ -1305,7 +1305,7 @@ function FieldTags({ source, inSummary, language }: { source?: string; inSummary
   );
 }
 
-function VerifyField({ label, value, source, isDate, isSelect, options, required, onChange, inSummary }: VerifyFieldProps) {
+function VerifyField({ label, value, source, isDate, isDateOnly, isSelect, options, required, onChange, inSummary }: VerifyFieldProps) {
   const { language } = useLanguageStore();
   const isEmpty = required && !value?.trim();
   // Track the original source-provided value so a manual edit flips the tag to manual_saved
@@ -1322,7 +1322,14 @@ function VerifyField({ label, value, source, isDate, isSelect, options, required
         <span className="text-xs font-medium truncate">{label}</span>
         <FieldTags source={effectiveSource} inSummary={inSummary} language={language} />
       </div>
-      {isDate ? (
+      {isDateOnly ? (
+        <Input
+          type="date"
+          value={value}
+          onChange={(e) => handleChange(e.target.value)}
+          className={cn('text-sm h-9 bg-card', isEmpty && 'border-destructive')}
+        />
+      ) : isDate ? (
         <Input
           type="datetime-local"
           value={value}
