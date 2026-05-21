@@ -547,12 +547,14 @@ export function ActionStatusCard({ sale, onPolicyStatusChange }: SaleOverviewCar
           language={language}
         />
 
-        <StatusDropdown
-          label={language === 'th' ? 'สถานะ KYC' : 'KYC Status'}
-          options={kycStatuses}
-          defaultValue="not_verified"
-          language={language}
-        />
+        {showKyc && (
+          <StatusDropdown
+            label={language === 'th' ? 'สถานะ KYC' : 'KYC Status'}
+            options={kycStatuses}
+            defaultValue="not_verified"
+            language={language}
+          />
+        )}
       </CardContent>
     </Card>
   );
