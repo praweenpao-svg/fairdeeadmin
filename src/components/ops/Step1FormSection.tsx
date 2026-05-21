@@ -352,7 +352,7 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
           </Badge>
         }
       >
-        <FormRow label={t('วันเริ่มความคุ้มครอง', 'Voluntary Start Date')} required monday="date picker">
+        <FormRow label={t('วันเริ่มความคุ้มครอง', 'Voluntary Start Date')} required monday="date picker" inSummary lang={lang}>
           <DatePickerField value={coverageStartDate} onChange={setCoverageStartDate} lang={lang} />
         </FormRow>
 
