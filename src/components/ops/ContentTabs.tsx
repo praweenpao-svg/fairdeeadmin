@@ -519,9 +519,6 @@ function LinkDocumentsTab({ sale }: { sale: SaleDetail }) {
                 >
                   <Upload className="w-3 h-3 text-muted-foreground" />
                 </button>
-                <button className="w-7 h-7 rounded-md border border-border flex items-center justify-center hover:bg-accent transition-colors">
-                  <RefreshCw className="w-3 h-3 text-muted-foreground" />
-                </button>
                 <button className="px-3 py-1.5 text-[10px] font-medium bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors">
                   {language === 'th' ? 'เชื่อมโยงอัตโนมัติ' : 'Auto link'}
                 </button>
