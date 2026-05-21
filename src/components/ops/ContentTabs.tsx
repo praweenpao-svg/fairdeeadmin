@@ -1852,24 +1852,6 @@ export function ContentTabs({ sale }: ContentTabsProps) {
                       <span className="text-right max-w-[55%]">{row.value}</span>
                     </div>
                   ))}
-                  {/* Documents inline */}
-                  <div className="flex items-center justify-between py-2 border-t border-border mt-1 gap-3 flex-wrap">
-                    <span className="text-muted-foreground font-medium">{language === 'th' ? 'เอกสาร' : 'Documents'}:</span>
-                    <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border bg-red-100 text-red-700 border-red-200">
-                        <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                        {language === 'th' ? 'จำเป็น' : 'Required'} {requiredUploaded}/{reqBucket.length}
-                      </span>
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border bg-amber-100 text-amber-700 border-amber-200">
-                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                        {language === 'th' ? 'ตามเงื่อนไข' : 'Conditional'} {conditionalUploaded}/{condBucket.length}
-                      </span>
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border bg-slate-100 text-slate-600 border-slate-200">
-                        <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-                        {language === 'th' ? 'เพิ่มเติม' : 'Optional'} {optionalUploaded}/{optBucket.length}
-                      </span>
-                    </div>
-                  </div>
                 </div>
                 {/* Remarks */}
                 <Textarea
