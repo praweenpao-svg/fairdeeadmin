@@ -1246,6 +1246,7 @@ interface VerifyFieldProps {
   value: string;
   source?: string;
   isDate?: boolean;
+  isDateOnly?: boolean;
   isSelect?: boolean;
   options?: string[];
   required?: boolean;
