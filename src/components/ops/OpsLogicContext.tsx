@@ -1,6 +1,9 @@
 import React from 'react';
 import type { LogicControllerState } from './LogicControllerSection';
 import type { SaleDetail } from '@/data/mockSaleDetail';
+import sampleCarRegistration from '@/assets/sample-car-registration.jpg';
+import sampleNationalId from '@/assets/sample-national-id.jpeg';
+import samplePaymentProof from '@/assets/sample-payment-proof.png';
 
 export type ShippingFormat = 'fairdee' | 'self' | 'epolicy' | '';
 export type KycMode = 'manual' | 'auto' | '';
@@ -115,7 +118,11 @@ export function OpsLogicProvider({ sale, children }: { sale: SaleDetail; childre
   const [inspectionAppointmentDate, setInspectionAppointmentDate] = React.useState<string>('');
   const [fieldDocCounts, setFieldDocCounts] = React.useState<Record<string, number>>({});
   const [fieldDocs, setFieldDocs] = React.useState<Record<string, Array<{ id: string; name: string; preview?: string; type?: string }>>>({});
-  const [unlinkedDocs, setUnlinkedDocs] = React.useState<Array<{ id: string; name: string; size?: string; preview?: string }>>([]);
+  const [unlinkedDocs, setUnlinkedDocs] = React.useState<Array<{ id: string; name: string; size?: string; preview?: string }>>([
+    { id: 'seed-car-reg', name: 'car_registration.jpg', size: '180 KB', preview: sampleCarRegistration },
+    { id: 'seed-national-id', name: 'national_id.jpeg', size: '95 KB', preview: sampleNationalId },
+    { id: 'seed-payment-proof', name: 'payment_proof.png', size: '72 KB', preview: samplePaymentProof },
+  ]);
   const [locked, setLocked] = React.useState(false);
 
   // Auto-extend end-dates when start changes (only if end was the prior auto-default or empty)
