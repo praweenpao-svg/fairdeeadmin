@@ -1129,17 +1129,6 @@ function VerifyInformationTab({ sale, onReadinessChange }: VerifyTabProps) {
         <CardContent className="p-4">
           <div className="flex items-center justify-between mb-4">
             <h5 className="text-sm font-semibold">{language === 'th' ? 'ที่อยู่จัดส่ง' : 'Shipping Address'}</h5>
-            {shippingForm.addressSource !== 'manual' && shippingForm.receiverType !== 'e_policy' && (
-              <Button
-                size="sm"
-                variant="ghost"
-                className="h-7 text-[11px] gap-1 text-primary"
-                onClick={() => repullFromSource(shippingForm.addressSource)}
-              >
-                <RefreshCw className="w-3 h-3" />
-                {language === 'th' ? 'ดึงข้อมูลใหม่จากแหล่งที่เลือก' : 'Re-pull from source'}
-              </Button>
-            )}
           </div>
           <div className="flex items-center gap-2 mb-4">
             {[
