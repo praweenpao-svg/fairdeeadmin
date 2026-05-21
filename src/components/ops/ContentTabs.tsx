@@ -544,7 +544,10 @@ function LinkDocumentsTab({ sale }: { sale: SaleDetail }) {
                 >
                   <Upload className="w-3 h-3 text-muted-foreground" />
                 </button>
-                <button className="px-3 py-1.5 text-[10px] font-medium bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors">
+                <button
+                  onClick={handleAutoLink}
+                  className="px-3 py-1.5 text-[10px] font-medium bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+                >
                   {language === 'th' ? 'เชื่อมโยงอัตโนมัติ' : 'Auto link'}
                 </button>
               </div>
