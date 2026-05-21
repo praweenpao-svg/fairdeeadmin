@@ -1680,7 +1680,7 @@ export function ContentTabs({ sale }: ContentTabsProps) {
 
       {/* Send to Agent Modal */}
       <Dialog open={sendToAgentOpen} onOpenChange={setSendToAgentOpen}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[92vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-base font-bold">
               {language === 'th' ? 'ตรวจสอบข้อมูล' : 'Verify Information'}
@@ -1755,21 +1755,26 @@ export function ContentTabs({ sale }: ContentTabsProps) {
               logic.saleType, logic.insuranceClass, logic.paymentType, logic.carType,
               logic.customerType, logic.paymentMethodValue, logic.driverLicenseCount, logic.carInspectionMethod,
             );
-            const requiredDocs = docs.filter(d => d.required);
-            const optionalDocs = docs.filter(d => !d.required);
-            const requiredUploaded = requiredDocs.filter(d => (fieldDocCounts[d.fieldId] || 0) > 0).length;
-            const optionalUploaded = optionalDocs.filter(d => (fieldDocCounts[d.fieldId] || 0) > 0).length;
-            const totalUploaded = requiredUploaded + optionalUploaded;
-            const totalDocs = requiredDocs.length + optionalDocs.length;
+            // Bucket docs by tier: required / conditional / optional (mirrors Link Documents)
+            const tieredDocs = docs.map(d => ({ doc: d, tier: getDocumentTier(d) }));
+            const reqBucket = tieredDocs.filter(t => t.tier === 'required');
+            const condBucket = tieredDocs.filter(t => t.tier === 'conditional');
+            const optBucket = tieredDocs.filter(t => t.tier === 'optional');
+            const uploadedCount = (bucket: typeof tieredDocs) => bucket.filter(t => (fieldDocCounts[t.doc.fieldId] || 0) > 0).length;
+            const requiredUploaded = uploadedCount(reqBucket);
+            const conditionalUploaded = uploadedCount(condBucket);
+            const optionalUploaded = uploadedCount(optBucket);
+            const totalUploaded = requiredUploaded + conditionalUploaded + optionalUploaded;
+            const totalDocs = reqBucket.length + condBucket.length + optBucket.length;
 
             const rows: { label: string; value: string }[] = [
               { label: language === 'th' ? 'รหัสตัวแทน' : 'Agent Code', value: dash(sale.agentCode) },
               { label: language === 'th' ? 'ประเภทงาน' : 'Type of Sale', value: saleTypeLabel },
               { label: language === 'th' ? 'ชื่อผู้เอาประกัน' : 'Insured Name', value: dash(insuredName) },
-              { label: language === 'th' ? 'บริษัทประกัน' : 'Insurer Name', value: dash(vmi?.insurer) },
+              { label: language === 'th' ? 'ชื่อบริษัทประกัน' : 'Insurer Name', value: dash(vmi?.insurer) },
               { label: language === 'th' ? 'ชั้นประกัน' : 'Insurance Class', value: insuranceClassLabel },
               { label: language === 'th' ? 'ค่าเสียหายส่วนแรก (ถ้ามี)' : 'Deductible (if any)', value: deductible },
-              { label: language === 'th' ? 'ประเภทที่ซ่อม' : 'Garage Type', value: garageLabel },
+              { label: language === 'th' ? 'ประเภท' : 'Garage Type', value: garageLabel },
               { label: language === 'th' ? 'เบอร์โทรติดต่อ' : 'Phone Number', value: dash(phone || customer.phoneNumber) },
               { label: language === 'th' ? 'ทะเบียนรถ' : 'Vehicle Number', value: dash(vehicle.licensePlate) },
               { label: language === 'th' ? 'รหัสรถ' : 'Vehicle Code', value: dash(vehicle.vehicleCode) },
@@ -1811,10 +1816,13 @@ export function ContentTabs({ sale }: ContentTabsProps) {
                     <CollapsibleContent>
                       <div className="flex flex-wrap gap-2 pb-2 pt-1">
                         <Badge variant="outline" className="text-[11px]">
-                          {language === 'th' ? 'จำเป็น' : 'Required'} {requiredUploaded}/{requiredDocs.length}
+                          {language === 'th' ? 'จำเป็น' : 'Required'} {requiredUploaded}/{reqBucket.length}
                         </Badge>
                         <Badge variant="outline" className="text-[11px]">
-                          {language === 'th' ? 'ถ้ามี' : 'Optional'} {optionalUploaded}/{optionalDocs.length}
+                          {language === 'th' ? 'มีเงื่อนไข' : 'Conditional'} {conditionalUploaded}/{condBucket.length}
+                        </Badge>
+                        <Badge variant="outline" className="text-[11px]">
+                          {language === 'th' ? 'ถ้ามี' : 'Optional'} {optionalUploaded}/{optBucket.length}
                         </Badge>
                       </div>
                     </CollapsibleContent>
