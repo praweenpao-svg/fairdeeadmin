@@ -157,7 +157,9 @@ function PillToggle({ options, value, onChange }: { options: PillOption[]; value
             onClick={() => onChange(opt.value)}
             className={cn(
               'flex-1 px-3 text-xs transition-colors border-r border-input last:border-r-0 flex items-center justify-center gap-1',
-              selected ? 'bg-primary text-primary-foreground font-semibold' : 'bg-card text-foreground hover:bg-muted'
+              selected
+                ? 'bg-primary text-primary-foreground font-semibold hover:bg-primary hover:text-primary-foreground'
+                : 'bg-card text-foreground hover:bg-muted hover:text-foreground'
             )}
           >
             {opt.label} {selected && '✓'}
