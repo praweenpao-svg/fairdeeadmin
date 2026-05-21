@@ -568,6 +568,38 @@ function LinkDocumentsTab({ sale }: { sale: SaleDetail }) {
             )}
           </CardContent>
         </Card>
+
+        {/* Insurer Documents - pre-conversion */}
+        <Card className="border-border mt-4">
+          <CardContent className="p-4">
+            <div className="mb-3">
+              <h5 className="text-xs font-semibold">{language === 'th' ? 'เอกสารจากบริษัทประกัน' : 'Insurer Documents'}</h5>
+              <p className="text-[10px] text-muted-foreground">
+                {language === 'th'
+                  ? 'เอกสารทั้งหมดก่อนการแปลงลีดจะแสดงที่นี่'
+                  : 'All documents prior to lead conversion appear here'}
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { id: 'ins-1', name: 'Quotation_MTI.pdf', size: '142 KB' },
+                { id: 'ins-2', name: 'Coverage_Summary.pdf', size: '98 KB' },
+                { id: 'ins-3', name: 'Premium_Breakdown.pdf', size: '76 KB' },
+                { id: 'ins-4', name: 'Comparison_Sheet.pdf', size: '210 KB' },
+              ].map(doc => (
+                <div key={doc.id} className="relative border border-border rounded-lg overflow-hidden bg-muted/20">
+                  <div className="w-full h-24 flex items-center justify-center bg-muted/30">
+                    <FileText className="w-8 h-8 text-muted-foreground" />
+                  </div>
+                  <div className="p-1.5">
+                    <p className="text-[9px] font-medium truncate">{doc.name}</p>
+                    <p className="text-[8px] text-muted-foreground">{doc.size}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
         </div>
       </div>
 
