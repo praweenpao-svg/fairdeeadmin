@@ -1771,7 +1771,7 @@ export function ContentTabs({ sale }: ContentTabsProps) {
               { label: language === 'th' ? 'รหัสตัวแทน' : 'Agent Code', value: dash(sale.agentCode) },
               { label: language === 'th' ? 'ประเภทงาน' : 'Type of Sale', value: saleTypeLabel },
               { label: language === 'th' ? 'ชื่อผู้เอาประกัน' : 'Insured Name', value: dash(insuredName) },
-              { label: language === 'th' ? 'ชื่อบริษัทประกัน' : 'Insurer Name', value: dash(vmi?.insurer) },
+              { label: language === 'th' ? 'ชื่อบริษัทประกัน' : 'Insurer Name', value: '—' },
               { label: language === 'th' ? 'ชั้นประกัน' : 'Insurance Class', value: insuranceClassLabel },
               { label: language === 'th' ? 'ค่าเสียหายส่วนแรก (ถ้ามี)' : 'Deductible (if any)', value: deductible },
               { label: language === 'th' ? 'ประเภท' : 'Garage Type', value: garageLabel },
