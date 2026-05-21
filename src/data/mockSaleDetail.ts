@@ -211,7 +211,7 @@ export const mockSaleDetail: SaleDetail = {
         sumInsured: 350000,
         annualPremium: 10000,
         ownDamage: 350000,
-        deductible: 3000,
+        deductible: undefined,
         thirdPartyBodilyInjury: '500,000/person, 10,000,000/incident',
         thirdPartyPropertyDamage: '1,000,000/incident',
         personalAccident: '100,000/person × 7 seats',
