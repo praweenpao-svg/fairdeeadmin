@@ -464,7 +464,7 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
 
         {addCompulsory && (
           <>
-            <FormRow label={t('วันเริ่มต้น พ.ร.บ.', 'Compulsory Start Date')} monday="date picker">
+            <FormRow label={t('วันเริ่มต้น พ.ร.บ.', 'Compulsory Start Date')} monday="date picker" inSummary lang={lang}>
               <DatePickerField value={compulsoryStartDate} onChange={setCompulsoryStartDate} lang={lang} />
             </FormRow>
             <FormRow
