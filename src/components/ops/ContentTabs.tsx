@@ -27,8 +27,10 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { FileText, Image, CreditCard, User, Package, Link2, Plus, X, RefreshCw, Upload, ShieldCheck, Check, Lock, AlertCircle } from 'lucide-react';
+import { FileText, Image, CreditCard, User, Package, Link2, Plus, X, RefreshCw, Upload, ShieldCheck, Check, Lock, AlertCircle, ChevronDown, Copy as CopyIcon } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -1652,85 +1654,157 @@ export function ContentTabs({ sale }: ContentTabsProps) {
 
       {/* Send to Agent Modal */}
       <Dialog open={sendToAgentOpen} onOpenChange={setSendToAgentOpen}>
-        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-base font-bold">
-              {language === 'th' ? 'ยืนยันข้อมูล' : 'Verify Information'}
+              {language === 'th' ? 'ตรวจสอบข้อมูล' : 'Verify Information'}
             </DialogTitle>
           </DialogHeader>
-          <div className="border border-border rounded-lg p-4 space-y-3 text-sm">
-            {(() => {
-              const customer = sale.customer;
-              const vehicle = sale.vehicle;
-              const dash = (v: unknown): string => {
-                if (v === null || v === undefined) return '-';
-                const s = String(v).trim();
-                return s.length === 0 ? '-' : s;
+          {(() => {
+            const customer = sale.customer;
+            const vehicle = sale.vehicle;
+            const dash = (v: unknown): string => {
+              if (v === null || v === undefined) return '-';
+              const s = String(v).trim();
+              return s.length === 0 ? '-' : s;
+            };
+            const fmtDate = (iso: string): string => {
+              if (!iso) return '-';
+              const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+              return m ? `${m[3]}/${m[2]}/${m[1]}` : iso;
+            };
+            const vmi = sale.policies.find(p => p.kind === 'vmi') || sale.policies[0];
+            const saleTypeLabel = (() => {
+              const map: Record<string, { th: string; en: string }> = {
+                New: { th: 'งานใหม่', en: 'New' },
+                Renewable: { th: 'ต่ออายุ', en: 'Renewal' },
+                COA: { th: 'COA', en: 'COA' },
               };
-              const fmtDate = (iso: string): string => {
-                if (!iso) return '-';
-                const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-                return m ? `${m[3]}/${m[2]}/${m[1]}` : iso;
+              const m = map[logic.saleType];
+              return m ? (language === 'th' ? m.th : m.en) : dash(logic.saleType);
+            })();
+            const garageLabel = logic.garageType
+              ? (language === 'th' ? (logic.garageType === 'Dealership' ? 'ศูนย์' : 'อู่') : logic.garageType)
+              : '-';
+            const paymentMethodLabel = (() => {
+              const map: Record<string, { th: string; en: string }> = {
+                bank_account_full: { th: 'บัญชีธนาคาร (จ่ายเต็ม)', en: 'Bank Transfer (Full)' },
+                qr_code_full: { th: 'QR โค้ด (จ่ายเต็ม)', en: 'QR Code (Full)' },
+                credit_card_full: { th: 'บัตรเครดิตออนไลน์ (จ่ายเต็ม)', en: 'Credit Card (Full)' },
+                bank_account_installment: { th: 'บัญชีธนาคาร (ผ่อนชำระ)', en: 'Bank Transfer (Instalment)' },
+                qr_code_installment: { th: 'QR โค้ด (ผ่อนชำระ)', en: 'QR Code (Instalment)' },
+                credit_card_installment: { th: 'บัตรเครดิตออนไลน์ (ผ่อนชำระ)', en: 'Credit Card (Instalment)' },
+                insurer_cc: { th: 'บัตรเครดิตผ่านบริษัทประกัน', en: 'Credit Card via Insurer' },
+                insurer_transfer: { th: 'โอนเงินผ่านบริษัทประกัน', en: 'Transfer via Insurer' },
               };
-              const vmi = sale.policies.find(p => p.kind === 'vmi') || sale.policies[0];
-              const saleTypeLabel = (() => {
-                const map: Record<string, { th: string; en: string }> = {
-                  New: { th: 'งานใหม่', en: 'New' },
-                  Renewable: { th: 'ต่ออายุ', en: 'Renewal' },
-                  COA: { th: 'COA', en: 'COA' },
-                };
-                const m = map[logic.saleType];
-                return m ? (language === 'th' ? m.th : m.en) : dash(logic.saleType);
-              })();
-              const customerTypeLabel = logic.customerType === 'corporation'
-                ? (language === 'th' ? 'นิติบุคคล' : 'Corporation')
-                : (language === 'th' ? 'บุคคลธรรมดา' : 'Individual');
-              const garageLabel = logic.garageType
-                ? (language === 'th' ? (logic.garageType === 'Dealership' ? 'ศูนย์' : 'อู่') : logic.garageType)
-                : '-';
-              const policyAddress = [customer.addressLine, customer.subDistrict, customer.district, customer.province, customer.postalCode]
-                .filter(Boolean).join(' ');
-              const shippingAddress = [sale.shipping.addressLine, sale.shipping.subDistrict, sale.shipping.district, sale.shipping.province, sale.shipping.postalCode]
-                .filter(Boolean).join(' ');
-              const insuredName = [customer.title, customer.firstName, customer.lastName].filter(Boolean).join(' ');
-              const sumInsured = vmi?.sumInsured ? `${vmi.sumInsured.toLocaleString()} Baht` : '-';
-              const deductible = vmi?.coverage?.deductible ? `${vmi.coverage.deductible.toLocaleString()} Baht` : '-';
-              return [
-                { label: language === 'th' ? 'รหัสตัวแทน' : 'Agent Code', value: dash(sale.agentCode) },
-                { label: language === 'th' ? 'ประเภทงาน' : 'Type of Sale', value: saleTypeLabel },
-                { label: language === 'th' ? 'ประเภทลูกค้า' : 'Customer Type', value: customerTypeLabel },
-                { label: language === 'th' ? 'บริษัทประกัน' : 'Insurer Name', value: dash(vmi?.insurer) },
-                { label: language === 'th' ? 'ชั้นประกัน' : 'Insurance Class', value: dash(logic.insuranceClass || vmi?.coverage?.insuranceClass) },
-                { label: language === 'th' ? 'ดีดัคทิเบิ้ล' : 'Deductible', value: deductible },
-                { label: language === 'th' ? 'ประเภทอู่' : 'Garage Type', value: garageLabel },
-                { label: language === 'th' ? 'จำนวนผู้ขับขี่ระบุชื่อ' : 'Named Drivers', value: dash(logic.driverLicenseCount) },
-                { label: language === 'th' ? 'เบอร์โทร' : 'Phone Number', value: dash(phone || customer.phoneNumber) },
-                { label: language === 'th' ? 'ทะเบียนรถ' : 'Vehicle Number', value: dash(vehicle.licensePlate) },
-                { label: language === 'th' ? 'รหัสรถ' : 'Vehicle Code', value: dash(vehicle.vehicleCode) },
-                { label: language === 'th' ? 'ทุนประกัน' : 'Sum Insured', value: sumInsured },
-                { label: language === 'th' ? 'วันเริ่มคุ้มครอง' : 'Coverage Start Date', value: fmtDate(coverageStartDate) },
-                { label: language === 'th' ? 'วันสิ้นสุดคุ้มครอง' : 'Coverage End Date', value: fmtDate(coverageEndDate) },
-                { label: language === 'th' ? 'ที่อยู่กรมธรรม์' : 'Address On Policy Schedule', value: dash(policyAddress) },
-                { label: language === 'th' ? 'ที่อยู่จัดส่ง' : 'Delivery Address', value: dash(shippingAddress) },
-                { label: language === 'th' ? 'ชื่อผู้เอาประกัน' : 'Insured Name', value: dash(insuredName) },
-                { label: language === 'th' ? 'พ.ร.บ.' : 'Compulsory Insurance', value: addCompulsory ? (language === 'th' ? 'มี' : 'Yes') : (language === 'th' ? 'ไม่มี' : 'No') },
-                ...(addCompulsory ? [
-                  { label: language === 'th' ? 'วันเริ่ม พ.ร.บ.' : 'CMI Start Date', value: fmtDate(compulsoryStartDate) },
-                  { label: language === 'th' ? 'วันสิ้นสุด พ.ร.บ.' : 'CMI End Date', value: fmtDate(compulsoryEndDate) },
-                ] : []),
-              ];
-            })().map((row, i) => (
-              <div key={i} className="flex justify-between py-1 gap-3">
-                <span className="text-muted-foreground font-medium shrink-0">{row.label}:</span>
-                <span className="text-right max-w-[55%]">{row.value}</span>
-              </div>
-            ))}
-          </div>
-          <div className="pt-2">
-            <Button className="w-full" onClick={handleSendToAgent}>
-              {language === 'th' ? 'ส่งให้ตัวแทน' : 'Send to Agent'}
-            </Button>
-          </div>
+              const m = map[logic.paymentMethodValue || ''];
+              return m ? (language === 'th' ? m.th : m.en) : dash(logic.paymentMethodValue);
+            })();
+            const beneficiaryLabel = (() => {
+              const b = vehicle.beneficiaryType;
+              if (!b) return '-';
+              if (b === 'Legal Owner') return language === 'th' ? 'ผู้ถือกรรมสิทธิ์' : 'Legal Owner';
+              if (b === 'Named Person') return language === 'th' ? 'บุคคลที่ระบุชื่อ' : 'Named Person';
+              if (b === 'Financial Institution') return language === 'th' ? 'สถาบันการเงิน' : 'Financial Institution';
+              return b;
+            })();
+            const policyAddress = [customer.addressLine, customer.subDistrict, customer.district, customer.province, customer.postalCode]
+              .filter(Boolean).join(' ');
+            const shippingAddress = [sale.shipping.addressLine, sale.shipping.subDistrict, sale.shipping.district, sale.shipping.province, sale.shipping.postalCode]
+              .filter(Boolean).join(' ');
+            const insuredName = [customer.title, customer.firstName, customer.lastName].filter(Boolean).join(' ');
+            const sumInsured = vmi?.sumInsured ? `${vmi.sumInsured.toLocaleString()} Baht` : '-';
+            const deductible = vmi?.coverage?.deductible ? `${vmi.coverage.deductible.toLocaleString()} Baht` : '-';
+            // Documents counts
+            const docs = getRequiredDocuments(
+              logic.saleType, logic.insuranceClass, logic.paymentType, logic.carType,
+              logic.customerType, logic.paymentMethodValue, logic.driverLicenseCount, logic.carInspectionMethod,
+            );
+            const requiredDocs = docs.filter(d => d.required);
+            const optionalDocs = docs.filter(d => !d.required);
+            const requiredUploaded = requiredDocs.filter(d => (fieldDocCounts[d.fieldId] || 0) > 0).length;
+            const optionalUploaded = optionalDocs.filter(d => (fieldDocCounts[d.fieldId] || 0) > 0).length;
+            const totalUploaded = requiredUploaded + optionalUploaded;
+            const totalDocs = requiredDocs.length + optionalDocs.length;
+
+            const rows: { label: string; value: string }[] = [
+              { label: language === 'th' ? 'รหัสตัวแทน' : 'Agent Code', value: dash(sale.agentCode) },
+              { label: language === 'th' ? 'ประเภทงาน' : 'Type of Sale', value: saleTypeLabel },
+              { label: language === 'th' ? 'ชื่อผู้เอาประกัน' : 'Insured Name', value: dash(insuredName) },
+              { label: language === 'th' ? 'บริษัทประกัน' : 'Insurer Name', value: dash(vmi?.insurer) },
+              { label: language === 'th' ? 'ชั้นประกัน' : 'Insurance Class', value: dash(logic.insuranceClass || vmi?.coverage?.insuranceClass) },
+              { label: language === 'th' ? 'ค่าเสียหายส่วนแรก (ถ้ามี)' : 'Deductible (if any)', value: deductible },
+              { label: language === 'th' ? 'ประเภทที่ซ่อม' : 'Garage Type', value: garageLabel },
+              { label: language === 'th' ? 'เบอร์โทรติดต่อ' : 'Phone Number', value: dash(phone || customer.phoneNumber) },
+              { label: language === 'th' ? 'ทะเบียนรถ' : 'Vehicle Number', value: dash(vehicle.licensePlate) },
+              { label: language === 'th' ? 'รหัสรถ' : 'Vehicle Code', value: dash(vehicle.vehicleCode) },
+              { label: language === 'th' ? 'ทุนประกัน' : 'Sum Insured', value: sumInsured },
+              { label: language === 'th' ? 'วันเริ่มความคุ้มครอง' : 'Coverage Start Date', value: fmtDate(coverageStartDate) },
+              ...(addCompulsory ? [{ label: language === 'th' ? 'วันเริ่มคุ้มครอง พ.ร.บ.' : 'CMI Start Date', value: fmtDate(compulsoryStartDate) }] : []),
+              { label: language === 'th' ? 'วิธีการชำระเงิน' : 'Payment Method', value: paymentMethodLabel },
+              { label: language === 'th' ? 'ที่อยู่บนกรมธรรม์' : 'Address On Policy Schedule', value: dash(policyAddress) },
+              { label: language === 'th' ? 'ที่อยู่ในการจัดส่ง' : 'Delivery Address', value: dash(shippingAddress) },
+              { label: language === 'th' ? 'ผู้รับผลประโยชน์' : 'Beneficiary', value: beneficiaryLabel },
+              { label: language === 'th' ? 'พ.ร.บ.' : 'Compulsory Insurance', value: addCompulsory ? (language === 'th' ? 'มี' : 'Yes') : (language === 'th' ? 'ไม่มี' : 'No') },
+            ];
+
+            const handleCopy = () => {
+              const text = rows.map(r => `${r.label}: ${r.value}`).join('\n')
+                + `\n${language === 'th' ? 'เอกสาร' : 'Documents'}: ${totalUploaded}/${totalDocs}`;
+              navigator.clipboard.writeText(text);
+              toast.success(language === 'th' ? 'คัดลอกแล้ว' : 'Copied');
+            };
+
+            return (
+              <>
+                <div className="border border-border rounded-lg p-4 space-y-1 text-sm">
+                  {rows.map((row, i) => (
+                    <div key={i} className="flex justify-between py-1 gap-3">
+                      <span className="text-muted-foreground font-medium shrink-0">{row.label}:</span>
+                      <span className="text-right max-w-[55%]">{row.value}</span>
+                    </div>
+                  ))}
+                  {/* Documents collapsible */}
+                  <Collapsible>
+                    <CollapsibleTrigger className="w-full flex items-center justify-between py-2 border-t border-border mt-1 group">
+                      <span className="text-muted-foreground font-medium">{language === 'th' ? 'เอกสาร' : 'Documents'}:</span>
+                      <span className="flex items-center gap-2 text-primary font-semibold">
+                        {totalUploaded}/{totalDocs}
+                        <ChevronDown className="w-4 h-4 transition-transform group-data-[state=open]:rotate-180" />
+                      </span>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <div className="flex flex-wrap gap-2 pb-2 pt-1">
+                        <Badge variant="outline" className="text-[11px]">
+                          {language === 'th' ? 'จำเป็น' : 'Required'} {requiredUploaded}/{requiredDocs.length}
+                        </Badge>
+                        <Badge variant="outline" className="text-[11px]">
+                          {language === 'th' ? 'ถ้ามี' : 'Optional'} {optionalUploaded}/{optionalDocs.length}
+                        </Badge>
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+                </div>
+                {/* Remarks */}
+                <div className="pt-3 space-y-1">
+                  <Label className="text-xs text-muted-foreground">{language === 'th' ? 'หมายเหตุ' : 'Remarks'}</Label>
+                  <Textarea
+                    placeholder={language === 'th' ? 'พิมพ์หมายเหตุ...' : 'Type remarks...'}
+                    className="min-h-[72px] text-sm"
+                  />
+                </div>
+                <div className="pt-3 flex gap-2">
+                  <Button variant="outline" className="gap-2" onClick={handleCopy}>
+                    <CopyIcon className="w-4 h-4" />
+                    {language === 'th' ? 'คัดลอก' : 'Copy'}
+                  </Button>
+                  <Button className="flex-1" onClick={handleSendToAgent}>
+                    {language === 'th' ? 'ส่งสรุปให้กับตัวแทน' : 'Send Summary to Agent'}
+                  </Button>
+                </div>
+              </>
+            );
+          })()}
         </DialogContent>
       </Dialog>
     </Tabs>
