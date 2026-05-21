@@ -1709,9 +1709,18 @@ export function ContentTabs({ sale }: ContentTabsProps) {
               const m = map[logic.saleType];
               return m ? (language === 'th' ? m.th : m.en) : dash(logic.saleType);
             })();
-            const garageLabel = logic.garageType
-              ? (language === 'th' ? (logic.garageType === 'Dealership' ? 'ศูนย์' : 'อู่') : logic.garageType)
-              : '-';
+            const garageLabel = (() => {
+              const g = logic.garageType || vmi?.garageType;
+              if (!g) return '-';
+              if (language !== 'th') return g;
+              if (g === 'Dealership') return 'ซ่อมห้าง';
+              if (g === 'Garage') return 'ซ่อมอู่';
+              return g;
+            })();
+            const insuranceClassLabel = (() => {
+              const raw = (logic.insuranceClass || vmi?.coverage?.insuranceClass || '').replace(/^Type\s*/i, '').trim();
+              return raw || '-';
+            })();
             const paymentMethodLabel = (() => {
               const map: Record<string, { th: string; en: string }> = {
                 bank_account_full: { th: 'บัญชีธนาคาร (จ่ายเต็ม)', en: 'Bank Transfer (Full)' },
