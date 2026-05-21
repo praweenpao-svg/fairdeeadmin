@@ -150,14 +150,6 @@ export default function OpsDashboard() {
       {/* Header — identical to motor policy */}
       <header className="sticky top-0 z-30 bg-card border-b border-border">
         <div className="flex items-center justify-end px-6 py-3">
-          {/* Page-specific actions (left of divider) */}
-          <div className="flex items-center gap-2">
-            <button className="w-8 h-8 rounded-md border border-border flex items-center justify-center hover:bg-accent transition-colors">
-              <RefreshCw className="w-4 h-4 text-muted-foreground" />
-            </button>
-          </div>
-          {/* Divider separates page actions from global cluster (notifications, language, etc.) */}
-          <div className="mx-3 h-6 w-px bg-border" aria-hidden />
           {/* Global cluster */}
           <div className="flex items-center gap-3">
             <MentionNotificationBell />
