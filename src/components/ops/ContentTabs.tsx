@@ -921,7 +921,7 @@ function VerifyInformationTab({ sale, onReadinessChange }: VerifyTabProps) {
               <h5 className="text-sm font-semibold text-primary mb-3">{language === 'th' ? 'ข้อมูลรถยนต์' : 'Policy Details'}</h5>
               <div className="grid grid-cols-2 gap-x-4 gap-y-3">
                 <VerifyField label={language === 'th' ? 'ประเภททะเบียน' : 'License Type'} value="Registered" source="" isSelect options={['Registered', 'Red Plate', 'Not Registered']} />
-                <VerifyField label={language === 'th' ? 'เลขทะเบียน' : 'License Plate'} value={vehicle.licensePlate} source="Portal" />
+                <VerifyField label={language === 'th' ? 'เลขทะเบียน' : 'License Plate'} value={vehicle.licensePlate} source="Portal" inSummary />
                 <VerifyField label={language === 'th' ? 'จังหวัดจดทะเบียน' : 'Registration Province'} value={vehicle.registrationProvince} source="Car Registration" />
                 <VerifyField label={language === 'th' ? 'เลขตัวถัง' : 'Chassis Number'} value={vehicle.chassisNumber} source="" />
                 <VerifyField label={language === 'th' ? 'เลขเครื่องยนต์' : 'Engine Number'} value={vehicle.engineNumber} source="" />
