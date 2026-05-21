@@ -193,6 +193,7 @@ export default function OpsDashboard() {
             <AgentDetailsCard sale={sale} />
             <InsurerDetailsCard sale={sale} />
             <PriceDetailsCard sale={sale} />
+            <CommissionDetailsCard sale={sale} />
             <DownloadsCard />
             <HistoryCard />
           </div>
