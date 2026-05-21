@@ -307,17 +307,23 @@ export function SaleDetailBar({
         <div className="flex-1" />
 
 
-        {primaryActions.map((action, idx) => (
-          <Button
-            key={idx}
-            size="sm"
-            className={cn('text-xs gap-1.5', action.group === 'G4' && 'bg-orange-500 hover:bg-orange-600 text-white')}
-            onClick={() => handlePrimaryClick(action)}
-          >
-            {action.icon && <action.icon className="w-3.5 h-3.5" />}
-            {action.label}
-          </Button>
-        ))}
+        {primaryActions.map((action, idx) => {
+          const isBilling = /Send Billing Report|ส่งใบแจ้งหนี้/.test(action.label);
+          const disabled = isBilling && !summarySent;
+          return (
+            <Button
+              key={idx}
+              size="sm"
+              disabled={disabled}
+              title={disabled ? (language === 'th' ? 'ส่งสรุปให้ตัวแทนอย่างน้อยหนึ่งครั้งก่อน' : 'Send Summary to Agent at least once first') : undefined}
+              className={cn('text-xs gap-1.5', action.group === 'G4' && 'bg-orange-500 hover:bg-orange-600 text-white')}
+              onClick={() => handlePrimaryClick(action)}
+            >
+              {action.icon && <action.icon className="w-3.5 h-3.5" />}
+              {action.label}
+            </Button>
+          );
+        })}
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
