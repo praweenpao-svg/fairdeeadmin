@@ -1804,29 +1804,22 @@ export function ContentTabs({ sale }: ContentTabsProps) {
                       <span className="text-right max-w-[55%]">{row.value}</span>
                     </div>
                   ))}
-                  {/* Documents collapsible */}
-                  <Collapsible>
-                    <CollapsibleTrigger className="w-full flex items-center justify-between py-2 border-t border-border mt-1 group">
-                      <span className="text-muted-foreground font-medium">{language === 'th' ? 'เอกสาร' : 'Documents'}:</span>
-                      <span className="flex items-center gap-2 text-primary font-semibold">
-                        {totalUploaded}/{totalDocs}
-                        <ChevronDown className="w-4 h-4 transition-transform group-data-[state=open]:rotate-180" />
-                      </span>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent>
-                      <div className="flex flex-wrap gap-2 pb-2 pt-1">
-                        <Badge variant="outline" className="text-[11px]">
-                          {language === 'th' ? 'จำเป็น' : 'Required'} {requiredUploaded}/{reqBucket.length}
-                        </Badge>
-                        <Badge variant="outline" className="text-[11px]">
-                          {language === 'th' ? 'มีเงื่อนไข' : 'Conditional'} {conditionalUploaded}/{condBucket.length}
-                        </Badge>
-                        <Badge variant="outline" className="text-[11px]">
-                          {language === 'th' ? 'ถ้ามี' : 'Optional'} {optionalUploaded}/{optBucket.length}
-                        </Badge>
-                      </div>
-                    </CollapsibleContent>
-                  </Collapsible>
+                  {/* Documents inline */}
+                  <div className="flex items-center justify-between py-2 border-t border-border mt-1 gap-3 flex-wrap">
+                    <span className="text-muted-foreground font-medium">{language === 'th' ? 'เอกสาร' : 'Documents'}:</span>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge variant="outline" className="text-[11px]">
+                        {language === 'th' ? 'จำเป็น' : 'Required'} {requiredUploaded}/{reqBucket.length}
+                      </Badge>
+                      <Badge variant="outline" className="text-[11px]">
+                        {language === 'th' ? 'มีเงื่อนไข' : 'Conditional'} {conditionalUploaded}/{condBucket.length}
+                      </Badge>
+                      <Badge variant="outline" className="text-[11px]">
+                        {language === 'th' ? 'ถ้ามี' : 'Optional'} {optionalUploaded}/{optBucket.length}
+                      </Badge>
+                      <span className="text-primary font-semibold text-sm">{totalUploaded}/{totalDocs}</span>
+                    </div>
+                  </div>
                 </div>
                 {/* Remarks */}
                 <Textarea
