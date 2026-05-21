@@ -659,13 +659,12 @@ function VerifyInformationTab({ sale, onReadinessChange }: VerifyTabProps) {
   });
 
   // Insurance / shipping editable state (drives address propagation + gating)
-  const [policyStartDate, setPolicyStartDate] = React.useState(() => {
-    const d = new Date();
-    d.setDate(d.getDate() + 1);
-    d.setHours(0, 0, 0, 0);
-    const pad = (n: number) => String(n).padStart(2, '0');
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T00:00`;
-  });
+  // Policy Start Date is pulled from VMI Step 1 (coverageStartDate, YYYY-MM-DD). Editable locally if needed.
+  const [policyStartDate, setPolicyStartDate] = React.useState(coverageStartDate || '');
+  React.useEffect(() => {
+    // Keep in sync with Step 1 unless the user has manually changed it.
+    if (coverageStartDate) setPolicyStartDate(coverageStartDate);
+  }, [coverageStartDate]);
   const [insurancePhone, setInsurancePhone] = React.useState(customer.phoneNumber || '');
 
   // Sources available for shipping address propagation. Built from sale data.
@@ -928,7 +927,7 @@ function VerifyInformationTab({ sale, onReadinessChange }: VerifyTabProps) {
                 <VerifyField label={language === 'th' ? 'นามสกุล' : 'Last Name'} value={customer.lastName} source="National Id" inSummary />
                 <VerifyField label={language === 'th' ? 'ประเภทบัตร' : 'Type of Identification'} value={customer.idType} source="National Id" isSelect options={['National Id', 'Passport', 'Other']} />
                 <VerifyField label={language === 'th' ? 'เลขบัตรประชาชน' : 'National Id'} value={customer.nationalId} source="National Id" />
-                <VerifyField label={language === 'th' ? 'วันเกิด' : 'Birthday (AD)'} value={customer.birthday} source="National Id" isDate />
+                <VerifyField label={language === 'th' ? 'วันเกิด' : 'Birthday (AD)'} value={(() => { const m = customer.birthday.match(/^(\d{2})\/(\d{2})\/(\d{4})$/); return m ? `${m[3]}-${m[2]}-${m[1]}T00:00` : customer.birthday; })()} source="National Id" isDate />
                 <VerifyField label={language === 'th' ? 'เพศ' : 'Gender'} value={customer.gender} source="National Id" isSelect options={['M', 'F']} />
               </div>
               <h5 className="text-sm font-semibold text-primary mt-4 mb-3">{language === 'th' ? 'ที่อยู่ผู้เอาประกันภัย' : 'Policy Holder Address'}</h5>
@@ -1022,7 +1021,7 @@ function VerifyInformationTab({ sale, onReadinessChange }: VerifyTabProps) {
               value={policyStartDate}
               onChange={setPolicyStartDate}
               source=""
-              isDate
+              isDateOnly
               required
             />
             <VerifyField
@@ -1246,6 +1245,7 @@ interface VerifyFieldProps {
   value: string;
   source?: string;
   isDate?: boolean;
+  isDateOnly?: boolean;
   isSelect?: boolean;
   options?: string[];
   required?: boolean;
@@ -1304,7 +1304,7 @@ function FieldTags({ source, inSummary, language }: { source?: string; inSummary
   );
 }
 
-function VerifyField({ label, value, source, isDate, isSelect, options, required, onChange, inSummary }: VerifyFieldProps) {
+function VerifyField({ label, value, source, isDate, isDateOnly, isSelect, options, required, onChange, inSummary }: VerifyFieldProps) {
   const { language } = useLanguageStore();
   const isEmpty = required && !value?.trim();
   // Track the original source-provided value so a manual edit flips the tag to manual_saved
@@ -1321,7 +1321,14 @@ function VerifyField({ label, value, source, isDate, isSelect, options, required
         <span className="text-xs font-medium truncate">{label}</span>
         <FieldTags source={effectiveSource} inSummary={inSummary} language={language} />
       </div>
-      {isDate ? (
+      {isDateOnly ? (
+        <Input
+          type="date"
+          value={value}
+          onChange={(e) => handleChange(e.target.value)}
+          className={cn('text-sm h-9 bg-card', isEmpty && 'border-destructive')}
+        />
+      ) : isDate ? (
         <Input
           type="datetime-local"
           value={value}

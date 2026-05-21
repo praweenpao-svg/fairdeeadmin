@@ -167,7 +167,7 @@ export const mockSaleDetail: SaleDetail = {
     lastName: 'Imchokchai',
     idType: 'National Id',
     nationalId: '1234567890123',
-    birthday: '24/03/1999',
+    birthday: '28/03/1994',
     gender: 'M',
     addressLine: '388 อาคารอามีโก้ทาวเวอร์ ชั้นที่ 15 ถนนสี่พระยา',
     province: 'กรุงเทพมหานคร',
