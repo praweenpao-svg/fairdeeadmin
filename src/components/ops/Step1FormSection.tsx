@@ -69,7 +69,7 @@ function MondayTag(_: { type: string }) {
 function SummaryTag({ lang }: { lang: string }) {
   return (
     <span
-      className="inline-flex items-center h-4 px-1.5 rounded text-[9px] font-semibold border bg-primary/10 text-primary border-primary/30"
+      className="inline-flex items-center h-4 px-1.5 rounded text-[9px] font-semibold border bg-blue-500/10 text-blue-700 border-blue-500/30"
       title={lang === 'th' ? 'ค่านี้จะปรากฏในสรุปที่ส่งให้ตัวแทน' : 'This value appears in the summary sent to the agent.'}
     >
       {lang === 'th' ? 'ในสรุป' : 'In Summary'}
