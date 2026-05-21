@@ -177,6 +177,10 @@ export function OpsLogicProvider({ sale, children }: { sale: SaleDetail; childre
     setInspectionAppointmentDate,
     fieldDocCounts,
     setFieldDocCounts,
+    fieldDocs,
+    setFieldDocs,
+    unlinkedDocs,
+    setUnlinkedDocs,
     locked,
     setLocked,
   };
