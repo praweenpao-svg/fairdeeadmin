@@ -327,10 +327,12 @@ export function SaleDetailBar({
               <CreditCard className="w-3.5 h-3.5" />
               {language === 'th' ? 'ส่งใบแจ้งหนี้' : 'Send Billing Report'}
             </DropdownMenuItem>
-            <DropdownMenuItem className="text-xs gap-2" onClick={() => setKycOpen(true)}>
-              <UserCheck className="w-3.5 h-3.5" />
-              {language === 'th' ? 'อนุมัติ KYC ด้วยตนเอง' : 'Manual KYC Approval'}
-            </DropdownMenuItem>
+            {isInstalment && (
+              <DropdownMenuItem className="text-xs gap-2" onClick={() => setKycOpen(true)}>
+                <UserCheck className="w-3.5 h-3.5" />
+                {language === 'th' ? 'อนุมัติ KYC ด้วยตนเอง' : 'Manual KYC Approval'}
+              </DropdownMenuItem>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">
               {language === 'th' ? 'ออกกรมธรรม์' : 'Policy Issuance'}
