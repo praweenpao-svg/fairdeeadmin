@@ -376,7 +376,7 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
           />
         </FormRow>
 
-        <FormRow label={t('รหัสประเภทรถ', 'Vehicle Code')} required>
+        <FormRow label={t('รหัสประเภทรถ', 'Vehicle Code')} required inSummary lang={lang}>
           <TooltipProvider delayDuration={150}>
             <Tooltip>
               <TooltipTrigger asChild>
