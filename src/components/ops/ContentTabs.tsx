@@ -1867,7 +1867,9 @@ export function ContentTabs({ sale }: ContentTabsProps) {
                   </Button>
                   <Button className="flex-1" onClick={handleSendToAgent}>
                     {language === 'th' ? 'ส่งสรุปให้กับตัวแทน' : 'Send Summary to Agent'}
+                    {verifySendCount > 0 ? ` (${verifySendCount})` : ''}
                   </Button>
+
                 </div>
               </>
             );
