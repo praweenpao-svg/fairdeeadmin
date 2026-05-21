@@ -403,6 +403,33 @@ function LinkDocumentsTab({ sale }: { sale: SaleDetail }) {
 
   const handleDragOver = (e: React.DragEvent) => e.preventDefault();
 
+  const handleAutoLink = () => {
+    const rules: { match: RegExp; fieldId: string }[] = [
+      { match: /national_id|national-id|nationalid|identity/i, fieldId: 'identity_document' },
+      { match: /car_reg|car-reg|carregistration|vehicle_reg|registration/i, fieldId: 'vehicle_registration' },
+    ];
+    const matched: { doc: typeof unlinkedDocs[number]; fieldId: string }[] = [];
+    unlinkedDocs.forEach(doc => {
+      const rule = rules.find(r => r.match.test(doc.name));
+      if (rule) matched.push({ doc, fieldId: rule.fieldId });
+    });
+    if (matched.length === 0) {
+      toast.info(language === 'th' ? 'ไม่พบเอกสารที่จับคู่ได้' : 'No documents could be auto-linked');
+      return;
+    }
+    setFieldDocs(prev => {
+      const next = { ...prev };
+      matched.forEach(({ doc, fieldId }) => {
+        next[fieldId] = [...(next[fieldId] || []), { id: doc.id, name: doc.name, preview: doc.preview }];
+      });
+      return next;
+    });
+    const matchedIds = new Set(matched.map(m => m.doc.id));
+    setUnlinkedDocs(prev => prev.filter(d => !matchedIds.has(d.id)));
+    toast.success(language === 'th' ? `เชื่อมโยงแล้ว ${matched.length} รายการ` : `Auto-linked ${matched.length} document${matched.length > 1 ? 's' : ''}`);
+  };
+
+
   const uploadFieldLabel = uploadTarget ? fieldLabel(uploadTarget) : '';
 
   // Flatten + sort by tier (Required → Conditional → Optional). No group headers.
