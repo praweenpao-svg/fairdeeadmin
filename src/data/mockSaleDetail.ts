@@ -186,7 +186,7 @@ export const mockSaleDetail: SaleDetail = {
     color: 'ขาว',
     driverSpec: 'Not specified',
     beneficiaryType: 'Legal Owner',
-    vehicleCode: '110 - รถยนต์ส่วนบุ',
+    vehicleCode: '110',
     brand: 'Toyota',
     model: 'Vios',
     year: 2023,
