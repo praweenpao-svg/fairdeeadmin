@@ -1433,7 +1433,9 @@ export function ContentTabs({ sale }: ContentTabsProps) {
     phone,
     addCompulsory,
     coverageStartDate,
+    coverageEndDate,
     compulsoryStartDate,
+    compulsoryEndDate,
     voluntaryShippingFormat,
     compulsoryShippingFormat,
     fieldDocCounts,
@@ -1660,25 +1662,49 @@ export function ContentTabs({ sale }: ContentTabsProps) {
             </DialogTitle>
           </DialogHeader>
           <div className="border border-border rounded-lg p-4 space-y-3 text-sm">
-            {[
-              { label: language === 'th' ? 'รหัสตัวแทน' : 'Agent Code', value: sale.agentCode },
-              { label: language === 'th' ? 'ประเภทงาน' : 'Type of Sale', value: sale.typeOfSale },
-              { label: language === 'th' ? 'บริษัทประกัน' : 'Insurer Name', value: sale.policies[0]?.insurer || '-' },
-              { label: language === 'th' ? 'ชั้นประกัน' : 'Insurance Class', value: logic.insuranceClass || '-' },
-              { label: language === 'th' ? 'ดีดัคทิเบิ้ล' : 'Deductible', value: sale.policies[0]?.coverage.deductible ? `${sale.policies[0].coverage.deductible.toLocaleString()}` : 'N/A' },
-              { label: language === 'th' ? 'ประเภทอู่' : 'Garage Type', value: logic.garageType || '-' },
-              { label: language === 'th' ? 'เบอร์โทร' : 'Phone Number', value: phone || sale.customer.phoneNumber },
-              { label: language === 'th' ? 'ทะเบียนรถ' : 'Vehicle Number', value: sale.vehicle.licensePlate },
-              { label: language === 'th' ? 'รหัสรถ' : 'Car Code', value: sale.vehicle.vehicleCode.split(' - ')[0] || '-' },
-              { label: language === 'th' ? 'ทุนประกัน' : 'Sum Insured', value: `${sale.policies[0]?.sumInsured.toLocaleString() || '0'}` },
-              { label: language === 'th' ? 'วันคุ้มครอง' : 'Insurance Coverage Date', value: coverageStartDate ? coverageStartDate.split('-').reverse().join('/') : (sale.policies[0]?.policyStartDate || '-') },
-              { label: language === 'th' ? 'ที่อยู่กรมธรรม์' : 'Address On Policy Schedule', value: `${sale.customer.addressLine} ${sale.customer.province} ${sale.customer.district} ${sale.customer.postalCode}` },
-              { label: language === 'th' ? 'ที่อยู่จัดส่ง' : 'Delivery Address', value: `${sale.shipping.addressLine} ${sale.shipping.province} ${sale.shipping.district} ${sale.shipping.postalCode}` },
-              { label: language === 'th' ? 'ชื่อผู้เอาประกัน' : 'Insured Name', value: `${sale.customer.title} ${sale.customer.firstName} ${sale.customer.lastName}` },
-              { label: language === 'th' ? 'พ.ร.บ.' : 'Compulsory Insurance', value: addCompulsory ? (language === 'th' ? 'มี' : 'Yes') : (language === 'th' ? 'ไม่มี' : 'No') },
-            ].map((row, i) => (
-              <div key={i} className="flex justify-between py-1">
-                <span className="text-muted-foreground font-medium">{row.label}:</span>
+            {(() => {
+              const saleTypeLabel = (() => {
+                const map: Record<string, { th: string; en: string }> = {
+                  New: { th: 'งานใหม่', en: 'New' },
+                  Renewable: { th: 'ต่ออายุ', en: 'Renewal' },
+                  COA: { th: 'COA', en: 'COA' },
+                };
+                const m = map[logic.saleType];
+                return m ? (language === 'th' ? m.th : m.en) : (logic.saleType || '-');
+              })();
+              const customerTypeLabel = logic.customerType === 'corporation'
+                ? (language === 'th' ? 'นิติบุคคล' : 'Corporation')
+                : (language === 'th' ? 'บุคคลธรรมดา' : 'Individual');
+              const garageLabel = logic.garageType
+                ? (language === 'th' ? (logic.garageType === 'Dealership' ? 'ศูนย์' : 'อู่') : logic.garageType)
+                : '-';
+              return [
+                { label: language === 'th' ? 'รหัสตัวแทน' : 'Agent Code', value: sale.agentCode },
+                { label: language === 'th' ? 'ประเภทงาน' : 'Type of Sale', value: saleTypeLabel },
+                { label: language === 'th' ? 'ประเภทลูกค้า' : 'Customer Type', value: customerTypeLabel },
+                { label: language === 'th' ? 'บริษัทประกัน' : 'Insurer Name', value: sale.policies[0]?.insurer || '-' },
+                { label: language === 'th' ? 'ชั้นประกัน' : 'Insurance Class', value: logic.insuranceClass || '-' },
+                { label: language === 'th' ? 'ดีดัคทิเบิ้ล' : 'Deductible', value: sale.policies[0]?.coverage.deductible ? `${sale.policies[0].coverage.deductible.toLocaleString()}` : 'N/A' },
+                { label: language === 'th' ? 'ประเภทอู่' : 'Garage Type', value: garageLabel },
+                { label: language === 'th' ? 'จำนวนผู้ขับขี่ระบุชื่อ' : 'Named Drivers', value: String(logic.driverLicenseCount ?? 0) },
+                { label: language === 'th' ? 'เบอร์โทร' : 'Phone Number', value: phone || sale.customer.phoneNumber },
+                { label: language === 'th' ? 'ทะเบียนรถ' : 'Vehicle Number', value: sale.vehicle.licensePlate },
+                { label: language === 'th' ? 'รหัสรถ' : 'Car Code', value: sale.vehicle.vehicleCode.split(' - ')[0] || '-' },
+                { label: language === 'th' ? 'ทุนประกัน' : 'Sum Insured', value: `${sale.policies[0]?.sumInsured.toLocaleString() || '0'}` },
+                { label: language === 'th' ? 'วันเริ่มคุ้มครอง' : 'Coverage Start Date', value: coverageStartDate ? coverageStartDate.split('-').reverse().join('/') : (sale.policies[0]?.policyStartDate || '-') },
+                { label: language === 'th' ? 'วันสิ้นสุดคุ้มครอง' : 'Coverage End Date', value: coverageEndDate ? coverageEndDate.split('-').reverse().join('/') : '-' },
+                { label: language === 'th' ? 'ที่อยู่กรมธรรม์' : 'Address On Policy Schedule', value: `${sale.customer.addressLine} ${sale.customer.province} ${sale.customer.district} ${sale.customer.postalCode}` },
+                { label: language === 'th' ? 'ที่อยู่จัดส่ง' : 'Delivery Address', value: `${sale.shipping.addressLine} ${sale.shipping.province} ${sale.shipping.district} ${sale.shipping.postalCode}` },
+                { label: language === 'th' ? 'ชื่อผู้เอาประกัน' : 'Insured Name', value: `${sale.customer.title} ${sale.customer.firstName} ${sale.customer.lastName}` },
+                { label: language === 'th' ? 'พ.ร.บ.' : 'Compulsory Insurance', value: addCompulsory ? (language === 'th' ? 'มี' : 'Yes') : (language === 'th' ? 'ไม่มี' : 'No') },
+                ...(addCompulsory ? [
+                  { label: language === 'th' ? 'วันเริ่ม พ.ร.บ.' : 'CMI Start Date', value: compulsoryStartDate ? compulsoryStartDate.split('-').reverse().join('/') : '-' },
+                  { label: language === 'th' ? 'วันสิ้นสุด พ.ร.บ.' : 'CMI End Date', value: compulsoryEndDate ? compulsoryEndDate.split('-').reverse().join('/') : '-' },
+                ] : []),
+              ];
+            })().map((row, i) => (
+              <div key={i} className="flex justify-between py-1 gap-3">
+                <span className="text-muted-foreground font-medium shrink-0">{row.label}:</span>
                 <span className="text-right max-w-[55%]">{row.value}</span>
               </div>
             ))}
