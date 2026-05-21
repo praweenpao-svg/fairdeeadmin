@@ -957,7 +957,7 @@ function VerifyInformationTab({ sale, onReadinessChange }: VerifyTabProps) {
                 <VerifyField label={language === 'th' ? 'นามสกุล' : 'Last Name'} value={customer.lastName} source="National Id" inSummary />
                 <VerifyField label={language === 'th' ? 'ประเภทบัตร' : 'Type of Identification'} value={customer.idType} source="National Id" isSelect options={['National Id', 'Passport', 'Other']} />
                 <VerifyField label={language === 'th' ? 'เลขบัตรประชาชน' : 'National Id'} value={customer.nationalId} source="National Id" />
-                <VerifyField label={language === 'th' ? 'วันเกิด' : 'Birthday (AD)'} value={(() => { const m = customer.birthday.match(/^(\d{2})\/(\d{2})\/(\d{4})$/); return m ? `${m[3]}-${m[2]}-${m[1]}T00:00` : customer.birthday; })()} source="National Id" isDate />
+                <VerifyField label={language === 'th' ? 'วันเกิด' : 'Birthday (AD)'} value={(() => { const m = customer.birthday.match(/^(\d{2})\/(\d{2})\/(\d{4})$/); return m ? `${m[3]}-${m[2]}-${m[1]}` : customer.birthday; })()} source="National Id" isDateOnly />
                 <VerifyField label={language === 'th' ? 'เพศ' : 'Gender'} value={customer.gender} source="National Id" isSelect options={['M', 'F']} />
               </div>
               <h5 className="text-sm font-semibold text-primary mt-4 mb-3">{language === 'th' ? 'ที่อยู่ผู้เอาประกันภัย' : 'Policy Holder Address'}</h5>
