@@ -293,7 +293,7 @@ export function MentionNotificationBell() {
                             {!isLead && a.policyType && policyBadge(a.policyType)}
                             {a.status && (
                               <Badge variant="outline" className="text-[10px] h-5 px-1.5">
-                                {a.status}
+                                {renderStatus(a.status)}
                               </Badge>
                             )}
                           </div>
