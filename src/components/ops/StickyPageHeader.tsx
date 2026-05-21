@@ -156,8 +156,10 @@ export function StickyPageHeader({
   const currentStage = 'to_issue'; // Mock: derive from sale state
   const stageLabel = stageLabels[currentStage] || stageLabels.to_issue;
 
-  const isInstalment = /install?ment|ผ่อน/i.test(sale.paymentMethod || '');
+  const { logic } = useOpsLogic();
+  const isInstalment = logic.paymentMethodValue === 'qr_code_installment';
   const primaryActions = getPrimaryActions(vmiPolicy, cmiPolicy, language, isInstalment);
+
 
   const handleAction = (actionName: string) => {
     toast.success(actionName, {
