@@ -661,7 +661,13 @@ function VerifyInformationTab({ sale, onReadinessChange }: VerifyTabProps) {
   });
 
   // Insurance / shipping editable state (drives address propagation + gating)
-  const [policyStartDate, setPolicyStartDate] = React.useState('');
+  const [policyStartDate, setPolicyStartDate] = React.useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    d.setHours(0, 0, 0, 0);
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T00:00`;
+  });
   const [insurancePhone, setInsurancePhone] = React.useState(customer.phoneNumber || '');
 
   // Sources available for shipping address propagation. Built from sale data.
@@ -985,9 +991,9 @@ function VerifyInformationTab({ sale, onReadinessChange }: VerifyTabProps) {
             <div className="col-span-2 p-4">
               <h5 className="text-sm font-semibold text-primary mb-3">{language === 'th' ? 'ข้อมูลการชำระเงิน' : 'Payment Information'}</h5>
               <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-                <VerifyField label={language === 'th' ? 'เวลาทำรายการ' : 'Transaction Time'} value="" source="" isDate />
-                <VerifyField label={language === 'th' ? 'เลขที่ทำรายการ' : 'Transaction Id'} value="" source="" />
-                <VerifyField label={language === 'th' ? 'จำนวนเงิน' : 'Amount'} value="" source="" />
+                <VerifyField label={language === 'th' ? 'เวลาทำรายการ' : 'Transaction Time'} value={(() => { const d = new Date(); const pad = (n: number) => String(n).padStart(2, '0'); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T00:00`; })()} source="Payment" isDate />
+                <VerifyField label={language === 'th' ? 'เลขที่ทำรายการ' : 'Transaction Id'} value="12345" source="Payment" />
+                <VerifyField label={language === 'th' ? 'จำนวนเงิน' : 'Amount'} value="10645" source="Payment" />
               </div>
             </div>
           </div>
