@@ -1206,7 +1206,28 @@ interface VerifyFieldProps {
   options?: string[];
   required?: boolean;
   onChange?: (value: string) => void;
+  inSummary?: boolean;
 }
+
+function SummaryTag({ language }: { language: string }) {
+  return (
+    <TooltipProvider delayDuration={150}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="inline-flex items-center h-4 px-1.5 rounded text-[9px] font-semibold border bg-primary/10 text-primary border-primary/30 cursor-help">
+            {language === 'th' ? 'ในสรุป' : 'In Summary'}
+          </span>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="text-[11px] max-w-[220px]">
+          {language === 'th'
+            ? 'ค่านี้จะปรากฏในสรุปที่ส่งให้ตัวแทน'
+            : 'This value appears in the summary sent to the agent.'}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
 
 // Source tag map: short label + tooltip explanation, color-coded by provenance
 const SOURCE_META: Record<string, { label: { en: string; th: string }; tooltip: { en: string; th: string }; cls: string }> = {
