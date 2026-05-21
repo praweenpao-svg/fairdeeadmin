@@ -877,9 +877,9 @@ function VerifyInformationTab({ sale, onReadinessChange }: VerifyTabProps) {
               <h5 className="text-sm font-semibold text-primary mb-3">{language === 'th' ? 'ข้อมูลลูกค้า' : 'Customer Details'}</h5>
               <div className="grid grid-cols-2 gap-x-4 gap-y-3">
                 <VerifyField label={language === 'th' ? 'ประเภทลูกค้า' : 'Customer Type'} value={customer.customerType === 'individual' ? 'Individual' : 'Corporation'} source="Custom" isSelect options={['Individual', 'Corporation']} />
-                <VerifyField label={language === 'th' ? 'คำนำหน้า' : 'Title'} value={customer.title} source="National Id" />
-                <VerifyField label={language === 'th' ? 'ชื่อ' : 'First Name'} value={customer.firstName} source="National Id" />
-                <VerifyField label={language === 'th' ? 'นามสกุล' : 'Last Name'} value={customer.lastName} source="National Id" />
+                <VerifyField label={language === 'th' ? 'คำนำหน้า' : 'Title'} value={customer.title} source="National Id" inSummary />
+                <VerifyField label={language === 'th' ? 'ชื่อ' : 'First Name'} value={customer.firstName} source="National Id" inSummary />
+                <VerifyField label={language === 'th' ? 'นามสกุล' : 'Last Name'} value={customer.lastName} source="National Id" inSummary />
                 <VerifyField label={language === 'th' ? 'ประเภทบัตร' : 'Type of Identification'} value={customer.idType} source="National Id" isSelect options={['National Id', 'Passport', 'Other']} />
                 <VerifyField label={language === 'th' ? 'เลขบัตรประชาชน' : 'National Id'} value={customer.nationalId} source="National Id" />
                 <VerifyField label={language === 'th' ? 'วันเกิด' : 'Birthday (AD)'} value={customer.birthday} source="National Id" isDate />
@@ -887,12 +887,12 @@ function VerifyInformationTab({ sale, onReadinessChange }: VerifyTabProps) {
               </div>
               <h5 className="text-sm font-semibold text-primary mt-4 mb-3">{language === 'th' ? 'ที่อยู่ผู้เอาประกันภัย' : 'Policy Holder Address'}</h5>
               <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-                <VerifyField label={language === 'th' ? 'ที่อยู่' : 'Address Line'} value={customer.addressLine} source="National Id" />
-                <VerifyField label={language === 'th' ? 'จังหวัด' : 'Province'} value={customer.province} source="" />
-                <VerifyField label={language === 'th' ? 'เขต/อำเภอ' : 'District'} value={customer.district} source="" />
-                <VerifyField label={language === 'th' ? 'แขวง/ตำบล' : 'Sub District'} value={customer.subDistrict} source="" />
-                <VerifyField label={language === 'th' ? 'รหัสไปรษณีย์' : 'Postal Code'} value={customer.postalCode} source="" />
-                <VerifyField label={language === 'th' ? 'เบอร์โทรศัพท์' : 'Phone Number'} value={customer.phoneNumber} source="" />
+                <VerifyField label={language === 'th' ? 'ที่อยู่' : 'Address Line'} value={customer.addressLine} source="National Id" inSummary />
+                <VerifyField label={language === 'th' ? 'จังหวัด' : 'Province'} value={customer.province} source="" inSummary />
+                <VerifyField label={language === 'th' ? 'เขต/อำเภอ' : 'District'} value={customer.district} source="" inSummary />
+                <VerifyField label={language === 'th' ? 'แขวง/ตำบล' : 'Sub District'} value={customer.subDistrict} source="" inSummary />
+                <VerifyField label={language === 'th' ? 'รหัสไปรษณีย์' : 'Postal Code'} value={customer.postalCode} source="" inSummary />
+                <VerifyField label={language === 'th' ? 'เบอร์โทรศัพท์' : 'Phone Number'} value={customer.phoneNumber} source="" inSummary />
               </div>
             </div>
           </div>
