@@ -150,6 +150,7 @@ function PillToggle({ options, value, onChange }: { options: PillOption[]; value
     <div className="inline-flex border border-input rounded-md overflow-hidden h-9 w-full">
       {options.map(opt => {
         const selected = value === opt.value;
+        const textClass = selected ? 'text-primary-foreground' : 'text-foreground';
         return (
           <button
             key={opt.value}
@@ -158,11 +159,12 @@ function PillToggle({ options, value, onChange }: { options: PillOption[]; value
             className={cn(
               'flex-1 px-3 text-xs transition-colors border-r border-input last:border-r-0 flex items-center justify-center gap-1',
               selected
-                ? 'bg-primary text-primary-foreground font-semibold hover:bg-primary hover:text-primary-foreground'
-                : 'bg-card text-foreground hover:bg-muted hover:text-foreground'
+                ? 'bg-primary font-semibold hover:bg-primary'
+                : 'bg-card hover:bg-muted'
             )}
           >
-            {opt.label} {selected && '✓'}
+            <span className={cn('leading-none', textClass)}>{opt.label}</span>
+            {selected && <span className={cn('leading-none', textClass)}>✓</span>}
           </button>
         );
       })}
