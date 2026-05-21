@@ -1829,11 +1829,11 @@ export function ContentTabs({ sale }: ContentTabsProps) {
                   </Collapsible>
                 </div>
                 {/* Remarks */}
-                <div className="pt-3 space-y-1">
+                <div className="space-y-1">
                   <Label className="text-xs text-muted-foreground">{language === 'th' ? 'หมายเหตุ' : 'Remarks'}</Label>
                   <Textarea
                     placeholder={language === 'th' ? 'พิมพ์หมายเหตุ...' : 'Type remarks...'}
-                    className="min-h-[72px] text-sm"
+                    className="min-h-[60px] text-sm"
                   />
                 </div>
                 <div className="pt-3 flex gap-2">
