@@ -279,7 +279,7 @@ export function AgentDetailsCard({ sale }: SaleOverviewCardProps) {
             const map: Record<string, string> = { New: 'งานใหม่', Renewable: 'ต่ออายุ', COA: 'COA' };
             return map[v] || v;
           })()} />
-          <SummaryRow label={language === 'th' ? 'สร้างเมื่อ' : 'Created At'} value="DD/MM/YYYY" />
+          
         </div>
       </CardContent>
     </Card>
@@ -307,7 +307,7 @@ export function InsurerDetailsCard({ sale }: SaleOverviewCardProps) {
           <SummaryRow label={language === 'th' ? 'ชื่อแพ็กเกจ' : 'Package Name'} value={language === 'th' ? 'ชื่อแพ็กเกจ' : 'Package Name'} />
           <SummaryRow label={language === 'th' ? 'ชั้น' : 'Insurance Class'} value={(() => {
             const raw = (logic.insuranceClass || '').replace(/^Type\s*/, '').trim();
-            return raw ? `#${raw}` : '—';
+            return raw || '—';
           })()} />
           <SummaryRow label={language === 'th' ? 'ทุนประกัน' : 'Sum Insured'} value={vmi.sumInsured ? `${vmi.sumInsured.toLocaleString()} Baht` : '—'} />
           <SummaryRow label={language === 'th' ? 'ประเภท' : 'Garage Type'} value={(() => {
@@ -371,7 +371,40 @@ export function PriceDetailsCard({ sale }: SaleOverviewCardProps) {
           <SummaryRow label={language === 'th' ? 'เบี้ยรวมทั้งหมด (VMI + CMI)' : 'Total Premium (VMI + CMI)'} value={fmt(grandTotal)} emphasize />
           <SummaryRow label={language === 'th' ? 'ส่วนลดจากตัวแทน' : 'Discount from agent'} value="—" />
           <SummaryRow label={language === 'th' ? 'ยอดโอนให้ FairDee' : 'Transfer amount to FairDee'} value={fmt(grandTotal)} emphasize />
-          <div className="h-2" />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+export function CommissionDetailsCard({ sale }: SaleOverviewCardProps) {
+  const { language } = useLanguageStore();
+  const vmi = sale.policies.find(p => p.kind === 'vmi');
+  const cmi = sale.policies.find(p => p.kind === 'cmi');
+
+  const vmiTotal = vmi?.premiumAfterTax || 0;
+  const vmiTax = vmi ? Math.round(vmiTotal * 0.0697 * 100) / 100 : 0;
+  const vmiNet = vmi ? Math.round((vmiTotal - vmiTax) * 100) / 100 : 0;
+
+  const vmiCommission = vmi?.affiliateCommission || 0;
+  const cmiCommission = cmi?.affiliateCommission || 0;
+  const totalCommission = vmiCommission + cmiCommission;
+  const withholdingTax = Math.round(totalCommission * 0.03 * 100) / 100;
+  const commissionAfterTax = Math.round((totalCommission - withholdingTax) * 100) / 100;
+  const vmiCommissionRate = vmi && vmiNet ? `${((vmiCommission / vmiNet) * 100).toFixed(2)}%` : '—';
+
+  const fmt = (n: number) => `${Math.round(n).toLocaleString()} Baht`;
+
+  return (
+    <Card>
+      <CardHeader className="pb-2 pt-4 px-4">
+        <CardTitle className="text-sm font-semibold flex items-center gap-2">
+          <DollarSign className="w-4 h-4" />
+          {language === 'th' ? 'รายละเอียดค่าคอมมิชชั่น' : 'Commission Details'}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="px-4 pb-4">
+        <div className="space-y-2.5">
           <SummaryRow label={language === 'th' ? "ค่าคอมประกันสมัครใจ" : "Agent's voluntary insurance Commission"} value={fmt(vmiCommission)} />
           <SummaryRow label={language === 'th' ? 'อัตราค่าคอม VMI' : 'VMI Commission Rate'} value={vmiCommissionRate} />
           <SummaryRow label={language === 'th' ? "ค่าคอมประกันภาคบังคับ" : "Agent's compulsory insurance Commission"} value={fmt(cmiCommission)} />
