@@ -256,11 +256,11 @@ export const mockSaleDetail: SaleDetail = {
   shipping: {
     receiverType: 'policy_holder',
     receiverName: 'Praween Imchokchai',
-    addressLine: '111 หมู่ที่ 1 ปฐมนท : ก.สุนวิก',
+    addressLine: '388 อาคารอามีโก้ทาวเวอร์ ชั้นที่ 15 ถนนสี่พระยา',
     province: 'กรุงเทพมหานคร',
-    district: 'บางขุนเทียน',
-    subDistrict: 'แสมดำ',
-    postalCode: '10150',
+    district: 'บางรัก',
+    subDistrict: 'มหาพฤฒาราม',
+    postalCode: '10500',
     phoneNumber: '081-234-5678',
   },
   assignment: {
