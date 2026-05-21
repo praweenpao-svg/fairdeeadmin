@@ -273,7 +273,12 @@ export function AgentDetailsCard({ sale }: SaleOverviewCardProps) {
           <SummaryRow label={language === 'th' ? 'รหัสตัวแทน' : 'Agent Code'} value="FX-XXXXX" />
           <SummaryRow label={language === 'th' ? 'เบอร์โทรศัพท์' : 'Agent Phone'} value="0XX-XXX-XXXX" />
           <SummaryRow label={language === 'th' ? 'ระดับ' : 'Level'} value={String(sale.agent.level)} />
-          <SummaryRow label={language === 'th' ? 'ประเภทงาน' : 'Type of Sale'} value={sale.saleType || sale.typeOfSale} />
+          <SummaryRow label={language === 'th' ? 'ประเภทงาน' : 'Type of Sale'} value={(() => {
+            const v = sale.saleType || sale.typeOfSale;
+            if (language !== 'th') return v;
+            const map: Record<string, string> = { New: 'งานใหม่', Renewable: 'ต่ออายุ', COA: 'COA' };
+            return map[v] || v;
+          })()} />
           <SummaryRow label={language === 'th' ? 'สร้างเมื่อ' : 'Created At'} value="DD/MM/YYYY" />
         </div>
       </CardContent>
