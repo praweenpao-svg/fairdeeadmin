@@ -748,6 +748,19 @@ function VerifyInformationTab({ sale, onReadinessChange }: VerifyTabProps) {
         postalCode: src.postalCode,
         phoneNumber: rt === 'agent' ? (agent?.phone || prev.phoneNumber) : prev.phoneNumber,
       }));
+    } else if (rt === 'new_address') {
+      setShippingForm(prev => ({
+        ...prev,
+        receiverType: rt,
+        addressSource: 'manual',
+        receiverName: '',
+        addressLine: '',
+        province: '',
+        district: '',
+        subDistrict: '',
+        postalCode: '',
+        phoneNumber: '',
+      }));
     } else {
       setShippingForm(prev => ({ ...prev, receiverType: rt, addressSource: 'manual' }));
     }
