@@ -363,7 +363,7 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
           <DatePickerField value={coverageEndDate} onChange={setCoverageEndDate} lang={lang} />
         </FormRow>
 
-        <FormRow label={t('เบอร์โทรศัพท์ลูกค้า', 'Customer Phone Number')} required monday="text">
+        <FormRow label={t('เบอร์โทรศัพท์ลูกค้า', 'Customer Phone Number')} required monday="text" inSummary lang={lang}>
           <Input
             type="tel"
             inputMode="numeric"
