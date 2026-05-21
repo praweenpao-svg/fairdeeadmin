@@ -336,7 +336,11 @@ export function SaleDetailBar({
             <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">
               {language === 'th' ? 'การชำระเงิน' : 'Payment'}
             </DropdownMenuLabel>
-            <DropdownMenuItem className="text-xs gap-2" onClick={() => setBillingOpen(true)}>
+            <DropdownMenuItem
+              className="text-xs gap-2"
+              disabled={!summarySent}
+              onClick={() => setBillingOpen(true)}
+            >
               <CreditCard className="w-3.5 h-3.5" />
               {language === 'th' ? 'ส่งใบแจ้งหนี้' : 'Send Billing Report'}
             </DropdownMenuItem>
