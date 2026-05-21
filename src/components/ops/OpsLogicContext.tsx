@@ -50,6 +50,11 @@ interface OpsLogicContextValue {
   // Uploaded docs map (fieldId -> count) — shared so Verify tab can flag missing items
   fieldDocCounts: Record<string, number>;
   setFieldDocCounts: React.Dispatch<React.SetStateAction<Record<string, number>>>;
+  // Actual uploaded doc records — lifted to context so they persist across tab switches
+  fieldDocs: Record<string, Array<{ id: string; name: string; preview?: string; type?: string }>>;
+  setFieldDocs: React.Dispatch<React.SetStateAction<Record<string, Array<{ id: string; name: string; preview?: string; type?: string }>>>>;
+  unlinkedDocs: Array<{ id: string; name: string; size?: string; preview?: string }>;
+  setUnlinkedDocs: React.Dispatch<React.SetStateAction<Array<{ id: string; name: string; size?: string; preview?: string }>>>;
   // Read-only lock applied once Step 2 is completed (Sale ID issued)
   locked: boolean;
   setLocked: (v: boolean) => void;
