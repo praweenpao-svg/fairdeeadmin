@@ -156,6 +156,25 @@ export function MentionNotificationBell() {
     );
   };
 
+  // Mirror policy status labels from PolicyStatusCell + lead-level labels
+  const statusLabels: Record<string, { en: string; th: string }> = {
+    pending_payment: { en: 'Pending', th: 'รอดำเนินการ' },
+    pending_review: { en: 'Pending Review', th: 'รอตรวจเอกสาร' },
+    pending_issuance: { en: 'Pending Issuance', th: 'รอออกกรมธรรม์' },
+    policy_issued: { en: 'Policy Uploaded', th: 'กรมธรรม์ออกแล้ว' },
+    policy_shipped: { en: 'Policy Shipped', th: 'กรมธรรม์ถูกจัดส่ง' },
+    policy_delivered: { en: 'Policy Delivered', th: 'กรมธรรม์จัดส่งสำเร็จ' },
+    policy_cancelled: { en: 'Policy Cancelled', th: 'กรมธรรม์ยกเลิก' },
+    rework_required: { en: 'Rework Required', th: 'งานติดปัญหา' },
+    new_lead: { en: 'New', th: 'ใหม่' },
+  };
+  const renderStatus = (code?: string) => {
+    if (!code) return null;
+    const entry = statusLabels[code];
+    return entry ? t(entry.en, entry.th) : code;
+  };
+
+
   const entryLabel = (n: MentionNotification) => {
     const kind = n.entryType ?? (n.commentId ? 'reply' : 'remark');
     const sourceWord = n.sourceKind === 'lead' ? t('Lead', 'Lead') : t('Policy', 'กรมธรรม์');
@@ -274,7 +293,7 @@ export function MentionNotificationBell() {
                             {!isLead && a.policyType && policyBadge(a.policyType)}
                             {a.status && (
                               <Badge variant="outline" className="text-[10px] h-5 px-1.5">
-                                {a.status}
+                                {renderStatus(a.status)}
                               </Badge>
                             )}
                           </div>
