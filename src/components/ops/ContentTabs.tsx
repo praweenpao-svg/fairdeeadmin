@@ -1226,13 +1226,6 @@ function VerifyInformationTab({ sale, onReadinessChange }: VerifyTabProps) {
               />
             </div>
           )}
-          {shippingForm.receiverType === 'e_policy' && (
-            <div className="text-xs text-muted-foreground bg-muted/40 border border-dashed border-border rounded-md p-3">
-              {language === 'th'
-                ? 'กรมธรรม์จะถูกจัดส่งทางอีเมลแบบอิเล็กทรอนิกส์ — ไม่จำเป็นต้องระบุที่อยู่จัดส่ง'
-                : 'Policy will be delivered electronically via email — no shipping address required.'}
-            </div>
-          )}
         </CardContent>
       </Card>
     </div>
