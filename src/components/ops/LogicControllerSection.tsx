@@ -55,10 +55,10 @@ const CUSTOMER_TYPES: { value: 'individual' | 'corporation'; th: string; en: str
 const PAYMENT_METHODS = [
   { value: 'bank_account_full', th: 'บัญชีธนาคาร (จ่ายเต็ม)', en: 'Bank Account (Full)' },
   { value: 'credit_card_full', th: 'บัตรเครดิต (จ่ายเต็ม)', en: 'Credit Card (Full)' },
-  { value: 'qr_code_full', th: 'QR โค้ด (จ่ายเต็ม)', en: 'QR Code (Full)' },
+  { value: 'qr_code_full', th: 'คิวอาร์โค้ด (จ่ายเต็ม)', en: 'QR Code (Full)' },
   { value: 'bank_account_installment', th: 'บัญชีธนาคาร (ผ่อน)', en: 'Bank Account (Inst.)' },
   { value: 'credit_card_installment', th: 'บัตรเครดิต (ผ่อน)', en: 'Credit Card (Inst.)' },
-  { value: 'qr_code_installment', th: 'QR โค้ด (ผ่อน)', en: 'QR Code (Inst.)' },
+  { value: 'qr_code_installment', th: 'คิวอาร์โค้ด (ผ่อน)', en: 'QR Code (Inst.)' },
   { value: 'insurer_cc', th: 'บัตรเครดิตผ่านบริษัทประกัน', en: 'Credit Card via Insurer' },
   { value: 'insurer_transfer', th: 'โอนผ่านบริษัทประกัน', en: 'Transfer via Insurer' },
 ];

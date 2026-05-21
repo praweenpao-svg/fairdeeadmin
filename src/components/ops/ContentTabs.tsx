@@ -1416,8 +1416,8 @@ const PAYMENT_METHODS = [
   { value: 'insurer_cc_bank', th: 'บัตรเครดิต/โอนเงินผ่านบริษัทประกัน', en: 'Insurer Credit Card / Insurer Bank Transfer' },
   { value: 'credit_card_full', th: 'บัตรเครดิตออนไลน์ (จ่ายเต็ม)', en: 'Online Credit Card (Full Payment)' },
   { value: 'credit_card_installment', th: 'บัตรเครดิตออนไลน์ (ผ่อนชำระ)', en: 'Online Credit Card (Installment)' },
-  { value: 'qr_code_full', th: 'QR โค้ด (จ่ายเต็ม)', en: 'QR Code (Full Payment)' },
-  { value: 'qr_code_installment', th: 'QR โค้ด (ผ่อนชำระ)', en: 'QR Code (Installment)' },
+  { value: 'qr_code_full', th: 'คิวอาร์โค้ด (จ่ายเต็ม)', en: 'QR Code (Full Payment)' },
+  { value: 'qr_code_installment', th: 'คิวอาร์โค้ด (ผ่อนชำระ)', en: 'QR Code (Installment)' },
 ];
 
 const EQUAL_INSTALLMENT_OPTIONS = [
@@ -1756,10 +1756,10 @@ export function ContentTabs({ sale }: ContentTabsProps) {
             const paymentMethodLabel = (() => {
               const map: Record<string, { th: string; en: string }> = {
                 bank_account_full: { th: 'บัญชีธนาคาร (จ่ายเต็ม)', en: 'Bank Transfer (Full)' },
-                qr_code_full: { th: 'QR โค้ด (จ่ายเต็ม)', en: 'QR Code (Full)' },
+                qr_code_full: { th: 'คิวอาร์โค้ด (จ่ายเต็ม)', en: 'QR Code (Full)' },
                 credit_card_full: { th: 'บัตรเครดิตออนไลน์ (จ่ายเต็ม)', en: 'Credit Card (Full)' },
                 bank_account_installment: { th: 'บัญชีธนาคาร (ผ่อนชำระ)', en: 'Bank Transfer (Instalment)' },
-                qr_code_installment: { th: 'QR โค้ด (ผ่อนชำระ)', en: 'QR Code (Instalment)' },
+                qr_code_installment: { th: 'คิวอาร์โค้ด (ผ่อนชำระ)', en: 'QR Code (Instalment)' },
                 credit_card_installment: { th: 'บัตรเครดิตออนไลน์ (ผ่อนชำระ)', en: 'Credit Card (Instalment)' },
                 insurer_cc: { th: 'บัตรเครดิตผ่านบริษัทประกัน', en: 'Credit Card via Insurer' },
                 insurer_transfer: { th: 'โอนเงินผ่านบริษัทประกัน', en: 'Transfer via Insurer' },

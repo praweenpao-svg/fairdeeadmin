@@ -26,10 +26,10 @@ const VEHICLE_CODES: Record<string, { th: string; en: string }> = {
 
 const PAYMENT_METHODS = [
   { value: 'bank_account_full', th: 'บัญชีธนาคาร (จ่ายเต็ม)', en: 'Bank Transfer (Full)' },
-  { value: 'qr_code_full', th: 'QR โค้ด (จ่ายเต็ม)', en: 'QR Code (Full)' },
+  { value: 'qr_code_full', th: 'คิวอาร์โค้ด (จ่ายเต็ม)', en: 'QR Code (Full)' },
   { value: 'credit_card_full', th: 'บัตรเครดิตออนไลน์ (จ่ายเต็ม)', en: 'Credit Card (Full)' },
   { value: 'bank_account_installment', th: 'บัญชีธนาคาร (ผ่อนชำระ)', en: 'Bank Transfer (Instalment)' },
-  { value: 'qr_code_installment', th: 'QR โค้ด (ผ่อนชำระ)', en: 'QR Code (Instalment)' },
+  { value: 'qr_code_installment', th: 'คิวอาร์โค้ด (ผ่อนชำระ)', en: 'QR Code (Instalment)' },
   { value: 'credit_card_installment', th: 'บัตรเครดิตออนไลน์ (ผ่อนชำระ)', en: 'Credit Card (Instalment)' },
   { value: 'insurer_cc', th: 'บัตรเครดิตผ่านบริษัทประกัน', en: 'Credit Card via Insurer' },
   { value: 'insurer_transfer', th: 'โอนเงินผ่านบริษัทประกัน', en: 'Transfer via Insurer' },
