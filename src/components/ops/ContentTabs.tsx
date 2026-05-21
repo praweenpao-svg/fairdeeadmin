@@ -1328,22 +1328,22 @@ function VerifyField({ label, value, source, isDate, isSelect, options, required
           type="datetime-local"
           value={value}
           onChange={(e) => handleChange(e.target.value)}
-          className={cn('text-xs h-9 bg-card', isEmpty && 'border-destructive')}
+          className={cn('text-sm h-9 bg-card', isEmpty && 'border-destructive')}
         />
       ) : isSelect && options ? (
         <Select value={value} onValueChange={(v) => handleChange(v)}>
-          <SelectTrigger className={cn('text-xs h-9 bg-card', isEmpty && 'border-destructive')}>
+          <SelectTrigger className={cn('text-sm h-9 bg-card', isEmpty && 'border-destructive')}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {options.map(o => <SelectItem key={o} value={o} className="text-xs">{o}</SelectItem>)}
+            {options.map(o => <SelectItem key={o} value={o} className="text-sm">{o}</SelectItem>)}
           </SelectContent>
         </Select>
       ) : (
         <Input
           value={value}
           onChange={(e) => handleChange(e.target.value)}
-          className={cn('text-xs h-9 bg-card', isEmpty && 'border-destructive')}
+          className={cn('text-sm h-9 bg-card', isEmpty && 'border-destructive')}
           placeholder={label}
         />
       )}
