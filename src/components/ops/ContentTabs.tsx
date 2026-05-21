@@ -1767,7 +1767,7 @@ export function ContentTabs({ sale }: ContentTabsProps) {
               { label: language === 'th' ? 'ประเภทงาน' : 'Type of Sale', value: saleTypeLabel },
               { label: language === 'th' ? 'ชื่อผู้เอาประกัน' : 'Insured Name', value: dash(insuredName) },
               { label: language === 'th' ? 'บริษัทประกัน' : 'Insurer Name', value: dash(vmi?.insurer) },
-              { label: language === 'th' ? 'ชั้นประกัน' : 'Insurance Class', value: dash(logic.insuranceClass || vmi?.coverage?.insuranceClass) },
+              { label: language === 'th' ? 'ชั้นประกัน' : 'Insurance Class', value: insuranceClassLabel },
               { label: language === 'th' ? 'ค่าเสียหายส่วนแรก (ถ้ามี)' : 'Deductible (if any)', value: deductible },
               { label: language === 'th' ? 'ประเภทที่ซ่อม' : 'Garage Type', value: garageLabel },
               { label: language === 'th' ? 'เบอร์โทรติดต่อ' : 'Phone Number', value: dash(phone || customer.phoneNumber) },
