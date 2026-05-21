@@ -63,7 +63,7 @@ export default function OpsDashboard() {
     };
     window.addEventListener('ops:step2Completed', handler);
     return () => window.removeEventListener('ops:step2Completed', handler);
-  }, [sale.policies, language]);
+  }, [sale.policies, sale.qqId, language]);
 
   // Modal / sidebar states
   const [uploadPolicyOpen, setUploadPolicyOpen] = useState(false);
