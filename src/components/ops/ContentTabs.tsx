@@ -1805,6 +1805,8 @@ export function ContentTabs({ sale }: ContentTabsProps) {
               const text = rows.map(r => `${r.label}: ${r.value}`).join('\n')
                 + `\n${language === 'th' ? 'เอกสาร' : 'Documents'}: ${totalUploaded}/${totalDocs}`;
               navigator.clipboard.writeText(text);
+              setVerifySendCount((c) => c + 1);
+              window.dispatchEvent(new Event('ops:summarySent'));
               toast.success(language === 'th' ? 'คัดลอกแล้ว' : 'Copied');
             };
 
