@@ -1021,7 +1021,7 @@ function VerifyInformationTab({ sale, onReadinessChange }: VerifyTabProps) {
               value={policyStartDate}
               onChange={setPolicyStartDate}
               source=""
-              isDate
+              isDateOnly
               required
             />
             <VerifyField
