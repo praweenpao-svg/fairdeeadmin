@@ -279,7 +279,7 @@ export function AgentDetailsCard({ sale }: SaleOverviewCardProps) {
             const map: Record<string, string> = { New: 'งานใหม่', Renewable: 'ต่ออายุ', COA: 'COA' };
             return map[v] || v;
           })()} />
-          <SummaryRow label={language === 'th' ? 'สร้างเมื่อ' : 'Created At'} value="DD/MM/YYYY" />
+          
         </div>
       </CardContent>
     </Card>
