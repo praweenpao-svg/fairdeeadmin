@@ -1653,6 +1653,7 @@ export function ContentTabs({ sale }: ContentTabsProps) {
   const handleSendToAgent = () => {
     setSendToAgentOpen(false);
     setVerifySendCount((c) => c + 1);
+    window.dispatchEvent(new Event('ops:summarySent'));
     toast.success(language === 'th' ? 'ส่งข้อมูลให้ตัวแทนเรียบร้อย' : 'Information sent to agent successfully');
   };
 
