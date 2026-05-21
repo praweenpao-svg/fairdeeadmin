@@ -477,23 +477,27 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
           <FormRow
             span={2}
             label={t('วิธีตรวจสภาพรถ', 'Car Inspection Method')}
-            hint={t('สำหรับประกันชั้น 1 เท่านั้น', 'Required for Type 1 only')}
             info={
-              isRenewalInspectionLocked ? (
-                <InfoBanner tone="warn">
-                  {t(
-                    'งานต่ออายุ: วิธีตรวจสภาพรถจะใช้แบบเดียวกับปีก่อน (อัปโหลดภาพถ่าย 8 มุม) และเอกสารถูกแนบไว้ให้แล้ว',
-                    "Renewal: car inspection method follows last year's selection (Upload 8-angle photos) and documents are pre-attached.",
-                  )}
-                </InfoBanner>
-              ) : logic.carInspectionMethod === 'upload_photos' ? (
-                <InfoBanner>
-                  {t(
-                    'ต้องอัปโหลดภาพถ่ายรถอย่างน้อย 8 มุม ในส่วนแนบเอกสาร',
-                    'You must upload at least 8 car inspection photos in the attachment section.',
-                  )}
-                </InfoBanner>
-              ) : undefined
+              <InfoBanner tone={isRenewalInspectionLocked ? 'warn' : 'info'}>
+                <span className="block">
+                  {t('สำหรับประกันชั้น 1 เท่านั้น', 'Required for Type 1 only')}
+                </span>
+                {isRenewalInspectionLocked ? (
+                  <span className="block mt-1">
+                    {t(
+                      'งานต่ออายุ: วิธีตรวจสภาพรถจะใช้แบบเดียวกับปีก่อน (อัปโหลดภาพถ่าย 8 มุม) และเอกสารถูกแนบไว้ให้แล้ว',
+                      "Renewal: car inspection method follows last year's selection (Upload 8-angle photos) and documents are pre-attached.",
+                    )}
+                  </span>
+                ) : logic.carInspectionMethod === 'upload_photos' ? (
+                  <span className="block mt-1">
+                    {t(
+                      'ต้องอัปโหลดภาพถ่ายรถอย่างน้อย 8 มุม ในส่วนแนบเอกสาร',
+                      'You must upload at least 8 car inspection photos in the attachment section.',
+                    )}
+                  </span>
+                ) : null}
+              </InfoBanner>
             }
           >
             <InspectionPicker
