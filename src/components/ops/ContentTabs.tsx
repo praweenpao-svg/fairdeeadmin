@@ -1806,17 +1806,25 @@ export function ContentTabs({ sale }: ContentTabsProps) {
                   ))}
                   {/* Documents inline */}
                   <div className="flex items-center justify-between py-2 border-t border-border mt-1 gap-3 flex-wrap">
-                    <span className="text-muted-foreground font-medium">{language === 'th' ? 'เอกสาร' : 'Documents'}:</span>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Badge variant="outline" className="text-[11px]">
+                    <div className="flex items-center gap-2">
+                      <span className="text-muted-foreground font-medium">{language === 'th' ? 'เอกสาร' : 'Documents'}:</span>
+                      <span className="text-primary font-semibold text-sm">{totalUploaded}/{totalDocs}</span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-700 dark:text-blue-300">
+                        <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
                         {language === 'th' ? 'จำเป็น' : 'Required'} {requiredUploaded}/{reqBucket.length}
-                      </Badge>
-                      <Badge variant="outline" className="text-[11px]">
+                      </span>
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-300">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                         {language === 'th' ? 'มีเงื่อนไข' : 'Conditional'} {conditionalUploaded}/{condBucket.length}
-                      </Badge>
-                      <Badge variant="outline" className="text-[11px]">
+                      </span>
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+                        <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50" />
                         {language === 'th' ? 'ถ้ามี' : 'Optional'} {optionalUploaded}/{optBucket.length}
-                      </Badge>
+                      </span>
+                    </div>
+                  </div>
                       <span className="text-primary font-semibold text-sm">{totalUploaded}/{totalDocs}</span>
                     </div>
                   </div>
