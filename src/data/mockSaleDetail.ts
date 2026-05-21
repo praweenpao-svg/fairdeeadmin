@@ -162,7 +162,7 @@ export const mockSaleDetail: SaleDetail = {
   paymentStatus: 'pending',
   customer: {
     customerType: 'individual',
-    title: 'นาย',
+    title: '',
     firstName: 'Praween',
     lastName: 'Imchokchai',
     idType: 'National Id',
