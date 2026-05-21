@@ -305,9 +305,18 @@ export function InsurerDetailsCard({ sale }: SaleOverviewCardProps) {
         <div className="space-y-2.5">
           <SummaryRow label={language === 'th' ? 'ชื่อบริษัทประกัน' : 'Insurer Name'} value={language === 'th' ? 'ชื่อบริษัทประกัน' : 'Insurer Name'} />
           <SummaryRow label={language === 'th' ? 'ชื่อแพ็กเกจ' : 'Package Name'} value={language === 'th' ? 'ชื่อแพ็กเกจ' : 'Package Name'} />
-          <SummaryRow label={language === 'th' ? 'ชั้นประกัน' : 'Insurance Class'} value={(logic.insuranceClass || '').replace(/^Type/, 'Type ')} />
+          <SummaryRow label={language === 'th' ? 'ชั้น' : 'Insurance Class'} value={(() => {
+            const raw = (logic.insuranceClass || '').replace(/^Type\s*/, '').trim();
+            return raw ? `#${raw}` : '—';
+          })()} />
           <SummaryRow label={language === 'th' ? 'ทุนประกัน' : 'Sum Insured'} value={vmi.sumInsured ? `${vmi.sumInsured.toLocaleString()} Baht` : '—'} />
-          <SummaryRow label={language === 'th' ? 'ประเภทอู่' : 'Garage Type'} value={garageType} />
+          <SummaryRow label={language === 'th' ? 'ประเภท' : 'Garage Type'} value={(() => {
+            if (!garageType) return '—';
+            if (language !== 'th') return garageType;
+            if (garageType === 'Dealership') return 'ซ่อมห้าง';
+            if (garageType === 'Garage') return 'ซ่อมอู่';
+            return garageType;
+          })()} />
         </div>
       </CardContent>
     </Card>
