@@ -659,13 +659,12 @@ function VerifyInformationTab({ sale, onReadinessChange }: VerifyTabProps) {
   });
 
   // Insurance / shipping editable state (drives address propagation + gating)
-  const [policyStartDate, setPolicyStartDate] = React.useState(() => {
-    const d = new Date();
-    d.setDate(d.getDate() + 1);
-    d.setHours(0, 0, 0, 0);
-    const pad = (n: number) => String(n).padStart(2, '0');
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T00:00`;
-  });
+  // Policy Start Date is pulled from VMI Step 1 (coverageStartDate, YYYY-MM-DD). Editable locally if needed.
+  const [policyStartDate, setPolicyStartDate] = React.useState(coverageStartDate || '');
+  React.useEffect(() => {
+    // Keep in sync with Step 1 unless the user has manually changed it.
+    if (coverageStartDate) setPolicyStartDate(coverageStartDate);
+  }, [coverageStartDate]);
   const [insurancePhone, setInsurancePhone] = React.useState(customer.phoneNumber || '');
 
   // Sources available for shipping address propagation. Built from sale data.
