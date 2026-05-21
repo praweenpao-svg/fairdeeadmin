@@ -57,7 +57,7 @@ export default function OpsDashboard() {
           });
         }
       });
-      toast.success(language === 'th' ? 'ส่งสรุปให้ตัวแทนแล้ว' : 'Summary sent to agent', {
+      toast.success(language === 'th' ? `Sale ID ${sale.qqId} ถูกสร้างเรียบร้อย` : `Sale ID ${sale.qqId} has been created`, {
         description: language === 'th' ? 'VMI / CMI → รอตรวจสอบ' : 'VMI / CMI advanced to Pending Review',
       });
     };
