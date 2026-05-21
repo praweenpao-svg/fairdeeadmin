@@ -1514,7 +1514,7 @@ export function ContentTabs({ sale }: ContentTabsProps) {
     if (!coverageStartDate) b.push(language === 'th' ? 'วันเริ่มความคุ้มครอง (Voluntary)' : 'Voluntary start date');
     if (!phone || phone.length < 9) b.push(language === 'th' ? 'เบอร์โทรศัพท์ลูกค้า (10 หลัก)' : 'Customer phone (10 digits)');
     if (!logic.paymentMethodValue) b.push(language === 'th' ? 'วิธีการชำระเงิน' : 'Payment method');
-    if (!voluntaryShippingFormat) b.push(language === 'th' ? 'รูปแบบการจัดส่ง (Voluntary)' : 'Voluntary shipping format');
+    if (!voluntaryShippingFormat) b.push(language === 'th' ? 'รูปแบบการจัดส่งภาคสมัครใจ' : 'Voluntary shipping format');
     if (addCompulsory) {
       if (!compulsoryStartDate) b.push(language === 'th' ? 'วันเริ่มต้น พ.ร.บ.' : 'Compulsory start date');
       if (!compulsoryShippingFormat) b.push(language === 'th' ? 'รูปแบบการจัดส่ง พ.ร.บ.' : 'Compulsory shipping format');
