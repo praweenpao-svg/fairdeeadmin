@@ -582,7 +582,7 @@ function LinkDocumentsTab({ sale }: { sale: SaleDetail }) {
             </div>
             <div className="grid grid-cols-2 gap-2">
               {[
-                { id: 'ins-1', name: 'Quotation_MTI.pdf', size: '142 KB' },
+                { id: 'ins-1', name: 'Quotation.pdf', size: '142 KB' },
                 { id: 'ins-2', name: 'Coverage_Summary.pdf', size: '98 KB' },
                 { id: 'ins-3', name: 'Premium_Breakdown.pdf', size: '76 KB' },
                 { id: 'ins-4', name: 'Comparison_Sheet.pdf', size: '210 KB' },
