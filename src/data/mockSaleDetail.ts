@@ -178,7 +178,7 @@ export const mockSaleDetail: SaleDetail = {
   },
   vehicle: {
     licenseType: 'Registered',
-    licensePlate: '43589',
+    licensePlate: '1234',
     registrationProvince: 'กรุงเทพมหานคร',
     chassisNumber: 'MRHGK810200012345',
     engineNumber: '1NZ-FE12345',
