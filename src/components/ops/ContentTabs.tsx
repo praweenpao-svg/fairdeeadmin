@@ -661,7 +661,13 @@ function VerifyInformationTab({ sale, onReadinessChange }: VerifyTabProps) {
   });
 
   // Insurance / shipping editable state (drives address propagation + gating)
-  const [policyStartDate, setPolicyStartDate] = React.useState('');
+  const [policyStartDate, setPolicyStartDate] = React.useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    d.setHours(0, 0, 0, 0);
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T00:00`;
+  });
   const [insurancePhone, setInsurancePhone] = React.useState(customer.phoneNumber || '');
 
   // Sources available for shipping address propagation. Built from sale data.
