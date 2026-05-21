@@ -332,26 +332,8 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
       {/* ════════ Card 1: Basic Information ════════ */}
       <SectionCard
         title={t('ข้อมูลพื้นฐาน', 'Basic Information')}
-        info={
-          <TooltipProvider delayDuration={150}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button type="button" className="inline-flex items-center text-muted-foreground hover:text-foreground">
-                  <Info className="w-3.5 h-3.5" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="top" className="max-w-xs text-xs">
-                {t('ข้อมูลกรมธรรม์, ลูกค้า, รถ และตัวเลือกที่ขับเคลื่อนรายการเอกสาร', 'Policy, customer, vehicle and choices that drive the required document list.')}
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        }
-        badge={
-          <Badge variant="outline" className="text-[10px]">
-            {t('ขั้นตอนที่ 1', 'Step 1')}
-          </Badge>
-        }
       >
+
         <FormRow label={t('วันเริ่มความคุ้มครอง', 'Voluntary Start Date')} required monday="date picker" inSummary lang={lang}>
           <DatePickerField value={coverageStartDate} onChange={setCoverageStartDate} lang={lang} />
         </FormRow>
