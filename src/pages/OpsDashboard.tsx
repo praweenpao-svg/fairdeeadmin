@@ -41,21 +41,24 @@ export default function OpsDashboard() {
   // Step 2 completion → auto-advance VMI & CMI from "pending" to "pending_review"
   React.useEffect(() => {
     const handler = () => {
+      const pendingKinds: string[] = [];
       setSale(prev => ({
         ...prev,
-        policies: prev.policies.map(p =>
-          p.status === 'pending' ? { ...p, status: 'pending_review' } : p
-        ),
+        policies: prev.policies.map(p => {
+          if (p.status === 'pending' || p.status === 'pending_payment') {
+            pendingKinds.push(p.kind);
+            return { ...p, status: 'pending_review' };
+          }
+          return p;
+        }),
       }));
       const labelMap: Record<string, string> = { vmi: 'VMI', cmi: 'CMI' };
-      sale.policies.forEach(p => {
-        if (p.status === 'pending') {
-          useHistoryStore.getState().add({
-            type: 'status_change',
-            policyKind: p.kind as 'vmi' | 'cmi',
-            description: `${labelMap[p.kind]} → Pending Review (Step 2 completed)`,
-          });
-        }
+      pendingKinds.forEach(kind => {
+        useHistoryStore.getState().add({
+          type: 'status_change',
+          policyKind: kind as 'vmi' | 'cmi',
+          description: `${labelMap[kind]} → Pending Review (Step 2 completed)`,
+        });
       });
       toast.success(language === 'th' ? `Sale ID ${sale.qqId} ถูกสร้างเรียบร้อย` : `Sale ID ${sale.qqId} has been created`, {
         description: language === 'th' ? 'VMI / CMI → รอตรวจสอบ' : 'VMI / CMI advanced to Pending Review',
@@ -63,7 +66,7 @@ export default function OpsDashboard() {
     };
     window.addEventListener('ops:step2Completed', handler);
     return () => window.removeEventListener('ops:step2Completed', handler);
-  }, [sale.policies, sale.qqId, language]);
+  }, [sale.qqId, language]);
 
   // Modal / sidebar states
   const [uploadPolicyOpen, setUploadPolicyOpen] = useState(false);
