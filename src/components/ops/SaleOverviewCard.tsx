@@ -493,6 +493,8 @@ export const kycStatuses = [
 
 export function ActionStatusCard({ sale, onPolicyStatusChange }: SaleOverviewCardProps & { onPolicyStatusChange?: (kind: 'vmi' | 'cmi', status: string) => void }) {
   const { language } = useLanguageStore();
+  const { logic } = useOpsLogic();
+  const showKyc = logic.paymentMethodValue === 'qr_code_installment';
 
   return (
     <Card>
