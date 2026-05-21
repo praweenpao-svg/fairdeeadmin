@@ -1010,30 +1010,6 @@ function VerifyInformationTab({ sale, onReadinessChange }: VerifyTabProps) {
         </CardContent>
       </Card>
 
-      {/* Customer Information / Insurance Info */}
-      <Card className="border-border">
-        <CardContent className="p-4">
-          <h5 className="text-sm font-semibold mb-4">{language === 'th' ? 'ข้อมูลประกันภัย' : 'Customer Information'}</h5>
-          <h6 className="text-xs font-semibold text-primary mb-3">{language === 'th' ? 'ข้อมูลประกันภัย' : 'Insurance Information'}</h6>
-          <div className="grid grid-cols-2 gap-4">
-            <VerifyField
-              label={language === 'th' ? 'วันเริ่มต้นกรมธรรม์ *' : 'Policy Start Date (AD) *'}
-              value={policyStartDate}
-              onChange={setPolicyStartDate}
-              source=""
-              isDateOnly
-              required
-            />
-            <VerifyField
-              label={language === 'th' ? 'เบอร์โทรศัพท์ *' : 'Phone Number *'}
-              value={insurancePhone}
-              onChange={setInsurancePhone}
-              source=""
-              required
-            />
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Corporation: company KYC fields */}
       {isCorporation && (
