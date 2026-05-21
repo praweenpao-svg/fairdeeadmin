@@ -1825,9 +1825,6 @@ export function ContentTabs({ sale }: ContentTabsProps) {
                       </span>
                     </div>
                   </div>
-                      <span className="text-primary font-semibold text-sm">{totalUploaded}/{totalDocs}</span>
-                    </div>
-                  </div>
                 </div>
                 {/* Remarks */}
                 <Textarea
