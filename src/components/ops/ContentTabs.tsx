@@ -1273,7 +1273,7 @@ function FieldTags({ source, inSummary, language }: { source?: string; inSummary
               </span>
             )}
             {inSummary && (
-              <span className="inline-flex items-center h-4 px-1.5 rounded text-[9px] font-semibold border bg-blue-500/10 text-blue-700 border-blue-500/30">
+              <span className="inline-flex items-center h-4 px-1.5 rounded text-[9px] font-semibold border bg-primary/10 text-primary border-primary/30">
                 {language === 'th' ? 'ในสรุป' : 'In Summary'}
               </span>
             )}
