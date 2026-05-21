@@ -1253,26 +1253,6 @@ interface VerifyFieldProps {
   inSummary?: boolean;
 }
 
-function SummaryTag({ language }: { language: string }) {
-  return (
-    <TooltipProvider delayDuration={150}>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <span className="inline-flex items-center h-4 px-1.5 rounded text-[9px] font-semibold border bg-primary/10 text-primary border-primary/30 cursor-help">
-            {language === 'th' ? 'ในสรุป' : 'In Summary'}
-          </span>
-        </TooltipTrigger>
-        <TooltipContent side="top" className="text-[11px] max-w-[220px]">
-          {language === 'th'
-            ? 'ค่านี้จะปรากฏในสรุปที่ส่งให้ตัวแทน'
-            : 'This value appears in the summary sent to the agent.'}
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  );
-}
-
-
 // Source tag map: short label + tooltip explanation, color-coded by provenance
 const SOURCE_META: Record<string, { label: { en: string; th: string }; tooltip: { en: string; th: string }; cls: string }> = {
   'National Id': { label: { en: 'NID', th: 'NID' }, tooltip: { en: 'Extracted from National ID via OCR', th: 'ดึงจากบัตรประชาชนผ่าน OCR' }, cls: 'bg-blue-500/10 text-blue-700 border-blue-500/30' },
@@ -1285,18 +1265,39 @@ const SOURCE_META: Record<string, { label: { en: string; th: string }; tooltip: 
   manual_saved: { label: { en: 'Manual', th: 'แก้ไขเอง' }, tooltip: { en: 'Manually edited and saved', th: 'แก้ไขด้วยตนเองและบันทึก' }, cls: 'bg-orange-500/10 text-orange-700 border-orange-500/30' },
 };
 
-function SourceTag({ source, language }: { source: string; language: string }) {
-  const meta = SOURCE_META[source] || { label: { en: source, th: source }, tooltip: { en: source, th: source }, cls: 'bg-muted text-muted-foreground border-border' };
+// Combined tag cluster: renders source + "In Summary" badges under a SINGLE tooltip
+// with one bullet per active tag (extensible to more tags in the future).
+function FieldTags({ source, inSummary, language }: { source?: string; inSummary?: boolean; language: string }) {
+  if (!source && !inSummary) return null;
+  const sourceMeta = source ? (SOURCE_META[source] || { label: { en: source, th: source }, tooltip: { en: source, th: source }, cls: 'bg-muted text-muted-foreground border-border' }) : null;
+  const points: string[] = [];
+  if (sourceMeta) points.push(language === 'th' ? sourceMeta.tooltip.th : sourceMeta.tooltip.en);
+  if (inSummary) points.push(language === 'th' ? 'ค่านี้จะปรากฏในสรุปที่ส่งให้ตัวแทน' : 'This value appears in the summary sent to the agent.');
   return (
     <TooltipProvider delayDuration={150}>
       <Tooltip>
         <TooltipTrigger asChild>
-          <span className={cn('inline-flex items-center gap-0.5 h-4 px-1.5 rounded text-[9px] font-medium border cursor-help', meta.cls)}>
-            ⓘ {language === 'th' ? meta.label.th : meta.label.en}
+          <span className="inline-flex items-center gap-1 cursor-help">
+            {sourceMeta && (
+              <span className={cn('inline-flex items-center gap-0.5 h-4 px-1.5 rounded text-[9px] font-medium border', sourceMeta.cls)}>
+                ⓘ {language === 'th' ? sourceMeta.label.th : sourceMeta.label.en}
+              </span>
+            )}
+            {inSummary && (
+              <span className="inline-flex items-center h-4 px-1.5 rounded text-[9px] font-semibold border bg-primary/10 text-primary border-primary/30">
+                {language === 'th' ? 'ในสรุป' : 'In Summary'}
+              </span>
+            )}
           </span>
         </TooltipTrigger>
-        <TooltipContent side="top" className="text-[11px] max-w-[200px]">
-          {language === 'th' ? meta.tooltip.th : meta.tooltip.en}
+        <TooltipContent side="top" className="text-[11px] max-w-[240px]">
+          {points.length === 1 ? (
+            <span>{points[0]}</span>
+          ) : (
+            <ul className="list-disc pl-3.5 space-y-1">
+              {points.map((p, i) => <li key={i}>{p}</li>)}
+            </ul>
+          )}
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
@@ -1317,11 +1318,8 @@ function VerifyField({ label, value, source, isDate, isSelect, options, required
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between gap-2">
-        <span className="text-xs font-medium truncate flex items-center gap-1.5">
-          {label}
-          {inSummary && <SummaryTag language={language} />}
-        </span>
-        {effectiveSource && <SourceTag source={effectiveSource} language={language} />}
+        <span className="text-xs font-medium truncate">{label}</span>
+        <FieldTags source={effectiveSource} inSummary={inSummary} language={language} />
       </div>
       {isDate ? (
         <Input
