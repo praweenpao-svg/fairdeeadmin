@@ -273,7 +273,12 @@ export function AgentDetailsCard({ sale }: SaleOverviewCardProps) {
           <SummaryRow label={language === 'th' ? 'รหัสตัวแทน' : 'Agent Code'} value="FX-XXXXX" />
           <SummaryRow label={language === 'th' ? 'เบอร์โทรศัพท์' : 'Agent Phone'} value="0XX-XXX-XXXX" />
           <SummaryRow label={language === 'th' ? 'ระดับ' : 'Level'} value={String(sale.agent.level)} />
-          <SummaryRow label={language === 'th' ? 'ประเภทงาน' : 'Type of Sale'} value={sale.saleType || sale.typeOfSale} />
+          <SummaryRow label={language === 'th' ? 'ประเภทงาน' : 'Type of Sale'} value={(() => {
+            const v = sale.saleType || sale.typeOfSale;
+            if (language !== 'th') return v;
+            const map: Record<string, string> = { New: 'งานใหม่', Renewable: 'ต่ออายุ', COA: 'COA' };
+            return map[v] || v;
+          })()} />
           <SummaryRow label={language === 'th' ? 'สร้างเมื่อ' : 'Created At'} value="DD/MM/YYYY" />
         </div>
       </CardContent>
@@ -300,9 +305,18 @@ export function InsurerDetailsCard({ sale }: SaleOverviewCardProps) {
         <div className="space-y-2.5">
           <SummaryRow label={language === 'th' ? 'ชื่อบริษัทประกัน' : 'Insurer Name'} value={language === 'th' ? 'ชื่อบริษัทประกัน' : 'Insurer Name'} />
           <SummaryRow label={language === 'th' ? 'ชื่อแพ็กเกจ' : 'Package Name'} value={language === 'th' ? 'ชื่อแพ็กเกจ' : 'Package Name'} />
-          <SummaryRow label={language === 'th' ? 'ชั้นประกัน' : 'Insurance Class'} value={(logic.insuranceClass || '').replace(/^Type/, 'Type ')} />
+          <SummaryRow label={language === 'th' ? 'ชั้น' : 'Insurance Class'} value={(() => {
+            const raw = (logic.insuranceClass || '').replace(/^Type\s*/, '').trim();
+            return raw ? `#${raw}` : '—';
+          })()} />
           <SummaryRow label={language === 'th' ? 'ทุนประกัน' : 'Sum Insured'} value={vmi.sumInsured ? `${vmi.sumInsured.toLocaleString()} Baht` : '—'} />
-          <SummaryRow label={language === 'th' ? 'ประเภทอู่' : 'Garage Type'} value={garageType} />
+          <SummaryRow label={language === 'th' ? 'ประเภท' : 'Garage Type'} value={(() => {
+            if (!garageType) return '—';
+            if (language !== 'th') return garageType;
+            if (garageType === 'Dealership') return 'ซ่อมห้าง';
+            if (garageType === 'Garage') return 'ซ่อมอู่';
+            return garageType;
+          })()} />
         </div>
       </CardContent>
     </Card>
