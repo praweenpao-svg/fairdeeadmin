@@ -80,20 +80,7 @@ export default function OpsDashboard() {
       createdAt: '2026-03-27T16:00:00',
     },
   ]);
-  const [opsReworkHistory, setOpsReworkHistory] = useState<PolicyReworkEntry[]>([
-    {
-      id: 'opw-1',
-      reasonId: 'rw-1',
-      reasonLabel: 'ระบุข้อมูลผู้เอาประกันภัย ไม่ถูกต้องหรือไม่ครบถ้วน',
-      details: 'กรุณาตรวจสอบชื่อและที่อยู่ @Pao',
-      attachments: [],
-      savedBy: 'Rachel',
-      savedAt: '2026-03-28T14:30:00',
-      resolved: false,
-      assignedTo: 'Pao',
-      previousStatus: 'pending_review',
-    },
-  ]);
+  const [opsReworkHistory, setOpsReworkHistory] = useState<PolicyReworkEntry[]>([]);
 
   const handleAddRemark = (comment: string, attachments?: ReworkAttachment[]) => {
     setOpsRemarks(prev => [...prev, {
