@@ -451,7 +451,7 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
           </Select>
         </FormRow>
 
-        <FormRow label={t('ซื้อ พ.ร.บ. เพิ่ม?', 'Add Compulsory Insurance?')} monday="tick box">
+        <FormRow label={t('ซื้อ พ.ร.บ. เพิ่ม?', 'Add Compulsory Insurance?')} monday="tick box" inSummary lang={lang}>
           <PillToggle
             value={addCompulsory ? 'yes' : 'no'}
             onChange={(v) => setAddCompulsory(v === 'yes')}
