@@ -371,28 +371,28 @@ export function ProcessPaymentTab({ sale }: Props) {
       {/* Sale Details — Cover Note + Sale Info + Car Inspection/Quotation */}
       <SectionCard title={language === 'th' ? 'รายละเอียดการขาย' : 'Sale Details'}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-4">
-            <div className="space-y-1">
-              <Label className="text-xs">{language === 'th' ? 'รหัส Cover Note' : 'Cover note code'}</Label>
-              <Input className="h-9 text-sm bg-card" defaultValue={isPaymentVerified ? 'FD-VIB-701492' : ''} disabled={isPaymentVerified} />
+            <div className="space-y-1.5 min-w-0">
+              <Label className="text-xs font-semibold text-foreground leading-tight">{language === 'th' ? 'รหัส Cover Note' : 'Cover note code'}</Label>
+              <Input className="h-9 text-sm bg-card" defaultValue={isPaymentVerified ? 'FD-VIB-701492' : ''} disabled={isPaymentVerified} placeholder={language === 'th' ? 'กรอกรหัส Cover Note' : 'Enter cover note code'} />
             </div>
-            <div className="space-y-1">
-              <Label className="text-xs">{language === 'th' ? 'วันที่ขาย' : 'Date of sale'}</Label>
+            <div className="space-y-1.5 min-w-0">
+              <Label className="text-xs font-semibold text-foreground leading-tight">{language === 'th' ? 'วันที่ขาย' : 'Date of sale'}</Label>
               <Input type="date" className="h-9 text-sm bg-card" defaultValue="2026-04-21" disabled={isPaymentVerified} />
             </div>
-            <div className="space-y-1">
-              <Label className="text-xs">{language === 'th' ? 'ประเภทการขาย' : 'Sale type'}</Label>
+            <div className="space-y-1.5 min-w-0">
+              <Label className="text-xs font-semibold text-foreground leading-tight">{language === 'th' ? 'ประเภทการขาย' : 'Sale type'}</Label>
               <Select defaultValue="cbc" disabled={isPaymentVerified}>
                 <SelectTrigger className="h-9 text-sm bg-card"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="cbc" className="text-xs">CBC to Fairdee</SelectItem>
-                  <SelectItem value="direct" className="text-xs">Direct</SelectItem>
-                  <SelectItem value="affiliate" className="text-xs">Affiliate</SelectItem>
+                  <SelectItem value="cbc" className="text-sm">CBC to Fairdee</SelectItem>
+                  <SelectItem value="direct" className="text-sm">Direct</SelectItem>
+                  <SelectItem value="affiliate" className="text-sm">Affiliate</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-1">
-              <Label className="text-xs">{language === 'th' ? 'รหัสใบเสนอราคาบริษัทประกัน' : 'Insurer Quotation ID'}</Label>
-              <Input className="h-9 text-sm bg-card" disabled={isPaymentVerified} />
+            <div className="space-y-1.5 min-w-0">
+              <Label className="text-xs font-semibold text-foreground leading-tight">{language === 'th' ? 'รหัสใบเสนอราคาบริษัทประกัน' : 'Insurer Quotation ID'}</Label>
+              <Input className="h-9 text-sm bg-card" disabled={isPaymentVerified} placeholder={language === 'th' ? 'กรอกรหัสใบเสนอราคา' : 'Enter quotation ID'} />
             </div>
         </div>
       </SectionCard>
