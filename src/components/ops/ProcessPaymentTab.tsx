@@ -391,21 +391,6 @@ export function ProcessPaymentTab({ sale }: Props) {
               </Select>
             </div>
             <div className="space-y-1">
-              <Label className="text-xs">{language === 'th' ? 'สถานะการตรวจสภาพรถ' : 'Car inspection status'}</Label>
-              <Select disabled={isPaymentVerified}>
-                <SelectTrigger className="h-9 text-sm bg-card"><SelectValue placeholder={language === 'th' ? 'เลือกสถานะ' : 'Select Status'} /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="passed" className="text-xs">Passed</SelectItem>
-                  <SelectItem value="failed" className="text-xs">Failed</SelectItem>
-                  <SelectItem value="not_required" className="text-xs">Not Required</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs">{language === 'th' ? 'วันที่ตรวจสภาพรถ' : 'Car inspection date'}</Label>
-              <Input type="date" className="h-9 text-sm bg-card" disabled={isPaymentVerified} />
-            </div>
-            <div className="space-y-1">
               <Label className="text-xs">{language === 'th' ? 'รหัสใบเสนอราคาบริษัทประกัน' : 'Insurer Quotation ID'}</Label>
               <Input className="h-9 text-sm bg-card" defaultValue="10332" disabled={isPaymentVerified} />
             </div>
