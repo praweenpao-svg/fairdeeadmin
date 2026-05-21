@@ -1598,6 +1598,8 @@ export function ContentTabs({ sale }: ContentTabsProps) {
     const idx = tabOrder.indexOf(tabKey);
     const isLast = idx === tabOrder.length - 1;
     const showBack = idx > 0;
+    const needsSummary = tabKey === 'verify' && verifySendCount === 0;
+    const nextDisabled = done || needsSummary;
     return (
       <div className="flex items-center justify-end gap-2 mt-4 pt-3 border-t border-border">
         {showBack && (
@@ -1614,7 +1616,8 @@ export function ContentTabs({ sale }: ContentTabsProps) {
           <Button
             size="sm"
             className="text-xs"
-            disabled={done}
+            disabled={nextDisabled}
+            title={needsSummary ? (language === 'th' ? 'ส่งสรุปหรือคัดลอกสรุปให้ตัวแทนอย่างน้อยหนึ่งครั้งก่อน' : 'Send or copy summary to agent at least once first') : undefined}
             onClick={() => handleNext(tabKey)}
           >
             {done
