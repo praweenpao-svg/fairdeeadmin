@@ -249,6 +249,13 @@ export function SaleDetailBar({
   const [billingMethod, setBillingMethod] = useState<string>('');
   const [billingPayable, setBillingPayable] = useState<string>('');
   const [apiPurchased, setApiPurchased] = useState(false);
+  const [summarySent, setSummarySent] = useState(false);
+
+  React.useEffect(() => {
+    const handler = () => setSummarySent(true);
+    window.addEventListener('ops:summarySent', handler);
+    return () => window.removeEventListener('ops:summarySent', handler);
+  }, []);
 
   const handlePrimaryClick = (action: PrimaryAction) => {
     const label = action.label;
@@ -300,17 +307,23 @@ export function SaleDetailBar({
         <div className="flex-1" />
 
 
-        {primaryActions.map((action, idx) => (
-          <Button
-            key={idx}
-            size="sm"
-            className={cn('text-xs gap-1.5', action.group === 'G4' && 'bg-orange-500 hover:bg-orange-600 text-white')}
-            onClick={() => handlePrimaryClick(action)}
-          >
-            {action.icon && <action.icon className="w-3.5 h-3.5" />}
-            {action.label}
-          </Button>
-        ))}
+        {primaryActions.map((action, idx) => {
+          const isBilling = /Send Billing Report|ส่งใบแจ้งหนี้/.test(action.label);
+          const disabled = isBilling && !summarySent;
+          return (
+            <Button
+              key={idx}
+              size="sm"
+              disabled={disabled}
+              title={disabled ? (language === 'th' ? 'ส่งสรุปให้ตัวแทนอย่างน้อยหนึ่งครั้งก่อน' : 'Send Summary to Agent at least once first') : undefined}
+              className={cn('text-xs gap-1.5', action.group === 'G4' && 'bg-orange-500 hover:bg-orange-600 text-white')}
+              onClick={() => handlePrimaryClick(action)}
+            >
+              {action.icon && <action.icon className="w-3.5 h-3.5" />}
+              {action.label}
+            </Button>
+          );
+        })}
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -323,7 +336,11 @@ export function SaleDetailBar({
             <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider">
               {language === 'th' ? 'การชำระเงิน' : 'Payment'}
             </DropdownMenuLabel>
-            <DropdownMenuItem className="text-xs gap-2" onClick={() => setBillingOpen(true)}>
+            <DropdownMenuItem
+              className="text-xs gap-2"
+              disabled={!summarySent}
+              onClick={() => setBillingOpen(true)}
+            >
               <CreditCard className="w-3.5 h-3.5" />
               {language === 'th' ? 'ส่งใบแจ้งหนี้' : 'Send Billing Report'}
             </DropdownMenuItem>
