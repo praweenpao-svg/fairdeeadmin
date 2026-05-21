@@ -538,6 +538,8 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
           label={t('วิธีการชำระเงิน', 'Payment Method')}
           required
           monday="dropdown"
+          inSummary
+          lang={lang}
           info={isInstallment ? (
             <InfoBanner tone="warn">
               {t('ผ่อนชำระ — ระบบจะขอเอกสารเพิ่มเติมในส่วนแนบเอกสาร', 'Instalment selected — additional documents will be required below.')}
