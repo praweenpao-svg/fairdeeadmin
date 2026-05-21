@@ -877,9 +877,9 @@ function VerifyInformationTab({ sale, onReadinessChange }: VerifyTabProps) {
               <h5 className="text-sm font-semibold text-primary mb-3">{language === 'th' ? 'ข้อมูลลูกค้า' : 'Customer Details'}</h5>
               <div className="grid grid-cols-2 gap-x-4 gap-y-3">
                 <VerifyField label={language === 'th' ? 'ประเภทลูกค้า' : 'Customer Type'} value={customer.customerType === 'individual' ? 'Individual' : 'Corporation'} source="Custom" isSelect options={['Individual', 'Corporation']} />
-                <VerifyField label={language === 'th' ? 'คำนำหน้า' : 'Title'} value={customer.title} source="National Id" />
-                <VerifyField label={language === 'th' ? 'ชื่อ' : 'First Name'} value={customer.firstName} source="National Id" />
-                <VerifyField label={language === 'th' ? 'นามสกุล' : 'Last Name'} value={customer.lastName} source="National Id" />
+                <VerifyField label={language === 'th' ? 'คำนำหน้า' : 'Title'} value={customer.title} source="National Id" inSummary />
+                <VerifyField label={language === 'th' ? 'ชื่อ' : 'First Name'} value={customer.firstName} source="National Id" inSummary />
+                <VerifyField label={language === 'th' ? 'นามสกุล' : 'Last Name'} value={customer.lastName} source="National Id" inSummary />
                 <VerifyField label={language === 'th' ? 'ประเภทบัตร' : 'Type of Identification'} value={customer.idType} source="National Id" isSelect options={['National Id', 'Passport', 'Other']} />
                 <VerifyField label={language === 'th' ? 'เลขบัตรประชาชน' : 'National Id'} value={customer.nationalId} source="National Id" />
                 <VerifyField label={language === 'th' ? 'วันเกิด' : 'Birthday (AD)'} value={customer.birthday} source="National Id" isDate />
@@ -887,12 +887,12 @@ function VerifyInformationTab({ sale, onReadinessChange }: VerifyTabProps) {
               </div>
               <h5 className="text-sm font-semibold text-primary mt-4 mb-3">{language === 'th' ? 'ที่อยู่ผู้เอาประกันภัย' : 'Policy Holder Address'}</h5>
               <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-                <VerifyField label={language === 'th' ? 'ที่อยู่' : 'Address Line'} value={customer.addressLine} source="National Id" />
-                <VerifyField label={language === 'th' ? 'จังหวัด' : 'Province'} value={customer.province} source="" />
-                <VerifyField label={language === 'th' ? 'เขต/อำเภอ' : 'District'} value={customer.district} source="" />
-                <VerifyField label={language === 'th' ? 'แขวง/ตำบล' : 'Sub District'} value={customer.subDistrict} source="" />
-                <VerifyField label={language === 'th' ? 'รหัสไปรษณีย์' : 'Postal Code'} value={customer.postalCode} source="" />
-                <VerifyField label={language === 'th' ? 'เบอร์โทรศัพท์' : 'Phone Number'} value={customer.phoneNumber} source="" />
+                <VerifyField label={language === 'th' ? 'ที่อยู่' : 'Address Line'} value={customer.addressLine} source="National Id" inSummary />
+                <VerifyField label={language === 'th' ? 'จังหวัด' : 'Province'} value={customer.province} source="" inSummary />
+                <VerifyField label={language === 'th' ? 'เขต/อำเภอ' : 'District'} value={customer.district} source="" inSummary />
+                <VerifyField label={language === 'th' ? 'แขวง/ตำบล' : 'Sub District'} value={customer.subDistrict} source="" inSummary />
+                <VerifyField label={language === 'th' ? 'รหัสไปรษณีย์' : 'Postal Code'} value={customer.postalCode} source="" inSummary />
+                <VerifyField label={language === 'th' ? 'เบอร์โทรศัพท์' : 'Phone Number'} value={customer.phoneNumber} source="" inSummary />
               </div>
             </div>
           </div>
@@ -921,14 +921,14 @@ function VerifyInformationTab({ sale, onReadinessChange }: VerifyTabProps) {
               <h5 className="text-sm font-semibold text-primary mb-3">{language === 'th' ? 'ข้อมูลรถยนต์' : 'Policy Details'}</h5>
               <div className="grid grid-cols-2 gap-x-4 gap-y-3">
                 <VerifyField label={language === 'th' ? 'ประเภททะเบียน' : 'License Type'} value="Registered" source="" isSelect options={['Registered', 'Red Plate', 'Not Registered']} />
-                <VerifyField label={language === 'th' ? 'เลขทะเบียน' : 'License Plate'} value={vehicle.licensePlate} source="Portal" />
+                <VerifyField label={language === 'th' ? 'เลขทะเบียน' : 'License Plate'} value={vehicle.licensePlate} source="Portal" inSummary />
                 <VerifyField label={language === 'th' ? 'จังหวัดจดทะเบียน' : 'Registration Province'} value={vehicle.registrationProvince} source="Car Registration" />
                 <VerifyField label={language === 'th' ? 'เลขตัวถัง' : 'Chassis Number'} value={vehicle.chassisNumber} source="" />
                 <VerifyField label={language === 'th' ? 'เลขเครื่องยนต์' : 'Engine Number'} value={vehicle.engineNumber} source="" />
                 <VerifyField label={language === 'th' ? 'น้ำหนักรถ' : 'Vehicle Weight'} value={vehicle.vehicleWeight} source="Car Registration" />
                 <VerifyField label={language === 'th' ? 'สี' : 'Color'} value={vehicle.color} source="Car Registration" isSelect options={['ขาว', 'ดำ', 'เทา', 'แดง', 'น้ำเงิน', 'เขียว']} />
                 <VerifyField label={language === 'th' ? 'ข้อกำหนดผู้ขับ' : 'Driver Specification'} value="Not specified" source="Car Registration" isSelect options={['Not specified', 'Named Driver', 'Any Driver']} />
-                <VerifyField label={language === 'th' ? 'ผู้รับผลประโยชน์' : 'Beneficiary Type'} value="Legal Owner" source="Car Registration" isSelect options={['Legal Owner', 'Named Person', 'Financial Institution']} />
+                <VerifyField label={language === 'th' ? 'ผู้รับผลประโยชน์' : 'Beneficiary Type'} value="Legal Owner" source="Car Registration" isSelect options={['Legal Owner', 'Named Person', 'Financial Institution']} inSummary />
               </div>
             </div>
           </div>
@@ -1143,27 +1143,32 @@ function VerifyInformationTab({ sale, onReadinessChange }: VerifyTabProps) {
                 value={shippingForm.addressLine}
                 onChange={(v) => setShippingForm(p => ({ ...p, addressLine: v, addressSource: 'manual' }))}
                 required
+                inSummary
               />
               <VerifyField
                 label={language === 'th' ? 'จังหวัด *' : 'Province *'}
                 value={shippingForm.province}
                 onChange={(v) => setShippingForm(p => ({ ...p, province: v, addressSource: 'manual' }))}
                 required
+                inSummary
               />
               <VerifyField
                 label={language === 'th' ? 'เขต/อำเภอ *' : 'District *'}
                 value={shippingForm.district}
                 onChange={(v) => setShippingForm(p => ({ ...p, district: v, addressSource: 'manual' }))}
+                inSummary
               />
               <VerifyField
                 label={language === 'th' ? 'แขวง/ตำบล *' : 'Sub District *'}
                 value={shippingForm.subDistrict}
                 onChange={(v) => setShippingForm(p => ({ ...p, subDistrict: v, addressSource: 'manual' }))}
+                inSummary
               />
               <VerifyField
                 label={language === 'th' ? 'รหัสไปรษณีย์ *' : 'Postal Code *'}
                 value={shippingForm.postalCode}
                 onChange={(v) => setShippingForm(p => ({ ...p, postalCode: v, addressSource: 'manual' }))}
+                inSummary
               />
               <VerifyField
                 label={language === 'th' ? 'เบอร์โทรศัพท์ *' : 'Phone Number *'}
@@ -1206,7 +1211,28 @@ interface VerifyFieldProps {
   options?: string[];
   required?: boolean;
   onChange?: (value: string) => void;
+  inSummary?: boolean;
 }
+
+function SummaryTag({ language }: { language: string }) {
+  return (
+    <TooltipProvider delayDuration={150}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="inline-flex items-center h-4 px-1.5 rounded text-[9px] font-semibold border bg-primary/10 text-primary border-primary/30 cursor-help">
+            {language === 'th' ? 'ในสรุป' : 'In Summary'}
+          </span>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="text-[11px] max-w-[220px]">
+          {language === 'th'
+            ? 'ค่านี้จะปรากฏในสรุปที่ส่งให้ตัวแทน'
+            : 'This value appears in the summary sent to the agent.'}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
 
 // Source tag map: short label + tooltip explanation, color-coded by provenance
 const SOURCE_META: Record<string, { label: { en: string; th: string }; tooltip: { en: string; th: string }; cls: string }> = {
@@ -1238,7 +1264,7 @@ function SourceTag({ source, language }: { source: string; language: string }) {
   );
 }
 
-function VerifyField({ label, value, source, isDate, isSelect, options, required, onChange }: VerifyFieldProps) {
+function VerifyField({ label, value, source, isDate, isSelect, options, required, onChange, inSummary }: VerifyFieldProps) {
   const { language } = useLanguageStore();
   const isEmpty = required && !value?.trim();
   // Track the original source-provided value so a manual edit flips the tag to manual_saved
@@ -1252,7 +1278,10 @@ function VerifyField({ label, value, source, isDate, isSelect, options, required
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between gap-2">
-        <span className="text-xs font-medium truncate">{label}</span>
+        <span className="text-xs font-medium truncate flex items-center gap-1.5">
+          {label}
+          {inSummary && <SummaryTag language={language} />}
+        </span>
         {effectiveSource && <SourceTag source={effectiveSource} language={language} />}
       </div>
       {isDate ? (

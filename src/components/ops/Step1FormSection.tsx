@@ -66,13 +66,25 @@ function MondayTag(_: { type: string }) {
   return null;
 }
 
+function SummaryTag({ lang }: { lang: string }) {
+  return (
+    <span
+      className="inline-flex items-center h-4 px-1.5 rounded text-[9px] font-semibold border bg-primary/10 text-primary border-primary/30"
+      title={lang === 'th' ? 'ค่านี้จะปรากฏในสรุปที่ส่งให้ตัวแทน' : 'This value appears in the summary sent to the agent.'}
+    >
+      {lang === 'th' ? 'ในสรุป' : 'In Summary'}
+    </span>
+  );
+}
 
-function FormRow({ label, required, monday, info, children, hint, span = 1 }: { label: string; required?: boolean; monday?: string; info?: React.ReactNode; children: React.ReactNode; hint?: string; span?: 1 | 2 }) {
+
+function FormRow({ label, required, monday, info, children, hint, span = 1, inSummary, lang }: { label: string; required?: boolean; monday?: string; info?: React.ReactNode; children: React.ReactNode; hint?: string; span?: 1 | 2; inSummary?: boolean; lang?: string }) {
   return (
     <div className={cn('space-y-1.5 min-w-0', span === 2 && 'md:col-span-2')}>
       <Label className="text-xs font-semibold text-foreground flex items-center flex-wrap gap-1 leading-tight min-h-[18px]">
         {label}
         {required && <span className="text-destructive ml-0.5">*</span>}
+        {inSummary && <SummaryTag lang={lang || 'en'} />}
         {info}
         {hint && <InfoBanner tone="info">{hint}</InfoBanner>}
         {monday && <MondayTag type={monday} />}
@@ -340,7 +352,7 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
           </Badge>
         }
       >
-        <FormRow label={t('วันเริ่มความคุ้มครอง', 'Voluntary Start Date')} required monday="date picker">
+        <FormRow label={t('วันเริ่มความคุ้มครอง', 'Voluntary Start Date')} required monday="date picker" inSummary lang={lang}>
           <DatePickerField value={coverageStartDate} onChange={setCoverageStartDate} lang={lang} />
         </FormRow>
 
@@ -351,7 +363,7 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
           <DatePickerField value={coverageEndDate} onChange={setCoverageEndDate} lang={lang} />
         </FormRow>
 
-        <FormRow label={t('เบอร์โทรศัพท์ลูกค้า', 'Customer Phone Number')} required monday="text">
+        <FormRow label={t('เบอร์โทรศัพท์ลูกค้า', 'Customer Phone Number')} required monday="text" inSummary lang={lang}>
           <Input
             type="tel"
             inputMode="numeric"
@@ -364,7 +376,7 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
           />
         </FormRow>
 
-        <FormRow label={t('รหัสประเภทรถ', 'Vehicle Code')} required>
+        <FormRow label={t('รหัสประเภทรถ', 'Vehicle Code')} required inSummary lang={lang}>
           <TooltipProvider delayDuration={150}>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -439,7 +451,7 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
           </Select>
         </FormRow>
 
-        <FormRow label={t('ซื้อ พ.ร.บ. เพิ่ม?', 'Add Compulsory Insurance?')} monday="tick box">
+        <FormRow label={t('ซื้อ พ.ร.บ. เพิ่ม?', 'Add Compulsory Insurance?')} monday="tick box" inSummary lang={lang}>
           <PillToggle
             value={addCompulsory ? 'yes' : 'no'}
             onChange={(v) => setAddCompulsory(v === 'yes')}
@@ -452,7 +464,7 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
 
         {addCompulsory && (
           <>
-            <FormRow label={t('วันเริ่มต้น พ.ร.บ.', 'Compulsory Start Date')} monday="date picker">
+            <FormRow label={t('วันเริ่มต้น พ.ร.บ.', 'Compulsory Start Date')} monday="date picker" inSummary lang={lang}>
               <DatePickerField value={compulsoryStartDate} onChange={setCompulsoryStartDate} lang={lang} />
             </FormRow>
             <FormRow
@@ -526,6 +538,8 @@ export function Step1FormSection({ sale }: { sale: SaleDetail }) {
           label={t('วิธีการชำระเงิน', 'Payment Method')}
           required
           monday="dropdown"
+          inSummary
+          lang={lang}
           info={isInstallment ? (
             <InfoBanner tone="warn">
               {t('ผ่อนชำระ — ระบบจะขอเอกสารเพิ่มเติมในส่วนแนบเอกสาร', 'Instalment selected — additional documents will be required below.')}
