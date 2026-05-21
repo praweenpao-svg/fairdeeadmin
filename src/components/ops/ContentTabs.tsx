@@ -1755,12 +1755,17 @@ export function ContentTabs({ sale }: ContentTabsProps) {
               logic.saleType, logic.insuranceClass, logic.paymentType, logic.carType,
               logic.customerType, logic.paymentMethodValue, logic.driverLicenseCount, logic.carInspectionMethod,
             );
-            const requiredDocs = docs.filter(d => d.required);
-            const optionalDocs = docs.filter(d => !d.required);
-            const requiredUploaded = requiredDocs.filter(d => (fieldDocCounts[d.fieldId] || 0) > 0).length;
-            const optionalUploaded = optionalDocs.filter(d => (fieldDocCounts[d.fieldId] || 0) > 0).length;
-            const totalUploaded = requiredUploaded + optionalUploaded;
-            const totalDocs = requiredDocs.length + optionalDocs.length;
+            // Bucket docs by tier: required / conditional / optional (mirrors Link Documents)
+            const tieredDocs = docs.map(d => ({ doc: d, tier: getDocumentTier(d) }));
+            const reqBucket = tieredDocs.filter(t => t.tier === 'required');
+            const condBucket = tieredDocs.filter(t => t.tier === 'conditional');
+            const optBucket = tieredDocs.filter(t => t.tier === 'optional');
+            const uploadedCount = (bucket: typeof tieredDocs) => bucket.filter(t => (fieldDocCounts[t.doc.fieldId] || 0) > 0).length;
+            const requiredUploaded = uploadedCount(reqBucket);
+            const conditionalUploaded = uploadedCount(condBucket);
+            const optionalUploaded = uploadedCount(optBucket);
+            const totalUploaded = requiredUploaded + conditionalUploaded + optionalUploaded;
+            const totalDocs = reqBucket.length + condBucket.length + optBucket.length;
 
             const rows: { label: string; value: string }[] = [
               { label: language === 'th' ? 'รหัสตัวแทน' : 'Agent Code', value: dash(sale.agentCode) },
