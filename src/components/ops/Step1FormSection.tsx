@@ -66,13 +66,25 @@ function MondayTag(_: { type: string }) {
   return null;
 }
 
+function SummaryTag({ lang }: { lang: string }) {
+  return (
+    <span
+      className="inline-flex items-center h-4 px-1.5 rounded text-[9px] font-semibold border bg-primary/10 text-primary border-primary/30"
+      title={lang === 'th' ? 'ค่านี้จะปรากฏในสรุปที่ส่งให้ตัวแทน' : 'This value appears in the summary sent to the agent.'}
+    >
+      {lang === 'th' ? 'ในสรุป' : 'In Summary'}
+    </span>
+  );
+}
 
-function FormRow({ label, required, monday, info, children, hint, span = 1 }: { label: string; required?: boolean; monday?: string; info?: React.ReactNode; children: React.ReactNode; hint?: string; span?: 1 | 2 }) {
+
+function FormRow({ label, required, monday, info, children, hint, span = 1, inSummary, lang }: { label: string; required?: boolean; monday?: string; info?: React.ReactNode; children: React.ReactNode; hint?: string; span?: 1 | 2; inSummary?: boolean; lang?: string }) {
   return (
     <div className={cn('space-y-1.5 min-w-0', span === 2 && 'md:col-span-2')}>
       <Label className="text-xs font-semibold text-foreground flex items-center flex-wrap gap-1 leading-tight min-h-[18px]">
         {label}
         {required && <span className="text-destructive ml-0.5">*</span>}
+        {inSummary && <SummaryTag lang={lang || 'en'} />}
         {info}
         {hint && <InfoBanner tone="info">{hint}</InfoBanner>}
         {monday && <MondayTag type={monday} />}
