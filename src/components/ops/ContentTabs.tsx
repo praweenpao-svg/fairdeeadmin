@@ -46,8 +46,8 @@ function LockedBanner({ language }: { language: string }) {
       <Lock className="w-3.5 h-3.5 text-primary" />
       <span className="font-medium">
         {language === 'th'
-          ? 'ขั้นตอนนี้ถูกล็อก — Sale ID ออกแล้ว ข้อมูลเป็นแบบอ่านอย่างเดียว ใช้ "Update Sale" เพื่อแก้ไข'
-          : 'Locked — Sale ID issued. Fields are read-only. Use "Update Sale" to edit.'}
+          ? 'ขั้นตอนนี้ถูกล็อกหลัง Sale ID ถูกสร้าง ข้อมูลเป็นแบบอ่านอย่างเดียว ใช้ "Update Sale" เพื่อแก้ไข'
+          : 'Locked after Sale ID is created. Fields are read-only. Use "Update Sale" to edit.'}
       </span>
     </div>
   );
