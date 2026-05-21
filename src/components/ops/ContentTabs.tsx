@@ -1259,7 +1259,7 @@ function SourceTag({ source, language }: { source: string; language: string }) {
   );
 }
 
-function VerifyField({ label, value, source, isDate, isSelect, options, required, onChange }: VerifyFieldProps) {
+function VerifyField({ label, value, source, isDate, isSelect, options, required, onChange, inSummary }: VerifyFieldProps) {
   const { language } = useLanguageStore();
   const isEmpty = required && !value?.trim();
   // Track the original source-provided value so a manual edit flips the tag to manual_saved
@@ -1273,7 +1273,10 @@ function VerifyField({ label, value, source, isDate, isSelect, options, required
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between gap-2">
-        <span className="text-xs font-medium truncate">{label}</span>
+        <span className="text-xs font-medium truncate flex items-center gap-1.5">
+          {label}
+          {inSummary && <SummaryTag language={language} />}
+        </span>
         {effectiveSource && <SourceTag source={effectiveSource} language={language} />}
       </div>
       {isDate ? (
