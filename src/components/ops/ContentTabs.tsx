@@ -1816,10 +1816,13 @@ export function ContentTabs({ sale }: ContentTabsProps) {
                     <CollapsibleContent>
                       <div className="flex flex-wrap gap-2 pb-2 pt-1">
                         <Badge variant="outline" className="text-[11px]">
-                          {language === 'th' ? 'จำเป็น' : 'Required'} {requiredUploaded}/{requiredDocs.length}
+                          {language === 'th' ? 'จำเป็น' : 'Required'} {requiredUploaded}/{reqBucket.length}
                         </Badge>
                         <Badge variant="outline" className="text-[11px]">
-                          {language === 'th' ? 'ถ้ามี' : 'Optional'} {optionalUploaded}/{optionalDocs.length}
+                          {language === 'th' ? 'มีเงื่อนไข' : 'Conditional'} {conditionalUploaded}/{condBucket.length}
+                        </Badge>
+                        <Badge variant="outline" className="text-[11px]">
+                          {language === 'th' ? 'ถ้ามี' : 'Optional'} {optionalUploaded}/{optBucket.length}
                         </Badge>
                       </div>
                     </CollapsibleContent>
