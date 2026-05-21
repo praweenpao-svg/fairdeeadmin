@@ -1806,10 +1806,7 @@ export function ContentTabs({ sale }: ContentTabsProps) {
                   ))}
                   {/* Documents inline */}
                   <div className="flex items-center justify-between py-2 border-t border-border mt-1 gap-3 flex-wrap">
-                    <div className="flex items-center gap-2">
-                      <span className="text-muted-foreground font-medium">{language === 'th' ? 'เอกสาร' : 'Documents'}:</span>
-                      <span className="text-primary font-semibold text-sm">{totalUploaded}/{totalDocs}</span>
-                    </div>
+                    <span className="text-muted-foreground font-medium">{language === 'th' ? 'เอกสาร' : 'Documents'}:</span>
                     <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border bg-red-100 text-red-700 border-red-200">
                         <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
