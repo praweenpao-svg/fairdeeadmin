@@ -156,7 +156,7 @@ export interface SaleDetail {
 export const mockSaleDetail: SaleDetail = {
   id: 'sale-001',
   qqId: '112233',
-  agentCode: 'FM-5369',
+  agentCode: 'FX-XXXXX',
   typeOfSale: 'งานใหม่',
   paymentMethod: 'QR Code (Full Payment)',
   paymentStatus: 'pending',
