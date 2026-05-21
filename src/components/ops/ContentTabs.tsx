@@ -1811,17 +1811,17 @@ export function ContentTabs({ sale }: ContentTabsProps) {
                       <span className="text-primary font-semibold text-sm">{totalUploaded}/{totalDocs}</span>
                     </div>
                     <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-700 dark:text-blue-300">
-                        <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border bg-red-100 text-red-700 border-red-200">
+                        <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
                         {language === 'th' ? 'จำเป็น' : 'Required'} {requiredUploaded}/{reqBucket.length}
                       </span>
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-300">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border bg-amber-100 text-amber-700 border-amber-200">
                         <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                        {language === 'th' ? 'มีเงื่อนไข' : 'Conditional'} {conditionalUploaded}/{condBucket.length}
+                        {language === 'th' ? 'ตามเงื่อนไข' : 'Conditional'} {conditionalUploaded}/{condBucket.length}
                       </span>
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
-                        <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50" />
-                        {language === 'th' ? 'ถ้ามี' : 'Optional'} {optionalUploaded}/{optBucket.length}
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border bg-slate-100 text-slate-600 border-slate-200">
+                        <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                        {language === 'th' ? 'เพิ่มเติม' : 'Optional'} {optionalUploaded}/{optBucket.length}
                       </span>
                     </div>
                   </div>
