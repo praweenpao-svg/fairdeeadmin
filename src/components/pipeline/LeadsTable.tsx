@@ -2879,18 +2879,18 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
             handlePolicyReworkResolve(lead, selectedPolicyForRemarks.policyId, entryId);
           }
         }}
-        onReworkReassign={(entryId, newReasonId, details, attachments) => {
+        onReworkReassign={(entryId, newReasonId, details, attachments, specificAssignee) => {
           if (!selectedPolicyForRemarks) return;
           const lead = (allLeads || leads).find(l => l.id === selectedPolicyForRemarks.leadId);
           if (lead) {
-            handlePolicyReworkReassign(lead, selectedPolicyForRemarks.policyId, entryId, newReasonId, details, attachments);
+            handlePolicyReworkReassign(lead, selectedPolicyForRemarks.policyId, entryId, newReasonId, details, attachments, specificAssignee);
           }
         }}
-        onAddRework={(policyId, reasonId, details, attachments, autoResolveDate) => {
+        onAddRework={(policyId, reasonId, details, attachments, autoResolveDate, specificAssignee) => {
           if (!selectedPolicyForRemarks) return;
           const lead = (allLeads || leads).find(l => l.id === selectedPolicyForRemarks.leadId);
           if (lead) {
-            handlePolicyReworkAdd(lead, policyId, reasonId, details, attachments, autoResolveDate);
+            handlePolicyReworkAdd(lead, policyId, reasonId, details, attachments, autoResolveDate, specificAssignee);
           }
         }}
         onUpdateAutoResolveDate={(entryId, newDate) => {
