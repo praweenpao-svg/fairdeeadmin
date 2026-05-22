@@ -598,6 +598,10 @@ export function OtherStagesFilterPanel({
       const eta = etaStatusOptions.find(o => o.id === filters.etaStatus);
       chips.push({ key: 'etaStatus', label: language === 'th' ? 'สถานะ ETA' : 'ETA Status', values: eta ? (language === 'th' ? eta.th : eta.en) : filters.etaStatus, onClear: () => onFiltersChange({ ...filters, etaStatus: 'all' }) });
     }
+    if (filters.saleIdStatus !== 'all') {
+      const sid = saleIdStatusOptions.find(o => o.id === filters.saleIdStatus);
+      chips.push({ key: 'saleIdStatus', label: language === 'th' ? 'Sale ID' : 'Sale ID', values: sid ? (language === 'th' ? sid.th : sid.en) : filters.saleIdStatus, onClear: () => onFiltersChange({ ...filters, saleIdStatus: 'all' }) });
+    }
     if (filters.owner !== 'all') {
       const presetOpt = ownerPresetOptions.find(o => o.id === filters.owner);
       const staffMember = mockStaffMembers.find(s => s.name === filters.owner);
@@ -833,6 +837,19 @@ export function OtherStagesFilterPanel({
                 selectedValues={localFilters.endorsementStatuses}
                 onChange={(id, checked) => handleMultiSelectChange('endorsementStatuses', id, checked)}
                 maxVisibleItems={2}
+              />
+            </div>
+            <div className="flex-1 max-w-[calc((100%-4rem)/3)] space-y-2">
+              <Label className="text-sm font-medium">Sale ID</Label>
+              <MultiSelectDropdown
+                options={saleIdStatusOptions}
+                selectedValues={[localFilters.saleIdStatus]}
+                onChange={(id, checked) => {
+                  if (checked) {
+                    setLocalFilters({ ...localFilters, saleIdStatus: id });
+                  }
+                }}
+                maxVisibleItems={1}
               />
             </div>
           </div>
