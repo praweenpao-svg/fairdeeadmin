@@ -785,6 +785,7 @@ export function PolicyRemarksReworkDialog({
     setNewReworkDetails('');
     setNewReworkAttachments([]);
     setNewReworkAutoResolveDate(undefined);
+    setNewReworkSpecificAssignee('');
   };
 
   if (!open) return null;
