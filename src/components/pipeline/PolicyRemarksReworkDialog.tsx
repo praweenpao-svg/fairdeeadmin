@@ -246,7 +246,10 @@ export function PolicyRemarksReworkDialog({
 
   const handleReassignConfirm = () => {
     if (reassignEntryId && selectedNewReasonId) {
-      onReworkReassign(reassignEntryId, selectedNewReasonId, reassignDetails, reassignAttachments);
+      const cfg = reworkConfigs.find(c => c.id === selectedNewReasonId);
+      const specific = cfg?.assignment === 'specific' ? reassignSpecificAssignee : undefined;
+      if (cfg?.assignment === 'specific' && !specific) return;
+      onReworkReassign(reassignEntryId, selectedNewReasonId, reassignDetails, reassignAttachments, specific);
       resetReassignForm();
     }
   };
@@ -256,6 +259,7 @@ export function PolicyRemarksReworkDialog({
     setSelectedNewReasonId('');
     setReassignDetails('');
     setReassignAttachments([]);
+    setReassignSpecificAssignee('');
   };
 
   const toggleThreadExpanded = (id: string) => {
