@@ -295,7 +295,7 @@ export interface Lead {
   etaDaysOverdue?: number;
 }
 
-export type AssignmentType = 'round_robin' | 'rf_sc' | 'rf' | 'requestor' | 'none';
+export type AssignmentType = 'round_robin' | 'rf_sc' | 'rf' | 'requestor' | 'specific' | 'none';
 
 // Sticky column types for assignment configuration
 export type StickyColumnType = 'RF' | 'SC' | 'DE' | 'Admin' | 'Delivery';
