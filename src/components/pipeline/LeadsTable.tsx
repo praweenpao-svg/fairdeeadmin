@@ -1930,6 +1930,17 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
                           if (stage === 'to_convert') {
                             tags.push(<LeadSourceBadge key="source" leadType={lead.leadType} leadSource={lead.leadSource} />);
                           }
+                          if (lead.saleId) {
+                            tags.push(
+                              <span
+                                key="sale"
+                                title={lead.saleId}
+                                className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
+                              >
+                                {language === 'th' ? 'การขาย' : 'Sale'}
+                              </span>
+                            );
+                          }
                           if (lead.policyType) {
                             tags.push(
                               <span key="vmi" className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">VMI</span>
