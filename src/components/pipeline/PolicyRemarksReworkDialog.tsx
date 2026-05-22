@@ -947,7 +947,7 @@ export function PolicyRemarksReworkDialog({
               <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={resetReassignForm}>
                 {language === 'th' ? 'ยกเลิก' : 'Cancel'}
               </Button>
-              <Button size="sm" className="h-7 text-xs" onClick={handleReassignConfirm} disabled={!selectedNewReasonId}>
+              <Button size="sm" className="h-7 text-xs" onClick={handleReassignConfirm} disabled={!selectedNewReasonId || (() => { const c = reworkConfigs.find(c2 => c2.id === selectedNewReasonId); return c?.assignment === 'specific' && !reassignSpecificAssignee; })()}>
                 {language === 'th' ? 'มอบหมายใหม่' : 'Reassign'}
               </Button>
             </div>
