@@ -861,7 +861,7 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
   };
 
   // Handle adding a new rework entry (without resolving existing ones)
-  const handlePolicyReworkAdd = (lead: Lead, policyId: string, reasonId: string, details: string, attachments: ReworkAttachment[], autoResolveDate?: string) => {
+  const handlePolicyReworkAdd = (lead: Lead, policyId: string, reasonId: string, details: string, attachments: ReworkAttachment[], autoResolveDate?: string, specificAssignee?: string) => {
     if (!lead.policyRecords) return;
 
     const timestamp = new Date().toLocaleString('en-US', {
@@ -874,7 +874,7 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
 
     const reworkConfig = reworkConfigs.find(r => r.id === reasonId);
     const reasonLabel = reworkConfig?.descriptionEn || 'Unknown';
-    const newOwner = computeReworkOwner(lead, reasonId, lead.policyRecords?.find(r => r.id === policyId));
+    const newOwner = computeReworkOwner(lead, reasonId, lead.policyRecords?.find(r => r.id === policyId), specificAssignee);
 
     const policy = lead.policyRecords.find(r => r.id === policyId);
 
