@@ -713,7 +713,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                 </div>
               )}
 
-              {formData.configType && (
+              {formData.configType && formData.assignment !== 'specific' && (
                 <div className="border-t pt-4 mt-2">
                   <div className="flex items-center justify-between mb-3">
                     <div className="space-y-0.5">
@@ -752,10 +752,17 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
               {/* Assignment Logic */}
               {formData.configType && (
                 <div className="grid gap-2">
-                  <Label>Assignment Logic {formData.stickyEnabled ? '(Fallback)' : ''}</Label>
+                  <Label>Assignment Logic {formData.stickyEnabled && formData.assignment !== 'specific' ? '(Fallback)' : ''}</Label>
                   <Select
                     value={formData.assignment || 'none'}
-                    onValueChange={(v) => setFormData({ ...formData, assignment: v as AssignmentType, team: '' })}
+                    onValueChange={(v) => setFormData({
+                      ...formData,
+                      assignment: v as AssignmentType,
+                      team: '',
+                      // Specific overrides sticky — auto-disable sticky check
+                      stickyEnabled: v === 'specific' ? false : formData.stickyEnabled,
+                      stickyColumns: v === 'specific' ? [] : formData.stickyColumns,
+                    })}
                   >
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -765,11 +772,12 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                   <p className="text-xs text-muted-foreground">
                     {formData.assignment === 'round_robin' ? 'Distributes tasks among selected team members'
                       : formData.assignment === 'requestor' ? 'Assigns to whoever created the request'
-                      : formData.assignment === 'specific' ? 'User picks a specific staff member when creating the request'
+                      : formData.assignment === 'specific' ? 'User picks a specific staff member when creating the request — overrides Sticky Check'
                       : 'No assignment — owner is empty'}
                   </p>
                 </div>
               )}
+
 
               {/* Team for Round-Robin */}
               {formData.assignment === 'round_robin' && (
