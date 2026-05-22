@@ -55,8 +55,8 @@ interface PolicyRemarksReworkDialogProps {
   onAddReworkReply?: (entryId: string, comment: string, attachments?: ReworkAttachment[]) => void;
   onAddEndorsementReply?: (entryId: string, comment: string, attachments?: ReworkAttachment[]) => void;
   onReworkResolve: (entryId: string) => void;
-  onReworkReassign: (entryId: string, newReasonId: string, details: string, attachments: ReworkAttachment[]) => void;
-  onAddRework?: (policyId: string, reasonId: string, details: string, attachments: ReworkAttachment[], autoResolveDate?: string) => void;
+  onReworkReassign: (entryId: string, newReasonId: string, details: string, attachments: ReworkAttachment[], specificAssignee?: string) => void;
+  onAddRework?: (policyId: string, reasonId: string, details: string, attachments: ReworkAttachment[], autoResolveDate?: string, specificAssignee?: string) => void;
   onUpdateAutoResolveDate?: (entryId: string, newDate: string) => void;
 }
 
