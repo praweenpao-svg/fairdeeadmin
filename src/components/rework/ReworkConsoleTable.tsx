@@ -765,6 +765,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                   <p className="text-xs text-muted-foreground">
                     {formData.assignment === 'round_robin' ? 'Distributes tasks among selected team members'
                       : formData.assignment === 'requestor' ? 'Assigns to whoever created the request'
+                      : formData.assignment === 'specific' ? 'User picks a specific staff member when creating the request'
                       : 'No assignment — owner is empty'}
                   </p>
                 </div>
