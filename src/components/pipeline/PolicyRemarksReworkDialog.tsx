@@ -1082,7 +1082,10 @@ export function PolicyRemarksReworkDialog({
                       <Button 
                         size="sm" 
                         className="h-7 text-xs bg-warning hover:bg-warning/90 text-warning-foreground" 
-                        disabled={!newReworkReasonId}
+                        disabled={!newReworkReasonId || (() => {
+                          const cfg = reworkConfigs.find(c => c.id === newReworkReasonId);
+                          return cfg?.assignment === 'specific' && !newReworkSpecificAssignee;
+                        })()}
                         onClick={() => {
                           if (onAddRework && newReworkReasonId) {
                             // Process mentions in rework details
@@ -1094,7 +1097,8 @@ export function PolicyRemarksReworkDialog({
                             const resolveDate = isAutoResolve && newReworkAutoResolveDate 
                               ? format(newReworkAutoResolveDate, 'dd/MM/yyyy') 
                               : undefined;
-                            onAddRework(policyId, newReworkReasonId, newReworkDetails, newReworkAttachments, resolveDate);
+                            const specific = selectedConfig?.assignment === 'specific' ? newReworkSpecificAssignee : undefined;
+                            onAddRework(policyId, newReworkReasonId, newReworkDetails, newReworkAttachments, resolveDate, specific);
                             resetAddReworkForm();
                           }
                         }}
