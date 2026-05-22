@@ -753,6 +753,8 @@ export function PolicyRemarksReworkDialog({
   const [newReworkDetails, setNewReworkDetails] = useState('');
   const [newReworkAttachments, setNewReworkAttachments] = useState<ReworkAttachment[]>([]);
   const [newReworkAutoResolveDate, setNewReworkAutoResolveDate] = useState<Date | undefined>(undefined);
+  const [newReworkSpecificAssignee, setNewReworkSpecificAssignee] = useState<string>('');
+  const [reassignSpecificAssignee, setReassignSpecificAssignee] = useState<string>('');
   const addReworkFileInputRef = useRef<HTMLInputElement>(null);
 
   const handleAddReworkFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
