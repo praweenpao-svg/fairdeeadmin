@@ -26,6 +26,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { format, parse, startOfDay } from 'date-fns';
 import { th as thLocale } from 'date-fns/locale';
+import { mockStaffMembers } from '@/data/mockStaff';
 
 // Endorsement status translations
 const endorsementStatusLabels: Record<EndorsementStatus, { en: string; th: string }> = {
@@ -55,8 +56,8 @@ interface PolicyRemarksReworkDialogProps {
   onAddReworkReply?: (entryId: string, comment: string, attachments?: ReworkAttachment[]) => void;
   onAddEndorsementReply?: (entryId: string, comment: string, attachments?: ReworkAttachment[]) => void;
   onReworkResolve: (entryId: string) => void;
-  onReworkReassign: (entryId: string, newReasonId: string, details: string, attachments: ReworkAttachment[]) => void;
-  onAddRework?: (policyId: string, reasonId: string, details: string, attachments: ReworkAttachment[], autoResolveDate?: string) => void;
+  onReworkReassign: (entryId: string, newReasonId: string, details: string, attachments: ReworkAttachment[], specificAssignee?: string) => void;
+  onAddRework?: (policyId: string, reasonId: string, details: string, attachments: ReworkAttachment[], autoResolveDate?: string, specificAssignee?: string) => void;
   onUpdateAutoResolveDate?: (entryId: string, newDate: string) => void;
 }
 
@@ -246,7 +247,10 @@ export function PolicyRemarksReworkDialog({
 
   const handleReassignConfirm = () => {
     if (reassignEntryId && selectedNewReasonId) {
-      onReworkReassign(reassignEntryId, selectedNewReasonId, reassignDetails, reassignAttachments);
+      const cfg = reworkConfigs.find(c => c.id === selectedNewReasonId);
+      const specific = cfg?.assignment === 'specific' ? reassignSpecificAssignee : undefined;
+      if (cfg?.assignment === 'specific' && !specific) return;
+      onReworkReassign(reassignEntryId, selectedNewReasonId, reassignDetails, reassignAttachments, specific);
       resetReassignForm();
     }
   };
@@ -256,6 +260,7 @@ export function PolicyRemarksReworkDialog({
     setSelectedNewReasonId('');
     setReassignDetails('');
     setReassignAttachments([]);
+    setReassignSpecificAssignee('');
   };
 
   const toggleThreadExpanded = (id: string) => {
@@ -753,6 +758,8 @@ export function PolicyRemarksReworkDialog({
   const [newReworkDetails, setNewReworkDetails] = useState('');
   const [newReworkAttachments, setNewReworkAttachments] = useState<ReworkAttachment[]>([]);
   const [newReworkAutoResolveDate, setNewReworkAutoResolveDate] = useState<Date | undefined>(undefined);
+  const [newReworkSpecificAssignee, setNewReworkSpecificAssignee] = useState<string>('');
+  const [reassignSpecificAssignee, setReassignSpecificAssignee] = useState<string>('');
   const addReworkFileInputRef = useRef<HTMLInputElement>(null);
 
   const handleAddReworkFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -783,6 +790,7 @@ export function PolicyRemarksReworkDialog({
     setNewReworkDetails('');
     setNewReworkAttachments([]);
     setNewReworkAutoResolveDate(undefined);
+    setNewReworkSpecificAssignee('');
   };
 
   if (!open) return null;
@@ -884,9 +892,32 @@ export function PolicyRemarksReworkDialog({
                   (config.policyScope === 'both' || config.policyScope === policyKind)
                 )}
                 value={selectedNewReasonId}
-                onValueChange={setSelectedNewReasonId}
+                onValueChange={(v) => { setSelectedNewReasonId(v); setReassignSpecificAssignee(''); }}
               />
             </div>
+
+            {/* Specific assignee picker for reassign */}
+            {(() => {
+              const cfg = reworkConfigs.find(c => c.id === selectedNewReasonId);
+              if (cfg?.assignment !== 'specific') return null;
+              return (
+                <div className="space-y-2">
+                  <Label className="text-xs">{language === 'th' ? 'มอบหมายให้' : 'Assign to'}</Label>
+                  <Select value={reassignSpecificAssignee} onValueChange={setReassignSpecificAssignee}>
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue placeholder={language === 'th' ? 'เลือกพนักงาน' : 'Select staff member'} />
+                    </SelectTrigger>
+                    <SelectContent className="z-[60]">
+                      {mockStaffMembers.map(s => (
+                        <SelectItem key={s.id} value={s.name} className="text-xs">
+                          {s.name}{s.team ? ` — ${s.team}` : ''}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              );
+            })()}
 
             <div className="space-y-2">
               <Label className="text-xs">{language === 'th' ? 'รายละเอียด (ไม่บังคับ)' : 'Details (optional)'}</Label>
@@ -916,7 +947,7 @@ export function PolicyRemarksReworkDialog({
               <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={resetReassignForm}>
                 {language === 'th' ? 'ยกเลิก' : 'Cancel'}
               </Button>
-              <Button size="sm" className="h-7 text-xs" onClick={handleReassignConfirm} disabled={!selectedNewReasonId}>
+              <Button size="sm" className="h-7 text-xs" onClick={handleReassignConfirm} disabled={!selectedNewReasonId || (() => { const c = reworkConfigs.find(c2 => c2.id === selectedNewReasonId); return c?.assignment === 'specific' && !reassignSpecificAssignee; })()}>
                 {language === 'th' ? 'มอบหมายใหม่' : 'Reassign'}
               </Button>
             </div>
@@ -978,9 +1009,32 @@ export function PolicyRemarksReworkDialog({
                       <SearchableReasonSelect
                         configs={stageFilteredConfigs}
                         value={newReworkReasonId}
-                        onValueChange={setNewReworkReasonId}
+                        onValueChange={(v) => { setNewReworkReasonId(v); setNewReworkSpecificAssignee(''); }}
                       />
                     </div>
+
+                    {/* Specific assignee picker - show when selected reason uses 'specific' assignment */}
+                    {(() => {
+                      const selectedConfig = reworkConfigs.find(c => c.id === newReworkReasonId);
+                      if (selectedConfig?.assignment !== 'specific') return null;
+                      return (
+                        <div className="space-y-2">
+                          <Label className="text-xs">{language === 'th' ? 'มอบหมายให้' : 'Assign to'}</Label>
+                          <Select value={newReworkSpecificAssignee} onValueChange={setNewReworkSpecificAssignee}>
+                            <SelectTrigger className="h-8 text-xs">
+                              <SelectValue placeholder={language === 'th' ? 'เลือกพนักงาน' : 'Select staff member'} />
+                            </SelectTrigger>
+                            <SelectContent className="z-[60]">
+                              {mockStaffMembers.map(s => (
+                                <SelectItem key={s.id} value={s.name} className="text-xs">
+                                  {s.name}{s.team ? ` — ${s.team}` : ''}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      );
+                    })()}
 
                     <div className="space-y-2">
                       <Label className="text-xs">{language === 'th' ? 'รายละเอียด (ไม่บังคับ)' : 'Details (optional)'}</Label>
@@ -1051,7 +1105,10 @@ export function PolicyRemarksReworkDialog({
                       <Button 
                         size="sm" 
                         className="h-7 text-xs bg-warning hover:bg-warning/90 text-warning-foreground" 
-                        disabled={!newReworkReasonId}
+                        disabled={!newReworkReasonId || (() => {
+                          const cfg = reworkConfigs.find(c => c.id === newReworkReasonId);
+                          return cfg?.assignment === 'specific' && !newReworkSpecificAssignee;
+                        })()}
                         onClick={() => {
                           if (onAddRework && newReworkReasonId) {
                             // Process mentions in rework details
@@ -1063,7 +1120,8 @@ export function PolicyRemarksReworkDialog({
                             const resolveDate = isAutoResolve && newReworkAutoResolveDate 
                               ? format(newReworkAutoResolveDate, 'dd/MM/yyyy') 
                               : undefined;
-                            onAddRework(policyId, newReworkReasonId, newReworkDetails, newReworkAttachments, resolveDate);
+                            const specific = selectedConfig?.assignment === 'specific' ? newReworkSpecificAssignee : undefined;
+                            onAddRework(policyId, newReworkReasonId, newReworkDetails, newReworkAttachments, resolveDate, specific);
                             resetAddReworkForm();
                           }
                         }}

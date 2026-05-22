@@ -34,10 +34,11 @@ interface ReworkConsoleTableProps {
   onUpdate: (configs: ReworkConfig[]) => void;
 }
 
-// Assignment logic options per PRD: Round-Robin, Requestor, None
+// Assignment logic options per PRD: Round-Robin, Requestor, Specific, None
 const assignmentOptions: { value: AssignmentType; label: string }[] = [
   { value: 'round_robin', label: 'Round-Robin' },
   { value: 'requestor', label: 'Requestor' },
+  { value: 'specific', label: 'Specific' },
   { value: 'none', label: 'None' },
 ];
 
@@ -764,6 +765,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                   <p className="text-xs text-muted-foreground">
                     {formData.assignment === 'round_robin' ? 'Distributes tasks among selected team members'
                       : formData.assignment === 'requestor' ? 'Assigns to whoever created the request'
+                      : formData.assignment === 'specific' ? 'User picks a specific staff member when creating the request'
                       : 'No assignment — owner is empty'}
                   </p>
                 </div>

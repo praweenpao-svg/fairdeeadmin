@@ -528,9 +528,14 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
     return undefined;
   };
 
-  const computeReworkOwner = (lead: Lead, reasonId: string, policy?: PolicyRecord): string | undefined => {
+  const computeReworkOwner = (lead: Lead, reasonId: string, policy?: PolicyRecord, specificOverride?: string): string | undefined => {
     const config = reworkConfigs.find(r => r.id === reasonId);
     if (!config) return undefined;
+
+    // Specific assignment short-circuits sticky logic — owner picked at creation time
+    if (config.assignment === 'specific') {
+      return specificOverride || undefined;
+    }
 
     // Step 1: Check sticky columns first (priority order)
     if (config.stickyEnabled && config.stickyColumns && config.stickyColumns.length > 0) {
@@ -724,7 +729,7 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
   };
 
   // Handle policy rework reassign (for specific entry)
-  const handlePolicyReworkReassign = (lead: Lead, policyId: string, entryId: string, newReasonId: string, details: string, attachments: ReworkAttachment[]) => {
+  const handlePolicyReworkReassign = (lead: Lead, policyId: string, entryId: string, newReasonId: string, details: string, attachments: ReworkAttachment[], specificAssignee?: string) => {
     if (!lead.policyRecords) return;
 
     const timestamp = new Date().toLocaleString('en-US', {
@@ -737,7 +742,7 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
 
     const reworkConfig = reworkConfigs.find(r => r.id === newReasonId);
     const reasonLabel = reworkConfig?.descriptionEn || 'Unknown';
-    const newOwner = computeReworkOwner(lead, newReasonId, lead.policyRecords?.find(r => r.id === policyId));
+    const newOwner = computeReworkOwner(lead, newReasonId, lead.policyRecords?.find(r => r.id === policyId), specificAssignee);
 
     const policy = lead.policyRecords.find(r => r.id === policyId);
     const targetEntry = policy?.reworkHistory?.find(e => e.id === entryId);
@@ -856,7 +861,7 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
   };
 
   // Handle adding a new rework entry (without resolving existing ones)
-  const handlePolicyReworkAdd = (lead: Lead, policyId: string, reasonId: string, details: string, attachments: ReworkAttachment[], autoResolveDate?: string) => {
+  const handlePolicyReworkAdd = (lead: Lead, policyId: string, reasonId: string, details: string, attachments: ReworkAttachment[], autoResolveDate?: string, specificAssignee?: string) => {
     if (!lead.policyRecords) return;
 
     const timestamp = new Date().toLocaleString('en-US', {
@@ -869,7 +874,7 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
 
     const reworkConfig = reworkConfigs.find(r => r.id === reasonId);
     const reasonLabel = reworkConfig?.descriptionEn || 'Unknown';
-    const newOwner = computeReworkOwner(lead, reasonId, lead.policyRecords?.find(r => r.id === policyId));
+    const newOwner = computeReworkOwner(lead, reasonId, lead.policyRecords?.find(r => r.id === policyId), specificAssignee);
 
     const policy = lead.policyRecords.find(r => r.id === policyId);
 
@@ -2874,18 +2879,18 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
             handlePolicyReworkResolve(lead, selectedPolicyForRemarks.policyId, entryId);
           }
         }}
-        onReworkReassign={(entryId, newReasonId, details, attachments) => {
+        onReworkReassign={(entryId, newReasonId, details, attachments, specificAssignee) => {
           if (!selectedPolicyForRemarks) return;
           const lead = (allLeads || leads).find(l => l.id === selectedPolicyForRemarks.leadId);
           if (lead) {
-            handlePolicyReworkReassign(lead, selectedPolicyForRemarks.policyId, entryId, newReasonId, details, attachments);
+            handlePolicyReworkReassign(lead, selectedPolicyForRemarks.policyId, entryId, newReasonId, details, attachments, specificAssignee);
           }
         }}
-        onAddRework={(policyId, reasonId, details, attachments, autoResolveDate) => {
+        onAddRework={(policyId, reasonId, details, attachments, autoResolveDate, specificAssignee) => {
           if (!selectedPolicyForRemarks) return;
           const lead = (allLeads || leads).find(l => l.id === selectedPolicyForRemarks.leadId);
           if (lead) {
-            handlePolicyReworkAdd(lead, policyId, reasonId, details, attachments, autoResolveDate);
+            handlePolicyReworkAdd(lead, policyId, reasonId, details, attachments, autoResolveDate, specificAssignee);
           }
         }}
         onUpdateAutoResolveDate={(entryId, newDate) => {
