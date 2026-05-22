@@ -101,7 +101,7 @@ export default function OpsDashboard() {
     ));
   };
 
-  const handleReworkReassign = (entryId: string, newReasonId: string, details: string, attachments: ReworkAttachment[]) => {
+  const handleReworkReassign = (entryId: string, newReasonId: string, details: string, attachments: ReworkAttachment[], specificAssignee?: string) => {
     setOpsReworkHistory(prev => {
       const updated = prev.map(e =>
         e.id === entryId ? { ...e, resolved: true, resolvedBy: 'Current User (Reassigned)', resolvedAt: new Date().toISOString() } : e
@@ -116,14 +116,14 @@ export default function OpsDashboard() {
         savedBy: 'Current User',
         savedAt: new Date().toISOString(),
         resolved: false,
-        assignedTo: 'Unassigned',
+        assignedTo: config?.assignment === 'specific' ? (specificAssignee || 'Unassigned') : 'Unassigned',
         previousStatus: 'pending_review',
       };
       return [...updated, newEntry];
     });
   };
 
-  const handleAddRework = (policyId: string, reasonId: string, details: string, attachments: ReworkAttachment[], autoResolveDate?: string) => {
+  const handleAddRework = (policyId: string, reasonId: string, details: string, attachments: ReworkAttachment[], autoResolveDate?: string, specificAssignee?: string) => {
     const config = mockReworkConfigs.find(c => c.id === reasonId);
     const newEntry: PolicyReworkEntry = {
       id: `opw-${Date.now()}`,
@@ -134,7 +134,7 @@ export default function OpsDashboard() {
       savedBy: 'Current User',
       savedAt: new Date().toISOString(),
       resolved: false,
-      assignedTo: 'Unassigned',
+      assignedTo: config?.assignment === 'specific' ? (specificAssignee || 'Unassigned') : 'Unassigned',
       autoResolveDate,
       previousStatus: 'pending_review',
     };
