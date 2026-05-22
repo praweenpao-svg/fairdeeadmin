@@ -26,6 +26,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { format, parse, startOfDay } from 'date-fns';
 import { th as thLocale } from 'date-fns/locale';
+import { mockStaffMembers } from '@/data/mockStaff';
 
 // Endorsement status translations
 const endorsementStatusLabels: Record<EndorsementStatus, { en: string; th: string }> = {
