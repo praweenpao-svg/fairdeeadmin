@@ -986,9 +986,32 @@ export function PolicyRemarksReworkDialog({
                       <SearchableReasonSelect
                         configs={stageFilteredConfigs}
                         value={newReworkReasonId}
-                        onValueChange={setNewReworkReasonId}
+                        onValueChange={(v) => { setNewReworkReasonId(v); setNewReworkSpecificAssignee(''); }}
                       />
                     </div>
+
+                    {/* Specific assignee picker - show when selected reason uses 'specific' assignment */}
+                    {(() => {
+                      const selectedConfig = reworkConfigs.find(c => c.id === newReworkReasonId);
+                      if (selectedConfig?.assignment !== 'specific') return null;
+                      return (
+                        <div className="space-y-2">
+                          <Label className="text-xs">{language === 'th' ? 'มอบหมายให้' : 'Assign to'}</Label>
+                          <Select value={newReworkSpecificAssignee} onValueChange={setNewReworkSpecificAssignee}>
+                            <SelectTrigger className="h-8 text-xs">
+                              <SelectValue placeholder={language === 'th' ? 'เลือกพนักงาน' : 'Select staff member'} />
+                            </SelectTrigger>
+                            <SelectContent className="z-[60]">
+                              {mockStaffMembers.map(s => (
+                                <SelectItem key={s.id} value={s.name} className="text-xs">
+                                  {s.name}{s.team ? ` — ${s.team}` : ''}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      );
+                    })()}
 
                     <div className="space-y-2">
                       <Label className="text-xs">{language === 'th' ? 'รายละเอียด (ไม่บังคับ)' : 'Details (optional)'}</Label>
