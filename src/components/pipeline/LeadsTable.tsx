@@ -729,7 +729,7 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
   };
 
   // Handle policy rework reassign (for specific entry)
-  const handlePolicyReworkReassign = (lead: Lead, policyId: string, entryId: string, newReasonId: string, details: string, attachments: ReworkAttachment[]) => {
+  const handlePolicyReworkReassign = (lead: Lead, policyId: string, entryId: string, newReasonId: string, details: string, attachments: ReworkAttachment[], specificAssignee?: string) => {
     if (!lead.policyRecords) return;
 
     const timestamp = new Date().toLocaleString('en-US', {
@@ -742,7 +742,7 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
 
     const reworkConfig = reworkConfigs.find(r => r.id === newReasonId);
     const reasonLabel = reworkConfig?.descriptionEn || 'Unknown';
-    const newOwner = computeReworkOwner(lead, newReasonId, lead.policyRecords?.find(r => r.id === policyId));
+    const newOwner = computeReworkOwner(lead, newReasonId, lead.policyRecords?.find(r => r.id === policyId), specificAssignee);
 
     const policy = lead.policyRecords.find(r => r.id === policyId);
     const targetEntry = policy?.reworkHistory?.find(e => e.id === entryId);
