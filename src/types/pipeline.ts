@@ -248,6 +248,9 @@ export interface Lead {
   paymentType: PaymentType;
   agentId: string;
   agentName: string;
+  // Sale ID — created after Step 2 (Verify Information) in OPS dashboard.
+  // When present, a green "Sale" tag is shown on the lead row.
+  saleId?: string;
   createdOn: string;
   updatedOn: string;
   vehicleDetails: string;

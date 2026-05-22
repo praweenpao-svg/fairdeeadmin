@@ -31,6 +31,7 @@ export interface OtherStagesFilterState {
   createdBy: string[];
   endorsementTypes: string[];
   endorsementStatuses: string[];
+  saleIdStatus: string; // 'all' | 'with' | 'without'
 }
 
 export const defaultOtherStagesFilterState: OtherStagesFilterState = {
@@ -52,6 +53,7 @@ export const defaultOtherStagesFilterState: OtherStagesFilterState = {
   createdBy: ['all'],
   endorsementTypes: ['all'],
   endorsementStatuses: ['all'],
+  saleIdStatus: 'all',
 };
 
 const mockAgents = [
@@ -139,6 +141,12 @@ const etaStatusOptions: { id: string; en: string; th: string }[] = [
   { id: 'all', en: 'All', th: 'ทั้งหมด' },
   { id: 'on_time', en: 'On Time', th: 'ตามกำหนด' },
   { id: 'breached', en: 'Breached', th: 'เกินกำหนด' },
+];
+
+const saleIdStatusOptions: { id: string; en: string; th: string }[] = [
+  { id: 'all', en: 'All', th: 'ทั้งหมด' },
+  { id: 'with', en: 'Sale ID Created', th: 'มี Sale ID' },
+  { id: 'without', en: 'No Sale ID', th: 'ยังไม่มี Sale ID' },
 ];
 
 const carInspectionStatusOptions: { id: string; en: string; th: string }[] = [
@@ -590,6 +598,10 @@ export function OtherStagesFilterPanel({
       const eta = etaStatusOptions.find(o => o.id === filters.etaStatus);
       chips.push({ key: 'etaStatus', label: language === 'th' ? 'สถานะ ETA' : 'ETA Status', values: eta ? (language === 'th' ? eta.th : eta.en) : filters.etaStatus, onClear: () => onFiltersChange({ ...filters, etaStatus: 'all' }) });
     }
+    if (filters.saleIdStatus !== 'all') {
+      const sid = saleIdStatusOptions.find(o => o.id === filters.saleIdStatus);
+      chips.push({ key: 'saleIdStatus', label: language === 'th' ? 'Sale ID' : 'Sale ID', values: sid ? (language === 'th' ? sid.th : sid.en) : filters.saleIdStatus, onClear: () => onFiltersChange({ ...filters, saleIdStatus: 'all' }) });
+    }
     if (filters.owner !== 'all') {
       const presetOpt = ownerPresetOptions.find(o => o.id === filters.owner);
       const staffMember = mockStaffMembers.find(s => s.name === filters.owner);
@@ -825,6 +837,19 @@ export function OtherStagesFilterPanel({
                 selectedValues={localFilters.endorsementStatuses}
                 onChange={(id, checked) => handleMultiSelectChange('endorsementStatuses', id, checked)}
                 maxVisibleItems={2}
+              />
+            </div>
+            <div className="flex-1 max-w-[calc((100%-4rem)/3)] space-y-2">
+              <Label className="text-sm font-medium">Sale ID</Label>
+              <MultiSelectDropdown
+                options={saleIdStatusOptions}
+                selectedValues={[localFilters.saleIdStatus]}
+                onChange={(id, checked) => {
+                  if (checked) {
+                    setLocalFilters({ ...localFilters, saleIdStatus: id });
+                  }
+                }}
+                maxVisibleItems={1}
               />
             </div>
           </div>

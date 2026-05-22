@@ -266,6 +266,13 @@ export function applyOtherStagesFilters(leads: Lead[], filters: OtherStagesFilte
       }
     }
 
+    // Sale ID filter — checks existence of saleId on the lead
+    if (filters.saleIdStatus && filters.saleIdStatus !== 'all') {
+      const hasSaleId = !!lead.saleId;
+      if (filters.saleIdStatus === 'with' && !hasSaleId) return false;
+      if (filters.saleIdStatus === 'without' && hasSaleId) return false;
+    }
+
     // Owner filter — match against deAssignee (Owner column) only
     if (filters.owner !== 'all' && filters.owner !== 'my_team' && filters.owner !== 'my_cases') {
       if (lead.deAssignee !== filters.owner) {

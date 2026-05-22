@@ -302,6 +302,11 @@ export function SaleDetailBar({
             {language === 'th' ? 'เลขใบเสนอราคา' : 'Quotation Number'}
           </span>
           <p className="text-sm font-bold leading-tight">{sale.qqId}</p>
+          {sale.policies?.some(p => p.status !== 'pending' && p.status !== 'pending_payment') && (
+            <span className="inline-flex items-center mt-0.5 text-[10px] px-1.5 py-0.5 rounded font-medium bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">
+              {language === 'th' ? 'สร้าง Sale ID แล้ว' : 'Sale ID Created'}
+            </span>
+          )}
         </div>
 
         <div className="flex-1" />
