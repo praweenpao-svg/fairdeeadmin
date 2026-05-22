@@ -528,9 +528,14 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
     return undefined;
   };
 
-  const computeReworkOwner = (lead: Lead, reasonId: string, policy?: PolicyRecord): string | undefined => {
+  const computeReworkOwner = (lead: Lead, reasonId: string, policy?: PolicyRecord, specificOverride?: string): string | undefined => {
     const config = reworkConfigs.find(r => r.id === reasonId);
     if (!config) return undefined;
+
+    // Specific assignment short-circuits sticky logic — owner picked at creation time
+    if (config.assignment === 'specific') {
+      return specificOverride || undefined;
+    }
 
     // Step 1: Check sticky columns first (priority order)
     if (config.stickyEnabled && config.stickyColumns && config.stickyColumns.length > 0) {
