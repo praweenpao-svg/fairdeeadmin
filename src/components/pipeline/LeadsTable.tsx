@@ -528,14 +528,9 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
     return undefined;
   };
 
-  const computeReworkOwner = (lead: Lead, reasonId: string, policy?: PolicyRecord, specificOverride?: string): string | undefined => {
+  const computeReworkOwner = (lead: Lead, reasonId: string, policy?: PolicyRecord): string | undefined => {
     const config = reworkConfigs.find(r => r.id === reasonId);
     if (!config) return undefined;
-
-    // Specific assignment short-circuits sticky logic — owner picked at creation time
-    if (config.assignment === 'specific') {
-      return specificOverride || undefined;
-    }
 
     // Step 1: Check sticky columns first (priority order)
     if (config.stickyEnabled && config.stickyColumns && config.stickyColumns.length > 0) {
@@ -565,6 +560,10 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
       case 'rf':
         return lead.rfAssignee;
       case 'requestor':
+        return CURRENT_USER;
+      case 'specific':
+        // 'specific' governs post-resolution ownership, not the rework worker.
+        // Rework worker falls back to requestor when sticky doesn't match.
         return CURRENT_USER;
       case 'none':
         return undefined;
@@ -720,16 +719,24 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
     const active = getLeadActivePolicyRework(leadAfter);
     const nextOwner = active ? computeReworkOwner(lead, active.entry.reasonId, updatedRecords.find(r => r.reworkHistory?.some(e => e.id === active.entry.id))) : undefined;
 
+    // Post-resolution ownership transfer: when the resolved entry has a postResolutionOwner
+    // (or its config used 'specific' assignment with a team default), hand the case over.
+    const resolvedConfig = reworkConfigs.find(c => c.id === targetEntry?.reasonId);
+    const postResolutionOwner = targetEntry?.postResolutionOwner
+      || (resolvedConfig?.assignment === 'specific' && resolvedConfig.team
+          ? getNextRoundRobinStaff(resolvedConfig.team)
+          : undefined);
+
     onLeadUpdate?.(lead.id, {
       policyRecords: updatedRecords,
       reworkRequired: Boolean(active),
-      assignedTo: active ? nextOwner : undefined,
+      assignedTo: active ? nextOwner : (postResolutionOwner ?? undefined),
       historyLog: [...(lead.historyLog || []), historyLogEntry],
     });
   };
 
   // Handle policy rework reassign (for specific entry)
-  const handlePolicyReworkReassign = (lead: Lead, policyId: string, entryId: string, newReasonId: string, details: string, attachments: ReworkAttachment[], specificAssignee?: string) => {
+  const handlePolicyReworkReassign = (lead: Lead, policyId: string, entryId: string, newReasonId: string, details: string, attachments: ReworkAttachment[], postResolutionOwner?: string) => {
     if (!lead.policyRecords) return;
 
     const timestamp = new Date().toLocaleString('en-US', {
@@ -742,7 +749,7 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
 
     const reworkConfig = reworkConfigs.find(r => r.id === newReasonId);
     const reasonLabel = reworkConfig?.descriptionEn || 'Unknown';
-    const newOwner = computeReworkOwner(lead, newReasonId, lead.policyRecords?.find(r => r.id === policyId), specificAssignee);
+    const newOwner = computeReworkOwner(lead, newReasonId, lead.policyRecords?.find(r => r.id === policyId));
 
     const policy = lead.policyRecords.find(r => r.id === policyId);
     const targetEntry = policy?.reworkHistory?.find(e => e.id === entryId);
@@ -769,7 +776,7 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
         return entry;
       });
 
-      // Add new rework entry with its own owner
+      // Add new rework entry with its own owner + post-resolution owner
       const newEntry: PolicyReworkEntry = {
         id: crypto.randomUUID(),
         reasonId: newReasonId,
@@ -778,7 +785,8 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
         attachments,
         savedBy: CURRENT_USER,
         savedAt: timestamp,
-        assignedTo: newOwner, // Each rework entry has its own owner
+        assignedTo: newOwner, // rework worker
+        postResolutionOwner, // owner after resolve (specific assignment)
         previousStatus,
       };
 
@@ -861,7 +869,7 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
   };
 
   // Handle adding a new rework entry (without resolving existing ones)
-  const handlePolicyReworkAdd = (lead: Lead, policyId: string, reasonId: string, details: string, attachments: ReworkAttachment[], autoResolveDate?: string, specificAssignee?: string) => {
+  const handlePolicyReworkAdd = (lead: Lead, policyId: string, reasonId: string, details: string, attachments: ReworkAttachment[], autoResolveDate?: string, postResolutionOwner?: string) => {
     if (!lead.policyRecords) return;
 
     const timestamp = new Date().toLocaleString('en-US', {
@@ -874,7 +882,7 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
 
     const reworkConfig = reworkConfigs.find(r => r.id === reasonId);
     const reasonLabel = reworkConfig?.descriptionEn || 'Unknown';
-    const newOwner = computeReworkOwner(lead, reasonId, lead.policyRecords?.find(r => r.id === policyId), specificAssignee);
+    const newOwner = computeReworkOwner(lead, reasonId, lead.policyRecords?.find(r => r.id === policyId));
 
     const policy = lead.policyRecords.find(r => r.id === policyId);
 
@@ -888,7 +896,7 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
       const previousStatus = existingUnresolved?.previousStatus || (record.status as PolicyStatus);
       const currentOwner = existingUnresolved?.assignedTo;
 
-      // Add new rework entry with its own owner
+      // Add new rework entry with its own owner + post-resolution owner
       const newEntry: PolicyReworkEntry = {
         id: crypto.randomUUID(),
         reasonId,
@@ -897,7 +905,8 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
         attachments,
         savedBy: CURRENT_USER,
         savedAt: timestamp,
-        assignedTo: newOwner, // Each rework entry has its own owner
+        assignedTo: newOwner, // rework worker
+        postResolutionOwner, // owner after resolve (specific assignment)
         previousStatus,
         ...(autoResolveDate ? { autoResolveDate } : {}),
       };
@@ -2879,18 +2888,18 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
             handlePolicyReworkResolve(lead, selectedPolicyForRemarks.policyId, entryId);
           }
         }}
-        onReworkReassign={(entryId, newReasonId, details, attachments, specificAssignee) => {
+        onReworkReassign={(entryId, newReasonId, details, attachments, postResolutionOwner) => {
           if (!selectedPolicyForRemarks) return;
           const lead = (allLeads || leads).find(l => l.id === selectedPolicyForRemarks.leadId);
           if (lead) {
-            handlePolicyReworkReassign(lead, selectedPolicyForRemarks.policyId, entryId, newReasonId, details, attachments, specificAssignee);
+            handlePolicyReworkReassign(lead, selectedPolicyForRemarks.policyId, entryId, newReasonId, details, attachments, postResolutionOwner);
           }
         }}
-        onAddRework={(policyId, reasonId, details, attachments, autoResolveDate, specificAssignee) => {
+        onAddRework={(policyId, reasonId, details, attachments, autoResolveDate, postResolutionOwner) => {
           if (!selectedPolicyForRemarks) return;
           const lead = (allLeads || leads).find(l => l.id === selectedPolicyForRemarks.leadId);
           if (lead) {
-            handlePolicyReworkAdd(lead, policyId, reasonId, details, attachments, autoResolveDate, specificAssignee);
+            handlePolicyReworkAdd(lead, policyId, reasonId, details, attachments, autoResolveDate, postResolutionOwner);
           }
         }}
         onUpdateAutoResolveDate={(entryId, newDate) => {

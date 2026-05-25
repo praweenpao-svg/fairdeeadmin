@@ -133,10 +133,22 @@ export function InlineReworkActions({
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-2 pt-2 border-t">
+            <div className="flex items-center gap-2 pt-2 border-t">
+              {(() => {
+                const cfg = reworkConfigs.find(c => c.id === latestEntry.reasonId);
+                if (cfg?.assignment !== 'specific') return null;
+                const nextOwnerLabel = latestEntry.postResolutionOwner
+                  || (cfg.team ? `${cfg.team} (team)` : '—');
+                return (
+                  <div className="flex items-center gap-1 text-[10px] px-1.5 py-1 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/30">
+                    <span className="font-medium">{language === 'th' ? 'หลังแก้ไข:' : 'Next:'}</span>
+                    <span className="truncate max-w-[100px]">{nextOwnerLabel}</span>
+                  </div>
+                );
+              })()}
               <Button
                 size="sm"
-                className="flex-1 h-8 text-xs bg-green-600 hover:bg-green-700"
+                className="h-8 text-xs bg-green-600 hover:bg-green-700 ml-auto"
                 onClick={handleResolve}
               >
                 <CheckCircle className="w-3.5 h-3.5 mr-1.5" />
@@ -145,7 +157,7 @@ export function InlineReworkActions({
               <Button
                 size="sm"
                 variant="outline"
-                className="flex-1 h-8 text-xs"
+                className="h-8 text-xs"
                 onClick={() => setShowReassignForm(true)}
               >
                 <ArrowRightLeft className="w-3.5 h-3.5 mr-1.5" />
