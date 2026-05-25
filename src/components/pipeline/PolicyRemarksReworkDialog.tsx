@@ -249,7 +249,7 @@ export function PolicyRemarksReworkDialog({
     if (reassignEntryId && selectedNewReasonId) {
       const cfg = reworkConfigs.find(c => c.id === selectedNewReasonId);
       // Post-resolution owner is OPTIONAL — empty means use team default
-      const postResolutionOwner = cfg?.assignment === 'specific' ? (reassignPostResolutionOwner || undefined) : undefined;
+      const postResolutionOwner = cfg?.manualOverrideEnabled ? (reassignPostResolutionOwner || undefined) : undefined;
       onReworkReassign(reassignEntryId, selectedNewReasonId, reassignDetails, reassignAttachments, postResolutionOwner);
       resetReassignForm();
     }
