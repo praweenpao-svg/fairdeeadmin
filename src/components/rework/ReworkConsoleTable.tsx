@@ -768,23 +768,22 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                   <p className="text-xs text-muted-foreground">
                     {formData.assignment === 'round_robin' ? 'Distributes tasks among selected team members'
                       : formData.assignment === 'requestor' ? 'Assigns to whoever created the request'
-                      : formData.assignment === 'specific' ? 'Defines who will own the case after this rework is resolved. Pick a team here; in the rework dialog the user can optionally pick a specific member of that team.'
                       : 'No assignment — owner is empty'}
                   </p>
                 </div>
               )}
 
 
-              {/* Team for Round-Robin or Manual Override */}
-              {(formData.assignment === 'round_robin' || formData.assignment === 'specific') && (
+              {/* Team for Round-Robin */}
+              {formData.assignment === 'round_robin' && (
                 <div className="grid gap-2">
-                  <Label>{formData.assignment === 'specific' ? 'Manual Override Team' : 'Team'}</Label>
+                  <Label>Team</Label>
                   {(() => {
                     // If sticky enabled and columns selected, filter teams by #1 sticky column mapping
                     const firstStickyCol = formData.stickyEnabled && (formData.stickyColumns || []).length > 0
                       ? formData.stickyColumns![0]
                       : null;
-                    const availableTeams = firstStickyCol && formData.assignment === 'round_robin'
+                    const availableTeams = firstStickyCol
                       ? teamEntries.filter(t => t.stickyColumn === firstStickyCol)
                       : teamEntries;
                     return (
@@ -796,14 +795,9 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                             {availableTeams.map(t => <SelectItem key={t.name} value={t.name}>{t.name}</SelectItem>)}
                           </SelectContent>
                         </Select>
-                        {firstStickyCol && formData.assignment === 'round_robin' && (
+                        {firstStickyCol && (
                           <p className="text-xs text-muted-foreground">
                             Filtered by sticky column: <span className="font-medium">{firstStickyCol}</span>
-                          </p>
-                        )}
-                        {formData.assignment === 'specific' && (
-                          <p className="text-xs text-muted-foreground">
-                            Members of this team will appear in the rework dialog as the manual override picker.
                           </p>
                         )}
                       </>
