@@ -34,11 +34,10 @@ interface ReworkConsoleTableProps {
   onUpdate: (configs: ReworkConfig[]) => void;
 }
 
-// Assignment logic options per PRD: Round-Robin, Requestor, Specific, None
+// Assignment logic options per PRD: Round-Robin, Requestor, None
 const assignmentOptions: { value: AssignmentType; label: string }[] = [
   { value: 'round_robin', label: 'Round-Robin' },
   { value: 'requestor', label: 'Requestor' },
-  { value: 'specific', label: 'Manual Override' },
   { value: 'none', label: 'None' },
 ];
 
