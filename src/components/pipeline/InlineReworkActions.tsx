@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/popover';
 import { ReworkConfig, ReworkAttachment, ReworkHistoryEntry, Lead } from '@/types/pipeline';
 import { useLanguageStore } from '@/stores/languageStore';
+import { mockStaffMembers } from '@/data/mockStaff';
 
 interface InlineReworkActionsProps {
   lead: Lead;
