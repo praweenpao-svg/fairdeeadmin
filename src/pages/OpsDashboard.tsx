@@ -116,7 +116,8 @@ export default function OpsDashboard() {
         savedBy: 'Current User',
         savedAt: new Date().toISOString(),
         resolved: false,
-        assignedTo: config?.assignment === 'specific' ? (postResolutionOwner || 'Unassigned') : 'Unassigned',
+        assignedTo: 'Current User',
+        postResolutionOwner,
         previousStatus: 'pending_review',
       };
       return [...updated, newEntry];
@@ -134,7 +135,8 @@ export default function OpsDashboard() {
       savedBy: 'Current User',
       savedAt: new Date().toISOString(),
       resolved: false,
-      assignedTo: config?.assignment === 'specific' ? (postResolutionOwner || 'Unassigned') : 'Unassigned',
+      assignedTo: 'Current User',
+      postResolutionOwner,
       autoResolveDate,
       previousStatus: 'pending_review',
     };
