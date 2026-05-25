@@ -423,6 +423,8 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
         stickyColumns: formData.stickyEnabled ? (formData.stickyColumns || []) : [],
         reasonId: isRework ? formData.reasonId : undefined,
         salesChannel: typesWithSalesChannel.includes(ct) ? formData.salesChannel : undefined,
+        manualOverrideEnabled: (isRework || isEndorsement) ? (formData.manualOverrideEnabled || false) : false,
+        manualOverrideTeam: (isRework || isEndorsement) && formData.manualOverrideEnabled ? (formData.manualOverrideTeam || '') : '',
       };
       onUpdate([...reworkConfigs, newConfig]);
     }
