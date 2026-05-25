@@ -136,9 +136,9 @@ export function InlineReworkActions({
             <div className="flex items-center gap-2 pt-2 border-t">
               {(() => {
                 const cfg = reworkConfigs.find(c => c.id === latestEntry.reasonId);
-                if (cfg?.assignment !== 'specific') return null;
+                if (!cfg?.manualOverrideEnabled) return null;
                 const nextOwnerLabel = latestEntry.postResolutionOwner
-                  || (cfg.team ? `${cfg.team} (team)` : '—');
+                  || (cfg.manualOverrideTeam ? `${cfg.manualOverrideTeam} (team)` : '—');
                 return (
                   <div className="flex items-center gap-1 text-[10px] px-1.5 py-1 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/30">
                     <span className="font-medium">{language === 'th' ? 'หลังแก้ไข:' : 'Next:'}</span>
