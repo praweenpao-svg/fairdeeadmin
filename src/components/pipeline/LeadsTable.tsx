@@ -561,10 +561,6 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
         return lead.rfAssignee;
       case 'requestor':
         return CURRENT_USER;
-      case 'specific':
-        // 'specific' governs post-resolution ownership, not the rework worker.
-        // Rework worker falls back to requestor when sticky doesn't match.
-        return CURRENT_USER;
       case 'none':
         return undefined;
       default:
@@ -720,11 +716,11 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
     const nextOwner = active ? computeReworkOwner(lead, active.entry.reasonId, updatedRecords.find(r => r.reworkHistory?.some(e => e.id === active.entry.id))) : undefined;
 
     // Post-resolution ownership transfer: when the resolved entry has a postResolutionOwner
-    // (or its config used 'specific' assignment with a team default), hand the case over.
+    // (or its config has Manual Override enabled with a team), hand the case over.
     const resolvedConfig = reworkConfigs.find(c => c.id === targetEntry?.reasonId);
     const postResolutionOwner = targetEntry?.postResolutionOwner
-      || (resolvedConfig?.assignment === 'specific' && resolvedConfig.team
-          ? getNextRoundRobinStaff(resolvedConfig.team)
+      || (resolvedConfig?.manualOverrideEnabled && resolvedConfig.manualOverrideTeam
+          ? getNextRoundRobinStaff(resolvedConfig.manualOverrideTeam)
           : undefined);
 
     onLeadUpdate?.(lead.id, {

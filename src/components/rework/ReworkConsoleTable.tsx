@@ -34,11 +34,10 @@ interface ReworkConsoleTableProps {
   onUpdate: (configs: ReworkConfig[]) => void;
 }
 
-// Assignment logic options per PRD: Round-Robin, Requestor, Specific, None
+// Assignment logic options per PRD: Round-Robin, Requestor, None
 const assignmentOptions: { value: AssignmentType; label: string }[] = [
   { value: 'round_robin', label: 'Round-Robin' },
   { value: 'requestor', label: 'Requestor' },
-  { value: 'specific', label: 'Manual Override' },
   { value: 'none', label: 'None' },
 ];
 
@@ -201,6 +200,8 @@ const defaultFormData: FormData = {
   stickyEnabled: false,
   stickyColumns: [],
   salesChannel: undefined,
+  manualOverrideEnabled: false,
+  manualOverrideTeam: '',
 };
 
 export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTableProps) {
@@ -392,6 +393,8 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
           stickyColumns: formData.stickyEnabled ? (formData.stickyColumns || []) : [],
           reasonId: isRework ? formData.reasonId : undefined,
           salesChannel: typesWithSalesChannel.includes(ct) ? formData.salesChannel : undefined,
+          manualOverrideEnabled: (isRework || isEndorsement) ? (formData.manualOverrideEnabled || false) : false,
+          manualOverrideTeam: (isRework || isEndorsement) && formData.manualOverrideEnabled ? (formData.manualOverrideTeam || '') : '',
         } : c
       ));
     } else {
@@ -420,6 +423,8 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
         stickyColumns: formData.stickyEnabled ? (formData.stickyColumns || []) : [],
         reasonId: isRework ? formData.reasonId : undefined,
         salesChannel: typesWithSalesChannel.includes(ct) ? formData.salesChannel : undefined,
+        manualOverrideEnabled: (isRework || isEndorsement) ? (formData.manualOverrideEnabled || false) : false,
+        manualOverrideTeam: (isRework || isEndorsement) && formData.manualOverrideEnabled ? (formData.manualOverrideTeam || '') : '',
       };
       onUpdate([...reworkConfigs, newConfig]);
     }
@@ -769,23 +774,22 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                   <p className="text-xs text-muted-foreground">
                     {formData.assignment === 'round_robin' ? 'Distributes tasks among selected team members'
                       : formData.assignment === 'requestor' ? 'Assigns to whoever created the request'
-                      : formData.assignment === 'specific' ? 'Defines who will own the case after this rework is resolved. Pick a team here; in the rework dialog the user can optionally pick a specific member of that team.'
                       : 'No assignment — owner is empty'}
                   </p>
                 </div>
               )}
 
 
-              {/* Team for Round-Robin or Manual Override */}
-              {(formData.assignment === 'round_robin' || formData.assignment === 'specific') && (
+              {/* Team for Round-Robin */}
+              {formData.assignment === 'round_robin' && (
                 <div className="grid gap-2">
-                  <Label>{formData.assignment === 'specific' ? 'Manual Override Team' : 'Team'}</Label>
+                  <Label>Team</Label>
                   {(() => {
                     // If sticky enabled and columns selected, filter teams by #1 sticky column mapping
                     const firstStickyCol = formData.stickyEnabled && (formData.stickyColumns || []).length > 0
                       ? formData.stickyColumns![0]
                       : null;
-                    const availableTeams = firstStickyCol && formData.assignment === 'round_robin'
+                    const availableTeams = firstStickyCol
                       ? teamEntries.filter(t => t.stickyColumn === firstStickyCol)
                       : teamEntries;
                     return (
@@ -797,14 +801,9 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                             {availableTeams.map(t => <SelectItem key={t.name} value={t.name}>{t.name}</SelectItem>)}
                           </SelectContent>
                         </Select>
-                        {firstStickyCol && formData.assignment === 'round_robin' && (
+                        {firstStickyCol && (
                           <p className="text-xs text-muted-foreground">
                             Filtered by sticky column: <span className="font-medium">{firstStickyCol}</span>
-                          </p>
-                        )}
-                        {formData.assignment === 'specific' && (
-                          <p className="text-xs text-muted-foreground">
-                            Members of this team will appear in the rework dialog as the manual override picker.
                           </p>
                         )}
                       </>
@@ -829,7 +828,45 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                 </div>
               )}
 
+              {/* Manual Override — independent of assignment logic. When enabled,
+                  the user picks the case owner AFTER resolve via a team picker. */}
+              {showMovesToCancellation && (
+                <div className="border-t pt-4 mt-2 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>Manual Override</Label>
+                      <p className="text-xs text-muted-foreground">
+                        When enabled, the user picks the case owner after this rework is resolved (instead of inheriting the previous owner).
+                      </p>
+                    </div>
+                    <Switch
+                      checked={formData.manualOverrideEnabled || false}
+                      onCheckedChange={(v) => setFormData({ ...formData, manualOverrideEnabled: v, manualOverrideTeam: v ? formData.manualOverrideTeam : '' })}
+                    />
+                  </div>
+                  {formData.manualOverrideEnabled && (
+                    <div className="grid gap-2">
+                      <Label>Manual Override Team</Label>
+                      <Select
+                        value={formData.manualOverrideTeam || '__none__'}
+                        onValueChange={(v) => setFormData({ ...formData, manualOverrideTeam: v === '__none__' ? '' : v })}
+                      >
+                        <SelectTrigger><SelectValue placeholder="Select team" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="__none__">Select team</SelectItem>
+                          {teamEntries.map(t => <SelectItem key={t.name} value={t.name}>{t.name}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground">
+                        Members of this team will appear in the rework dialog as the manual override picker.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Automation moved to Rework Reasons page */}
+
 
             </div>
             <div className="flex justify-end gap-2">

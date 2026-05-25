@@ -249,7 +249,7 @@ export function PolicyRemarksReworkDialog({
     if (reassignEntryId && selectedNewReasonId) {
       const cfg = reworkConfigs.find(c => c.id === selectedNewReasonId);
       // Post-resolution owner is OPTIONAL — empty means use team default
-      const postResolutionOwner = cfg?.assignment === 'specific' ? (reassignPostResolutionOwner || undefined) : undefined;
+      const postResolutionOwner = cfg?.manualOverrideEnabled ? (reassignPostResolutionOwner || undefined) : undefined;
       onReworkReassign(reassignEntryId, selectedNewReasonId, reassignDetails, reassignAttachments, postResolutionOwner);
       resetReassignForm();
     }
@@ -544,9 +544,9 @@ export function PolicyRemarksReworkDialog({
             <div className="flex items-center gap-2 ml-auto">
               {(() => {
                 const cfg = reworkConfigs.find(c => c.id === entry.reasonId);
-                if (cfg?.assignment !== 'specific') return null;
+                if (!cfg?.manualOverrideEnabled) return null;
                 const nextOwnerLabel = entry.postResolutionOwner
-                  || (cfg.team ? `${cfg.team} (team default)` : '—');
+                  || (cfg.manualOverrideTeam ? `${cfg.manualOverrideTeam} (team default)` : '—');
                 return (
                   <Badge
                     variant="outline"
@@ -915,13 +915,13 @@ export function PolicyRemarksReworkDialog({
             {/* Post-Resolution Owner picker (optional) — only when reason uses 'specific' assignment */}
             {(() => {
               const cfg = reworkConfigs.find(c => c.id === selectedNewReasonId);
-              if (cfg?.assignment !== 'specific') return null;
-              const teamMembers = cfg.team ? mockStaffMembers.filter(s => s.team === cfg.team) : mockStaffMembers;
+              if (!cfg?.manualOverrideEnabled) return null;
+              const teamMembers = cfg.manualOverrideTeam ? mockStaffMembers.filter(s => s.team === cfg.manualOverrideTeam) : mockStaffMembers;
               return (
                 <div className="space-y-2">
                   <Label className="text-xs">
                     {language === 'th' ? 'กำหนดเอง (ไม่บังคับ)' : 'Manual Override (optional)'}
-                    {cfg.team && <span className="text-muted-foreground font-normal"> — {cfg.team}</span>}
+                    {cfg.manualOverrideTeam && <span className="text-muted-foreground font-normal"> — {cfg.manualOverrideTeam}</span>}
                   </Label>
                   <Select value={reassignPostResolutionOwner || '__team__'} onValueChange={(v) => setReassignPostResolutionOwner(v === '__team__' ? '' : v)}>
                     <SelectTrigger className="h-8 text-xs">
@@ -1039,13 +1039,13 @@ export function PolicyRemarksReworkDialog({
                     {/* Post-Resolution Owner picker (optional) — when reason uses 'specific' assignment */}
                     {(() => {
                       const selectedConfig = reworkConfigs.find(c => c.id === newReworkReasonId);
-                      if (selectedConfig?.assignment !== 'specific') return null;
-                      const teamMembers = selectedConfig.team ? mockStaffMembers.filter(s => s.team === selectedConfig.team) : mockStaffMembers;
+                      if (!selectedConfig?.manualOverrideEnabled) return null;
+                      const teamMembers = selectedConfig.manualOverrideTeam ? mockStaffMembers.filter(s => s.team === selectedConfig.manualOverrideTeam) : mockStaffMembers;
                       return (
                         <div className="space-y-2">
                           <Label className="text-xs">
                             {language === 'th' ? 'กำหนดเอง (ไม่บังคับ)' : 'Manual Override (optional)'}
-                            {selectedConfig.team && <span className="text-muted-foreground font-normal"> — {selectedConfig.team}</span>}
+                            {selectedConfig.manualOverrideTeam && <span className="text-muted-foreground font-normal"> — {selectedConfig.manualOverrideTeam}</span>}
                           </Label>
                           <Select value={newReworkPostResolutionOwner || '__team__'} onValueChange={(v) => setNewReworkPostResolutionOwner(v === '__team__' ? '' : v)}>
                             <SelectTrigger className="h-8 text-xs">
@@ -1147,7 +1147,7 @@ export function PolicyRemarksReworkDialog({
                             const resolveDate = isAutoResolve && newReworkAutoResolveDate 
                               ? format(newReworkAutoResolveDate, 'dd/MM/yyyy') 
                               : undefined;
-                            const postResolutionOwner = selectedConfig?.assignment === 'specific' ? (newReworkPostResolutionOwner || undefined) : undefined;
+                            const postResolutionOwner = selectedConfig?.manualOverrideEnabled ? (newReworkPostResolutionOwner || undefined) : undefined;
                             onAddRework(policyId, newReworkReasonId, newReworkDetails, newReworkAttachments, resolveDate, postResolutionOwner);
                             resetAddReworkForm();
                           }
