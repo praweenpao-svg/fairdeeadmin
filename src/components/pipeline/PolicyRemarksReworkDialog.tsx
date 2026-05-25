@@ -920,7 +920,7 @@ export function PolicyRemarksReworkDialog({
               return (
                 <div className="space-y-2">
                   <Label className="text-xs">
-                    {language === 'th' ? 'เจ้าของเคสหลังแก้ไข (ไม่บังคับ)' : 'Post-resolution owner (optional)'}
+                    {language === 'th' ? 'กำหนดเอง (ไม่บังคับ)' : 'Manual Override (optional)'}
                     {cfg.team && <span className="text-muted-foreground font-normal"> — {cfg.team}</span>}
                   </Label>
                   <Select value={reassignPostResolutionOwner || '__team__'} onValueChange={(v) => setReassignPostResolutionOwner(v === '__team__' ? '' : v)}>
@@ -1044,7 +1044,7 @@ export function PolicyRemarksReworkDialog({
                       return (
                         <div className="space-y-2">
                           <Label className="text-xs">
-                            {language === 'th' ? 'เจ้าของเคสหลังแก้ไข (ไม่บังคับ)' : 'Post-resolution owner (optional)'}
+                            {language === 'th' ? 'กำหนดเอง (ไม่บังคับ)' : 'Manual Override (optional)'}
                             {selectedConfig.team && <span className="text-muted-foreground font-normal"> — {selectedConfig.team}</span>}
                           </Label>
                           <Select value={newReworkPostResolutionOwner || '__team__'} onValueChange={(v) => setNewReworkPostResolutionOwner(v === '__team__' ? '' : v)}>

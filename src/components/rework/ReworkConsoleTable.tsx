@@ -38,7 +38,7 @@ interface ReworkConsoleTableProps {
 const assignmentOptions: { value: AssignmentType; label: string }[] = [
   { value: 'round_robin', label: 'Round-Robin' },
   { value: 'requestor', label: 'Requestor' },
-  { value: 'specific', label: 'Post-Resolution Owner' },
+  { value: 'specific', label: 'Manual Override' },
   { value: 'none', label: 'None' },
 ];
 
@@ -776,10 +776,10 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
               )}
 
 
-              {/* Team for Round-Robin or Post-Resolution Owner */}
+              {/* Team for Round-Robin or Manual Override */}
               {(formData.assignment === 'round_robin' || formData.assignment === 'specific') && (
                 <div className="grid gap-2">
-                  <Label>{formData.assignment === 'specific' ? 'Post-Resolution Owner Team' : 'Team'}</Label>
+                  <Label>{formData.assignment === 'specific' ? 'Manual Override Team' : 'Team'}</Label>
                   {(() => {
                     // If sticky enabled and columns selected, filter teams by #1 sticky column mapping
                     const firstStickyCol = formData.stickyEnabled && (formData.stickyColumns || []).length > 0
@@ -804,7 +804,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                         )}
                         {formData.assignment === 'specific' && (
                           <p className="text-xs text-muted-foreground">
-                            Members of this team will appear in the rework dialog as the post-resolution owner picker.
+                            Members of this team will appear in the rework dialog as the manual override picker.
                           </p>
                         )}
                       </>
