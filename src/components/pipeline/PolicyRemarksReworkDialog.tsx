@@ -542,6 +542,22 @@ export function PolicyRemarksReworkDialog({
           {/* Resolve/Reassign actions for active rework */}
           {isActive && (
             <div className="flex items-center gap-2 ml-auto">
+              {(() => {
+                const cfg = reworkConfigs.find(c => c.id === entry.reasonId);
+                if (cfg?.assignment !== 'specific') return null;
+                const nextOwnerLabel = entry.postResolutionOwner
+                  || (cfg.team ? `${cfg.team} (team default)` : '—');
+                return (
+                  <Badge
+                    variant="outline"
+                    className="text-[10px] h-6 px-1.5 bg-blue-500/10 text-blue-600 border-blue-500/30 dark:text-blue-400"
+                    title={language === 'th' ? 'เจ้าของเคสหลังแก้ไข' : 'Owner after resolve'}
+                  >
+                    <User className="w-2.5 h-2.5 mr-1" />
+                    {language === 'th' ? 'หลังแก้ไข: ' : 'Next: '}{nextOwnerLabel}
+                  </Badge>
+                );
+              })()}
               <Button
                 size="sm"
                 className="h-6 text-xs bg-green-600 hover:bg-green-700"
