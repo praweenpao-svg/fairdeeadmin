@@ -892,25 +892,32 @@ export function PolicyRemarksReworkDialog({
                   (config.policyScope === 'both' || config.policyScope === policyKind)
                 )}
                 value={selectedNewReasonId}
-                onValueChange={(v) => { setSelectedNewReasonId(v); setReassignSpecificAssignee(''); }}
+                onValueChange={(v) => { setSelectedNewReasonId(v); setReassignPostResolutionOwner(''); }}
               />
             </div>
 
-            {/* Specific assignee picker for reassign */}
+            {/* Post-Resolution Owner picker (optional) — only when reason uses 'specific' assignment */}
             {(() => {
               const cfg = reworkConfigs.find(c => c.id === selectedNewReasonId);
               if (cfg?.assignment !== 'specific') return null;
+              const teamMembers = cfg.team ? mockStaffMembers.filter(s => s.team === cfg.team) : mockStaffMembers;
               return (
                 <div className="space-y-2">
-                  <Label className="text-xs">{language === 'th' ? 'มอบหมายให้' : 'Assign to'}</Label>
-                  <Select value={reassignSpecificAssignee} onValueChange={setReassignSpecificAssignee}>
+                  <Label className="text-xs">
+                    {language === 'th' ? 'เจ้าของเคสหลังแก้ไข (ไม่บังคับ)' : 'Post-resolution owner (optional)'}
+                    {cfg.team && <span className="text-muted-foreground font-normal"> — {cfg.team}</span>}
+                  </Label>
+                  <Select value={reassignPostResolutionOwner || '__team__'} onValueChange={(v) => setReassignPostResolutionOwner(v === '__team__' ? '' : v)}>
                     <SelectTrigger className="h-8 text-xs">
-                      <SelectValue placeholder={language === 'th' ? 'เลือกพนักงาน' : 'Select staff member'} />
+                      <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="z-[60]">
-                      {mockStaffMembers.map(s => (
+                      <SelectItem value="__team__" className="text-xs">
+                        {language === 'th' ? `ใช้ทีมเริ่มต้น${cfg.team ? ` (${cfg.team})` : ''}` : `Use team default${cfg.team ? ` (${cfg.team})` : ''}`}
+                      </SelectItem>
+                      {teamMembers.map(s => (
                         <SelectItem key={s.id} value={s.name} className="text-xs">
-                          {s.name}{s.team ? ` — ${s.team}` : ''}
+                          {s.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -947,7 +954,7 @@ export function PolicyRemarksReworkDialog({
               <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={resetReassignForm}>
                 {language === 'th' ? 'ยกเลิก' : 'Cancel'}
               </Button>
-              <Button size="sm" className="h-7 text-xs" onClick={handleReassignConfirm} disabled={!selectedNewReasonId || (() => { const c = reworkConfigs.find(c2 => c2.id === selectedNewReasonId); return c?.assignment === 'specific' && !reassignSpecificAssignee; })()}>
+              <Button size="sm" className="h-7 text-xs" onClick={handleReassignConfirm} disabled={!selectedNewReasonId}>
                 {language === 'th' ? 'มอบหมายใหม่' : 'Reassign'}
               </Button>
             </div>
@@ -1009,25 +1016,32 @@ export function PolicyRemarksReworkDialog({
                       <SearchableReasonSelect
                         configs={stageFilteredConfigs}
                         value={newReworkReasonId}
-                        onValueChange={(v) => { setNewReworkReasonId(v); setNewReworkSpecificAssignee(''); }}
+                        onValueChange={(v) => { setNewReworkReasonId(v); setNewReworkPostResolutionOwner(''); }}
                       />
                     </div>
 
-                    {/* Specific assignee picker - show when selected reason uses 'specific' assignment */}
+                    {/* Post-Resolution Owner picker (optional) — when reason uses 'specific' assignment */}
                     {(() => {
                       const selectedConfig = reworkConfigs.find(c => c.id === newReworkReasonId);
                       if (selectedConfig?.assignment !== 'specific') return null;
+                      const teamMembers = selectedConfig.team ? mockStaffMembers.filter(s => s.team === selectedConfig.team) : mockStaffMembers;
                       return (
                         <div className="space-y-2">
-                          <Label className="text-xs">{language === 'th' ? 'มอบหมายให้' : 'Assign to'}</Label>
-                          <Select value={newReworkSpecificAssignee} onValueChange={setNewReworkSpecificAssignee}>
+                          <Label className="text-xs">
+                            {language === 'th' ? 'เจ้าของเคสหลังแก้ไข (ไม่บังคับ)' : 'Post-resolution owner (optional)'}
+                            {selectedConfig.team && <span className="text-muted-foreground font-normal"> — {selectedConfig.team}</span>}
+                          </Label>
+                          <Select value={newReworkPostResolutionOwner || '__team__'} onValueChange={(v) => setNewReworkPostResolutionOwner(v === '__team__' ? '' : v)}>
                             <SelectTrigger className="h-8 text-xs">
-                              <SelectValue placeholder={language === 'th' ? 'เลือกพนักงาน' : 'Select staff member'} />
+                              <SelectValue />
                             </SelectTrigger>
                             <SelectContent className="z-[60]">
-                              {mockStaffMembers.map(s => (
+                              <SelectItem value="__team__" className="text-xs">
+                                {language === 'th' ? `ใช้ทีมเริ่มต้น${selectedConfig.team ? ` (${selectedConfig.team})` : ''}` : `Use team default${selectedConfig.team ? ` (${selectedConfig.team})` : ''}`}
+                              </SelectItem>
+                              {teamMembers.map(s => (
                                 <SelectItem key={s.id} value={s.name} className="text-xs">
-                                  {s.name}{s.team ? ` — ${s.team}` : ''}
+                                  {s.name}
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -1105,10 +1119,7 @@ export function PolicyRemarksReworkDialog({
                       <Button 
                         size="sm" 
                         className="h-7 text-xs bg-warning hover:bg-warning/90 text-warning-foreground" 
-                        disabled={!newReworkReasonId || (() => {
-                          const cfg = reworkConfigs.find(c => c.id === newReworkReasonId);
-                          return cfg?.assignment === 'specific' && !newReworkSpecificAssignee;
-                        })()}
+                        disabled={!newReworkReasonId}
                         onClick={() => {
                           if (onAddRework && newReworkReasonId) {
                             // Process mentions in rework details
@@ -1120,8 +1131,8 @@ export function PolicyRemarksReworkDialog({
                             const resolveDate = isAutoResolve && newReworkAutoResolveDate 
                               ? format(newReworkAutoResolveDate, 'dd/MM/yyyy') 
                               : undefined;
-                            const specific = selectedConfig?.assignment === 'specific' ? newReworkSpecificAssignee : undefined;
-                            onAddRework(policyId, newReworkReasonId, newReworkDetails, newReworkAttachments, resolveDate, specific);
+                            const postResolutionOwner = selectedConfig?.assignment === 'specific' ? (newReworkPostResolutionOwner || undefined) : undefined;
+                            onAddRework(policyId, newReworkReasonId, newReworkDetails, newReworkAttachments, resolveDate, postResolutionOwner);
                             resetAddReworkForm();
                           }
                         }}
