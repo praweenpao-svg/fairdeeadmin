@@ -85,7 +85,8 @@ export interface PolicyReworkEntry {
   attachments: ReworkAttachment[];
   savedBy: string;
   savedAt: string;
-  assignedTo?: string; // Owner for this specific rework entry
+  assignedTo?: string; // Owner for this specific rework entry (rework worker)
+  postResolutionOwner?: string; // Staff who inherits the case once this rework is resolved (when reason uses 'specific' assignment)
   resolved?: boolean;
   resolvedAt?: string;
   resolvedBy?: string;

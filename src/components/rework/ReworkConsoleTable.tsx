@@ -38,7 +38,7 @@ interface ReworkConsoleTableProps {
 const assignmentOptions: { value: AssignmentType; label: string }[] = [
   { value: 'round_robin', label: 'Round-Robin' },
   { value: 'requestor', label: 'Requestor' },
-  { value: 'specific', label: 'Specific' },
+  { value: 'specific', label: 'Post-Resolution Owner' },
   { value: 'none', label: 'None' },
 ];
 
