@@ -1053,7 +1053,7 @@ export function PolicyRemarksReworkDialog({
                             </SelectTrigger>
                             <SelectContent className="z-[60]">
                               <SelectItem value="__team__" className="text-xs">
-                                {language === 'th' ? `ใช้ทีมเริ่มต้น${selectedConfig.team ? ` (${selectedConfig.team})` : ''}` : `Use team default${selectedConfig.team ? ` (${selectedConfig.team})` : ''}`}
+                                {language === 'th' ? '— ยังไม่เลือก —' : '— Unselected —'}
                               </SelectItem>
                               {teamMembers.map(s => (
                                 <SelectItem key={s.id} value={s.name} className="text-xs">
