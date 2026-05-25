@@ -544,9 +544,9 @@ export function PolicyRemarksReworkDialog({
             <div className="flex items-center gap-2 ml-auto">
               {(() => {
                 const cfg = reworkConfigs.find(c => c.id === entry.reasonId);
-                if (cfg?.assignment !== 'specific') return null;
+                if (!cfg?.manualOverrideEnabled) return null;
                 const nextOwnerLabel = entry.postResolutionOwner
-                  || (cfg.team ? `${cfg.team} (team default)` : '—');
+                  || (cfg.manualOverrideTeam ? `${cfg.manualOverrideTeam} (team default)` : '—');
                 return (
                   <Badge
                     variant="outline"
