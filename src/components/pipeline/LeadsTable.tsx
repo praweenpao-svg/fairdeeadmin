@@ -861,7 +861,7 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
   };
 
   // Handle adding a new rework entry (without resolving existing ones)
-  const handlePolicyReworkAdd = (lead: Lead, policyId: string, reasonId: string, details: string, attachments: ReworkAttachment[], autoResolveDate?: string, specificAssignee?: string) => {
+  const handlePolicyReworkAdd = (lead: Lead, policyId: string, reasonId: string, details: string, attachments: ReworkAttachment[], autoResolveDate?: string, postResolutionOwner?: string) => {
     if (!lead.policyRecords) return;
 
     const timestamp = new Date().toLocaleString('en-US', {
@@ -874,7 +874,7 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
 
     const reworkConfig = reworkConfigs.find(r => r.id === reasonId);
     const reasonLabel = reworkConfig?.descriptionEn || 'Unknown';
-    const newOwner = computeReworkOwner(lead, reasonId, lead.policyRecords?.find(r => r.id === policyId), specificAssignee);
+    const newOwner = computeReworkOwner(lead, reasonId, lead.policyRecords?.find(r => r.id === policyId));
 
     const policy = lead.policyRecords.find(r => r.id === policyId);
 
@@ -888,7 +888,7 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
       const previousStatus = existingUnresolved?.previousStatus || (record.status as PolicyStatus);
       const currentOwner = existingUnresolved?.assignedTo;
 
-      // Add new rework entry with its own owner
+      // Add new rework entry with its own owner + post-resolution owner
       const newEntry: PolicyReworkEntry = {
         id: crypto.randomUUID(),
         reasonId,
@@ -897,7 +897,8 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
         attachments,
         savedBy: CURRENT_USER,
         savedAt: timestamp,
-        assignedTo: newOwner, // Each rework entry has its own owner
+        assignedTo: newOwner, // rework worker
+        postResolutionOwner, // owner after resolve (specific assignment)
         previousStatus,
         ...(autoResolveDate ? { autoResolveDate } : {}),
       };
