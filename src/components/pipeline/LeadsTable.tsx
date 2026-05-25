@@ -728,7 +728,7 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
   };
 
   // Handle policy rework reassign (for specific entry)
-  const handlePolicyReworkReassign = (lead: Lead, policyId: string, entryId: string, newReasonId: string, details: string, attachments: ReworkAttachment[], specificAssignee?: string) => {
+  const handlePolicyReworkReassign = (lead: Lead, policyId: string, entryId: string, newReasonId: string, details: string, attachments: ReworkAttachment[], postResolutionOwner?: string) => {
     if (!lead.policyRecords) return;
 
     const timestamp = new Date().toLocaleString('en-US', {
@@ -741,7 +741,7 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
 
     const reworkConfig = reworkConfigs.find(r => r.id === newReasonId);
     const reasonLabel = reworkConfig?.descriptionEn || 'Unknown';
-    const newOwner = computeReworkOwner(lead, newReasonId, lead.policyRecords?.find(r => r.id === policyId), specificAssignee);
+    const newOwner = computeReworkOwner(lead, newReasonId, lead.policyRecords?.find(r => r.id === policyId));
 
     const policy = lead.policyRecords.find(r => r.id === policyId);
     const targetEntry = policy?.reworkHistory?.find(e => e.id === entryId);
@@ -768,7 +768,7 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
         return entry;
       });
 
-      // Add new rework entry with its own owner
+      // Add new rework entry with its own owner + post-resolution owner
       const newEntry: PolicyReworkEntry = {
         id: crypto.randomUUID(),
         reasonId: newReasonId,
@@ -777,7 +777,8 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
         attachments,
         savedBy: CURRENT_USER,
         savedAt: timestamp,
-        assignedTo: newOwner, // Each rework entry has its own owner
+        assignedTo: newOwner, // rework worker
+        postResolutionOwner, // owner after resolve (specific assignment)
         previousStatus,
       };
 
