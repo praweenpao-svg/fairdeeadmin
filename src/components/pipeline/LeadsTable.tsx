@@ -719,10 +719,18 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
     const active = getLeadActivePolicyRework(leadAfter);
     const nextOwner = active ? computeReworkOwner(lead, active.entry.reasonId, updatedRecords.find(r => r.reworkHistory?.some(e => e.id === active.entry.id))) : undefined;
 
+    // Post-resolution ownership transfer: when the resolved entry has a postResolutionOwner
+    // (or its config used 'specific' assignment with a team default), hand the case over.
+    const resolvedConfig = reworkConfigs.find(c => c.id === targetEntry?.reasonId);
+    const postResolutionOwner = targetEntry?.postResolutionOwner
+      || (resolvedConfig?.assignment === 'specific' && resolvedConfig.team
+          ? getNextRoundRobinStaff(resolvedConfig.team)
+          : undefined);
+
     onLeadUpdate?.(lead.id, {
       policyRecords: updatedRecords,
       reworkRequired: Boolean(active),
-      assignedTo: active ? nextOwner : undefined,
+      assignedTo: active ? nextOwner : (postResolutionOwner ?? undefined),
       historyLog: [...(lead.historyLog || []), historyLogEntry],
     });
   };
