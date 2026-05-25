@@ -544,9 +544,19 @@ export function PolicyRemarksReworkDialog({
             <div className="flex items-center gap-2 ml-auto">
               {(() => {
                 const cfg = reworkConfigs.find(c => c.id === entry.reasonId);
-                if (!cfg?.manualOverrideEnabled) return null;
-                const nextOwnerLabel = entry.postResolutionOwner
-                  || (cfg.manualOverrideTeam ? `${cfg.manualOverrideTeam} (team default)` : '—');
+                let nextName: string | undefined;
+                let nextTeam: string | undefined;
+                if (cfg?.manualOverrideEnabled) {
+                  nextName = entry.postResolutionOwner;
+                  nextTeam = cfg.manualOverrideTeam
+                    || (nextName ? mockStaffMembers.find(s => s.name === nextName)?.team || undefined : undefined);
+                } else {
+                  nextName = entry.assignedTo;
+                  nextTeam = nextName ? mockStaffMembers.find(s => s.name === nextName)?.team || undefined : undefined;
+                }
+                const label = nextName
+                  ? (nextTeam ? `[${nextTeam}] ${nextName}` : nextName)
+                  : (nextTeam ? `[${nextTeam}]` : '—');
                 return (
                   <Badge
                     variant="outline"
@@ -554,7 +564,7 @@ export function PolicyRemarksReworkDialog({
                     title={language === 'th' ? 'เจ้าของเคสหลังแก้ไข' : 'Owner after resolve'}
                   >
                     <User className="w-2.5 h-2.5 mr-1" />
-                    {language === 'th' ? 'หลังแก้ไข: ' : 'Next: '}{nextOwnerLabel}
+                    {language === 'th' ? 'หลังแก้ไข: ' : 'Next: '}{label}
                   </Badge>
                 );
               })()}
