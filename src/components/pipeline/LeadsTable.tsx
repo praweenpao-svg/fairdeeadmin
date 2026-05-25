@@ -561,10 +561,6 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
         return lead.rfAssignee;
       case 'requestor':
         return CURRENT_USER;
-      case 'specific':
-        // 'specific' governs post-resolution ownership, not the rework worker.
-        // Rework worker falls back to requestor when sticky doesn't match.
-        return CURRENT_USER;
       case 'none':
         return undefined;
       default:
