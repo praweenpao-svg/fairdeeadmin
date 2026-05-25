@@ -713,7 +713,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                 </div>
               )}
 
-              {formData.configType && formData.assignment !== 'specific' && (
+              {formData.configType && (
                 <div className="border-t pt-4 mt-2">
                   <div className="flex items-center justify-between mb-3">
                     <div className="space-y-0.5">
@@ -752,16 +752,13 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
               {/* Assignment Logic */}
               {formData.configType && (
                 <div className="grid gap-2">
-                  <Label>Assignment Logic {formData.stickyEnabled && formData.assignment !== 'specific' ? '(Fallback)' : ''}</Label>
+                  <Label>Assignment Logic {formData.stickyEnabled ? '(Fallback)' : ''}</Label>
                   <Select
                     value={formData.assignment || 'none'}
                     onValueChange={(v) => setFormData({
                       ...formData,
                       assignment: v as AssignmentType,
                       team: '',
-                      // Specific overrides sticky — auto-disable sticky check
-                      stickyEnabled: v === 'specific' ? false : formData.stickyEnabled,
-                      stickyColumns: v === 'specific' ? [] : formData.stickyColumns,
                     })}
                   >
                     <SelectTrigger><SelectValue /></SelectTrigger>
@@ -772,23 +769,23 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                   <p className="text-xs text-muted-foreground">
                     {formData.assignment === 'round_robin' ? 'Distributes tasks among selected team members'
                       : formData.assignment === 'requestor' ? 'Assigns to whoever created the request'
-                      : formData.assignment === 'specific' ? 'User picks a specific staff member when creating the request — overrides Sticky Check'
+                      : formData.assignment === 'specific' ? 'Defines who will own the case after this rework is resolved. Pick a team here; in the rework dialog the user can optionally pick a specific member of that team.'
                       : 'No assignment — owner is empty'}
                   </p>
                 </div>
               )}
 
 
-              {/* Team for Round-Robin */}
-              {formData.assignment === 'round_robin' && (
+              {/* Team for Round-Robin or Post-Resolution Owner */}
+              {(formData.assignment === 'round_robin' || formData.assignment === 'specific') && (
                 <div className="grid gap-2">
-                  <Label>Team</Label>
+                  <Label>{formData.assignment === 'specific' ? 'Post-Resolution Owner Team' : 'Team'}</Label>
                   {(() => {
                     // If sticky enabled and columns selected, filter teams by #1 sticky column mapping
                     const firstStickyCol = formData.stickyEnabled && (formData.stickyColumns || []).length > 0
                       ? formData.stickyColumns![0]
                       : null;
-                    const availableTeams = firstStickyCol
+                    const availableTeams = firstStickyCol && formData.assignment === 'round_robin'
                       ? teamEntries.filter(t => t.stickyColumn === firstStickyCol)
                       : teamEntries;
                     return (
@@ -800,9 +797,14 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                             {availableTeams.map(t => <SelectItem key={t.name} value={t.name}>{t.name}</SelectItem>)}
                           </SelectContent>
                         </Select>
-                        {firstStickyCol && (
+                        {firstStickyCol && formData.assignment === 'round_robin' && (
                           <p className="text-xs text-muted-foreground">
                             Filtered by sticky column: <span className="font-medium">{firstStickyCol}</span>
+                          </p>
+                        )}
+                        {formData.assignment === 'specific' && (
+                          <p className="text-xs text-muted-foreground">
+                            Members of this team will appear in the rework dialog as the post-resolution owner picker.
                           </p>
                         )}
                       </>
