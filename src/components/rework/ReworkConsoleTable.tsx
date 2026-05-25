@@ -824,7 +824,45 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                 </div>
               )}
 
+              {/* Manual Override — independent of assignment logic. When enabled,
+                  the user picks the case owner AFTER resolve via a team picker. */}
+              {showMovesToCancellation && (
+                <div className="border-t pt-4 mt-2 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>Manual Override</Label>
+                      <p className="text-xs text-muted-foreground">
+                        When enabled, the user picks the case owner after this rework is resolved (instead of inheriting the previous owner).
+                      </p>
+                    </div>
+                    <Switch
+                      checked={formData.manualOverrideEnabled || false}
+                      onCheckedChange={(v) => setFormData({ ...formData, manualOverrideEnabled: v, manualOverrideTeam: v ? formData.manualOverrideTeam : '' })}
+                    />
+                  </div>
+                  {formData.manualOverrideEnabled && (
+                    <div className="grid gap-2">
+                      <Label>Manual Override Team</Label>
+                      <Select
+                        value={formData.manualOverrideTeam || '__none__'}
+                        onValueChange={(v) => setFormData({ ...formData, manualOverrideTeam: v === '__none__' ? '' : v })}
+                      >
+                        <SelectTrigger><SelectValue placeholder="Select team" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="__none__">Select team</SelectItem>
+                          {teamEntries.map(t => <SelectItem key={t.name} value={t.name}>{t.name}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground">
+                        Members of this team will appear in the rework dialog as the manual override picker.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Automation moved to Rework Reasons page */}
+
 
             </div>
             <div className="flex justify-end gap-2">
