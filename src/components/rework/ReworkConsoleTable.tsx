@@ -804,7 +804,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                         )}
                         {formData.assignment === 'specific' && (
                           <p className="text-xs text-muted-foreground">
-                            Members of this team will appear in the rework dialog as the post-resolution owner picker.
+                            Members of this team will appear in the rework dialog as the manual override picker.
                           </p>
                         )}
                       </>
