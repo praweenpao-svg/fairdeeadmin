@@ -56,8 +56,8 @@ interface PolicyRemarksReworkDialogProps {
   onAddReworkReply?: (entryId: string, comment: string, attachments?: ReworkAttachment[]) => void;
   onAddEndorsementReply?: (entryId: string, comment: string, attachments?: ReworkAttachment[]) => void;
   onReworkResolve: (entryId: string) => void;
-  onReworkReassign: (entryId: string, newReasonId: string, details: string, attachments: ReworkAttachment[], specificAssignee?: string) => void;
-  onAddRework?: (policyId: string, reasonId: string, details: string, attachments: ReworkAttachment[], autoResolveDate?: string, specificAssignee?: string) => void;
+  onReworkReassign: (entryId: string, newReasonId: string, details: string, attachments: ReworkAttachment[], postResolutionOwner?: string) => void;
+  onAddRework?: (policyId: string, reasonId: string, details: string, attachments: ReworkAttachment[], autoResolveDate?: string, postResolutionOwner?: string) => void;
   onUpdateAutoResolveDate?: (entryId: string, newDate: string) => void;
 }
 
@@ -248,9 +248,9 @@ export function PolicyRemarksReworkDialog({
   const handleReassignConfirm = () => {
     if (reassignEntryId && selectedNewReasonId) {
       const cfg = reworkConfigs.find(c => c.id === selectedNewReasonId);
-      const specific = cfg?.assignment === 'specific' ? reassignSpecificAssignee : undefined;
-      if (cfg?.assignment === 'specific' && !specific) return;
-      onReworkReassign(reassignEntryId, selectedNewReasonId, reassignDetails, reassignAttachments, specific);
+      // Post-resolution owner is OPTIONAL — empty means use team default
+      const postResolutionOwner = cfg?.assignment === 'specific' ? (reassignPostResolutionOwner || undefined) : undefined;
+      onReworkReassign(reassignEntryId, selectedNewReasonId, reassignDetails, reassignAttachments, postResolutionOwner);
       resetReassignForm();
     }
   };
@@ -260,7 +260,7 @@ export function PolicyRemarksReworkDialog({
     setSelectedNewReasonId('');
     setReassignDetails('');
     setReassignAttachments([]);
-    setReassignSpecificAssignee('');
+    setReassignPostResolutionOwner('');
   };
 
   const toggleThreadExpanded = (id: string) => {
@@ -758,8 +758,8 @@ export function PolicyRemarksReworkDialog({
   const [newReworkDetails, setNewReworkDetails] = useState('');
   const [newReworkAttachments, setNewReworkAttachments] = useState<ReworkAttachment[]>([]);
   const [newReworkAutoResolveDate, setNewReworkAutoResolveDate] = useState<Date | undefined>(undefined);
-  const [newReworkSpecificAssignee, setNewReworkSpecificAssignee] = useState<string>('');
-  const [reassignSpecificAssignee, setReassignSpecificAssignee] = useState<string>('');
+  const [newReworkPostResolutionOwner, setNewReworkPostResolutionOwner] = useState<string>('');
+  const [reassignPostResolutionOwner, setReassignPostResolutionOwner] = useState<string>('');
   const addReworkFileInputRef = useRef<HTMLInputElement>(null);
 
   const handleAddReworkFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -790,7 +790,7 @@ export function PolicyRemarksReworkDialog({
     setNewReworkDetails('');
     setNewReworkAttachments([]);
     setNewReworkAutoResolveDate(undefined);
-    setNewReworkSpecificAssignee('');
+    setNewReworkPostResolutionOwner('');
   };
 
   if (!open) return null;
