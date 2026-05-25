@@ -359,6 +359,11 @@ export interface ReworkConfig {
   // applies to lead/policy/renewal config types so routing can differ between
   // the two creation paths. 'both' (default) ignores the distinction.
   salesChannel?: SalesChannelScope;
+  // Manual Override: independent toggle that lets the user hand-pick the
+  // case owner AFTER the rework is resolved. When enabled, the rework dialog
+  // shows an optional staff picker filtered by manualOverrideTeam.
+  manualOverrideEnabled?: boolean;
+  manualOverrideTeam?: string;
 }
 
 export type SalesChannelScope = 'ss' | 'nss' | 'both';
