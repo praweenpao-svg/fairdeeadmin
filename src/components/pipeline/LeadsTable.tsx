@@ -528,14 +528,9 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
     return undefined;
   };
 
-  const computeReworkOwner = (lead: Lead, reasonId: string, policy?: PolicyRecord, specificOverride?: string): string | undefined => {
+  const computeReworkOwner = (lead: Lead, reasonId: string, policy?: PolicyRecord): string | undefined => {
     const config = reworkConfigs.find(r => r.id === reasonId);
     if (!config) return undefined;
-
-    // Specific assignment short-circuits sticky logic — owner picked at creation time
-    if (config.assignment === 'specific') {
-      return specificOverride || undefined;
-    }
 
     // Step 1: Check sticky columns first (priority order)
     if (config.stickyEnabled && config.stickyColumns && config.stickyColumns.length > 0) {
@@ -565,6 +560,10 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
       case 'rf':
         return lead.rfAssignee;
       case 'requestor':
+        return CURRENT_USER;
+      case 'specific':
+        // 'specific' governs post-resolution ownership, not the rework worker.
+        // Rework worker falls back to requestor when sticky doesn't match.
         return CURRENT_USER;
       case 'none':
         return undefined;
