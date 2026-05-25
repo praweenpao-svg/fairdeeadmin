@@ -200,6 +200,8 @@ const defaultFormData: FormData = {
   stickyEnabled: false,
   stickyColumns: [],
   salesChannel: undefined,
+  manualOverrideEnabled: false,
+  manualOverrideTeam: '',
 };
 
 export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTableProps) {
