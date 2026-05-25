@@ -832,6 +832,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                   {formData.manualOverrideEnabled && (
                     <div className="grid gap-2">
                       <Label>Manual Override Team</Label>
+                      <p className="text-xs text-muted-foreground">Members appear in the rework dialog picker.</p>
                       <Select
                         value={formData.manualOverrideTeam || '__none__'}
                         onValueChange={(v) => setFormData({ ...formData, manualOverrideTeam: v === '__none__' ? '' : v })}
