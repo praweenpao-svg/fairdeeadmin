@@ -238,6 +238,7 @@ export interface ReworkHistoryEntry {
   resolved?: boolean;
   resolvedAt?: string;
   resolvedBy?: string;
+  postResolutionOwner?: string; // Staff who inherits the case after resolve (when reason uses 'specific' assignment)
   previousStatus?: SaleStatus;
 }
 
