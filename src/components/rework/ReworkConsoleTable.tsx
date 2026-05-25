@@ -822,6 +822,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                       <Label>Manual Override</Label>
+                      <p className="text-xs text-muted-foreground">Pick the case owner after resolve.</p>
                     </div>
                     <Switch
                       checked={formData.manualOverrideEnabled || false}
