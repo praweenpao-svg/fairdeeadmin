@@ -1039,13 +1039,13 @@ export function PolicyRemarksReworkDialog({
                     {/* Post-Resolution Owner picker (optional) — when reason uses 'specific' assignment */}
                     {(() => {
                       const selectedConfig = reworkConfigs.find(c => c.id === newReworkReasonId);
-                      if (selectedConfig?.assignment !== 'specific') return null;
-                      const teamMembers = selectedConfig.team ? mockStaffMembers.filter(s => s.team === selectedConfig.team) : mockStaffMembers;
+                      if (!selectedConfig?.manualOverrideEnabled) return null;
+                      const teamMembers = selectedConfig.manualOverrideTeam ? mockStaffMembers.filter(s => s.team === selectedConfig.manualOverrideTeam) : mockStaffMembers;
                       return (
                         <div className="space-y-2">
                           <Label className="text-xs">
                             {language === 'th' ? 'กำหนดเอง (ไม่บังคับ)' : 'Manual Override (optional)'}
-                            {selectedConfig.team && <span className="text-muted-foreground font-normal"> — {selectedConfig.team}</span>}
+                            {selectedConfig.manualOverrideTeam && <span className="text-muted-foreground font-normal"> — {selectedConfig.manualOverrideTeam}</span>}
                           </Label>
                           <Select value={newReworkPostResolutionOwner || '__team__'} onValueChange={(v) => setNewReworkPostResolutionOwner(v === '__team__' ? '' : v)}>
                             <SelectTrigger className="h-8 text-xs">
