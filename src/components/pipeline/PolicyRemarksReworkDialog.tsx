@@ -1147,7 +1147,7 @@ export function PolicyRemarksReworkDialog({
                             const resolveDate = isAutoResolve && newReworkAutoResolveDate 
                               ? format(newReworkAutoResolveDate, 'dd/MM/yyyy') 
                               : undefined;
-                            const postResolutionOwner = selectedConfig?.assignment === 'specific' ? (newReworkPostResolutionOwner || undefined) : undefined;
+                            const postResolutionOwner = selectedConfig?.manualOverrideEnabled ? (newReworkPostResolutionOwner || undefined) : undefined;
                             onAddRework(policyId, newReworkReasonId, newReworkDetails, newReworkAttachments, resolveDate, postResolutionOwner);
                             resetAddReworkForm();
                           }
