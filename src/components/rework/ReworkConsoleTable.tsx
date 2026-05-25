@@ -815,19 +815,6 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
               {/* Stages, Automation moved to Rework Reasons page */}
 
 
-              {/* Moves to Cancellation - Rework & Endorsement only */}
-              {showMovesToCancellation && (
-                <div className="border-t pt-4 mt-2">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label>Moves to Cancellation</Label>
-                      <p className="text-xs text-muted-foreground">When enabled, affected leads move to Cancellation tab</p>
-                    </div>
-                    <Switch checked={formData.movesToCancellation || false} onCheckedChange={(v) => setFormData({ ...formData, movesToCancellation: v })} />
-                  </div>
-                </div>
-              )}
-
               {/* Manual Override — independent of assignment logic. When enabled,
                   the user picks the case owner AFTER resolve via a team picker. */}
               {showMovesToCancellation && (
@@ -835,9 +822,6 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                       <Label>Manual Override</Label>
-                      <p className="text-xs text-muted-foreground">
-                        When enabled, the user picks the case owner after this rework is resolved (instead of inheriting the previous owner).
-                      </p>
                     </div>
                     <Switch
                       checked={formData.manualOverrideEnabled || false}
@@ -857,11 +841,21 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                           {teamEntries.map(t => <SelectItem key={t.name} value={t.name}>{t.name}</SelectItem>)}
                         </SelectContent>
                       </Select>
-                      <p className="text-xs text-muted-foreground">
-                        Members of this team will appear in the rework dialog as the manual override picker.
-                      </p>
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* Moves to Cancellation - Rework & Endorsement only */}
+              {showMovesToCancellation && (
+                <div className="border-t pt-4 mt-2">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>Moves to Cancellation</Label>
+                      <p className="text-xs text-muted-foreground">When enabled, affected leads move to Cancellation tab</p>
+                    </div>
+                    <Switch checked={formData.movesToCancellation || false} onCheckedChange={(v) => setFormData({ ...formData, movesToCancellation: v })} />
+                  </div>
                 </div>
               )}
 
