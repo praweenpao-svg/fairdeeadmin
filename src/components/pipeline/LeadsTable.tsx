@@ -717,7 +717,6 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
 
     // Post-resolution ownership transfer: when the resolved entry has a postResolutionOwner
     // chosen via Manual Override, hand the case over.
-    const resolvedConfig = reworkConfigs.find(c => c.id === targetEntry?.reasonId);
     const postResolutionOwner = targetEntry?.postResolutionOwner || undefined;
 
     onLeadUpdate?.(lead.id, {
