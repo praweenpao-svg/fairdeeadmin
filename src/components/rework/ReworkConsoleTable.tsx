@@ -929,7 +929,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                     {/* CANCELLATION */}
                     <td className="px-4 py-3 text-sm text-center">
                       {(isRw || config.configType === 'endorsement') ? (
-                        <span className={config.movesToCancellation ? 'text-green-600 dark:text-green-400 font-medium' : 'text-muted-foreground'}>
+                        <span className={config.movesToCancellation ? 'text-primary font-medium' : 'text-muted-foreground'}>
                           {config.movesToCancellation ? 'ON' : 'OFF'}
                         </span>
                       ) : '—'}
