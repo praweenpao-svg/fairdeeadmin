@@ -141,8 +141,7 @@ export function InlineReworkActions({
                 let nextTeam: string | undefined;
                 if (cfg?.manualOverrideEnabled) {
                   nextName = latestEntry.postResolutionOwner;
-                  nextTeam = cfg.manualOverrideTeam
-                    || (nextName ? mockStaffMembers.find(s => s.name === nextName)?.team || undefined : undefined);
+                  nextTeam = nextName ? mockStaffMembers.find(s => s.name === nextName)?.team || undefined : undefined;
                 } else {
                   nextName = lead.assignedTo;
                   nextTeam = nextName ? mockStaffMembers.find(s => s.name === nextName)?.team || undefined : undefined;
