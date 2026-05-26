@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { SearchableReasonSelect } from '@/components/pipeline/SearchableReasonSelect';
+import { SearchableStaffSelect } from '@/components/pipeline/SearchableStaffSelect';
 import { PolicyRemark, PolicyReworkEntry, ReworkConfig, ReworkAttachment, ThreadReply, PipelineStage, PolicyEndorsementEntry, EndorsementType, EndorsementStatus } from '@/types/pipeline';
 import { useLanguageStore } from '@/stores/languageStore';
 import { ScrollArea } from '@/components/ui/scroll-area';
