@@ -816,7 +816,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
 
 
               {/* Manual Override — independent of assignment logic. When enabled,
-                  the user picks the case owner AFTER resolve via a team picker. */}
+                  the user picks the case owner AFTER resolve from any staff member. */}
               {showMovesToCancellation && (
                 <div className="border-t pt-4 mt-2 space-y-3">
                   <div className="flex items-center justify-between">
@@ -826,25 +826,9 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                     </div>
                     <Switch
                       checked={formData.manualOverrideEnabled || false}
-                      onCheckedChange={(v) => setFormData({ ...formData, manualOverrideEnabled: v, manualOverrideTeam: v ? formData.manualOverrideTeam : '' })}
+                      onCheckedChange={(v) => setFormData({ ...formData, manualOverrideEnabled: v, manualOverrideTeam: '' })}
                     />
                   </div>
-                  {formData.manualOverrideEnabled && (
-                    <div className="grid gap-2">
-                      <Label>Manual Override Team</Label>
-                      <p className="text-xs text-muted-foreground">Members appear in the rework dialog picker.</p>
-                      <Select
-                        value={formData.manualOverrideTeam || '__none__'}
-                        onValueChange={(v) => setFormData({ ...formData, manualOverrideTeam: v === '__none__' ? '' : v })}
-                      >
-                        <SelectTrigger><SelectValue placeholder="Select team" /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="__none__">Select team</SelectItem>
-                          {teamEntries.map(t => <SelectItem key={t.name} value={t.name}>{t.name}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
                 </div>
               )}
 
