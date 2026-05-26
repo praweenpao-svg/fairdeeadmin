@@ -549,8 +549,7 @@ export function PolicyRemarksReworkDialog({
                 let nextTeam: string | undefined;
                 if (cfg?.manualOverrideEnabled) {
                   nextName = entry.postResolutionOwner;
-                  nextTeam = cfg.manualOverrideTeam
-                    || (nextName ? mockStaffMembers.find(s => s.name === nextName)?.team || undefined : undefined);
+                  nextTeam = nextName ? mockStaffMembers.find(s => s.name === nextName)?.team || undefined : undefined;
                 } else {
                   nextName = entry.assignedTo;
                   nextTeam = nextName ? mockStaffMembers.find(s => s.name === nextName)?.team || undefined : undefined;
