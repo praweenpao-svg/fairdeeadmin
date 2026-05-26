@@ -144,7 +144,7 @@ export function ReworkDialog({ open, onOpenChange, reworkConfigs, onConfirm, lea
           {/* Auto-Resolve Date Picker */}
           {isAutoResolve && (
             <div className="space-y-2">
-              <Label>{language === 'th' ? 'วันที่ Auto-Resolve' : 'Auto-Resolve Date'}</Label>
+              <Label>{language === 'th' ? 'วันที่ Auto-Resolve (ไม่บังคับ)' : 'Auto-Resolve Date (optional)'}</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
