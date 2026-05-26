@@ -716,12 +716,9 @@ export function LeadsTable({ leads, allLeads, stage, reworkConfigs, onLeadUpdate
     const nextOwner = active ? computeReworkOwner(lead, active.entry.reasonId, updatedRecords.find(r => r.reworkHistory?.some(e => e.id === active.entry.id))) : undefined;
 
     // Post-resolution ownership transfer: when the resolved entry has a postResolutionOwner
-    // (or its config has Manual Override enabled with a team), hand the case over.
+    // chosen via Manual Override, hand the case over.
     const resolvedConfig = reworkConfigs.find(c => c.id === targetEntry?.reasonId);
-    const postResolutionOwner = targetEntry?.postResolutionOwner
-      || (resolvedConfig?.manualOverrideEnabled && resolvedConfig.manualOverrideTeam
-          ? getNextRoundRobinStaff(resolvedConfig.manualOverrideTeam)
-          : undefined);
+    const postResolutionOwner = targetEntry?.postResolutionOwner || undefined;
 
     onLeadUpdate?.(lead.id, {
       policyRecords: updatedRecords,
