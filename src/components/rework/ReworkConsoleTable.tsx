@@ -873,6 +873,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                 <th className="data-table-header px-4 py-3 text-left">Teams</th>
                 <th className="data-table-header px-4 py-3 text-center">Method</th>
                 <th className="data-table-header px-4 py-3 text-center">Cancellation</th>
+                <th className="data-table-header px-4 py-3 text-center">Manual Override</th>
                 <th className="data-table-header px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
@@ -922,6 +923,14 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                       {(isRw || config.configType === 'endorsement') ? (
                         <span className={config.movesToCancellation ? 'text-green-600 dark:text-green-400 font-medium' : 'text-muted-foreground'}>
                           {config.movesToCancellation ? 'ON' : 'OFF'}
+                        </span>
+                      ) : '—'}
+                    </td>
+                    {/* MANUAL OVERRIDE */}
+                    <td className="px-4 py-3 text-sm text-center">
+                      {isRw ? (
+                        <span className={config.manualOverrideEnabled ? 'text-primary font-medium' : 'text-muted-foreground'}>
+                          {config.manualOverrideEnabled ? 'ON' : 'OFF'}
                         </span>
                       ) : '—'}
                     </td>
