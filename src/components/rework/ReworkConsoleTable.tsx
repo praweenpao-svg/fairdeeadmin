@@ -873,6 +873,7 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                 <th className="data-table-header px-4 py-3 text-left">Teams</th>
                 <th className="data-table-header px-4 py-3 text-center">Method</th>
                 <th className="data-table-header px-4 py-3 text-center">Cancellation</th>
+                <th className="data-table-header px-4 py-3 text-center">Manual Override</th>
                 <th className="data-table-header px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
