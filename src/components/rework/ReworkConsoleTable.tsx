@@ -926,6 +926,14 @@ export function ReworkConsoleTable({ reworkConfigs, onUpdate }: ReworkConsoleTab
                         </span>
                       ) : '—'}
                     </td>
+                    {/* MANUAL OVERRIDE */}
+                    <td className="px-4 py-3 text-sm text-center">
+                      {isRw ? (
+                        <span className={config.manualOverrideEnabled ? 'text-primary font-medium' : 'text-muted-foreground'}>
+                          {config.manualOverrideEnabled ? 'ON' : 'OFF'}
+                        </span>
+                      ) : '—'}
+                    </td>
                     {/* AUTOMATION, THRESHOLD, TARGET STATUS moved to Rework Reasons page */}
                     {/* ACTIONS */}
                     <td className="px-4 py-3">
