@@ -915,6 +915,16 @@ export function PolicyRemarksReworkDialog({
               />
             </div>
 
+            <div className="space-y-2">
+              <Label className="text-xs">{language === 'th' ? 'รายละเอียด (ไม่บังคับ)' : 'Details (optional)'}</Label>
+              <Textarea
+                placeholder={language === 'th' ? 'ใส่รายละเอียดเพิ่มเติม...' : 'Enter detailed reason...'}
+                value={reassignDetails}
+                onChange={(e) => setReassignDetails(e.target.value)}
+                className="min-h-[60px] resize-none text-xs"
+              />
+            </div>
+
             {/* Post-Resolution Owner picker (optional) — when Manual Override is enabled */}
             {(() => {
               const cfg = reworkConfigs.find(c => c.id === selectedNewReasonId);
@@ -931,16 +941,6 @@ export function PolicyRemarksReworkDialog({
                 </div>
               );
             })()}
-
-            <div className="space-y-2">
-              <Label className="text-xs">{language === 'th' ? 'รายละเอียด (ไม่บังคับ)' : 'Details (optional)'}</Label>
-              <Textarea
-                placeholder={language === 'th' ? 'ใส่รายละเอียดเพิ่มเติม...' : 'Enter detailed reason...'}
-                value={reassignDetails}
-                onChange={(e) => setReassignDetails(e.target.value)}
-                className="min-h-[60px] resize-none text-xs"
-              />
-            </div>
 
             <div className="space-y-2">
               <Label className="text-xs">{language === 'th' ? 'ไฟล์แนบ' : 'Attachments'}</Label>
