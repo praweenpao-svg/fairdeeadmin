@@ -545,18 +545,12 @@ export function PolicyRemarksReworkDialog({
             <div className="flex items-center gap-2 ml-auto">
               {(() => {
                 const cfg = reworkConfigs.find(c => c.id === entry.reasonId);
-                let nextName: string | undefined;
-                let nextTeam: string | undefined;
-                if (cfg?.manualOverrideEnabled) {
-                  nextName = entry.postResolutionOwner;
-                  nextTeam = nextName ? mockStaffMembers.find(s => s.name === nextName)?.team || undefined : undefined;
-                } else {
-                  nextName = entry.assignedTo;
-                  nextTeam = nextName ? mockStaffMembers.find(s => s.name === nextName)?.team || undefined : undefined;
-                }
+                if (!cfg?.manualOverrideEnabled) return null;
+                const nextName = entry.postResolutionOwner;
+                const nextTeam = nextName ? mockStaffMembers.find(s => s.name === nextName)?.team || undefined : undefined;
                 const label = nextName
                   ? (nextTeam ? `[${nextTeam}] ${nextName}` : nextName)
-                  : (nextTeam ? `[${nextTeam}]` : '—');
+                  : '—';
                 return (
                   <Badge
                     variant="outline"
