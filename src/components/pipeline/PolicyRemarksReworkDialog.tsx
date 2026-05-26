@@ -549,9 +549,7 @@ export function PolicyRemarksReworkDialog({
                 const nextName = entry.postResolutionOwner;
                 if (!nextName) return null;
                 const nextTeam = mockStaffMembers.find(s => s.name === nextName)?.team || undefined;
-                const label = nextName
-                  ? (nextTeam ? `[${nextTeam}] ${nextName}` : nextName)
-                  : '—';
+                const label = nextTeam ? `[${nextTeam}] ${nextName}` : nextName;
                 return (
                   <Badge
                     variant="outline"
