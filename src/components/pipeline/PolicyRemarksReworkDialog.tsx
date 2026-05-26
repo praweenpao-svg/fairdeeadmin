@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { SearchableReasonSelect } from '@/components/pipeline/SearchableReasonSelect';
+import { SearchableStaffSelect } from '@/components/pipeline/SearchableStaffSelect';
 import { PolicyRemark, PolicyReworkEntry, ReworkConfig, ReworkAttachment, ThreadReply, PipelineStage, PolicyEndorsementEntry, EndorsementType, EndorsementStatus } from '@/types/pipeline';
 import { useLanguageStore } from '@/stores/languageStore';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -548,8 +549,7 @@ export function PolicyRemarksReworkDialog({
                 let nextTeam: string | undefined;
                 if (cfg?.manualOverrideEnabled) {
                   nextName = entry.postResolutionOwner;
-                  nextTeam = cfg.manualOverrideTeam
-                    || (nextName ? mockStaffMembers.find(s => s.name === nextName)?.team || undefined : undefined);
+                  nextTeam = nextName ? mockStaffMembers.find(s => s.name === nextName)?.team || undefined : undefined;
                 } else {
                   nextName = entry.assignedTo;
                   nextTeam = nextName ? mockStaffMembers.find(s => s.name === nextName)?.team || undefined : undefined;
@@ -922,32 +922,19 @@ export function PolicyRemarksReworkDialog({
               />
             </div>
 
-            {/* Post-Resolution Owner picker (optional) — only when reason uses 'specific' assignment */}
+            {/* Post-Resolution Owner picker (optional) — when Manual Override is enabled */}
             {(() => {
               const cfg = reworkConfigs.find(c => c.id === selectedNewReasonId);
               if (!cfg?.manualOverrideEnabled) return null;
-              const teamMembers = cfg.manualOverrideTeam ? mockStaffMembers.filter(s => s.team === cfg.manualOverrideTeam) : mockStaffMembers;
               return (
                 <div className="space-y-2">
                   <Label className="text-xs">
                     {language === 'th' ? 'กำหนดเอง (ไม่บังคับ)' : 'Manual Override (optional)'}
-                    {cfg.manualOverrideTeam && <span className="text-muted-foreground font-normal"> — {cfg.manualOverrideTeam}</span>}
                   </Label>
-                  <Select value={reassignPostResolutionOwner || '__team__'} onValueChange={(v) => setReassignPostResolutionOwner(v === '__team__' ? '' : v)}>
-                    <SelectTrigger className="h-8 text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="z-[60]">
-                      <SelectItem value="__team__" className="text-xs">
-                        {language === 'th' ? '— ยังไม่เลือก —' : '— Unselected —'}
-                      </SelectItem>
-                      {teamMembers.map(s => (
-                        <SelectItem key={s.id} value={s.name} className="text-xs">
-                          {s.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <SearchableStaffSelect
+                    value={reassignPostResolutionOwner}
+                    onValueChange={setReassignPostResolutionOwner}
+                  />
                 </div>
               );
             })()}
@@ -1046,32 +1033,19 @@ export function PolicyRemarksReworkDialog({
                       />
                     </div>
 
-                    {/* Post-Resolution Owner picker (optional) — when reason uses 'specific' assignment */}
+                    {/* Post-Resolution Owner picker (optional) — when Manual Override is enabled */}
                     {(() => {
                       const selectedConfig = reworkConfigs.find(c => c.id === newReworkReasonId);
                       if (!selectedConfig?.manualOverrideEnabled) return null;
-                      const teamMembers = selectedConfig.manualOverrideTeam ? mockStaffMembers.filter(s => s.team === selectedConfig.manualOverrideTeam) : mockStaffMembers;
                       return (
                         <div className="space-y-2">
                           <Label className="text-xs">
                             {language === 'th' ? 'กำหนดเอง (ไม่บังคับ)' : 'Manual Override (optional)'}
-                            {selectedConfig.manualOverrideTeam && <span className="text-muted-foreground font-normal"> — {selectedConfig.manualOverrideTeam}</span>}
                           </Label>
-                          <Select value={newReworkPostResolutionOwner || '__team__'} onValueChange={(v) => setNewReworkPostResolutionOwner(v === '__team__' ? '' : v)}>
-                            <SelectTrigger className="h-8 text-xs">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent className="z-[60]">
-                              <SelectItem value="__team__" className="text-xs">
-                                {language === 'th' ? '— ยังไม่เลือก —' : '— Unselected —'}
-                              </SelectItem>
-                              {teamMembers.map(s => (
-                                <SelectItem key={s.id} value={s.name} className="text-xs">
-                                  {s.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          <SearchableStaffSelect
+                            value={newReworkPostResolutionOwner}
+                            onValueChange={setNewReworkPostResolutionOwner}
+                          />
                         </div>
                       );
                     })()}
