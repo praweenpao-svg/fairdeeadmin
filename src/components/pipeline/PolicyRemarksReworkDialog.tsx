@@ -547,7 +547,8 @@ export function PolicyRemarksReworkDialog({
                 const cfg = reworkConfigs.find(c => c.id === entry.reasonId);
                 if (!cfg?.manualOverrideEnabled) return null;
                 const nextName = entry.postResolutionOwner;
-                const nextTeam = nextName ? mockStaffMembers.find(s => s.name === nextName)?.team || undefined : undefined;
+                if (!nextName) return null;
+                const nextTeam = mockStaffMembers.find(s => s.name === nextName)?.team || undefined;
                 const label = nextName
                   ? (nextTeam ? `[${nextTeam}] ${nextName}` : nextName)
                   : '—';
