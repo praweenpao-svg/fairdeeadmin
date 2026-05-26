@@ -1060,7 +1060,7 @@ export function PolicyRemarksReworkDialog({
                       if (!isAutoResolve) return null;
                       return (
                         <div className="space-y-2">
-                          <Label className="text-xs">{language === 'th' ? 'วันที่ Auto-Resolve' : 'Auto-Resolve Date'}</Label>
+                          <Label className="text-xs">{language === 'th' ? 'วันที่ Auto-Resolve (ไม่บังคับ)' : 'Auto-Resolve Date (optional)'}</Label>
                           <Popover>
                             <PopoverTrigger asChild>
                               <Button
